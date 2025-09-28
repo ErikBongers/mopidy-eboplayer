@@ -1,0 +1,12 @@
+*.pyc
+/.coverage
+/.mypy_cache/
+/.pytest_cache/
+/.tox/
+/*.egg-info
+/build/
+/dist/
+/MANIFEST
+/.karma_coverage
+/node_modules
+package-lock.json
