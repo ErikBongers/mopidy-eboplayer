@@ -5,8 +5,8 @@ import tornado.web
 import tornado.websocket
 
 import mopidy.config as config
-from mopidy_eboplayer_webclient import Extension
-from mopidy_eboplayer_webclient.web import StaticHandler
+from mopidy_eboplayer import Extension
+from mopidy_eboplayer.web import StaticHandler
 
 
 class BaseTest(tornado.testing.AsyncHTTPTestCase):

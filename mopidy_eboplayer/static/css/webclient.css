@@ -1,17 +1,23 @@
-/*
- * Mopidy Webclient CSS
- * (c) Wouter van Wijk 2012-2017
- */
+* {
+--body-background: green;
+--header-background: green;
+--panel-background: orange;
+}
 
-/****************************
- *  Responsive stuff
- *  * iphone 3 20em
- *    landscape 30
- * iphone 4 40em
- *    landscape 60
- * ipad landsc 64
- *    portr 48
- ****************************/
+#header {
+background-color: var(--header-background);
+}
+
+.ui-body-c {
+background-color: var(--body-background);
+}
+.ui-body-a, .ui-overlay-a {
+background-color: var(--panel-background);
+}
+
+.ui-panel-inner {
+background-color: transparent;
+}
 
 @media all and (min-width: 961px) {
 
@@ -210,7 +216,7 @@ span.hostInfo {
 /*** home ***/
 #homerows div {
     text-align: center;
-    background-color: #2C3E50;
+    background-color: #333;
     padding: 2px;
     padding-top: 20px;
     border: 2px solid white;

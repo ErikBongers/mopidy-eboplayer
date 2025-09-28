@@ -1,7 +1,7 @@
 import unittest
 from unittest import mock
 
-from mopidy_eboplayer_webclient import Extension
+from mopidy_eboplayer import Extension
 
 
 class ExtensionTests(unittest.TestCase):

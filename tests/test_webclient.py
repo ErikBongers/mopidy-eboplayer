@@ -2,8 +2,8 @@ import unittest
 from unittest import mock
 
 import mopidy.config as mopidy_config
-from mopidy_eboplayer_webclient import Extension
-from mopidy_eboplayer_webclient.webclient import Webclient
+from mopidy_eboplayer import Extension
+from mopidy_eboplayer.webclient import Webclient
 
 
 class WebclientTests(unittest.TestCase):

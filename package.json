@@ -1,25 +1,16 @@
 {
-  "name": "Mopidy-MusicBox-Webclient",
-  "version": "2.1.1",
-  "description": "Mopidy MusicBox web extension",
+  "name": "mopidy-eboplayer",
+  "version": "0.0.1",
+  "description": "Mopidy web extension based on Musicbox-webclient",
   "main": "gui.js",
   "directories": {
     "test": "tests"
   },
   "scripts": {
     "test": "karma start karma.conf.js",
-    "eslint": "eslint mopidy_musicbox_webclient/static/js/**/**.js tests/**/test_*.js",
-    "csslint": "csslint mopidy_musicbox_webclient/static/css/**.css",
+    "eslint": "eslint mopidy_eboplayer/static/js/**/**.js tests/**/test_*.js",
+    "csslint": "csslint mopidy_eboplayer/static/css/**.css",
     "tidy": "node tidy.js"
-  },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/pimusicbox/mopidy-musicbox-webclient.git"
-  },
-  "author": "Wouter van Wijk",
-  "license": "Apache-2.0",
-  "bugs": {
-    "url": "https://github.com/pimusicbox/mopidy-musicbox-webclient/issues"
   },
   "devDependencies": {
     "babelify": "^7.2.0",
@@ -48,6 +39,5 @@
     "sinon": "^1.17.3",
     "tidy-html5": "latest",
     "watchify": "^3.7.0"
-  },
-  "homepage": "https://github.com/pimusicbox/mopidy-musicbox-webclient#readme"
+  }
 }

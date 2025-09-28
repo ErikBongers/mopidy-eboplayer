@@ -25,6 +25,7 @@ function resetSong () {
  *          If we know both artist and album show them, otherwise just show artist if we know it.
  */
 function showSongInfo (data) {
+    console.log(data);
     var name = data.track.name
     if (data.stream) {
         name = data.stream

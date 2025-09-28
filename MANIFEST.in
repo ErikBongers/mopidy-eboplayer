@@ -21,4 +21,4 @@ include .csslintrc
 include .eslintrc
 include package.json
 
-recursive-include mopidy_musicbox_webclient/static *
+recursive-include mopidy_eboplayer/static *
