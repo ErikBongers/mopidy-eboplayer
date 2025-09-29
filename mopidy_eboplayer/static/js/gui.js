@@ -24,13 +24,31 @@ function resetSong () {
  * Detail:  If we don't know artist and it's a stream then show track name instead.
  *          If we know both artist and album show them, otherwise just show artist if we know it.
  */
+
+let streamBuffer = [];
+//todo: mark buffer as complete when we have a repitition.
+// next thing is then to clear the buffer when a new item arrives.
+function addTextToBuffer(text) {
+    if(!text)
+        return;
+    if(!streamBuffer.find((t) => t === text)) {
+        streamBuffer.push(text);
+    }
+    while(streamBuffer.length > 3)
+        streamBuffer.pop();
+}
+
+
 function showSongInfo (data) {
     console.log(data);
     var name = data.track.name
     if (data.stream) {
-        name = data.stream
+        addTextToBuffer(data.stream);
+        name = streamBuffer.join("<br>");
     }
-    $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', mopidy);">' + name + '</span></a>')
+    console.log(streamBuffer);
+
+    $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', mopidy);">' + streamBuffer.join("<br>") + '</span></a>')
     if (!artistsHtml && data.stream) {
         $('#modaldetail').html(data.track.name)
     } else if (artistsHtml.length) {
@@ -41,7 +59,7 @@ function showSongInfo (data) {
         }
     }
 
-    $('#infoname').html(name)
+    $('#infoname').html(name);
     if (!artistsText && data.stream) {
         $('#infodetail').html(data.track.name)
     } else if (artistsText.length) {

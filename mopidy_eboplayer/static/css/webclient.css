@@ -1,22 +1,36 @@
 * {
---body-background: green;
---header-background: green;
---panel-background: orange;
+--body-background: #323;
+--header-background: #2a1c2a;
+--panel-background: black;
+--panel-button-background: transparent;
+--panel-button-selected: purple;
 }
 
+h3#modalname a{
+    background-color: transparent;
+    color: white;
+}
 #header {
 background-color: var(--header-background);
 }
 
-.ui-body-c {
+.ui-body-c, .ui-overlay-c {
 background-color: var(--body-background);
+color: white;
 }
 .ui-body-a, .ui-overlay-a {
 background-color: var(--panel-background);
 }
-
 .ui-panel-inner {
 background-color: transparent;
+}
+
+.ui-btn-up-a {
+background-color: var(--panel-button-background);
+}
+
+.ui-btn-active {
+background-color: var(--panel-button-selected);
 }
 
 @media all and (min-width: 961px) {
@@ -580,7 +594,7 @@ a {
 }
 
 #normalFooter {
-    height: 50px;
+    min-height: 50px;
     line-height: 48px;
     text-align: center;
     color: white;
