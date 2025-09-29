@@ -37,6 +37,8 @@ class Extension(ext.Extension):
         return schema
 
     def setup(self, registry):
+        from .streamlineshandler import ActiveStreamLinesHandler
+        ActiveStreamLinesHandler.setup()
         registry.add(
             "http:app", {"name": self.ext_name, "factory": self.factory}
         )
@@ -44,12 +46,12 @@ class Extension(ext.Extension):
     def factory(self, config, core): # factory is a Python function used by a Mopidy extension to register a web application with the Mopidy HTTP server.
         from tornado.web import RedirectHandler
         from .web import IndexHandler, StaticHandler
-        from .extradatahandler import ExtraDataHandler
+        from .streamlineshandler import ActiveStreamLinesHandler
 
         path = pathlib.Path(__file__).parent / "static"
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
-            (r"/extra/(.*)", ExtraDataHandler, {"config": config, "path": path}),
+            (r"/stream/activeLines", ActiveStreamLinesHandler, {"config": config, "path": path}),
             (r"/(.*)", StaticHandler, {"path": path}),
         ]
