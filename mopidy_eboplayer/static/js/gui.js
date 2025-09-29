@@ -27,8 +27,6 @@ function resetSong () {
 //todo: make buffer persistent.
 let streamBuffer = [];
 let streamRepeated = false;
-//todo: mark buffer as complete when we have a repitition.
-// next thing is then to clear the buffer when a new item arrives.
 function addTextToBuffer(text) {
     if(!text)
         return;
@@ -45,16 +43,22 @@ function addTextToBuffer(text) {
         streamBuffer.shift();
 }
 
-
 async function showSongInfo (data) {
-    console.log(data);
-    var name = data.track.name
+    let activeLines = [];
+    let name = data.track.name;
     if (data.stream) {
         addTextToBuffer(data.stream);
-        name = streamBuffer.join("<br>");
+        let formData = new URLSearchParams();
+        formData.append("line", data.stream);
+        let res = await fetch("stream/activeLines",{
+            method: "POST",
+            body: formData
+        });
+        activeLines = await res.json();
+        name = activeLines.join("<br>");
     }
 
-    $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', mopidy);">' + streamBuffer.join("<br>") + '</span></a>')
+    $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', mopidy);">' + activeLines.join("<br>") + '</span></a>')
     if (!artistsHtml && data.stream) {
         $('#modaldetail').html(data.track.name)
     } else if (artistsHtml.length) {
@@ -64,10 +68,6 @@ async function showSongInfo (data) {
             $('#modaldetail').html(artistsHtml)
         }
     }
-
-    let res = await fetch("extra/sdf");
-    let txt = await res.text();
-    console.log("text: " + txt);
 
     $('#infoname').html(name);
     if (!artistsText && data.stream) {
