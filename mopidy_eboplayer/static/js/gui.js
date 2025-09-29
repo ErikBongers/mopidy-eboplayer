@@ -46,7 +46,7 @@ function addTextToBuffer(text) {
 }
 
 
-function showSongInfo (data) {
+async function showSongInfo (data) {
     console.log(data);
     var name = data.track.name
     if (data.stream) {
@@ -64,6 +64,10 @@ function showSongInfo (data) {
             $('#modaldetail').html(artistsHtml)
         }
     }
+
+    let res = await fetch("extra/sdf");
+    let txt = await res.text();
+    console.log("text: " + txt);
 
     $('#infoname').html(name);
     if (!artistsText && data.stream) {

@@ -41,13 +41,15 @@ class Extension(ext.Extension):
             "http:app", {"name": self.ext_name, "factory": self.factory}
         )
 
-    def factory(self, config, core):
+    def factory(self, config, core): # factory is a Python function used by a Mopidy extension to register a web application with the Mopidy HTTP server.
         from tornado.web import RedirectHandler
         from .web import IndexHandler, StaticHandler
+        from .extradatahandler import ExtraDataHandler
 
         path = pathlib.Path(__file__).parent / "static"
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
+            (r"/extra/(.*)", ExtraDataHandler, {"config": config, "path": path}),
             (r"/(.*)", StaticHandler, {"path": path}),
         ]
