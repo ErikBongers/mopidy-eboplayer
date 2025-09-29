@@ -1,0 +1,3 @@
+* "Streams" are mopidy playlists.
+  > has 2 fields: name and uri
+  > if uri starts with file: or http:, a different backend is triggered.
