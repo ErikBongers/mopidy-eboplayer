@@ -37,11 +37,13 @@ class Extension(ext.Extension):
         return schema
 
     def setup(self, registry):
+        # Ebo: added this call to setup to make the directory for the streamLines.txt file.
         from .streamlineshandler import ActiveStreamLinesHandler
         ActiveStreamLinesHandler.setup()
-        registry.add(
-            "http:app", {"name": self.ext_name, "factory": self.factory}
-        )
+
+        from .frontend import EboPlayerFrontend
+        registry.add("http:app", {"name": self.ext_name, "factory": self.factory})
+        registry.add("frontend", EboPlayerFrontend)
 
     def factory(self, config, core): # factory is a Python function used by a Mopidy extension to register a web application with the Mopidy HTTP server.
         from tornado.web import RedirectHandler

@@ -339,6 +339,11 @@ function initSocketevents () {
         setStreamTitle(data.title)
         controls.setPlayState(true)
     })
+
+    mopidy.on("event:stream_history_updated", function(data) {
+        console.log("Updated stream titles:", data);
+    });
+
 }
 
 /** ************
