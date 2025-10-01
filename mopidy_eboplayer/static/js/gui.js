@@ -24,37 +24,13 @@ function resetSong () {
  * Detail:  If we don't know artist and it's a stream then show track name instead.
  *          If we know both artist and album show them, otherwise just show artist if we know it.
  */
-//todo: make buffer persistent.
-let streamBuffer = [];
-let streamRepeated = false;
-function addTextToBuffer(text) {
-    if(!text)
-        return;
-    if (streamBuffer.find((t) => t === text)) {
-        streamRepeated = true;
-        return;
-    }
-    if(streamRepeated) {
-        streamBuffer = [];
-        streamRepeated = false;
-    }
-    streamBuffer.push(text);
-    while(streamBuffer.length > 3)
-        streamBuffer.shift();
-}
-
 async function showSongInfo (data) {
     let activeLines = [];
     let name = data.track.name;
     if (data.stream) {
-        addTextToBuffer(data.stream);
-        let formData = new URLSearchParams();
-        formData.append("line", data.stream);
-        let res = await fetch("stream/activeLines",{
-            method: "POST",
-            body: formData
-        });
+        let res = await fetch("stream/activeLines");
         activeLines = await res.json();
+        console.log(activeLines);
         name = activeLines.join("<br>");
     }
 
@@ -79,6 +55,18 @@ async function showSongInfo (data) {
             $('#infodetail').html(artistsText)
         }
     }
+}
+
+async function showStreamInfo () {
+    let res = await fetch("stream/activeLines");
+    activeLines = await res.json();
+    console.log(activeLines);
+    name = activeLines.join("<br>");
+
+    //todo: track uri is not available
+    // $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', mopidy);">' + name + '</span></a>')
+    $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + "todo: track uri?" + '\', \'\', mopidy);">' + name + '</span></a>')
+    $('#infoname').html(name);
 }
 
 function setStreamTitle (title) {
@@ -340,9 +328,13 @@ function initSocketevents () {
         controls.setPlayState(true)
     })
 
-    mopidy.on("event:stream_history_updated", function(data) {
-        console.log("Updated stream titles:", data);
+    mopidy.on("event:streamHistoryChanged", function(data) {
+        console.log("Stream history changegd:", data);
+        showStreamInfo().then(r => {});
     });
+
+    //log all events:
+//    mopidy.on(console.log.bind(console));
 
 }
 
