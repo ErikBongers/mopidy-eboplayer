@@ -3,7 +3,7 @@ import logging
 import socket
 import string
 import tornado.web
-from .StreamTitleLogger import write_line, get_all_lines, get_active_lines, setup
+from .Storage import write_line, get_all_lines, get_active_lines, setup
 
 logger = logging.getLogger(__name__)
 

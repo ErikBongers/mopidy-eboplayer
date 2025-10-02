@@ -1,15 +1,17 @@
 import os
 import logging
+import json
 
 logger = logging.getLogger(__name__)
 
-STREAM_LINES_DIR = '/var/lib/eboplayer'
+STORAGE_DIR = '/var/lib/eboplayer'
 # STREAM_LINES_DIR = r'C:\Tmp'
-STREAM_LINES_FILE = STREAM_LINES_DIR+'/streamLines.txt'
+STREAM_LINES_FILE = STORAGE_DIR + '/streamLines.txt'
+STATE_FILE = STORAGE_DIR + '/state.json'
 
 def setup():
-    if not os.path.exists(STREAM_LINES_DIR):
-        os.makedirs(STREAM_LINES_DIR)
+    if not os.path.exists(STORAGE_DIR):
+        os.makedirs(STORAGE_DIR)
 
 def get_all_lines():
     lines = []
@@ -50,3 +52,22 @@ def write_line(line) -> bool:
 
     return True # line written
 
+def get_state():
+    try:
+        with open(STATE_FILE, 'r+') as f:
+            state = json.load(f)
+        return state
+    except IOError:
+        return {}
+
+def get(key, default):
+    state = get_state()
+    if key in state:
+        return state[key]
+    return default
+
+def save(key, value):
+    state = get_state()
+    state[key] = value
+    with open(STATE_FILE, 'w+') as f:
+        json.dump(state, f)
