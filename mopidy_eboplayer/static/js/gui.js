@@ -532,21 +532,6 @@ $(document).ready(function (event) {
         }
     })
 
-    // Remove MusicBox only content (e.g. settings, system pages)
-    if (!$(document.body).data('is-musicbox')) {
-        $('#navSettings').hide()
-        $('#navshutdown').hide()
-        $('#homesettings').hide()
-        $('#homeshutdown').hide()
-    }
-
-    // Remove Alarm Clock icons if it is not present
-    if (!$(document.body).data('has-alarmclock')) {
-        $('#navAlarmClock').hide()
-        $('#homeAlarmClock').hide()
-        $('#homeAlarmClock').nextAll().find('.ui-block-a, .ui-block-b').toggleClass('ui-block-a').toggleClass('ui-block-b')
-    }
-
     // navigation stuff
 
     $(document).keypress(function (event) {

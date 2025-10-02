@@ -48,7 +48,6 @@ var isMobileSafari = /Mac/.test(ua) && /Mobile/.test(ua)
 var isMobile = isMobileAll()
 
 // constants
-PROGRAM_NAME = $(document.body).data('program-name')
 HOSTNAME = $(document.body).data('hostname')
 ARTIST_TABLE = '#artiststable'
 ALBUM_TABLE = '#albumstable'
@@ -468,7 +467,7 @@ function showLoading (on) {
     if (on) {
         $('body').css('cursor', 'progress')
         $.mobile.loading('show', {
-            text: 'Loading data from ' + PROGRAM_NAME + ' on ' + HOSTNAME + '. Please wait...',
+            text: 'Loading data from ' + HOSTNAME + '. Please wait...',
             textVisible: true,
             theme: 'a'
         })
@@ -481,7 +480,7 @@ function showLoading (on) {
 function showOffline (on) {
     if (on) {
         $.mobile.loading('show', {
-            text: 'Trying to reach ' + PROGRAM_NAME + ' on ' + HOSTNAME + '. Please wait...',
+            text: 'Trying to reach on ' + HOSTNAME + '. Please wait...',
             textVisible: true,
             theme: 'a'
         })

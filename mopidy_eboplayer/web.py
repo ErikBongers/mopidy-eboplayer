@@ -30,11 +30,6 @@ class IndexHandler(tornado.web.RequestHandler):
 
         webclient = mmw.Webclient(config)
 
-        if webclient.is_music_box():
-            program_name = "MusicBox"
-        else:
-            program_name = "Mopidy"
-
         url = urllib.parse.urlparse(
             f"{self.request.protocol}://{self.request.host}"
         )
@@ -44,18 +39,16 @@ class IndexHandler(tornado.web.RequestHandler):
         except Exception:
             ip = url.hostname
 
+        # Values sent to Tornado renderer.
         self.__dict = {
-            "isMusicBox": json.dumps(webclient.is_music_box()),
             "websocketUrl": webclient.get_websocket_url(self.request),
-            "hasAlarmClock": json.dumps(webclient.has_alarm_clock()),
             "onTrackClick": webclient.get_default_click_action(),
-            "programName": program_name,
             "hostname": url.hostname,
             "serverIP": ip,
             "serverPort": port,
         }
         self.__path = path
-        self.__title = string.Template(f"{program_name} on $hostname")
+        self.__title = string.Template("Mopidy on $hostname")
 
     def get(self, path):
         return self.render(path, title=self.get_title(), **self.__dict)

@@ -20,7 +20,6 @@ class Extension(ext.Extension):
 
     def get_config_schema(self):
         schema = super().get_config_schema()
-        schema["musicbox"] = config.Boolean(optional=True)
         schema["websocket_host"] = config.Hostname(optional=True)
         schema["websocket_port"] = config.Port(optional=True)
         schema["on_track_click"] = config.String(

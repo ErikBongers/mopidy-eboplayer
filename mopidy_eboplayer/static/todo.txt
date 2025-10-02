@@ -1,3 +1,14 @@
+* Remove MusicBox specific code.
+* On stream start: clear history or at least write a dummy history block:
+      ---
+      Starting stream xxx
+      ---
+* get rid of jQuery
+* flex or grid?
+*
+
+
+
 * "Streams" are mopidy playlists.
   > has 2 fields: name and uri
   > if uri starts with file: or http:, a different backend is triggered.
