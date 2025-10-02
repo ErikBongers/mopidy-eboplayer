@@ -20,6 +20,11 @@ class StaticHandler(tornado.web.StaticFileHandler):
             logger.debug("Get static resource for %s", path)
         return super().get(path, *args, **kwargs)
 
+    # todo: remove in production!
+    def set_extra_headers(self, path):
+        # Disable cache
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+
     @classmethod
     def get_version(cls, settings, path):
         return mmw.Extension.version
@@ -51,6 +56,8 @@ class IndexHandler(tornado.web.RequestHandler):
         self.__title = string.Template("Mopidy on $hostname")
 
     def get(self, path):
+        logger.info("get: CACHE OFF")
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         return self.render(path, title=self.get_title(), **self.__dict)
 
     def get_title(self):
@@ -61,3 +68,10 @@ class IndexHandler(tornado.web.RequestHandler):
 
     def get_template_path(self):
         return self.__path
+
+    # todo: remove in production!
+    def set_extra_headers(self, path):
+        logger.info("CACHE OFF")
+        # Disable cache
+        self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
+

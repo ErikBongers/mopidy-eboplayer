@@ -1,8 +1,10 @@
-* Remove MusicBox specific code.
 * On stream start: clear history or at least write a dummy history block:
       ---
       Starting stream xxx
       ---
+
+* Replace Home pane with last played..
+  > perhaps merge this pane with Now Playing?
 * get rid of jQuery
 * flex or grid?
 *
