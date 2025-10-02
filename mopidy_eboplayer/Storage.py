@@ -6,49 +6,49 @@ logger = logging.getLogger(__name__)
 
 STORAGE_DIR = '/var/lib/eboplayer'
 # STREAM_LINES_DIR = r'C:\Tmp'
-STREAM_LINES_FILE = STORAGE_DIR + '/streamLines.txt'
+STREAM_TITLES_FILE = STORAGE_DIR + '/streamLines.txt'
 STATE_FILE = STORAGE_DIR + '/state.json'
 
 def setup():
     if not os.path.exists(STORAGE_DIR):
         os.makedirs(STORAGE_DIR)
 
-def get_all_lines():
+def get_all_titles():
     lines = []
-    with open(STREAM_LINES_FILE, 'r+') as file:
+    with open(STREAM_TITLES_FILE, 'r+') as file:
         for line in file:
             lines.append(line.rstrip('\n'))
     return lines
 
 SEPARATOR_LINE = "---"
 
-def get_active_lines(lines):
-    active_lines = []
-    iterator = lines
+def get_active_titles(titles):
+    active_titles = []
+    iterator = titles
     # ignore the final separator line, if any.
     if iterator:
         if iterator[-1] == SEPARATOR_LINE:
-            iterator = lines[:-1]
+            iterator = titles[:-1]
 
-    for line in reversed(iterator):
-        if line == SEPARATOR_LINE:
+    for title in reversed(iterator):
+        if title == SEPARATOR_LINE:
             break
-        active_lines.insert(0, line)
-    return active_lines
+        active_titles.insert(0, title)
+    return active_titles
 
-def write_line(line) -> bool:
-    all_lines = get_all_lines()
-    active_lines = get_active_lines(all_lines)
-    if line in active_lines:
+def write_title(title) -> bool:
+    all_titles = get_all_titles()
+    active_titles = get_active_titles(all_titles)
+    if title in active_titles:
         # write a separator line, if not yet present
-        if all_lines[-1] != SEPARATOR_LINE:
-            with open(STREAM_LINES_FILE, 'a+') as the_file:
+        if all_titles[-1] != SEPARATOR_LINE:
+            with open(STREAM_TITLES_FILE, 'a+') as the_file:
                 the_file.write(SEPARATOR_LINE + '\n')
 
-        return False # no line written.
+        return False # no title written.
 
-    with open(STREAM_LINES_FILE, 'a+') as the_file:
-        the_file.write(line + '\n')
+    with open(STREAM_TITLES_FILE, 'a+') as the_file:
+        the_file.write(title + '\n')
 
     return True # line written
 
