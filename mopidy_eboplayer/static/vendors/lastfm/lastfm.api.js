@@ -4,7 +4,7 @@
  *
  */
 
-function LastFM(options){
+export function LastFM(options){
 	/* Set default values for required options. */
 	var apiKey    = options.apiKey    || '';
 	var apiSecret = options.apiSecret || '';

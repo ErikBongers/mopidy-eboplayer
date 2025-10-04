@@ -1,0 +1,17 @@
+{
+  "include": ["typescript/**/*"],
+  "exclude": [],
+  "compilerOptions": {
+    "outDir": "./mopidy_eboplayer/static/generated",
+    "target": "es2021",
+    "sourceMap": true,
+    "noEmit": true,
+    "incremental": false,
+    "moduleResolution": "bundler",
+    "paths": {
+    },
+    "typeRoots": ["node_modules/@types"]
+  },
+  "types": [
+  ]
+}

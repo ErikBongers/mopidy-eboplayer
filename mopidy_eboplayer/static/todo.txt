@@ -1,7 +1,8 @@
-* On stream start: clear history or at least write a dummy history block:
+* On stream start, and extension start: clear history or at least write a dummy history block:
       ---
       Starting stream xxx
       ---
+  > not needed on extension start, if on stream start creates a separator.
 
 * Replace Home pane with last played..
   > perhaps merge this pane with Now Playing?
