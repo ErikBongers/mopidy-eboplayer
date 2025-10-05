@@ -1,6 +1,6 @@
 import {artistsToString, CURRENT_PLAYLIST_TABLE, getScheme, getTracksFromUri, isStreamUri, STREAMS_PLAYLIST_NAME, STREAMS_PLAYLIST_SCHEME, TRACK_ACTIONS} from "./functionsvars";
 import Mopidy from "mopidy";
-import {mopidy, updatePlayIcons} from "./gui";
+import {updatePlayIcons} from "./functionsvars";
 import {library} from "./library";
 import {processCurrentposition} from "./process_ws";
 import Track = Mopidy.models.Track;
@@ -183,11 +183,11 @@ export function _addTrackAtIndex(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri
 export function playQueueTrack(tlid) {
     // Stop directly, for user feedback
 
-    mopidy.playback.stop();
+    getState().mopidy.playback.stop();
     // toast('Loading...')
 
     tlid = tlid || (document.querySelector('#popupQueue') as HTMLElement).dataset.tlid;
-    mopidy.playback.play({'tlid': parseInt(tlid)});
+    getState().mopidy.playback.play({'tlid': parseInt(tlid)});
     // document.querySelector('#popupQueue').popup('close')
 }
 
@@ -203,7 +203,7 @@ export function removeTrack(tlid, mopidy) {
 }
 
 export function clearQueue() {
-    mopidy.tracklist.clear();
+    getState().mopidy.tracklist.clear();
     return false;
 }
 
@@ -281,7 +281,7 @@ export function addTrackToBottom(trackUri, mopidy) {
 }
 
 export function showSavePopup() {
-    mopidy.tracklist.getTracks().then(function (tracks) {
+    getState().mopidy.tracklist.getTracks().then(function (tracks) {
         if (tracks.length > 0) {
             (document.querySelector('#saveinput') as HTMLInputElement).value = '';
             // document.querySelector('#popupSave').popup('open')
@@ -290,7 +290,7 @@ export function showSavePopup() {
 }
 
 export function saveQueue() {
-    mopidy.tracklist.getTracks().then(function (tracks) {
+    getState().mopidy.tracklist.getTracks().then(function (tracks) {
         let playlistName = (document.querySelector('#saveinput') as HTMLInputElement).value.trim();
         if (playlistName !== null && playlistName !== '') {
             getPlaylistByName(playlistName, 'm3u', false).then(function (exists) {
@@ -314,11 +314,11 @@ export function initSave(playlistName: string, tracks) {
     // document.querySelector('#popupSave').popup('close')
     (document.querySelector('#saveinput') as HTMLInputElement).value = '';
     // toast('Saving...')
-    mopidy.playlists.create({'name': playlistName, 'uri_scheme': 'm3u'})
+    getState().mopidy.playlists.create({'name': playlistName, 'uri_scheme': 'm3u'})
         .then(function (playlist) {
             playlist.tracks.push(...tracks);
             // playlist.tracks = tracks;
-            mopidy.playlists.save({'playlist': playlist}).then();
+            getState().mopidy.playlists.save({'playlist': playlist}).then();
             });
 }
 
@@ -451,7 +451,7 @@ export function showInfoPopup(uri, popupId, mopidy) {
 }
 
 export function refreshPlaylists() {
-    mopidy.playlists.refresh({}).then(function () {
+    getState().mopidy.playlists.refresh({}).then(function () {
         getState().playlists = {};
         (document.querySelector('#playlisttracksdiv') as HTMLElement).style.display = 'none';
         (document.querySelector('#playlistslistdiv') as HTMLElement).style.display = 'block';
@@ -461,7 +461,7 @@ export function refreshPlaylists() {
 
 export function refreshLibrary() {
     let uri = (document.querySelector('#refreshLibraryBtn') as HTMLElement).dataset.url;
-    mopidy.library.refresh({'uri': uri}).then(function () {
+    getState().mopidy.library.refresh({'uri': uri}).then(function () {
         library.getBrowseDir(uri);
     })
     return false;
@@ -472,9 +472,9 @@ export function refreshLibrary() {
  *************/
 
 export function doShuffle() {
-    mopidy.playback.stop();
-    mopidy.tracklist.shuffle({});
-    mopidy.playback.play({});
+    getState().mopidy.playback.stop();
+    getState().mopidy.tracklist.shuffle({});
+    getState().mopidy.playback.play({});
 }
 
 /* Toggle state of play button */
@@ -486,7 +486,7 @@ export function setPlayState(nwplay) {
         (document.querySelector('#btplay >i') as HTMLElement).classList.remove('fa-play');
         (document.querySelector('#btplay >i') as HTMLElement).classList.add('fa-pause');
         document.querySelector('#btplay').setAttribute('title', 'Pause');
-        mopidy.playback.getTimePosition().then(processCurrentposition, console.error)
+        getState().mopidy.playback.getTimePosition().then(processCurrentposition, console.error)
         getState().syncedProgressTimer.start();
     } else {
         document.querySelector('#btplayNowPlaying >i').classList.remove('fa-pause');
@@ -504,12 +504,12 @@ export function setPlayState(nwplay) {
 export function doPlay() {
     // toast('Please wait...', 250)
     if (!getState().play) {
-        mopidy.playback.play({});
+        getState().mopidy.playback.play({});
     } else {
-        if (isStreamUri(getState().songdata.track.uri)) {
-            mopidy.playback.stop();
+        if (isStreamUri(getState().songdata?.track?.uri)) {
+            getState().mopidy.playback.stop();
         } else {
-            mopidy.playback.pause();
+            getState().mopidy.playback.pause();
         }
     }
     setPlayState(!getState().play);
@@ -517,12 +517,12 @@ export function doPlay() {
 
 export function doPrevious() {
     // toast('Playing previous track...')
-    mopidy.playback.previous();
+    getState().mopidy.playback.previous();
 }
 
 export function doNext() {
     // toast('Playing next track...')
-    mopidy.playback.next();
+    getState().mopidy.playback.next();
 }
 
 export function backbt() {
@@ -567,19 +567,19 @@ export function setSingle(nwsingle: boolean) {
 }
 
 export function doRandom() {
-    mopidy.tracklist.setRandom({'value': !getState().random}).then();
+    getState().mopidy.tracklist.setRandom({'value': !getState().random}).then();
 }
 
 export function doRepeat() {
-    mopidy.tracklist.setRepeat({'value': !getState().repeat}).then();
+    getState().mopidy.tracklist.setRepeat({'value': !getState().repeat}).then();
 }
 
 export function doConsume() {
-    mopidy.tracklist.setConsume({'value': !getState().consume}).then();
+    getState().mopidy.tracklist.setConsume({'value': !getState().consume}).then();
 }
 
 export function doSingle() {
-    mopidy.tracklist.setSingle({'value': !getState().single}).then();
+    getState().mopidy.tracklist.setSingle({'value': !getState().single}).then();
 }
 
 /** *********************************************
@@ -589,7 +589,7 @@ export function doSingle() {
 export function doSeekPos(value) {
     if (!getState().positionChanging) {
         getState().positionChanging = value; //todo: number or boolean
-        mopidy.playback.seek({'time_position': Math.round(value)}).then(function () {
+        getState().mopidy.playback.seek({'time_position': Math.round(value)}).then(function () {
             getState().positionChanging = null;
         })
     }
@@ -621,7 +621,7 @@ export function setVolume(value: number) {
 export async function sendVolume(value: number) {
     if (!getState().volumeChanging) {
         getState().volumeChanging = true;
-        await mopidy.mixer.setVolume({'volume': value});
+        await getState().mopidy.mixer.setVolume({'volume': value});
         setTimeout(() => getState().volumeChanging = false, 100); //don't allow re-sending volume within 0.1 second.
     }
 }
@@ -638,7 +638,7 @@ export function setMute(nwmute) {
 }
 
 export function doMute() {
-    mopidy.mixer.setMute({'mute': !getState().mute});
+    getState().mopidy.mixer.setMute({'mute': !getState().mute});
 }
 
 /** **********
@@ -661,13 +661,13 @@ export function playStreamUri(uri: string = undefined) {
     }
     // toast('Playing...')
     // stop directly, for user feedback
-    mopidy.playback.stop()
+    getState().mopidy.playback.stop()
     // hide ios/android keyboard
     // document.activeElement.blur()
     clearQueue();
     document.querySelector('input').blur()
-    mopidy.tracklist.add({'uris': [nwuri]})
-    mopidy.playback.play({});
+    getState().mopidy.tracklist.add({'uris': [nwuri]})
+    getState().mopidy.playback.play({});
     return false;
 }
 
@@ -686,7 +686,7 @@ export function getCurrentlyPlaying(uriInput, nameInput) {
 
 export function getUriSchemes() {
     getState().uriSchemes = {};
-    return mopidy.getUriSchemes().then(function (schemes) {
+    return getState().mopidy.getUriSchemes().then(function (schemes) {
         for (let i = 0; i < schemes.length; i++) {
             getState().uriSchemes[schemes[i].toLowerCase()] = true;
         }
@@ -700,14 +700,14 @@ export async function getPlaylistByName(name, scheme, create: boolean) {
         //todo return Mopidy.when(false)
         throw new Error("Dunno...");
     }
-    let plists = await mopidy.playlists.asList().catch(console.error.bind(console));
+    let plists = await getState().mopidy.playlists.asList().catch(console.error.bind(console));
     for (let i = 0; i < plists.length; i++) {
         if ((plists[i].name === name) && (uri_scheme === '' || getScheme(plists[i].uri) === uri_scheme)) {
             return plists[i];
         }
     }
     if (create) {
-        let pList = await mopidy.playlists.create({'name': name, 'uri_scheme': uri_scheme});
+        let pList = await getState().mopidy.playlists.create({'name': name, 'uri_scheme': uri_scheme});
         console.log("Created playlist '%s'", pList.name);
         return pList;
         }
@@ -716,7 +716,7 @@ export async function getPlaylistByName(name, scheme, create: boolean) {
 }
 
 export function getPlaylistFull(uri) {
-    return mopidy.playlists.lookup({'uri': uri}).then(function (pl) {
+    return getState().mopidy.playlists.lookup({'uri': uri}).then(function (pl) {
         getState().playlists[uri] = pl;
         return pl;
     })
@@ -745,7 +745,7 @@ export function addToFavourites(newTracks: Track[]) {
                 favourites.tracks.length = 0;
                 favourites.tracks.push(...newTracks);
             }
-            mopidy.playlists.save({'playlist': favourites}).then(function (s) {
+            getState().mopidy.playlists.save({'playlist': favourites}).then(function (s) {
                 showFavourites();
             })
         }
@@ -755,7 +755,7 @@ export function addToFavourites(newTracks: Track[]) {
 export function addFavourite(uri, name) {
     uri = uri || (document.querySelector('#streamuriinput') as  HTMLInputElement).value.trim();
     name = name || (document.querySelector('#streamnameinput') as HTMLInputElement).value.trim();
-    mopidy.library.lookup({'uris': [uri]}).then(function (results) {
+    getState().mopidy.library.lookup({'uris': [uri]}).then(function (results) {
         let newTracks = results[uri];
         if (newTracks.length === 1) {
             // TODO: Supporting adding an entire playlist?
@@ -790,7 +790,7 @@ export function deleteFavourite(index) {
     getFavourites().then(function (favourites) {
         if (favourites && favourites.tracks && index < favourites.tracks.length) {
             favourites.tracks.splice(index, 1)
-            mopidy.playlists.save({'playlist': favourites}).then(function () {
+            getState().mopidy.playlists.save({'playlist': favourites}).then(function () {
                 showFavourites();
             });
             // document.querySelector('#popupConfirmDelete').popup('close')

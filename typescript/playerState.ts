@@ -1,49 +1,62 @@
 import Mopidy from "mopidy";
-import TlTrack = Mopidy.models.TlTrack;
 import {SyncedProgressTimer} from "./synced_timer";
+import TlTrack = Mopidy.models.TlTrack;
+import {DeepReadonly, Model} from "./model";
 
-let state = {
-    mopidy: undefined as Mopidy,
-    syncedProgressTimer: undefined as SyncedProgressTimer,
+export class State {
+    mopidy: Mopidy;
+    syncedProgressTimer: SyncedProgressTimer;
 
     // values for controls
-    play: false,
-    random: false,
-    repeat: false,
-    consume: false,
-    single: false,
-    mute: false,
-    volumeChanging: false,
-    volumeSliding: false,
+    play: boolean = false;
+    random: boolean = false;
+    repeat: boolean = false;
+    consume: boolean = false;
+    single: boolean = false;
+    mute: boolean = false;
+    volumeChanging: boolean = false;
+    volumeSliding: boolean = false;
 
-    positionChanging: false,
+    positionChanging: boolean = false;
 
-    initgui: true,
-    popupData: {},  // TODO: Refactor into one shared cache,
-    songlength: 0,
+    initgui: boolean = true;
+    popupData = {};  // TODO: Refactor into one shared cache,
+    songlength: number = 0;
 
-    artistsHtml: '',
-    artistsText: '',
-    albumHtml: '',
-    albumText: '',
-    songname: '',
+    artistsHtml: string = '';
+    artistsText: string = '';
+    albumHtml: string = '';
+    albumText: string = '';
+    songname: string = '';
 
-    streamUris: {}, //TODO: EBO added this to make gui.ts compile.
+    streamUris = {}; //TODO: EBO added this to make gui.ts compile.
 
-    songdata: new TlTrack({tlid: - 1, track: undefined}),
+    songdata: (TlTrack | undefined) = undefined;
 
-    pageScrollPos: {},
+    pageScrollPos = {};
 
-    uriSchemes: {},
+    uriSchemes = {};
 
     // array of cached playlists (not only user-playlists, also search, artist, album-playlists)
-    playlists: {},  // TODO: Refactor into one shared cache,
-    currentplaylist: undefined,
-    customTracklists: [],  // TODO: Refactor into one shared cache,
+    playlists = {};  // TODO: Refactor into one shared cache,
+    currentplaylist: undefined;
+    customTracklists =  [];  // TODO: Refactor into one shared cache,
 
-    browseStack: [],
-};
+    browseStack =  [];
+    private readonly model: Model;
 
+    constructor(mopidy: Mopidy, syncedProgressTimer: SyncedProgressTimer) {
+        this.mopidy = mopidy;
+        this.syncedProgressTimer = syncedProgressTimer;
+        this.model = new Model();
+    }
+
+    getModel(): DeepReadonly<Model> { return this.model; }
+}
+
+let state: State = undefined; //todo: assuming here that all calls to getState() will receive a valid state object.
+
+export function setState(newState: State) { state = newState; }
 const getState = () => state;
 
-export default getState
+export default getState;

@@ -15,3 +15,51 @@
 * "Streams" are mopidy playlists.
   > has 2 fields: name and uri
   > if uri starts with file: or http:, a different backend is triggered.
+
+
+  Track info for streams or files
+  ---------------------------------
+  Streams
+  -------
+  {
+    "tl_track": {
+      "__model__": "TlTrack",
+      "tlid": 1,
+      "track": {
+        "__model__": "Track",
+        "uri": "http://icecast.vrtcdn.be/klara-high.mp3",
+        "name": "VRT Klara"
+      }
+    },
+    "event": "track_playback_started"
+  }
+
+  Files
+  -----
+  {
+    "tl_track": {
+      "__model__": "TlTrack",
+      "tlid": 2,
+      "track": {
+        "__model__": "Track",
+        "uri": "file:///media/DATA1/Music/Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma",
+        "name": "La Femme d'Argent",
+        "artists": [
+          {
+            "__model__": "Artist",
+            "name": "Air"
+          }
+        ],
+        "album": {
+          "__model__": "Album",
+          "name": "Moon Safari",
+          "date": "1998"
+        },
+        "track_no": 1,
+        "date": "1998",
+        "length": 429986,
+        "bitrate": 128639
+      }
+    },
+    "event": "track_playback_started"
+  }

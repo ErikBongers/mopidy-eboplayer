@@ -1,13 +1,13 @@
 import {library} from "./library";
-import Mopidy, {Options} from "mopidy";
-import TlTrack = Mopidy.models.TlTrack;
-import {ALBUM_TABLE, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getUniqueId, PLAYLIST_TABLE, SEARCH_TRACK_TABLE, searchBlacklist, showLoading, showOffline, TRACK_ACTIONS, validUri} from "./functionsvars";
+import {models, Mopidy, Options} from "../mopidy_eboplayer/static/js/mopidy";
+import {searchBlacklist, showLoading, showOffline, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
 import {SyncedProgressTimer} from "./synced_timer";
 import {processConsume, processCurrentposition, processCurrenttrack, processMute, processPlaystate, processRandom, processRepeat, processSingle, processVolume} from "./process_ws";
 import * as controls from "./controls";
-import getState from "./playerState";
 import {sendVolume} from "./controls";
-import * as images from "./images";
+import getState, {setState, State} from "./playerState";
+import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
+import TlTrack = models.TlTrack;
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -17,14 +17,123 @@ import * as images from "./images";
 /** ******************
  * Song Info Sreen  *
  ********************/
-export function resetSong () {
-    controls.setPlayState(false)
+function clearSelectedTrack () {
+    controls.setPlayState(false);
     controls.setPosition(0);
-    let data = new TlTrack({
-        tlid: -1,
-        track: undefined
-    });
-    setSongInfo(data);
+    getState().getModel().clearActiveTrack();
+}
+
+async function fetchAndShowActiveStreamLines () {
+    let res = await fetch("stream/activeLines");
+    let activeLines = await res.json();
+    console.log(activeLines);
+    let name = activeLines.join("<br>");
+
+    //todo: track uri is not available
+    // document.getElementById'odalname').innerHTML = '<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', getState().mopidy);">' + name + '</span></a>')
+    document.getElementById('modalname').innerHTML = '<a href="#" onclick="return controls.showInfoPopup(\'' + "todo: track uri?" + '\', \'\', getState().mopidy);">' + name + '</span></a>';
+    document.getElementById('infoname').innerHTML = name;
+}
+
+function setStreamTitle (title: string) {
+    showSongInfo(title).then();
+}
+
+function resizeMb () {
+/*TODO
+
+    if ($(window).width() < 880) {
+        document.getElementById('panel').panel('close')
+    } else {
+        document.getElementById('panel').panel('open')
+    }
+
+    showSongInfo(songdata)
+
+    if ($(window).width() > 960) {
+        (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'block;
+        (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block;
+    }
+*/
+}
+
+function onActiveTrackChanged() {
+    if(getState().getModel().activeTrack.type == TrackType.Stream) {
+        let trackInfo = getState().getModel().getActiveTrack();
+        if(trackInfo.type == TrackType.Stream)
+            updateStreamTrackView(trackInfo as StreamTrackModel);
+    }
+    else if (getState().getModel().activeTrack.type == TrackType.File) {
+        let trackInfo = getState().getModel().getActiveTrack();
+        if(trackInfo.type == TrackType.File)
+            updateFileTrackView(trackInfo as FileTrackModel);
+    }
+}
+
+function updateFileTrackView (trackInfo: FileTrackModel) {
+    updatePlayIcons(trackInfo.tlTrack.track.uri, trackInfo.tlTrack.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED));
+
+    if (trackInfo.songlenght == Infinity) {
+        (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
+    } else {
+        (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'block';
+    }
+
+    getState().artistsHtml = '';
+    getState().artistsText = '';
+    let artists = trackInfo.tlTrack.track.artists;
+    if (artists) {
+        for (let j = 0; j < artists.length; j++) {
+            let artistName = artists[j].name;
+            if (j !== artists.length - 1) {
+                artistName += ', ';
+            }
+            getState().artistsHtml += '<a href="#" onclick="return library.showArtist(\'' + artists[j].uri + '\', getState().mopidy);">' + artistName + '</a>';
+            getState().artistsText += artistName;
+        }
+    }
+
+    getState().albumHtml = '';
+    getState().albumText = '';
+    let album = trackInfo.tlTrack.track.album;
+    if (album && album.name) {
+        getState().albumHtml = '<a href="#" onclick="return library.showAlbum(\'' + album.uri + '\', getState().mopidy);">' + album.name + '</a>';
+        getState().albumText = album.name;
+    }
+
+    if (trackInfo.tlTrack.track.uri) {
+        // Add 'Show Info' icon to album image
+        document.getElementById('modalinfo').append(
+            '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
+            '<i class="fa fa-info-circle"></i></a>')
+    }
+
+    document.getElementById('trackslider').setAttribute('min', "0");
+    document.getElementById('trackslider').setAttribute('max', getState().songlength.toString());
+    getState().syncedProgressTimer.reset().set(0, getState().songlength);
+    if (getState().play) {
+        getState().syncedProgressTimer.start()
+    }
+
+    resizeMb()
+}
+function updateStreamTrackView (trackInfo: StreamTrackModel) {
+    updatePlayIcons(trackInfo.tlTrack.track.uri, trackInfo.tlTrack.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED));
+
+    (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
+
+    getState().artistsHtml = '';
+    getState().artistsText = '';
+
+    getState().albumHtml = '';
+    getState().albumText = '';
+    if (trackInfo.tlTrack.track.uri) {
+        // Add 'Show Info' icon to album image
+        document.getElementById('modalinfo').append(
+            '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
+            '<i class="fa fa-info-circle"></i></a>')
+    }
+    resizeMb()
 }
 
 /* Name:    Use stream title if we have it, else track name.
@@ -32,6 +141,9 @@ export function resetSong () {
  *          If we know both artist and album show them, otherwise just show artist if we know it.
  */
 async function showSongInfo (data: TlTrack | string) {
+
+    //todo: compare with updateFileTrackView and merge?
+    
     if (typeof data == 'string') {
         let res = await fetch("stream/activeLines");
         let activeLines = await res.json();
@@ -57,7 +169,7 @@ async function showSongInfo (data: TlTrack | string) {
     // if (!getState.artistsText && data.stream) {
     //     document.getElementById('infodetail').innerHTML = data.track.name;
     // } else
-        if (getState().artistsText.length) {
+    if (getState().artistsText.length) {
         if (getState().albumText.length) {
             document.getElementById('infodetail').innerHTML = getState().albumText + ' - ' + getState().artistsText;
         } else {
@@ -66,108 +178,6 @@ async function showSongInfo (data: TlTrack | string) {
     }
 }
 
-async function showStreamInfo () {
-    let res = await fetch("stream/activeLines");
-    let activeLines = await res.json();
-    console.log(activeLines);
-    let name = activeLines.join("<br>");
-
-    //todo: track uri is not available
-    // document.getElementById'odalname').innerHTML = '<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', getState().mopidy);">' + name + '</span></a>')
-    document.getElementById('modalname').innerHTML = '<a href="#" onclick="return controls.showInfoPopup(\'' + "todo: track uri?" + '\', \'\', getState().mopidy);">' + name + '</span></a>';
-    document.getElementById('infoname').innerHTML = name;
-}
-
-export function setStreamTitle (title: string) {
-    showSongInfo(title).then();
-}
-
-function resizeMb () {
-/*TODO
-
-    if ($(window).width() < 880) {
-        document.getElementById('panel').panel('close')
-    } else {
-        document.getElementById('panel').panel('open')
-    }
-
-    showSongInfo(songdata)
-
-    if ($(window).width() > 960) {
-        (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'block;
-        (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block;
-    }
-*/
-}
-
-export function setSongInfo (data: TlTrack) {
-    if (!data) { return }
-    if (data.tlid === getState().songdata.tlid) { return }
-    if (!data.track.name || data.track.name === '') {
-        let name = data.track.uri.split('/');
-        // @ts-ignore todo : name is actually read-only
-        data.track.name = decodeURI(name[name.length - 1])
-    }
-
-    updatePlayIcons(data.track.uri, data.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED))
-
-    if (validUri(data.track.name)) {
-        for (let key in getState().streamUris) {
-            let rs = getState().streamUris[key]
-            if (rs && rs[1] === data.track.name) {
-                //TODO data.track.name = (rs[0] || rs[1])
-            }
-        }
-    }
-    getState().songdata = data;
-
-    if (!data.track.length || data.track.length === 0) {
-        getState().songlength = Infinity;
-        (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
-        //todo document.getElementById('trackslider').slider('disable')
-    } else {
-        getState().songlength = data.track.length;
-        //todo document.getElementById('trackslider').slider('enable')
-        (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'block';
-    }
-
-    getState().artistsHtml = ''
-    getState().artistsText = ''
-    if (data.track.artists) {
-        for (var j = 0; j < data.track.artists.length; j++) {
-            var artistName = data.track.artists[j].name
-            if (j !== data.track.artists.length - 1) {
-                artistName += ', '
-            }
-            getState().artistsHtml += '<a href="#" onclick="return library.showArtist(\'' + data.track.artists[j].uri + '\', getState().mopidy);">' + artistName + '</a>'
-            getState().artistsText += artistName
-        }
-    }
-
-    getState().albumHtml = ''
-    getState().albumText = ''
-    if (data.track.album && data.track.album.name) {
-        getState().albumHtml = '<a href="#" onclick="return library.showAlbum(\'' + data.track.album.uri + '\', getState().mopidy);">' + data.track.album.name + '</a>'
-        getState().albumText = data.track.album.name
-    }
-
-    images.setAlbumImage(data.track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
-    if (data.track.uri) {
-        // Add 'Show Info' icon to album image
-        document.getElementById('modalinfo').append(
-            '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'undefined\', getState().mopidy);">' +
-            '<i class="fa fa-info-circle"></i></a>')
-    }
-
-    document.getElementById('trackslider').setAttribute('min', "0");
-    document.getElementById('trackslider').setAttribute('max', getState().songlength.toString());
-    getState().syncedProgressTimer.reset().set(0, getState().songlength);
-    if (getState().play) {
-        getState().syncedProgressTimer.start()
-    }
-
-    resizeMb()
-}
 
 /** ****************
  * display popups *
@@ -277,20 +287,20 @@ function initSocketevents () {
     });
 
     getState().mopidy.on('state:offline', function () {
-        resetSong();
+        clearSelectedTrack();
         showOffline(true);
     });
 
     getState().mopidy.on('event:optionsChanged', updateOptions);
 
     getState().mopidy.on('event:trackPlaybackStarted', function (data) {
-        setSongInfo(data.tl_track);
+        processCurrenttrack(data.tl_track);
         controls.setPlayState(true);
     });
 
     getState().mopidy.on('event:trackPlaybackResumed', function (data) {
-        setSongInfo(data.tl_track);
-        controls.setPlayState(true);
+        processCurrenttrack(data.tl_track);
+        controls.setPlayState(true); //todo: pass this through the model and it's listeners.
     });
 
     getState().mopidy.on('event:playlistsLoaded', function () {
@@ -352,7 +362,7 @@ function initSocketevents () {
     // @ts-ignore
     getState().mopidy.on("event:streamHistoryChanged", function(data: any) {
         console.log("Stream history changegd:", data);
-        showStreamInfo().then(() => {});
+        fetchAndShowActiveStreamLines().then(() => {});
     });
 
     //log all events:
@@ -493,7 +503,6 @@ document.addEventListener("DOMContentLoaded",function () {
 
     document.getElementById('songinfo').onclick = () => switchContent('nowPlaying');
     document.getElementById('albumCoverImg').onclick =  () => switchContent('current');
-    document.getElementById('navToggleFullscreen').onclick =  () => toggleFullscreen();
     let slider = document.querySelector<HTMLInputElement>('#volumeslider');
     slider.onchange = (ev) => { sendVolume(parseInt((ev.target as HTMLInputElement).value)).then(); };
     slider.onmousedown = (ev) => { getState().volumeSliding = true;};
@@ -503,53 +512,15 @@ document.addEventListener("DOMContentLoaded",function () {
     let connectOptions: Options = {
         webSocketUrl
     };
-    getState().mopidy = new Mopidy(connectOptions);
+    let mopidy = new Mopidy(connectOptions);
+    let timer = new SyncedProgressTimer(8, mopidy);
+    let state = new State(mopidy, timer);
+    setState(state);
 
     // initialize events
     initSocketevents();
-    getState().syncedProgressTimer = new SyncedProgressTimer(8, getState().mopidy);
-    resetSong();
+    clearSelectedTrack();
 });
-
-export function updatePlayIcons (uri: string, tlid: number, popupMenuIcon) {
-    // Update styles of listviews
-    let listviews = [PLAYLIST_TABLE, SEARCH_TRACK_TABLE, ARTIST_TABLE, ALBUM_TABLE, BROWSE_TABLE];
-    let target = CURRENT_PLAYLIST_TABLE.substring(1);
-    if (uri && typeof tlid === 'number' && tlid >= 0) {
-        document.querySelector(CURRENT_PLAYLIST_TABLE).querySelectorAll('li.song.albumli').forEach( (el) => {
-            let eachTlid = parseInt(el.getAttribute('tlid'));
-            if (this.id === getUniqueId(target, uri) && eachTlid === tlid) {
-                if (!el.classList.contains('currenttrack')) {
-                    el.classList.add('currenttrack');
-                }
-            } else if (el.classList.contains('currenttrack')) {
-                el.classList.remove('currenttrack');
-            }
-        })
-    }
-
-    let popupElement;
-
-    for (let i = 0; i < listviews.length; i++) {
-        target = listviews[i].substring(1)
-        document.querySelector(listviews[i]).querySelectorAll('li.song.albumli').forEach( (el) => {
-            if (uri) {
-                if (this.id === getUniqueId(target, uri)) {
-                    el.classList.add('currenttrack2');
-                } else {
-                    el.classList.remove('currenttrack2');
-                }
-            }
-            if (popupMenuIcon) {
-                popupElement = el.querySelector('a.moreBtn').querySelectorAll('i').item(0);
-                if (!popupElement.hasClass(popupMenuIcon)) {
-                    popupElement.removeClass()
-                    popupElement.addClass(popupMenuIcon)
-                }
-            }
-        })
-    }
-}
 
 function updateDocumentTitle (headline) {
     headline = headline || document.getElementById('contentHeadline').textContent;

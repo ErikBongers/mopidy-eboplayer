@@ -14,7 +14,7 @@ h3#modalname a{
 background-color: var(--header-background);
 }
 
-.ui-body-c, .ui-overlay-c {
+body {
 background-color: var(--body-background);
 color: white;
 }

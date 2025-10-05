@@ -8,9 +8,7 @@
     <meta name="copyright" content="(c) 2025 Erik Bongers" />
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no" />
-    <meta http-equiv="imagetoolbar" content="no" />
 
-    <link rel="stylesheet" type="text/css" href="vendors/jquery_mobile_flat_ui_theme/jquery.mobile.flatui.min.css"/>
     <link rel="icon" type="image/gif" href="images/icons/musicbox32.gif" />
     <link rel="shortcut icon" type="image/x-icon" href="images/icons/musicbox32.gif" />
     <link rel="stylesheet" type="text/css" href="css/webclient.css" />
@@ -473,23 +471,14 @@
 <!-- /footer -->
 
 </div>
-<!-- /page one -->
-<script type="text/javascript" src="vendors/mopidy/mopidy.min.js"></script>
-<script type="text/javascript" src="vendors/media_progress_timer/timer.js"></script>
-<script type="text/javascript" src="ts/synced_timer.js"></script>
-<script type="text/javascript" src="ts/controls.js"></script>
-<script type="text/javascript" src="ts/library.js"></script>
-<script type="text/javascript" src="ts/functionsvars.js"></script>
-<script type="text/javascript" src="ts/process_ws.js"></script>
+<!-- /page -->
 
 <!-- use lastfm for image search -->
 <script type="text/javascript" src="vendors/lastfm/lastfm.api.md5.js"></script>
 <script type="text/javascript" src="vendors/lastfm/lastfm.api.js"></script>
 <script type="text/javascript" src="vendors/lastfm/lastfm.api.cache.js"></script>
 
-<script type="text/javascript" src="ts/images.js"></script>
-
-<script type="text/javascript" src="ts/gui.js"></script>
+<script type="module" src="generated/bundle.js" ></script>
 
 <!-- load plugins -->
 <script type="text/javascript" src="plugins/plugin-loader.js"></script>

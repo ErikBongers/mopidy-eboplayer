@@ -114,7 +114,7 @@ const DEFAULT_ARTIST_URL = 'images/user_24x32.png';
  *                        directly. Can be one of 'small', 'medium', 'large',
  *                        'extralarge' (default), or 'mega'.
  */
-export function setAlbumImage(uri: string, img_elements: string[], mopidy: Mopidy, size: string = 'extralarge') {
+export function fetchAlbumImage(uri: string, img_elements: string[], mopidy: Mopidy, size: string = 'extralarge') {
     // Set default immediately while we're busy retrieving actual image.
     // img_elements
     //     .map(id => document.getElementById(id))

@@ -1,14 +1,55 @@
 import * as controls from "./controls";
-import {resetSong, setSongInfo, setStreamTitle, updatePlayIcons} from "./gui";
-import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getAlbum, getArtist, getMediaClass, hasSameAlbum, isFavouritesPlaylist, renderSongLi, renderSongLiAlbumInfo, renderSongLiBackButton, renderSongLiDivider, resultsToTables, scrollToTracklist, showLoading} from "./functionsvars";
+import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getAlbum, getArtist, getMediaClass, hasSameAlbum, isFavouritesPlaylist, renderSongLi, renderSongLiAlbumInfo, renderSongLiBackButton, renderSongLiDivider, resultsToTables, scrollToTracklist, showLoading, TRACK_ACTIONS, validUri} from "./functionsvars";
 import * as images from "./images";
-import getState from "./playerState";
+import getState, {TrackModel} from "./playerState";
+import {updatePlayIcons} from "./functionsvars";
+import Mopidy from "mopidy";
+import TlTrack = Mopidy.models.TlTrack;
 
-export function processCurrenttrack (data) {
-    setSongInfo(data)
+export function processCurrenttrack (data: (TlTrack | null)) {
+    if(!data)
+        return;
+    transformTrackInfo(data);
     getState().mopidy.playback.getStreamTitle().then(function (title) {
-        setStreamTitle(title)
-    }, console.error)
+        getState().getModel().setSelectedStream( {
+            name: title,
+            infoLines: []
+        });
+   }, console.error);
+}
+
+function transformTrackInfo(data: TlTrack) {
+    let trackModel: TrackModel = {
+        tlTrack: data,
+        title: "",
+        performer: "",
+        songlenght: 0
+    };
+    if (!data.track.name || data.track.name === '') {
+        let parts = data.track.uri.split('/');
+        trackModel.title = decodeURI(parts[parts.length - 1])
+    }
+
+    if (validUri(data.track.name)) {
+        for (let key in getState().streamUris) {
+            let rs = getState().streamUris[key]
+            if (rs && rs[1] === data.track.name) {
+                trackModel.title = (rs[0] || rs[1]);
+            }
+        }
+    }
+    getState().songdata = data; //todo: make this obsolete
+
+    if (!data.track.length || data.track.length === 0) {
+        trackModel.songlenght = getState().songlength = Infinity;
+   } else {
+        trackModel.songlenght = getState().songlength = data.track.length;
+    }
+
+    //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
+    // images.fetchAlbumImage(data.track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
+
+    getState().getModel().setSelectedTrack(trackModel); //todo: how to differenciate between a stream and a track?
 }
 
 export function processVolume (data: number | null) {
@@ -187,10 +228,8 @@ function processCurrentPlaylist (resultArr) {
     getState().currentplaylist = resultArr
     resultsToTables(getState().currentplaylist, CURRENT_PLAYLIST_TABLE)
     getState().mopidy.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
-    updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction())
     if (resultArr.length === 0) {
-        // Last track in queue was deleted, reset UI.
-        resetSong();
+        getState().getModel().clearSelected();
     }
 }
 
@@ -200,7 +239,7 @@ function processCurrentPlaylist (resultArr) {
 function processArtistResults (resultArr) {
     if (!resultArr || (resultArr.length === 0)) {
         document.getElementById('h_artistname').textContent = 'Artist not found...';
-        images.setAlbumImage('', ['artistviewimage', 'artistpopupimage'], getState().mopidy);
+        images.fetchAlbumImage('', ['artistviewimage', 'artistpopupimage'], getState().mopidy);
         showLoading(false);
         return;
     }
@@ -220,7 +259,7 @@ function processArtistResults (resultArr) {
 function processAlbumResults (resultArr) {
     if (!resultArr || (resultArr.length === 0)) {
         document.getElementById('h_albumname').textContent = 'Album not found...';
-        images.setAlbumImage('', ['albumviewcover', 'coverpopupimage'], getState().mopidy);
+        images.fetchAlbumImage('', ['albumviewcover', 'coverpopupimage'], getState().mopidy);
         showLoading(false)
         return
     }
@@ -233,6 +272,6 @@ function processAlbumResults (resultArr) {
     document.getElementById('h_albumartist').innerHTML = artistname;
     document.getElementById('coverpopupalbumname').innerHTML = albumname;
     document.getElementById('coverpopupartist').innerHTML = artistname;
-    images.setAlbumImage(resultArr[0].uri, ['albumviewcover', 'coverpopupimage'], getState().mopidy);
+    images.fetchAlbumImage(resultArr[0].uri, ['albumviewcover', 'coverpopupimage'], getState().mopidy);
     showLoading(false);
 }

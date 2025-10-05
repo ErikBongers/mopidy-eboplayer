@@ -1,10 +1,9 @@
 import Mopidy from "mopidy";
-import TlTrack = Mopidy.models.TlTrack;
-import {updatePlayIcons} from "./gui";
 import * as images from "./images";
 import {processPlaylistItems} from "./process_ws";
 import * as controls from "./controls";
 import getState from "./playerState";
+import TlTrack = Mopidy.models.TlTrack;
 
 // interface ArtistInfo {
 //     name: string;
@@ -604,4 +603,44 @@ function fixedEncodeURIComponent (str) {
     return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
         return '%' + c.charCodeAt(0).toString(16)
     })
+}
+
+export function updatePlayIcons(uri: string, tlid: number, popupMenuIcon) {
+    // Update styles of listviews
+    let listviews = [PLAYLIST_TABLE, SEARCH_TRACK_TABLE, ARTIST_TABLE, ALBUM_TABLE, BROWSE_TABLE];
+    let target = CURRENT_PLAYLIST_TABLE.substring(1);
+    if (uri && typeof tlid === 'number' && tlid >= 0) {
+        document.querySelector(CURRENT_PLAYLIST_TABLE).querySelectorAll('li.song.albumli').forEach((el) => {
+            let eachTlid = parseInt(el.getAttribute('tlid'));
+            if (this.id === getUniqueId(target, uri) && eachTlid === tlid) {
+                if (!el.classList.contains('currenttrack')) {
+                    el.classList.add('currenttrack');
+                }
+            } else if (el.classList.contains('currenttrack')) {
+                el.classList.remove('currenttrack');
+            }
+        })
+    }
+
+    let popupElement;
+
+    for (let i = 0; i < listviews.length; i++) {
+        target = listviews[i].substring(1)
+        document.querySelector(listviews[i]).querySelectorAll('li.song.albumli').forEach((el) => {
+            if (uri) {
+                if (this.id === getUniqueId(target, uri)) {
+                    el.classList.add('currenttrack2');
+                } else {
+                    el.classList.remove('currenttrack2');
+                }
+            }
+            if (popupMenuIcon) {
+                popupElement = el.querySelector('a.moreBtn').querySelectorAll('i').item(0);
+                if (!popupElement.hasClass(popupMenuIcon)) {
+                    popupElement.removeClass()
+                    popupElement.addClass(popupMenuIcon)
+                }
+            }
+        })
+    }
 }

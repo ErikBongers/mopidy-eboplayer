@@ -49,7 +49,7 @@ export class SyncedProgressTimer {
         // $('#songelapsed').empty().append(this.positionNode)
         // $('#songlength').empty().append(this.durationNode)
 
-        this._progressTimer = new ProgressTimer(
+        this._progressTimer = new ProgressTimer( () =>
             this.timerCallback
         );
 
@@ -75,7 +75,7 @@ export class SyncedProgressTimer {
     }
 
     timerCallback(position: number, duration: number) {
-        this._update(position)
+        this._update(position);
         if (this._isSyncScheduled && this._isConnected) {
             this._doSync(position, duration)
         }
