@@ -1,5 +1,5 @@
-import Mopidy from "mopidy";
 import {ProgressTimer} from "./timer";
+import {Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
 
 function delay_exponential (base: number | 'rand', growthFactor: number, attempts: number) {
     /* Calculate number of beats between syncs based on exponential function.
@@ -37,10 +37,12 @@ export class SyncedProgressTimer {
     positionNode: Text;
     durationNode: Text;
     private _progressTimer: ProgressTimer;
+    private commands: Commands;
 
-    constructor(maxAttempts: number, mopidy: Mopidy) {
+    constructor(maxAttempts: number, mopidy: Mopidy, commands: Commands) {
         this._maxAttempts = maxAttempts;
         this._mopidy = mopidy;
+        this.commands = commands;
         this._syncAttemptsRemaining = this._maxAttempts;
 
         this.positionNode = document.createTextNode('');
@@ -49,8 +51,9 @@ export class SyncedProgressTimer {
         // $('#songelapsed').empty().append(this.positionNode)
         // $('#songlength').empty().append(this.durationNode)
 
-        this._progressTimer = new ProgressTimer( () =>
-            this.timerCallback
+        this._progressTimer = new ProgressTimer( (position: number, duration: number) => {
+            this.timerCallback(position, duration);
+            }
         );
 
         //todo
@@ -121,7 +124,7 @@ export class SyncedProgressTimer {
         this._scheduleSync(-1); // Ensure that only one sync process is active at a time.
 
         let _this = this;
-        _this._mopidy.playback.getTimePosition().then(function (targetPosition) {
+        _this.commands.core_playback_get_time_position().then(function (targetPosition) {
             if (_this.syncState === SYNC_STATE.NOT_SYNCED) {
                 _this.syncState = SYNC_STATE.SYNCING;
             }

@@ -1,12 +1,13 @@
+class Commands {
 // Get list of URI schemes we can handle
-export function core_get_uri_schemes () {
+    async core_get_uri_schemes() {
 
-}
+    }
 
 // Get version of the Mopidy core API
-export function core_get_version () {
+    async core_get_version() {
 
-}
+    }
 
 // Get the track history.
 //
@@ -14,17 +15,17 @@ export function core_get_version () {
 //
 // :returns: the track history
 // :rtype: list of (timestamp, :class:`mopidy.models.Ref`) tuples
-export function core_history_get_history () {
+    async core_history_get_history() {
 
-}
+    }
 
 // Get the number of tracks in the history.
 //
 // :returns: the history length
 // :rtype: int
-export function core_history_get_length () {
+    async core_history_get_length() {
 
-}
+    }
 
 // Browse directories and tracks at the given ``uri``.
 //
@@ -56,9 +57,9 @@ export function core_history_get_length () {
 //         :rtype: list of :class:`mopidy.models.Ref`
 //
 //         .. versionadded:: 0.18
-export function core_library_browse (uri: string) {
+    async core_library_browse(uri: string) {
 
-}
+    }
 
 // List distinct values for a given field from the library.
 //
@@ -76,9 +77,9 @@ export function core_library_browse (uri: string) {
 // :rtype: set of values corresponding to the requested field type.
 //
 // .. versionadded:: 1.0
-export function core_library_get_distinct (field, query = null) {
+    async core_library_get_distinct(field, query = null) {
 
-}
+    }
 
 // Lookup the images for the given URIs
 //
@@ -91,13 +92,13 @@ export function core_library_get_distinct (field, query = null) {
 //
 // :param uris: list of URIs to find images for
 // :type uris: list of string
-// :rtype: {uri: tuple of :class:`mopidy.models.Image`}
+    // :rtype: {uri: tuple of :class:`mopidy.models.Image`}
 
 //
 // .. versionadded:: 1.0
-export function core_library_get_images (uris) {
+    async core_library_get_images(uris) {
 
-}
+    }
 
 // Lookup the given URIs.
 //
@@ -106,19 +107,19 @@ export function core_library_get_images (uris) {
 //
 // :param uris: track URIs
 // :type uris: list of string
-// :rtype: {uri: list of :class:`mopidy.models.Track`}
+    // :rtype: {uri: list of :class:`mopidy.models.Track`}
 
-export function core_library_lookup (uris) {
+    async core_library_lookup(uris) {
 
-}
+    }
 
 // Refresh library. Limit to URI and below if an URI is given.
 //
 // :param uri: directory or track URI
 // :type uri: string
-export function core_library_refresh (uri = null) {
+    async core_library_refresh(uri = null) {
 
-}
+    }
 
 // Search the library for tracks where ``field`` contains ``values``.
 //
@@ -134,25 +135,25 @@ export function core_library_refresh (uri = null) {
 // Examples::
 //
 //     # Returns results matching 'a' in any backend
-//     search({'any': ['a']}
+    //     search({'any': ['a']}
 //     )
 //
 //         # Returns results matching artist 'xyz' in any backend
-//         search({'artist': ['xyz']}
+    //         search({'artist': ['xyz']}
 //         )
 //
 //             # Returns results matching 'a' and 'b' and artist 'xyz' in any
 //             # backend
-//             search({'any': ['a', 'b'], 'artist': ['xyz']}
+    //             search({'any': ['a', 'b'], 'artist': ['xyz']}
 //             )
 //
 //                 # Returns results matching 'a' if within the given URI roots
 //                 # \"file:///media/music\" and \"spotify:\"
-//                 search({'any': ['a']}
+    //                 search({'any': ['a']}
 //                 uris=['file:///media/music', 'spotify:'])
 //
 //                     # Returns results matching artist 'xyz' and 'abc' in any backend
-//                     search({'artist': ['xyz', 'abc']}
+    //                     search({'artist': ['xyz', 'abc']}
 //                     )
 //
 //                     :param query: one or more queries to search for
@@ -165,35 +166,35 @@ export function core_library_refresh (uri = null) {
 //
 //                     .. versionadded:: 1.0
 //                     The ``exact`` keyword argument.
-export function core_library_search (query, uris = null, exact = null) {
+    async core_library_search(query, uris = null, exact = null) {
 
-}
+    }
 
 // Get mute state.
 //
 // :class:`True` if muted, :class:`False` unmuted, :class:`None` if
 // unknown.
-export function core_mixer_get_mute () {
+    async core_mixer_get_mute() {
 
-}
+    }
 
 // Get the volume.
 //
 // Integer in range [0..100] or :class:`None` if unknown.
 //
 // The volume scale is linear.
-export function core_mixer_get_volume () {
+    async core_mixer_get_volume() {
 
-}
+    }
 
 // Set mute state.
 //
 // :class:`True` to mute, :class:`False` to unmute.
 //
 // Returns :class:`True` if call is successful, otherwise :class:`False`.
-export function core_mixer_set_mute (mute) {
+    async core_mixer_set_mute(mute) {
 
-}
+    }
 
 // Set the volume.
 //
@@ -202,16 +203,16 @@ export function core_mixer_set_mute (mute) {
 // The volume scale is linear.
 //
 // Returns :class:`True` if call is successful, otherwise :class:`False`.
-export function core_mixer_set_volume (volume) {
+    async core_mixer_set_volume(volume) {
 
-}
+    }
 
 // Get the currently playing or selected track.
 //
 // Returns a :class:`mopidy.models.TlTrack` or :class:`None`.
-export function core_playback_get_current_tl_track () {
+    async core_playback_get_current_tl_track() {
 
-}
+    }
 
 // Get the currently playing or selected TLID.
 //
@@ -220,46 +221,46 @@ export function core_playback_get_current_tl_track () {
 // Returns a :class:`int` or :class:`None`.
 //
 // .. versionadded:: 1.1
-export function core_playback_get_current_tlid () {
+    async core_playback_get_current_tlid() {
 
-}
+    }
 
 // Get the currently playing or selected track.
 //
 // Extracted from :meth:`get_current_tl_track` for convenience.
 //
 // Returns a :class:`mopidy.models.Track` or :class:`None`.
-export function core_playback_get_current_track () {
+    async core_playback_get_current_track() {
 
-}
+    }
 
 // Get The playback state.
-export function core_playback_get_state () {
+    async core_playback_get_state() {
 
-}
+    }
 
 // Get the current stream title or :class:`None`.
-export function core_playback_get_stream_title () {
+    async core_playback_get_stream_title() {
 
-}
+    }
 
 // Get time position in milliseconds.
-export function core_playback_get_time_position () {
-
-}
+    async core_playback_get_time_position() {
+        return 0;
+    }
 
 // Change to the next track.
 //
 // The current playback state will be kept. If it was playing, playing
 // will continue. If it was paused, it will still be paused, etc.
-export function core_playback_next () {
+    async core_playback_next() {
 
-}
+    }
 
 // Pause playback.
-export function core_playback_pause () {
+    async core_playback_pause() {
 
-}
+    }
 
 // Play the given track, or if the given tl_track and tlid is
 // :class:`None`, play the currently active track.
@@ -273,31 +274,31 @@ export function core_playback_pause () {
 // :type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
 // :param tlid: TLID of the track to play
 // :type tlid: :class:`int` or :class:`None`
-export function core_playback_play (tl_track = null, tlid = null) {
+    async core_playback_play(tl_track = null, tlid = null) {
 
-}
+    }
 
 // Change to the previous track.
 //
 // The current playback state will be kept. If it was playing, playing
 // will continue. If it was paused, it will still be paused, etc.
-export function core_playback_previous () {
+    async core_playback_previous() {
 
-}
+    }
 
 // If paused, resume playing the current track.
-export function core_playback_resume () {
+    async core_playback_resume() {
 
-}
+    }
 
 // Seeks to time position given in milliseconds.
 //
 // :param time_position: time position in milliseconds
 // :type time_position: int
 // :rtype: :class:`True` if successful, else :class:`False`
-export function core_playback_seek (time_position) {
+    async core_playback_seek(time_position) {
 
-}
+    }
 
 // Set the playback state.
 //
@@ -314,14 +315,14 @@ export function core_playback_seek (time_position) {
 //     \"PLAYING\" -> \"PLAYING\" [ label=\"play\" ]
 //     \"PAUSED\" -> \"PLAYING\" [ label=\"resume\" ]
 //     \"PAUSED\" -> \"STOPPED\" [ label=\"stop\" ]
-export function core_playback_set_state (new_state) {
+    async core_playback_set_state(new_state) {
 
-}
+    }
 
 // Stop playing.
-export function core_playback_stop () {
+    async core_playback_stop() {
 
-}
+    }
 
 // Get a list of the currently available playlists.
 //
@@ -332,9 +333,9 @@ export function core_playback_stop () {
 // :rtype: list of :class:`mopidy.models.Ref`
 //
 // .. versionadded:: 1.0
-export function core_playlists_as_list () {
+    async core_playlists_as_list() {
 
-}
+    }
 
 // Create a new playlist.
 //
@@ -351,9 +352,9 @@ export function core_playlists_as_list () {
 // :param uri_scheme: use the backend matching the URI scheme
 // :type uri_scheme: string
 // :rtype: :class:`mopidy.models.Playlist` or :class:`None`
-export function core_playlists_create (name, uri_scheme = null) {
+    async core_playlists_create(name, uri_scheme = null) {
 
-}
+    }
 
 // Delete playlist identified by the URI.
 //
@@ -368,9 +369,9 @@ export function core_playlists_create (name, uri_scheme = null) {
 //
 // .. versionchanged:: 2.2
 // Return type defined.
-export function core_playlists_delete (uri) {
+    async core_playlists_delete(uri) {
 
-}
+    }
 
 // Get the items in a playlist specified by ``uri``.
 //
@@ -383,18 +384,18 @@ export function core_playlists_delete (uri) {
 // :rtype: list of :class:`mopidy.models.Ref`, or :class:`None`
 //
 // .. versionadded:: 1.0
-export function core_playlists_get_items (uri) {
+    async core_playlists_get_items(uri) {
 
-}
+    }
 
 // Get the list of URI schemes that support playlists.
 //
 // :rtype: list of string
 //
 // .. versionadded:: 2.0
-export function core_playlists_get_uri_schemes () {
+    async core_playlists_get_uri_schemes() {
 
-}
+    }
 
 // Lookup playlist with given URI in both the set of playlists and in any
 // other playlist sources. Returns :class:`None` if not found.
@@ -402,9 +403,9 @@ export function core_playlists_get_uri_schemes () {
 // :param uri: playlist URI
 // :type uri: string
 // :rtype: :class:`mopidy.models.Playlist` or :class:`None`
-export function core_playlists_lookup (uri) {
+    async core_playlists_lookup(uri) {
 
-}
+    }
 
 // Refresh the playlists in :attr:`playlists`.
 //
@@ -415,9 +416,9 @@ export function core_playlists_lookup (uri) {
 //
 // :param uri_scheme: limit to the backend matching the URI scheme
 // :type uri_scheme: string
-export function core_playlists_refresh (uri_scheme = null) {
+    async core_playlists_refresh(uri_scheme = null) {
 
-}
+    }
 
 // Save the playlist.
 //
@@ -438,9 +439,9 @@ export function core_playlists_refresh (uri_scheme = null) {
 // :param playlist: the playlist
 // :type playlist: :class:`mopidy.models.Playlist`
 // :rtype: :class:`mopidy.models.Playlist` or :class:`None`
-export function core_playlists_save (playlist) {
+    async core_playlists_save(playlist) {
 
-}
+    }
 
 // Add tracks to the tracklist.
 //
@@ -467,16 +468,16 @@ export function core_playlists_save (playlist) {
 //
 // .. deprecated:: 1.0
 // The ``tracks`` argument. Use ``uris``.
-export function core_tracklist_add (tracks?,at_position?, uris? ) {
+    async core_tracklist_add(tracks?, at_position?, uris?) {
 
-}
+    }
 
 // Clear the tracklist.
 //
 // Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
-export function core_tracklist_clear () {
+    async core_tracklist_clear() {
 
-}
+    }
 
 // The track that will be played after the given track.
 //
@@ -488,9 +489,9 @@ export function core_tracklist_clear () {
 // :param tl_track: the reference track
 // :type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
 // :rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-export function core_tracklist_eot_track (tl_track) {
+    async core_tracklist_eot_track(tl_track) {
 
-}
+    }
 
 // Filter the tracklist by the given criteria.
 //
@@ -503,24 +504,24 @@ export function core_tracklist_eot_track (tl_track) {
 // Examples::
 //
 //     # Returns tracks with TLIDs 1, 2, 3, or 4 (tracklist ID)
-//     filter({'tlid': [1, 2, 3, 4]}
+    //     filter({'tlid': [1, 2, 3, 4]}
 //     )
 //
 //         # Returns track with URIs 'xyz' or 'abc'
-//         filter({'uri': ['xyz', 'abc']}
+    //         filter({'uri': ['xyz', 'abc']}
 //         )
 //
 //             # Returns track with a matching TLIDs (1, 3 or 6) and a
 //             # matching URI ('xyz' or 'abc')
-//             filter({'tlid': [1, 3, 6], 'uri': ['xyz', 'abc']}
+    //             filter({'tlid': [1, 3, 6], 'uri': ['xyz', 'abc']}
 //             )
 //
 //             :param criteria: one or more rules to match by
 //             :type criteria: dict, of (string, list) pairs
 //             :rtype: list of :class:`mopidy.models.TlTrack`
-export function core_tracklist_filter (criteria) {
+    async core_tracklist_filter(criteria) {
 
-}
+    }
 
 // Get consume mode.
 //
@@ -528,9 +529,9 @@ export function core_tracklist_filter (criteria) {
 // Tracks are removed from the tracklist when they have been played.
 // :class:`False`
 // Tracks are not removed from the tracklist.
-export function core_tracklist_get_consume () {
+    async core_tracklist_get_consume() {
 
-}
+    }
 
 // The TLID of the track that will be played after the current track.
 //
@@ -539,14 +540,14 @@ export function core_tracklist_get_consume () {
 // :rtype: :class:`int` or :class:`None`
 //
 // .. versionadded:: 1.1
-export function core_tracklist_get_eot_tlid () {
+    async core_tracklist_get_eot_tlid() {
 
-}
+    }
 
 // Get length of the tracklist.
-export function core_tracklist_get_length () {
+    async core_tracklist_get_length() {
 
-}
+    }
 
 // The tlid of the track that will be played if calling
 // :meth:`mopidy.core.PlaybackController.next()`.
@@ -559,9 +560,9 @@ export function core_tracklist_get_length () {
 // :rtype: :class:`int` or :class:`None`
 //
 // .. versionadded:: 1.1
-export function core_tracklist_get_next_tlid () {
+    async core_tracklist_get_next_tlid() {
 
-}
+    }
 
 // Returns the TLID of the track that will be played if calling
 // :meth:`mopidy.core.PlaybackController.previous()`.
@@ -573,9 +574,9 @@ export function core_tracklist_get_next_tlid () {
 // :rtype: :class:`int` or :class:`None`
 //
 // .. versionadded:: 1.1
-export function core_tracklist_get_previous_tlid () {
+    async core_tracklist_get_previous_tlid() {
 
-}
+    }
 
 // Get random mode.
 //
@@ -583,9 +584,9 @@ export function core_tracklist_get_previous_tlid () {
 // Tracks are selected at random from the tracklist.
 // :class:`False`
 // Tracks are played in the order of the tracklist.
-export function core_tracklist_get_random () {
+    async core_tracklist_get_random() {
 
-}
+    }
 
 // Get repeat mode.
 //
@@ -593,9 +594,9 @@ export function core_tracklist_get_random () {
 // The tracklist is played repeatedly.
 // :class:`False`
 // The tracklist is played once.
-export function core_tracklist_get_repeat () {
+    async core_tracklist_get_repeat() {
 
-}
+    }
 
 // Get single mode.
 //
@@ -603,27 +604,27 @@ export function core_tracklist_get_repeat () {
 // Playback is stopped after current song, unless in ``repeat`` mode.
 // :class:`False`
 // Playback continues after current song.
-export function core_tracklist_get_single () {
+    async core_tracklist_get_single() {
 
-}
+    }
 
 // Get tracklist as list of :class:`mopidy.models.TlTrack`.
-export function core_tracklist_get_tl_tracks () {
+    async core_tracklist_get_tl_tracks() {
 
-}
+    }
 
 // Get tracklist as list of :class:`mopidy.models.Track`.
-export function core_tracklist_get_tracks () {
+    async core_tracklist_get_tracks() {
 
-}
+    }
 
 // Get the tracklist version.
 //
 // Integer which is increased every time the tracklist is changed. Is not
 // reset before Mopidy is restarted.
-export function core_tracklist_get_version () {
+    async core_tracklist_get_version() {
 
-}
+    }
 
 // The position of the given track in the tracklist.
 //
@@ -638,9 +639,9 @@ export function core_tracklist_get_version () {
 //
 // .. versionadded:: 1.1
 // The *tlid* parameter
-export function core_tracklist_index (tl_track?, tlid?) {
+    async core_tracklist_index(tl_track?, tlid?) {
 
-}
+    }
 
 // Move the tracks in the slice ``[start:end]`` to ``to_position``.
 //
@@ -652,9 +653,9 @@ export function core_tracklist_index (tl_track?, tlid?) {
 // :type end: int
 // :param to_position: new position for the tracks
 // :type to_position: int
-export function core_tracklist_move (start, end, to_position) {
+    async core_tracklist_move(start, end, to_position) {
 
-}
+    }
 
 // The track that will be played if calling
 // :meth:`mopidy.core.PlaybackController.next()`.
@@ -670,9 +671,9 @@ export function core_tracklist_move (start, end, to_position) {
 // :param tl_track: the reference track
 // :type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
 // :rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-export function core_tracklist_next_track (tl_track) {
+    async core_tracklist_next_track(tl_track) {
 
-}
+    }
 
 // Returns the track that will be played if calling
 // :meth:`mopidy.core.PlaybackController.previous()`.
@@ -687,9 +688,9 @@ export function core_tracklist_next_track (tl_track) {
 // :param tl_track: the reference track
 // :type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
 // :rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-export function core_tracklist_previous_track (tl_track) {
+    async core_tracklist_previous_track(tl_track) {
 
-}
+    }
 
 // Remove the matching tracks from the tracklist.
 //
@@ -700,9 +701,9 @@ export function core_tracklist_previous_track (tl_track) {
 // :param criteria: one or more rules to match by
 // :type criteria: dict, of (string, list) pairs
 // :rtype: list of :class:`mopidy.models.TlTrack` that were removed
-export function core_tracklist_remove (criteria) {
+    async core_tracklist_remove(criteria) {
 
-}
+    }
 
 // Set consume mode.
 //
@@ -710,9 +711,9 @@ export function core_tracklist_remove (criteria) {
 // Tracks are removed from the tracklist when they have been played.
 // :class:`False`
 // Tracks are not removed from the tracklist.
-export function core_tracklist_set_consume (value) {
+    async core_tracklist_set_consume(value) {
 
-}
+    }
 
 // Set random mode.
 //
@@ -720,9 +721,9 @@ export function core_tracklist_set_consume (value) {
 // Tracks are selected at random from the tracklist.
 // :class:`False`
 // Tracks are played in the order of the tracklist.
-export function core_tracklist_set_random (value) {
+    async core_tracklist_set_random(value) {
 
-}
+    }
 
 // Set repeat mode.
 //
@@ -732,9 +733,9 @@ export function core_tracklist_set_random (value) {
 // The tracklist is played repeatedly.
 // :class:`False`
 // The tracklist is played once.
-export function core_tracklist_set_repeat (value) {
+    async core_tracklist_set_repeat(value) {
 
-}
+    }
 
 // Set single mode.
 //
@@ -742,9 +743,9 @@ export function core_tracklist_set_repeat (value) {
 // Playback is stopped after current song, unless in ``repeat`` mode.
 // :class:`False`
 // Playback continues after current song.
-export function core_tracklist_set_single (value) {
+    async core_tracklist_set_single(value) {
 
-}
+    }
 
 // Shuffles the entire tracklist. If ``start`` and ``end`` is given only
 // shuffles the slice ``[start:end]``.
@@ -755,9 +756,9 @@ export function core_tracklist_set_single (value) {
 // :type start: int or :class:`None`
 // :param end: position after last track to shuffle
 // :type end: int or :class:`None`
-export function core_tracklist_shuffle (start?, end?) {
+    async core_tracklist_shuffle(start?, end?) {
 
-}
+    }
 
 // Returns a slice of the tracklist, limited by the given start and end
 // positions.
@@ -767,6 +768,7 @@ export function core_tracklist_shuffle (start?, end?) {
 // :param end: position after last track to include in slice
 // :type end: int
 // :rtype: :class:`mopidy.models.TlTrack`
-export function core_tracklist_slice (start, end) {
+    async core_tracklist_slice(start, end) {
 
+    }
 }
