@@ -139,8 +139,8 @@ export namespace models {
     }
 }
 
-namespace core {
-    type PlaybackState = "playing" | "paused" | "stopped";
+export namespace core {
+    export type PlaybackState = "playing" | "paused" | "stopped";
     type QueryField =
         | "uri"
         | "track_name"
