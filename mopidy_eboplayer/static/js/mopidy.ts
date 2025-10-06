@@ -1057,7 +1057,7 @@ export class Mopidy extends EventEmitter {
     console.warn("WebSocket error:", error.stack || error);
   }
 
-  _send(message) {
+  send(message: Object) {
     switch (this._webSocket.readyState) {
       case WebSocket.CONNECTING:
         return Promise.reject(
@@ -1148,18 +1148,17 @@ export class Mopidy extends EventEmitter {
   }
 
   _getApiSpec() {
-    return this._send({ method: "core.describe" })
+    return this.send({ method: "core.describe" })
       .then(this._createApi.bind(this))
       .catch(this._handleWebSocketError.bind(this));
   }
 
   _createApi(methods) {
     const caller = (method) => (...args) => {
-      const message = { method,
-          params: undefined
+      let message = { method,
       };
       if (args.length === 0) {
-        return this._send(message);
+        return this.send(message);
       }
       if (args.length > 1) {
         return Promise.reject(
@@ -1171,8 +1170,11 @@ export class Mopidy extends EventEmitter {
       if (!Array.isArray(args[0]) && args[0] !== Object(args[0])) {
         return Promise.reject(new TypeError("Expected an array or an object."));
       }
-      [message.params] = args;
-      return this._send(message);
+      let message2 = {
+          method,
+          params: args
+      };
+      return this.send(message2);
     };
 
     const getPath = (fullName) => {

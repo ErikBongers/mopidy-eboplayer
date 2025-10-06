@@ -9,724 +9,227 @@ class Commands {
     
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
+        this.core.commands = this;
+        this.core.history.commands = this;
+        this.core.library.commands = this;
+        this.core.mixer.commands = this;
+        this.core.playback.commands = this;
+        this.core.playlists.commands = this;
+        this.core.tracklist.commands = this;
+
     }
     
     send(method: string, params: Object) {
-        return this.mopidy._send({method, params});
+        if(params)
+            return this.mopidy.send({method, params});
+        else
+            return this.mopidy.send({method});
     }
     core = {
+        commands: undefined as Commands,
 
-        //Get list of URI schemes we can handle
         getUriSchemes() {
-            let key = "core.get_uri_schemes";
+            this.commands.send("core.get_uri_schemes");
         },
-        //Get version of the Mopidy core API
         getVersion() {
-            let key = "core.get_version";
+            this.commands.send("core.get_version");
         },
         history: {
-            //Get the track history.
-            //
-            //The timestamps are milliseconds since epoch.
-            //
-            //:returns: the track history
-            //:rtype: list of (timestamp, :class:`mopidy.models.Ref`) tuples
+            commands: undefined as Commands,
             getHistory() {
-                let key = "core.history.get_history";
+                this.commands.send("core.history.get_history");
             },
-            //Get the number of tracks in the history.
-            //
-            //:returns: the history length
-            //:rtype: int
             getLength() {
-                let key = "core.history.get_length";
+                this.commands.send("core.history.get_length");
             },
         },
         library: {
-            //Browse directories and tracks at the given ``uri``.
-            //
-            //``uri`` is a string which represents some directory belonging to a
-            //backend. To get the intial root directories for backends pass
-            //:class:`None` as the URI.
-            //
-            //Returns a list of :class:`mopidy.models.Ref` objects for the
-            //directories and tracks at the given ``uri``.
-            //
-            //The :class:`~mopidy.models.Ref` objects representing tracks keep the
-            //track's original URI. A matching pair of objects can look like this::
-            //
-            //    Track(uri='dummy:/foo.mp3', name='foo', artists=..., album=...)
-            //    Ref.track(uri='dummy:/foo.mp3', name='foo')
-            //
-            //The :class:`~mopidy.models.Ref` objects representing directories have
-            //backend specific URIs. These are opaque values, so no one but the
-            //backend that created them should try and derive any meaning from them.
-            //The only valid exception to this is checking the scheme, as it is used
-            //to route browse requests to the correct backend.
-            //
-            //For example, the dummy library's ``/bar`` directory could be returned
-            //like this::
-            //
-            //    Ref.directory(uri='dummy:directory:/bar', name='bar')
-            //
-            //:param string uri: URI to browse
-            //:rtype: list of :class:`mopidy.models.Ref`
-            //
-            //.. versionadded:: 0.18
+            commands: undefined as Commands,
             browse(uri: string) {
-                let key = "core.library.browse";
+                this.commands.send("core.library.browse", {uri});
             },
-            //List distinct values for a given field from the library.
-            //
-            //This has mainly been added to support the list commands the MPD
-            //protocol supports in a more sane fashion. Other frontends are not
-            //recommended to use this method.
-            //
-            //:param string field: Any one of ``uri``, ``track_name``, ``album``,
-            //    ``artist``, ``albumartist``, ``composer``, ``performer``,
-            //    ``track_no``, ``genre``, ``date``, ``comment``, ``disc_no``,
-            //    ``musicbrainz_albumid``, ``musicbrainz_artistid``, or
-            //    ``musicbrainz_trackid``.
-            //:param dict query: Query to use for limiting results, see
-            //    :meth:`search` for details about the query format.
-            //:rtype: set of values corresponding to the requested field type.
-            //
-            //.. versionadded:: 1.0
             getDistinct(field: string, query: string) {
-                let key = "core.library.get_distinct";
+                this.commands.send("core.library.get_distinct", {field, query});
             },
-            //Lookup the images for the given URIs
-            //
-            //Backends can use this to return image URIs for any URI they know about
-            //be it tracks, albums, playlists. The lookup result is a dictionary
-            //mapping the provided URIs to lists of images.
-            //
-            //Unknown URIs or URIs the corresponding backend couldn't find anything
-            //for will simply return an empty list for that URI.
-            //
-            //:param uris: list of URIs to find images for
-            //:type uris: list of string
-            //:rtype: {uri: tuple of :class:`mopidy.models.Image`}
-            //
-            //.. versionadded:: 1.0
             getImages(uris: string[]) {
-                let key = "core.library.get_images";
+                this.commands.send("core.library.get_images", {uris});
             },
-            //Lookup the given URIs.
-            //
-            //If the URI expands to multiple tracks, the returned list will contain
-            //them all.
-            //
-            //:param uris: track URIs
-            //:type uris: list of string
-            //:rtype: {uri: list of :class:`mopidy.models.Track`}
             lookup(uris: string[]) {
-                let key = "core.library.lookup";
+                this.commands.send("core.library.lookup", {uris});
             },
-            //Refresh library. Limit to URI and below if an URI is given.
-            //
-            //:param uri: directory or track URI
-            //:type uri: string
             refresh(uri: string) {
-                let key = "core.library.refresh";
+                this.commands.send("core.library.refresh", {uri});
             },
-            //Search the library for tracks where ``field`` contains ``values``.
-            //
-            //``field`` can be one of ``uri``, ``track_name``, ``album``, ``artist``,
-            //``albumartist``, ``composer``, ``performer``, ``track_no``, ``genre``,
-            //``date``, ``comment``, ``disc_no``, ``musicbrainz_albumid``,
-            //``musicbrainz_artistid``, ``musicbrainz_trackid`` or ``any``.
-            //
-            //If ``uris`` is given, the search is limited to results from within the
-            //URI roots. For example passing ``uris=['file:']`` will limit the search
-            //to the local backend.
-            //
-            //Examples::
-            //
-            //    # Returns results matching 'a' in any backend
-            //    search({'any': ['a']})
-            //
-            //    # Returns results matching artist 'xyz' in any backend
-            //    search({'artist': ['xyz']})
-            //
-            //    # Returns results matching 'a' and 'b' and artist 'xyz' in any
-            //    # backend
-            //    search({'any': ['a', 'b'], 'artist': ['xyz']})
-            //
-            //    # Returns results matching 'a' if within the given URI roots
-            //    # "file:///media/music" and "spotify:"
-            //    search({'any': ['a']}, uris=['file:///media/music', 'spotify:'])
-            //
-            //    # Returns results matching artist 'xyz' and 'abc' in any backend
-            //    search({'artist': ['xyz', 'abc']})
-            //
-            //:param query: one or more queries to search for
-            //:type query: dict
-            //:param uris: zero or more URI roots to limit the search to
-            //:type uris: list of string or :class:`None`
-            //:param exact: if the search should use exact matching
-            //:type exact: :class:`bool`
-            //:rtype: list of :class:`mopidy.models.SearchResult`
-            //
-            //.. versionadded:: 1.0
-            //    The ``exact`` keyword argument.
             search(query: string, uris: string[], exact: boolean) {
-                let key = "core.library.search";
+                this.commands.send("core.library.search", {query, uris, exact});
             },
         },
         mixer: {
-            //Get mute state.
-            //
-            //:class:`True` if muted, :class:`False` unmuted, :class:`None` if
-            //unknown.
+            commands: undefined as Commands,
             getMute() {
-                let key = "core.mixer.get_mute";
+                this.commands.send("core.mixer.get_mute");
             },
-            //Get the volume.
-            //
-            //Integer in range [0..100] or :class:`None` if unknown.
-            //
-            //The volume scale is linear.
             getVolume() {
-                let key = "core.mixer.get_volume";
+                this.commands.send("core.mixer.get_volume");
             },
-            //Set mute state.
-            //
-            //:class:`True` to mute, :class:`False` to unmute.
-            //
-            //Returns :class:`True` if call is successful, otherwise :class:`False`.
             setMute(mute: boolean) {
-                let key = "core.mixer.set_mute";
+                this.commands.send("core.mixer.set_mute", {mute});
             },
-            //Set the volume.
-            //
-            //The volume is defined as an integer in range [0..100].
-            //
-            //The volume scale is linear.
-            //
-            //Returns :class:`True` if call is successful, otherwise :class:`False`.
             setVolume(volume: number) {
-                let key = "core.mixer.set_volume";
+                this.commands.send("core.mixer.set_volume", {volume});
             },
         },
         playback: {
-            //Get the currently playing or selected track.
-            //
-            //Returns a :class:`mopidy.models.TlTrack` or :class:`None`.
+            commands: undefined as Commands,
             getCurrentTlTrack() {
-                let key = "core.playback.get_current_tl_track";
+                this.commands.send("core.playback.get_current_tl_track");
             },
-            //Get the currently playing or selected TLID.
-            //
-            //Extracted from :meth:`get_current_tl_track` for convenience.
-            //
-            //Returns a :class:`int` or :class:`None`.
-            //
-            //.. versionadded:: 1.1
             getCurrentTlid() {
-                let key = "core.playback.get_current_tlid";
+                this.commands.send("core.playback.get_current_tlid");
             },
-            //Get the currently playing or selected track.
-            //
-            //Extracted from :meth:`get_current_tl_track` for convenience.
-            //
-            //Returns a :class:`mopidy.models.Track` or :class:`None`.
             getCurrentTrack() {
-                let key = "core.playback.get_current_track";
+                this.commands.send("core.playback.get_current_track");
             },
-            //Get The playback state.
             getState() {
-                let key = "core.playback.get_state";
+                this.commands.send("core.playback.get_state");
             },
-            //Get the current stream title or :class:`None`.
             getStreamTitle() {
-                let key = "core.playback.get_stream_title";
+                this.commands.send("core.playback.get_stream_title");
             },
-            //Get time position in milliseconds.
             getTimePosition() {
-                let key = "core.playback.get_time_position";
+                this.commands.send("core.playback.get_time_position");
             },
-            //Change to the next track.
-            //
-            //The current playback state will be kept. If it was playing, playing
-            //will continue. If it was paused, it will still be paused, etc.
             next() {
-                let key = "core.playback.next";
+                this.commands.send("core.playback.next");
             },
-            //Pause playback.
             pause() {
-                let key = "core.playback.pause";
+                this.commands.send("core.playback.pause");
             },
-            //Play the given track, or if the given tl_track and tlid is
-            //:class:`None`, play the currently active track.
-            //
-            //Note that the track **must** already be in the tracklist.
-            //
-            //.. deprecated:: 3.0
-            //    The ``tl_track`` argument. Use ``tlid`` instead.
-            //
-            //:param tl_track: track to play
-            //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-            //:param tlid: TLID of the track to play
-            //:type tlid: :class:`int` or :class:`None`
             play(tl_track: TlTrack, tlid: number) {
-                let key = "core.playback.play";
+                this.commands.send("core.playback.play", {tl_track, tlid});
             },
-            //Change to the previous track.
-            //
-            //The current playback state will be kept. If it was playing, playing
-            //will continue. If it was paused, it will still be paused, etc.
             previous() {
-                let key = "core.playback.previous";
+                this.commands.send("core.playback.previous");
             },
-            //If paused, resume playing the current track.
             resume() {
-                let key = "core.playback.resume";
+                this.commands.send("core.playback.resume");
             },
-            //Seeks to time position given in milliseconds.
-            //
-            //:param time_position: time position in milliseconds
-            //:type time_position: int
-            //:rtype: :class:`True` if successful, else :class:`False`
             seek(time_position: number) {
-                let key = "core.playback.seek";
+                this.commands.send("core.playback.seek", {time_position});
             },
-            //Set the playback state.
-            //
-            //Must be :attr:`PLAYING`, :attr:`PAUSED`, or :attr:`STOPPED`.
-            //
-            //Possible states and transitions:
-            //
-            //.. digraph:: state_transitions
-            //
-            //    "STOPPED" -> "PLAYING" [ label="play" ]
-            //    "STOPPED" -> "PAUSED" [ label="pause" ]
-            //    "PLAYING" -> "STOPPED" [ label="stop" ]
-            //    "PLAYING" -> "PAUSED" [ label="pause" ]
-            //    "PLAYING" -> "PLAYING" [ label="play" ]
-            //    "PAUSED" -> "PLAYING" [ label="resume" ]
-            //    "PAUSED" -> "STOPPED" [ label="stop" ]
             setState(new_state: PlaybackState) {
-                let key = "core.playback.set_state";
+                this.commands.send("core.playback.set_state", {new_state});
             },
-            //Stop playing.
             stop() {
-                let key = "core.playback.stop";
+                this.commands.send("core.playback.stop");
             },
         },
         playlists: {
-            //Get a list of the currently available playlists.
-            //
-            //Returns a list of :class:`~mopidy.models.Ref` objects referring to the
-            //playlists. In other words, no information about the playlists' content
-            //is given.
-            //
-            //:rtype: list of :class:`mopidy.models.Ref`
-            //
-            //.. versionadded:: 1.0
+            commands: undefined as Commands,
             asList() {
-                let key = "core.playlists.as_list";
+                this.commands.send("core.playlists.as_list");
             },
-            //Create a new playlist.
-            //
-            //If ``uri_scheme`` matches an URI scheme handled by a current backend,
-            //that backend is asked to create the playlist. If ``uri_scheme`` is
-            //:class:`None` or doesn't match a current backend, the first backend is
-            //asked to create the playlist.
-            //
-            //All new playlists must be created by calling this method, and **not**
-            //by creating new instances of :class:`mopidy.models.Playlist`.
-            //
-            //:param name: name of the new playlist
-            //:type name: string
-            //:param uri_scheme: use the backend matching the URI scheme
-            //:type uri_scheme: string
-            //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
             create(name: string, uri_scheme: string) {
-                let key = "core.playlists.create";
+                this.commands.send("core.playlists.create", {name, uri_scheme});
             },
-            //Delete playlist identified by the URI.
-            //
-            //If the URI doesn't match the URI schemes handled by the current
-            //backends, nothing happens.
-            //
-            //Returns :class:`True` if deleted, :class:`False` otherwise.
-            //
-            //:param uri: URI of the playlist to delete
-            //:type uri: string
-            //:rtype: :class:`bool`
-            //
-            //.. versionchanged:: 2.2
-            //    Return type defined.
             delete(uri: string) {
-                let key = "core.playlists.delete";
+                this.commands.send("core.playlists.delete", {uri});
             },
-            //Get the items in a playlist specified by ``uri``.
-            //
-            //Returns a list of :class:`~mopidy.models.Ref` objects referring to the
-            //playlist's items.
-            //
-            //If a playlist with the given ``uri`` doesn't exist, it returns
-            //:class:`None`.
-            //
-            //:rtype: list of :class:`mopidy.models.Ref`, or :class:`None`
-            //
-            //.. versionadded:: 1.0
             getItems(uri: string) {
-                let key = "core.playlists.get_items";
+                this.commands.send("core.playlists.get_items", {uri});
             },
-            //Get the list of URI schemes that support playlists.
-            //
-            //:rtype: list of string
-            //
-            //.. versionadded:: 2.0
             getUriSchemes() {
-                let key = "core.playlists.get_uri_schemes";
+                this.commands.send("core.playlists.get_uri_schemes");
             },
-            //Lookup playlist with given URI in both the set of playlists and in any
-            //other playlist sources. Returns :class:`None` if not found.
-            //
-            //:param uri: playlist URI
-            //:type uri: string
-            //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
             lookup(uri: string) {
-                let key = "core.playlists.lookup";
+                this.commands.send("core.playlists.lookup", {uri});
             },
-            //Refresh the playlists in :attr:`playlists`.
-            //
-            //If ``uri_scheme`` is :class:`None`, all backends are asked to refresh.
-            //If ``uri_scheme`` is an URI scheme handled by a backend, only that
-            //backend is asked to refresh. If ``uri_scheme`` doesn't match any
-            //current backend, nothing happens.
-            //
-            //:param uri_scheme: limit to the backend matching the URI scheme
-            //:type uri_scheme: string
             refresh(uri_scheme: string) {
-                let key = "core.playlists.refresh";
+                this.commands.send("core.playlists.refresh", {uri_scheme});
             },
-            //Save the playlist.
-            //
-            //For a playlist to be saveable, it must have the ``uri`` attribute set.
-            //You must not set the ``uri`` atribute yourself, but use playlist
-            //objects returned by :meth:`create` or retrieved from :attr:`playlists`,
-            //which will always give you saveable playlists.
-            //
-            //The method returns the saved playlist. The return playlist may differ
-            //from the saved playlist. E.g. if the playlist name was changed, the
-            //returned playlist may have a different URI. The caller of this method
-            //must throw away the playlist sent to this method, and use the
-            //returned playlist instead.
-            //
-            //If the playlist's URI isn't set or doesn't match the URI scheme of a
-            //current backend, nothing is done and :class:`None` is returned.
-            //
-            //:param playlist: the playlist
-            //:type playlist: :class:`mopidy.models.Playlist`
-            //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
             save(playlist: Playlist) {
-                let key = "core.playlists.save";
+                this.commands.send("core.playlists.save", {playlist});
             },
         },
         tracklist: {
-            //Add tracks to the tracklist.
-            //
-            //If ``uris`` is given instead of ``tracks``, the URIs are
-            //looked up in the library and the resulting tracks are added to the
-            //tracklist.
-            //
-            //If ``at_position`` is given, the tracks are inserted at the given
-            //position in the tracklist. If ``at_position`` is not given, the tracks
-            //are appended to the end of the tracklist.
-            //
-            //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
-            //
-            //:param tracks: tracks to add
-            //:type tracks: list of :class:`mopidy.models.Track` or :class:`None`
-            //:param at_position: position in tracklist to add tracks
-            //:type at_position: int or :class:`None`
-            //:param uris: list of URIs for tracks to add
-            //:type uris: list of string or :class:`None`
-            //:rtype: list of :class:`mopidy.models.TlTrack`
-            //
-            //.. versionadded:: 1.0
-            //    The ``uris`` argument.
-            //
-            //.. deprecated:: 1.0
-            //    The ``tracks`` argument. Use ``uris``.
+            commands: undefined as Commands,
             add(tracks: undefined, at_position: number, uris: string[]) {
-                let key = "core.tracklist.add";
+                this.commands.send("core.tracklist.add", {tracks, at_position, uris});
             },
-            //Clear the tracklist.
-            //
-            //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
             clear() {
-                let key = "core.tracklist.clear";
+                this.commands.send("core.tracklist.clear");
             },
-            //The track that will be played after the given track.
-            //
-            //Not necessarily the same track as :meth:`next_track`.
-            //
-            //.. deprecated:: 3.0
-            //    Use :meth:`get_eot_tlid` instead.
-            //
-            //:param tl_track: the reference track
-            //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-            //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
             eotTrack(tl_track: TlTrack) {
-                let key = "core.tracklist.eot_track";
+                this.commands.send("core.tracklist.eot_track", {tl_track});
             },
-            //Filter the tracklist by the given criteria.
-            //
-            //Each rule in the criteria consists of a model field and a list of
-            //values to compare it against. If the model field matches any of the
-            //values, it may be returned.
-            //
-            //Only tracks that match all the given criteria are returned.
-            //
-            //Examples::
-            //
-            //    # Returns tracks with TLIDs 1, 2, 3, or 4 (tracklist ID)
-            //    filter({'tlid': [1, 2, 3, 4]})
-            //
-            //    # Returns track with URIs 'xyz' or 'abc'
-            //    filter({'uri': ['xyz', 'abc']})
-            //
-            //    # Returns track with a matching TLIDs (1, 3 or 6) and a
-            //    # matching URI ('xyz' or 'abc')
-            //    filter({'tlid': [1, 3, 6], 'uri': ['xyz', 'abc']})
-            //
-            //:param criteria: one or more rules to match by
-            //:type criteria: dict, of (string, list) pairs
-            //:rtype: list of :class:`mopidy.models.TlTrack`
             filter(criteria: any /*TODO: a dict*/) {
-                let key = "core.tracklist.filter";
+                this.commands.send("core.tracklist.filter", {criteria});
             },
-            //Get consume mode.
-            //
-            //:class:`True`
-            //    Tracks are removed from the tracklist when they have been played.
-            //:class:`False`
-            //    Tracks are not removed from the tracklist.
             getConsume() {
-                let key = "core.tracklist.get_consume";
+                this.commands.send("core.tracklist.get_consume");
             },
-            //The TLID of the track that will be played after the current track.
-            //
-            //Not necessarily the same TLID as returned by :meth:`get_next_tlid`.
-            //
-            //:rtype: :class:`int` or :class:`None`
-            //
-            //.. versionadded:: 1.1
             getEotTlid() {
-                let key = "core.tracklist.get_eot_tlid";
+                this.commands.send("core.tracklist.get_eot_tlid");
             },
-            //Get length of the tracklist.
             getLength() {
-                let key = "core.tracklist.get_length";
+                this.commands.send("core.tracklist.get_length");
             },
-            //The tlid of the track that will be played if calling
-            //:meth:`mopidy.core.PlaybackController.next()`.
-            //
-            //For normal playback this is the next track in the tracklist. If repeat
-            //is enabled the next track can loop around the tracklist. When random is
-            //enabled this should be a random track, all tracks should be played once
-            //before the tracklist repeats.
-            //
-            //:rtype: :class:`int` or :class:`None`
-            //
-            //.. versionadded:: 1.1
             getNextTlid() {
-                let key = "core.tracklist.get_next_tlid";
+                this.commands.send("core.tracklist.get_next_tlid");
             },
-            //Returns the TLID of the track that will be played if calling
-            //:meth:`mopidy.core.PlaybackController.previous()`.
-            //
-            //For normal playback this is the previous track in the tracklist. If
-            //random and/or consume is enabled it should return the current track
-            //instead.
-            //
-            //:rtype: :class:`int` or :class:`None`
-            //
-            //.. versionadded:: 1.1
             getPreviousTlid() {
-                let key = "core.tracklist.get_previous_tlid";
+                this.commands.send("core.tracklist.get_previous_tlid");
             },
-            //Get random mode.
-            //
-            //:class:`True`
-            //    Tracks are selected at random from the tracklist.
-            //:class:`False`
-            //    Tracks are played in the order of the tracklist.
             getRandom() {
-                let key = "core.tracklist.get_random";
+                this.commands.send("core.tracklist.get_random");
             },
-            //Get repeat mode.
-            //
-            //:class:`True`
-            //    The tracklist is played repeatedly.
-            //:class:`False`
-            //    The tracklist is played once.
             getRepeat() {
-                let key = "core.tracklist.get_repeat";
+                this.commands.send("core.tracklist.get_repeat");
             },
-            //Get single mode.
-            //
-            //:class:`True`
-            //    Playback is stopped after current song, unless in ``repeat`` mode.
-            //:class:`False`
-            //    Playback continues after current song.
             getSingle() {
-                let key = "core.tracklist.get_single";
+                this.commands.send("core.tracklist.get_single");
             },
-            //Get tracklist as list of :class:`mopidy.models.TlTrack`.
             getTlTracks() {
-                let key = "core.tracklist.get_tl_tracks";
+                this.commands.send("core.tracklist.get_tl_tracks");
             },
-            //Get tracklist as list of :class:`mopidy.models.Track`.
             getTracks() {
-                let key = "core.tracklist.get_tracks";
+                this.commands.send("core.tracklist.get_tracks");
             },
-            //Get the tracklist version.
-            //
-            //Integer which is increased every time the tracklist is changed. Is not
-            //reset before Mopidy is restarted.
             getVersion() {
-                let key = "core.tracklist.get_version";
+                this.commands.send("core.tracklist.get_version");
             },
-            //The position of the given track in the tracklist.
-            //
-            //If neither *tl_track* or *tlid* is given we return the index of
-            //the currently playing track.
-            //
-            //:param tl_track: the track to find the index of
-            //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-            //:param tlid: TLID of the track to find the index of
-            //:type tlid: :class:`int` or :class:`None`
-            //:rtype: :class:`int` or :class:`None`
-            //
-            //.. versionadded:: 1.1
-            //    The *tlid* parameter
             index(tl_track: TlTrack, tlid: number) {
-                let key = "core.tracklist.index";
+                this.commands.send("core.tracklist.index", {tl_track, tlid});
             },
-            //Move the tracks in the slice ``[start:end]`` to ``to_position``.
-            //
-            //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
-            //
-            //:param start: position of first track to move
-            //:type start: int
-            //:param end: position after last track to move
-            //:type end: int
-            //:param to_position: new position for the tracks
-            //:type to_position: int
             move(start: number, end: number, to_position: number) {
-                let key = "core.tracklist.move";
+                this.commands.send("core.tracklist.move", {start, end, to_position});
             },
-            //The track that will be played if calling
-            //:meth:`mopidy.core.PlaybackController.next()`.
-            //
-            //For normal playback this is the next track in the tracklist. If repeat
-            //is enabled the next track can loop around the tracklist. When random is
-            //enabled this should be a random track, all tracks should be played once
-            //before the tracklist repeats.
-            //
-            //.. deprecated:: 3.0
-            //    Use :meth:`get_next_tlid` instead.
-            //
-            //:param tl_track: the reference track
-            //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-            //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
             nextTrack(tl_track: TlTrack) {
-                let key = "core.tracklist.next_track";
+                this.commands.send("core.tracklist.next_track", {tl_track});
             },
-            //Returns the track that will be played if calling
-            //:meth:`mopidy.core.PlaybackController.previous()`.
-            //
-            //For normal playback this is the previous track in the tracklist. If
-            //random and/or consume is enabled it should return the current track
-            //instead.
-            //
-            //.. deprecated:: 3.0
-            //    Use :meth:`get_previous_tlid` instead.
-            //
-            //:param tl_track: the reference track
-            //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-            //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
             previousTrack(tl_track: TlTrack) {
-                let key = "core.tracklist.previous_track";
+                this.commands.send("core.tracklist.previous_track", {tl_track});
             },
-            //Remove the matching tracks from the tracklist.
-            //
-            //Uses :meth:`filter()` to lookup the tracks to remove.
-            //
-            //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
-            //
-            //:param criteria: one or more rules to match by
-            //:type criteria: dict, of (string, list) pairs
-            //:rtype: list of :class:`mopidy.models.TlTrack` that were removed
             remove(criteria: string /*TODO: or list */) {
-                let key = "core.tracklist.remove";
+                this.commands.send("core.tracklist.remove", {criteria});
             },
-            //Set consume mode.
-            //
-            //:class:`True`
-            //    Tracks are removed from the tracklist when they have been played.
-            //:class:`False`
-            //    Tracks are not removed from the tracklist.
             setConsume(value: boolean) {
-                let key = "core.tracklist.set_consume";
+                this.commands.send("core.tracklist.set_consume", {value});
             },
-            //Set random mode.
-            //
-            //:class:`True`
-            //    Tracks are selected at random from the tracklist.
-            //:class:`False`
-            //    Tracks are played in the order of the tracklist.
             setRandom(value: boolean) {
-                let key = "core.tracklist.set_random";
+                this.commands.send("core.tracklist.set_random", {value});
             },
-            //Set repeat mode.
-            //
-            //To repeat a single track, set both ``repeat`` and ``single``.
-            //
-            //:class:`True`
-            //    The tracklist is played repeatedly.
-            //:class:`False`
-            //    The tracklist is played once.
             setRepeat(value: boolean) {
-                let key = "core.tracklist.set_repeat";
+                this.commands.send("core.tracklist.set_repeat", {value});
             },
-            //Set single mode.
-            //
-            //:class:`True`
-            //    Playback is stopped after current song, unless in ``repeat`` mode.
-            //:class:`False`
-            //    Playback continues after current song.
             setSingle(value: boolean) {
-                let key = "core.tracklist.set_single";
+                this.commands.send("core.tracklist.set_single", {value});
             },
-            //Shuffles the entire tracklist. If ``start`` and ``end`` is given only
-            //shuffles the slice ``[start:end]``.
-            //
-            //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
-            //
-            //:param start: position of first track to shuffle
-            //:type start: int or :class:`None`
-            //:param end: position after last track to shuffle
-            //:type end: int or :class:`None`
             shuffle(start: number, end: number) {
-                let key = "core.tracklist.shuffle";
+                this.commands.send("core.tracklist.shuffle", {start, end});
             },
-            //Returns a slice of the tracklist, limited by the given start and end
-            //positions.
-            //
-            //:param start: position of first track to include in slice
-            //:type start: int
-            //:param end: position after last track to include in slice
-            //:type end: int
-            //:rtype: :class:`mopidy.models.TlTrack`
             slice(start: number, end: number) {
-                let key = "core.tracklist.slice";
+                this.commands.send("core.tracklist.slice", {start, end});
             },
         },
     }

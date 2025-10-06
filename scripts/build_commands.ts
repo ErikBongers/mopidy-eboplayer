@@ -4,7 +4,7 @@ import * as fs from "node:fs";
 let inputFile = "P:\\mopidy\\mopidy-eboplayer\\scripts\\commands.json";
 let outputFileName = "P:\\mopidy\\mopidy-eboplayer\\scripts\\moduleTestFile.ts";
 let outFile: fs.WriteStream;
-let includeComments = true;
+let includeComments = false;
 
 main();
 
@@ -73,12 +73,24 @@ class Commands {
     
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
+        this.core.commands = this;`, 0);
+
+    modules.forEach((module,key) => {
+        if(key)
+            writeLine(`this.core.${key}.commands = this;`,8);
+    });
+
+    writeLine(`
     }
     
     send(method: string, params: Object) {
-        return this.mopidy._send({method, params});
+        if(params)
+            return this.mopidy.send({method, params});
+        else
+            return this.mopidy.send({method});
     }
     core = {
+        commands: undefined as Commands,
 `, 0);
 
     modules.forEach((funcDefs, modName) => {
@@ -91,8 +103,10 @@ class Commands {
 }
 
 function writeModule(modName: string, funcDefs: Set<FuncDef>, indent: number) {
-    if (modName)
+    if (modName) {
         writeLine(`${modName}: {`, indent);
+        writeLine(`commands: undefined as Commands,`, indent+4);
+    }
 
     funcDefs.forEach(funcDef => {
         writeFunction(funcDef, indent+(modName? 4: 0));
@@ -105,7 +119,7 @@ function writeModule(modName: string, funcDefs: Set<FuncDef>, indent: number) {
 function writeComments(funcDef: FuncDef, indent: number) {
     let dscrLines = funcDef.description.split("\n");
     dscrLines.forEach((line) => {
-        writeLine(`//${line}`, indent);
+        writeLine(`//${line}`, indent+4);
     });
 }
 
@@ -115,9 +129,14 @@ function writeFunction(funcDef: FuncDef, indent: number) {
     write(`${funcDef.name}(`, indent);
     
     writeParams(funcDef, indent);
+
+    let paramsObject = "";
+    if(funcDef.params.length) {
+        paramsObject = `, {${funcDef.params.map(p => p.name).join(", ")}}`;
+    }
     
     writeLine(`) {`,0);
-    writeLine(`    let key = "${funcDef.key}";`, indent);
+    writeLine(`    this.commands.send("${funcDef.key}"${paramsObject});`, indent);
     writeLine("},", indent);
 }
 
