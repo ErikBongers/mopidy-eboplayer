@@ -57,7 +57,7 @@ function main() {
     outFile = fs.createWriteStream(outputFileName);
 
     writeLine("class Commands {", 0);
-    writeLine("    cor = {", 0);
+    writeLine("    core = {", 0);
 
     modules.forEach((funcDefs, modName) => {
         writeModule(modName, funcDefs, 8);
