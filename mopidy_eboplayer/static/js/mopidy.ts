@@ -867,17 +867,25 @@ export namespace core {
 // https://javascript.plainenglish.io/building-a-simple-event-emitter-in-javascript-f82f68c214ad
 class EventEmitter {
     listeners = [];
+    supervisors = [];
 
     emit(eventName: string, ...data) {
         this.listeners.filter(({name}) => name === eventName)
             .forEach(({callback}) => {
                 setTimeout(() =>  callback.call(this, ...data) , 0);
             });
+        this.supervisors.forEach(callback => {
+            setTimeout(() => callback.call(this), 0);
+        });
     }
 
-    on(name: string, callback: any) { //todo: make callback type more specific?
+    on(name: string | Function, callback?: any) { //todo: make callback type more specific?
         if(typeof name === 'string' && typeof callback === 'function') {
             this.listeners.push({name, callback});
+            return;
+        }
+        if(typeof name === 'function') {
+            this.supervisors.push(name);
         }
     }
 

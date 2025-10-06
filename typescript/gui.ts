@@ -367,7 +367,7 @@ function initSocketevents () {
     });
 
     //log all events:
-//    getState().mopidy.on(console.log.bind(console));
+   getState().mopidy.on(console.log.bind(console));
 
 }
 
