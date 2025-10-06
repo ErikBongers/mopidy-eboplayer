@@ -222,8 +222,6 @@ function guessParamType(funcDef: FuncDef, param: Param) {
                 return "TODO";
         }
     }
-
-
 }
 
 interface SphinxParamDef {

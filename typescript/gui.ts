@@ -412,22 +412,22 @@ function setHeadline (site: string) {
 
 // update tracklist options.
 function updateOptions () {
-    getState().commands.tracklist.getRepeat().then(processRepeat, console.error)
-    getState().commands.tracklist.getRandom().then(processRandom, console.error)
-    getState().commands.tracklist.getConsume().then(processConsume, console.error)
-    getState().commands.tracklist.getSingle().then(processSingle, console.error)
+    getState().commands.core.tracklist.getRepeat().then(processRepeat, console.error)
+    getState().commands.core.tracklist.getRandom().then(processRandom, console.error)
+    getState().commands.core.tracklist.getConsume().then(processConsume, console.error)
+    getState().commands.core.tracklist.getSingle().then(processSingle, console.error)
 }
 
 // update everything as if reloaded
 function updateStatusOfAll () {
-    getState().commands.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
-    getState().commands.playback.getTimePosition().then(processCurrentposition, console.error)
-    getState().commands.playback.getState().then(processPlaystate, console.error)
+    getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
+    getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
+    getState().commands.core.playback.getState().then(processPlaystate, console.error)
 
     updateOptions()
 
-    getState().commands.mixer.getVolume().then(processVolume, console.error)
-    getState().commands.mixer.getMute().then(processMute, console.error)
+    getState().commands.core.mixer.getVolume().then(processVolume, console.error)
+    getState().commands.core.mixer.getMute().then(processMute, console.error)
 }
 
 function locationHashChanged () {
@@ -515,7 +515,7 @@ document.addEventListener("DOMContentLoaded",function () {
     };
     let mopidy = new Mopidy(connectOptions);
     let commands = new Commands(mopidy);
-    let timer = new SyncedProgressTimer(8, mopidy, getState().commands);
+    let timer = new SyncedProgressTimer(8, mopidy, commands);
     let state = new State(mopidy, commands, timer);
     setState(state);
 
