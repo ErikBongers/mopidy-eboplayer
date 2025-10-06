@@ -1,10 +1,10 @@
 import {artistsToString, CURRENT_PLAYLIST_TABLE, getScheme, getTracksFromUri, isStreamUri, STREAMS_PLAYLIST_NAME, STREAMS_PLAYLIST_SCHEME, TRACK_ACTIONS} from "./functionsvars";
-import Mopidy from "mopidy";
 import {updatePlayIcons} from "./functionsvars";
 import {library} from "./library";
 import {processCurrentposition} from "./process_ws";
-import Track = Mopidy.models.Track;
 import getState from "./playerState";
+import {models, Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
+import Track = models.Track;
 
 /**
  * 'onClick' handler for tracks that are rendered in a list.
@@ -47,7 +47,7 @@ export function playTracks(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri: stri
     action = getAction(action);
 
     if (action === TRACK_ACTIONS.PLAY_ALL) {
-        mopidy.tracklist.clear();
+        getState().commands.core.tracklist.clear();
     }
 
     let trackUris = _getTrackURIsForAction(action, trackUri, playlistUri);
@@ -55,7 +55,7 @@ export function playTracks(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri: stri
     switch (action) {
         case TRACK_ACTIONS.PLAY_NOW:
         case TRACK_ACTIONS.PLAY_NEXT:
-            mopidy.tracklist.index({}).then(function (currentIndex) {
+            getState().commands.core.tracklist.index().then(function (currentIndex) {
                 if (currentIndex === null && action === TRACK_ACTIONS.PLAY_NEXT) {
                     // Tracklist is empty, start playing new tracks immediately.
                     action = TRACK_ACTIONS.PLAY_NOW;
@@ -67,13 +67,14 @@ export function playTracks(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri: stri
             _addTrackAtIndex(action, mopidy, trackUris, index);
             break;
         case TRACK_ACTIONS.ADD_THIS_BOTTOM:
+
         case TRACK_ACTIONS.ADD_ALL_BOTTOM:
         case TRACK_ACTIONS.PLAY_ALL:
-            mopidy.tracklist.add({uris: trackUris}).then(function () {
+            getState().commands.core.tracklist.add(undefined, -1, trackUris).then(function () {
                 if (action === TRACK_ACTIONS.PLAY_ALL) {  // Start playback of selected track immediately.
-                    mopidy.tracklist.filter({criteria: {uri: [trackUri]}}).then(function (tlTracks) {
-                        mopidy.playback.stop().then(function () {
-                            mopidy.playback.play({tlid: tlTracks[0].tlid});
+                    getState().commands.core.tracklist.filter({criteria: {uri: [trackUri]}}).then(function (tlTracks) {
+                        getState().commands.core.playback.stop().then(function () {
+                            getState().commands.core.playback.play(null, tlTracks[0].tlid);
                         });
                     });
                 }
@@ -162,10 +163,10 @@ export function _addTrackAtIndex(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri
         pos += 1;
     }
 
-    mopidy.tracklist.add({at_position: pos, uris: trackUris}).then(function (tlTracks) {
+    getState().commands.core.tracklist.add(undefined, pos, trackUris).then(function (tlTracks) {
         if (action === TRACK_ACTIONS.PLAY_NOW) {  // Start playback immediately.
-            mopidy.playback.stop().then(function () {
-                mopidy.playback.play({tlid: tlTracks[0].tlid})
+            getState().commands.core.playback.stop().then(function () {
+                getState().commands.core.playback.play(null, tlTracks[0].tlid)
             })
         }
     })
@@ -183,11 +184,11 @@ export function _addTrackAtIndex(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri
 export function playQueueTrack(tlid) {
     // Stop directly, for user feedback
 
-    getState().mopidy.playback.stop();
+    getState().commands.core.playback.stop();
     // toast('Loading...')
 
     tlid = tlid || (document.querySelector('#popupQueue') as HTMLElement).dataset.tlid;
-    getState().mopidy.playback.play({'tlid': parseInt(tlid)});
+    getState().commands.core.playback.play(null, parseInt(tlid));
     // document.querySelector('#popupQueue').popup('close')
 }
 
@@ -198,12 +199,12 @@ export function removeTrack(tlid, mopidy) {
     // toast('Deleting...')
 
     tlid = tlid || (document.querySelector('#popupQueue') as HTMLElement).dataset.tlid;
-    mopidy.tracklist.remove({criteria: {'tlid': [parseInt(tlid)]}});
+    //todo: figure out how to pass the criteria in a type-safe way: getState().commands.core.tracklist.remove({criteria: {'tlid': [parseInt(tlid)]}});
     // document.querySelector('#popupQueue').popup('close')
 }
 
 export function clearQueue() {
-    getState().mopidy.tracklist.clear();
+    getState().commands.core.tracklist.clear();
     return false;
 }
 
@@ -259,7 +260,7 @@ export function addTrack(trackUri: string, mopidy: Mopidy) {
 
 export function insertTrack(trackUri: string, mopidy: Mopidy, tlid: string = undefined) {
     if (typeof tlid !== 'undefined' && tlid !== '') {
-        mopidy.tracklist.index({tlid: parseInt(tlid)}).then(function (index) {
+        getState().commands.core.tracklist.index(null, parseInt(tlid)).then(function (index) {
             playTracks(TRACK_ACTIONS.INSERT_AT_INDEX, mopidy, trackUri, CURRENT_PLAYLIST_TABLE, index)
         })
     } else {
@@ -281,7 +282,7 @@ export function addTrackToBottom(trackUri, mopidy) {
 }
 
 export function showSavePopup() {
-    getState().mopidy.tracklist.getTracks().then(function (tracks) {
+    getState().commands.core.tracklist.getTracks().then(function (tracks) {
         if (tracks.length > 0) {
             (document.querySelector('#saveinput') as HTMLInputElement).value = '';
             // document.querySelector('#popupSave').popup('open')
@@ -290,7 +291,7 @@ export function showSavePopup() {
 }
 
 export function saveQueue() {
-    getState().mopidy.tracklist.getTracks().then(function (tracks) {
+    getState().commands.core.tracklist.getTracks().then(function (tracks) {
         let playlistName = (document.querySelector('#saveinput') as HTMLInputElement).value.trim();
         if (playlistName !== null && playlistName !== '') {
             getPlaylistByName(playlistName, 'm3u', false).then(function (exists) {
@@ -314,11 +315,11 @@ export function initSave(playlistName: string, tracks) {
     // document.querySelector('#popupSave').popup('close')
     (document.querySelector('#saveinput') as HTMLInputElement).value = '';
     // toast('Saving...')
-    getState().mopidy.playlists.create({'name': playlistName, 'uri_scheme': 'm3u'})
+    getState().commands.core.playlists.create(playlistName, 'm3u')
         .then(function (playlist) {
             playlist.tracks.push(...tracks);
             // playlist.tracks = tracks;
-            getState().mopidy.playlists.save({'playlist': playlist}).then();
+            getState().commands.core.playlists.save(playlist).then();
             });
 }
 
@@ -330,7 +331,7 @@ export function showInfoPopup(uri, popupId, mopidy) {
     // }
     // document.querySelector('#popupShowInfo tbody').empty()
     //
-    // mopidy.library.lookup({'uris': [trackUri]}).then(function (resultDict) {
+    // commands.core.library.lookup({'uris': [trackUri]}).then(function (resultDict) {
     //     let uri = Object.keys(resultDict)[0]
     //     let track = resultDict[uri][0]
     //     let html = ''
@@ -451,7 +452,7 @@ export function showInfoPopup(uri, popupId, mopidy) {
 }
 
 export function refreshPlaylists() {
-    getState().mopidy.playlists.refresh({}).then(function () {
+    getState().commands.core.playlists.refresh().then(function () {
         getState().playlists = {};
         (document.querySelector('#playlisttracksdiv') as HTMLElement).style.display = 'none';
         (document.querySelector('#playlistslistdiv') as HTMLElement).style.display = 'block';
@@ -461,7 +462,7 @@ export function refreshPlaylists() {
 
 export function refreshLibrary() {
     let uri = (document.querySelector('#refreshLibraryBtn') as HTMLElement).dataset.url;
-    getState().mopidy.library.refresh({'uri': uri}).then(function () {
+    getState().commands.core.library.refresh(uri).then(function () {
         library.getBrowseDir(uri);
     })
     return false;
@@ -472,9 +473,9 @@ export function refreshLibrary() {
  *************/
 
 export function doShuffle() {
-    getState().mopidy.playback.stop();
-    getState().mopidy.tracklist.shuffle({});
-    getState().mopidy.playback.play({});
+    getState().commands.core.playback.stop();
+    getState().commands.core.tracklist.shuffle();
+    getState().commands.core.playback.play();
 }
 
 /* Toggle state of play button */
@@ -486,7 +487,7 @@ export function setPlayState(nwplay) {
         (document.querySelector('#btplay >i') as HTMLElement).classList.remove('fa-play');
         (document.querySelector('#btplay >i') as HTMLElement).classList.add('fa-pause');
         document.querySelector('#btplay').setAttribute('title', 'Pause');
-        getState().mopidy.playback.getTimePosition().then(processCurrentposition, console.error)
+        getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
         getState().syncedProgressTimer.start();
     } else {
         document.querySelector('#btplayNowPlaying >i').classList.remove('fa-pause');
@@ -504,12 +505,12 @@ export function setPlayState(nwplay) {
 export function doPlay() {
     // toast('Please wait...', 250)
     if (!getState().play) {
-        getState().mopidy.playback.play({});
+        getState().commands.core.playback.play();
     } else {
         if (isStreamUri(getState().songdata?.track?.uri)) {
-            getState().mopidy.playback.stop();
+            getState().commands.core.playback.stop();
         } else {
-            getState().mopidy.playback.pause();
+            getState().commands.core.playback.pause();
         }
     }
     setPlayState(!getState().play);
@@ -517,12 +518,12 @@ export function doPlay() {
 
 export function doPrevious() {
     // toast('Playing previous track...')
-    getState().mopidy.playback.previous();
+    getState().commands.core.playback.previous();
 }
 
 export function doNext() {
     // toast('Playing next track...')
-    getState().mopidy.playback.next();
+    getState().commands.core.playback.next();
 }
 
 export function backbt() {
@@ -567,19 +568,19 @@ export function setSingle(nwsingle: boolean) {
 }
 
 export function doRandom() {
-    getState().mopidy.tracklist.setRandom({'value': !getState().random}).then();
+    getState().commands.core.tracklist.setRandom(!getState().random).then();
 }
 
 export function doRepeat() {
-    getState().mopidy.tracklist.setRepeat({'value': !getState().repeat}).then();
+    getState().commands.core.tracklist.setRepeat(!getState().repeat).then();
 }
 
 export function doConsume() {
-    getState().mopidy.tracklist.setConsume({'value': !getState().consume}).then();
+    getState().commands.core.tracklist.setConsume(!getState().consume).then();
 }
 
 export function doSingle() {
-    getState().mopidy.tracklist.setSingle({'value': !getState().single}).then();
+    getState().commands.core.tracklist.setSingle(!getState().single).then();
 }
 
 /** *********************************************
@@ -589,7 +590,7 @@ export function doSingle() {
 export function doSeekPos(value) {
     if (!getState().positionChanging) {
         getState().positionChanging = value; //todo: number or boolean
-        getState().mopidy.playback.seek({'time_position': Math.round(value)}).then(function () {
+        getState().commands.core.playback.seek(Math.round(value)).then(function () {
             getState().positionChanging = null;
         })
     }
@@ -621,7 +622,7 @@ export function setVolume(value: number) {
 export async function sendVolume(value: number) {
     if (!getState().volumeChanging) {
         getState().volumeChanging = true;
-        await getState().mopidy.mixer.setVolume({'volume': value});
+        await getState().commands.core.mixer.setVolume(value);
         setTimeout(() => getState().volumeChanging = false, 100); //don't allow re-sending volume within 0.1 second.
     }
 }
@@ -638,7 +639,7 @@ export function setMute(nwmute) {
 }
 
 export function doMute() {
-    getState().mopidy.mixer.setMute({'mute': !getState().mute});
+    getState().commands.core.mixer.setMute(!getState().mute);
 }
 
 /** **********
@@ -661,13 +662,13 @@ export function playStreamUri(uri: string = undefined) {
     }
     // toast('Playing...')
     // stop directly, for user feedback
-    getState().mopidy.playback.stop()
+    getState().commands.core.playback.stop()
     // hide ios/android keyboard
     // document.activeElement.blur()
     clearQueue();
     document.querySelector('input').blur()
-    getState().mopidy.tracklist.add({'uris': [nwuri]})
-    getState().mopidy.playback.play({});
+    getState().commands.core.tracklist.add(undefined, null, [nwuri]);
+    getState().commands.core.playback.play();
     return false;
 }
 
@@ -686,7 +687,7 @@ export function getCurrentlyPlaying(uriInput, nameInput) {
 
 export function getUriSchemes() {
     getState().uriSchemes = {};
-    return getState().mopidy.getUriSchemes().then(function (schemes) {
+    return getState().commands.core.getUriSchemes().then(function (schemes) {
         for (let i = 0; i < schemes.length; i++) {
             getState().uriSchemes[schemes[i].toLowerCase()] = true;
         }
@@ -700,14 +701,14 @@ export async function getPlaylistByName(name, scheme, create: boolean) {
         //todo return Mopidy.when(false)
         throw new Error("Dunno...");
     }
-    let plists = await getState().mopidy.playlists.asList().catch(console.error.bind(console));
+    let plists = await getState().commands.core.playlists.asList().catch(console.error.bind(console));
     for (let i = 0; i < plists.length; i++) {
         if ((plists[i].name === name) && (uri_scheme === '' || getScheme(plists[i].uri) === uri_scheme)) {
             return plists[i];
         }
     }
     if (create) {
-        let pList = await getState().mopidy.playlists.create({'name': name, 'uri_scheme': uri_scheme});
+        let pList = await getState().commands.core.playlists.create(name, uri_scheme);
         console.log("Created playlist '%s'", pList.name);
         return pList;
         }
@@ -716,7 +717,7 @@ export async function getPlaylistByName(name, scheme, create: boolean) {
 }
 
 export function getPlaylistFull(uri) {
-    return getState().mopidy.playlists.lookup({'uri': uri}).then(function (pl) {
+    return getState().commands.core.playlists.lookup(uri).then(function (pl) {
         getState().playlists[uri] = pl;
         return pl;
     })
@@ -745,7 +746,7 @@ export function addToFavourites(newTracks: Track[]) {
                 favourites.tracks.length = 0;
                 favourites.tracks.push(...newTracks);
             }
-            getState().mopidy.playlists.save({'playlist': favourites}).then(function (s) {
+            getState().commands.core.playlists.save(favourites).then(function (s) {
                 showFavourites();
             })
         }
@@ -755,7 +756,7 @@ export function addToFavourites(newTracks: Track[]) {
 export function addFavourite(uri, name) {
     uri = uri || (document.querySelector('#streamuriinput') as  HTMLInputElement).value.trim();
     name = name || (document.querySelector('#streamnameinput') as HTMLInputElement).value.trim();
-    getState().mopidy.library.lookup({'uris': [uri]}).then(function (results) {
+    getState().commands.core.library.lookup([uri]).then(function (results) {
         let newTracks = results[uri];
         if (newTracks.length === 1) {
             // TODO: Supporting adding an entire playlist?
@@ -790,7 +791,7 @@ export function deleteFavourite(index) {
     getFavourites().then(function (favourites) {
         if (favourites && favourites.tracks && index < favourites.tracks.length) {
             favourites.tracks.splice(index, 1)
-            getState().mopidy.playlists.save({'playlist': favourites}).then(function () {
+            getState().commands.core.playlists.save(favourites).then(function () {
                 showFavourites();
             });
             // document.querySelector('#popupConfirmDelete').popup('close')
@@ -841,7 +842,7 @@ export function upgradeStreamUrisToFavourites() {
     //             uris.push(rs[1])
     //         }
     //     }
-    //     mopidy.library.lookup({'uris': uris}).then(function (results) {
+    //     commands.core.library.lookup({'uris': uris}).then(function (results) {
     //         let tracks = [] // Prepare a list of tracks to add.
     //         for (let key in streamUris) {
     //             let rs = streamUris[key]

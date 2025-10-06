@@ -1,5 +1,6 @@
 import {ProgressTimer} from "./timer";
 import {Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
+import {Commands} from "../scripts/modules";
 
 function delay_exponential (base: number | 'rand', growthFactor: number, attempts: number) {
     /* Calculate number of beats between syncs based on exponential function.
@@ -124,7 +125,7 @@ export class SyncedProgressTimer {
         this._scheduleSync(-1); // Ensure that only one sync process is active at a time.
 
         let _this = this;
-        _this.commands.core_playback_get_time_position().then(function (targetPosition) {
+        _this.commands.core.playback.getTimePosition().then(function (targetPosition: number) {
             if (_this.syncState === SYNC_STATE.NOT_SYNCED) {
                 _this.syncState = SYNC_STATE.SYNCING;
             }

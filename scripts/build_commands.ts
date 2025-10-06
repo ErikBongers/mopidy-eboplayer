@@ -2,9 +2,9 @@ import * as fs from "node:fs";
 
 //ARGUMENTSS
 let inputFile = "P:\\mopidy\\mopidy-eboplayer\\scripts\\commands.json";
-let outputFileName = "P:\\mopidy\\mopidy-eboplayer\\scripts\\moduleTestFile.ts";
+let outputFileName = "P:\\mopidy\\mopidy-eboplayer\\scripts\\commands.ts";
 let outFile: fs.WriteStream;
-let includeComments = false;
+let includeComments: boolean = true;
 
 main();
 
@@ -68,7 +68,7 @@ import TlTrack = models.TlTrack;
 import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
 
-class Commands {
+export class Commands {
     private mopidy: Mopidy;
     
     constructor(mopidy: Mopidy) {
@@ -136,7 +136,7 @@ function writeFunction(funcDef: FuncDef, indent: number) {
     }
     
     writeLine(`) {`,0);
-    writeLine(`    this.commands.send("${funcDef.key}"${paramsObject});`, indent);
+    writeLine(`return this.commands.send("${funcDef.key}"${paramsObject});`, indent+4);
     writeLine("},", indent);
 }
 
@@ -159,17 +159,20 @@ function writeParams(funcDef: FuncDef, indent: number) {
     let paramList = funcDef.params
         .map((param) => {
             let paramString = "";
-            if(param.default) {
-                if(param.default == "null") {
-                    paramString += "?"
-                } else {
-                    paramString += ` = ${param.default}`;
-                }
+            let optional = "";
+            let defaultValue = "";
+            if(param.default == null) {
+                optional = "?";
+            } else {
+                defaultValue = ` = ${param.default}`;
             }
+            if(parseSphinxFields(param.name, funcDef.description).optional)
+                optional = "?";
+            paramString += ``;
             let type = guessParamType(funcDef, param);
             if(type)
                 type = `: ${type}`;
-            return `${param.name}${type}${paramString}`;
+            return `${param.name}${optional}${type}${defaultValue}`;
         })
         .join(", ");
     write(paramList);
@@ -220,4 +223,16 @@ function guessParamType(funcDef: FuncDef, param: Param) {
         }
     }
 
+
+}
+
+interface SphinxParamDef {
+    optional: boolean,
+    //type: string,,  //we currently don't care about other Sphinx definitions.
+}
+function parseSphinxFields(paramName: string, commentLines: string): SphinxParamDef {
+    let rxTypeFollowedByNone = new RegExp(`.*:type.* ${paramName}:.+:class:\`None\``, "gm");
+    return {
+        optional: rxTypeFollowedByNone.test(commentLines)
+    };
 }

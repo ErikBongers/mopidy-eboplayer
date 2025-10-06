@@ -1,10 +1,12 @@
-import Mopidy from "mopidy";
+import {models, Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
-import TlTrack = Mopidy.models.TlTrack;
 import {DeepReadonly, Model} from "./model";
+import TlTrack = models.TlTrack;
+import {Commands} from "../scripts/commands";
 
 export class State {
     mopidy: Mopidy;
+    commands: Commands;
     syncedProgressTimer: SyncedProgressTimer;
 
     // values for controls
@@ -45,8 +47,9 @@ export class State {
     browseStack =  [];
     private readonly model: Model;
 
-    constructor(mopidy: Mopidy, syncedProgressTimer: SyncedProgressTimer) {
+    constructor(mopidy: Mopidy, commands: Commands, syncedProgressTimer: SyncedProgressTimer) {
         this.mopidy = mopidy;
+        this.commands = commands;
         this.syncedProgressTimer = syncedProgressTimer;
         this.model = new Model();
     }

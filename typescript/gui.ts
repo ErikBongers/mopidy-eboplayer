@@ -8,6 +8,7 @@ import {sendVolume} from "./controls";
 import getState, {setState, State} from "./playerState";
 import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
 import TlTrack = models.TlTrack;
+import {Commands} from "../scripts/commands";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -411,22 +412,22 @@ function setHeadline (site: string) {
 
 // update tracklist options.
 function updateOptions () {
-    getState().mopidy.tracklist.getRepeat().then(processRepeat, console.error)
-    getState().mopidy.tracklist.getRandom().then(processRandom, console.error)
-    getState().mopidy.tracklist.getConsume().then(processConsume, console.error)
-    getState().mopidy.tracklist.getSingle().then(processSingle, console.error)
+    getState().commands.tracklist.getRepeat().then(processRepeat, console.error)
+    getState().commands.tracklist.getRandom().then(processRandom, console.error)
+    getState().commands.tracklist.getConsume().then(processConsume, console.error)
+    getState().commands.tracklist.getSingle().then(processSingle, console.error)
 }
 
 // update everything as if reloaded
 function updateStatusOfAll () {
-    getState().mopidy.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
-    getState().mopidy.playback.getTimePosition().then(processCurrentposition, console.error)
-    getState().mopidy.playback.getState().then(processPlaystate, console.error)
+    getState().commands.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
+    getState().commands.playback.getTimePosition().then(processCurrentposition, console.error)
+    getState().commands.playback.getState().then(processPlaystate, console.error)
 
     updateOptions()
 
-    getState().mopidy.mixer.getVolume().then(processVolume, console.error)
-    getState().mopidy.mixer.getMute().then(processMute, console.error)
+    getState().commands.mixer.getVolume().then(processVolume, console.error)
+    getState().commands.mixer.getMute().then(processMute, console.error)
 }
 
 function locationHashChanged () {
@@ -513,8 +514,9 @@ document.addEventListener("DOMContentLoaded",function () {
         webSocketUrl
     };
     let mopidy = new Mopidy(connectOptions);
-    let timer = new SyncedProgressTimer(8, mopidy);
-    let state = new State(mopidy, timer);
+    let commands = new Commands(mopidy);
+    let timer = new SyncedProgressTimer(8, mopidy, getState().commands);
+    let state = new State(mopidy, commands, timer);
     setState(state);
 
     // initialize events
