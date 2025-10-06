@@ -1,9 +1,9 @@
-import Mopidy from "mopidy";
 import * as images from "./images";
 import {processPlaylistItems} from "./process_ws";
 import * as controls from "./controls";
 import getState from "./playerState";
-import TlTrack = Mopidy.models.TlTrack;
+import {models} from "../mopidy_eboplayer/static/js/mopidy";
+import TlTrack = models.TlTrack;
 
 // interface ArtistInfo {
 //     name: string;
@@ -387,7 +387,7 @@ function getPlaylistTracks (uri: string) {
         // return Mopidy.when(getState.playlists[uri].tracks);
     } else {
         showLoading(true);
-        return getState().mopidy.playlists.lookup({'uri': uri}).then(function (playlist) {
+        return getState().commands.core.playlists.lookup(uri).then(function (playlist) {
             return processPlaylistItems({'uri': uri, 'playlist': playlist});
         }, console.error);
     }
@@ -643,4 +643,12 @@ export function updatePlayIcons(uri: string, tlid: number, popupMenuIcon) {
             }
         })
     }
+}
+
+export function switchContent(divid: string, uri: string = undefined) {
+    let hash = divid;
+    if (uri) {
+        hash += '?' + uri
+    }
+    location.hash = '#' + hash
 }

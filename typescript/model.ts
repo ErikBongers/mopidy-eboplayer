@@ -1,5 +1,5 @@
-import Mopidy from "./../mopidy_eboplayer/static/js/mopidy";
-import TlTrack = Mopidy.models.TlTrack;
+import {models} from "../mopidy_eboplayer/static/js/mopidy";
+import TlTrack = models.TlTrack;
 
 export enum TrackType { None, File, Stream}
 
@@ -28,7 +28,7 @@ export enum EboplayerEvents {
     activeTrackChanged = "eboplayer.activeTrackChanged",
 }
 
-type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
+export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
 
 export type DeepReadonly<T> = T extends Function ? T :
     T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } :

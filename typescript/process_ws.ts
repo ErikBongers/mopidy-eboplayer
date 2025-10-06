@@ -1,55 +1,66 @@
 import * as controls from "./controls";
-import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getAlbum, getArtist, getMediaClass, hasSameAlbum, isFavouritesPlaylist, renderSongLi, renderSongLiAlbumInfo, renderSongLiBackButton, renderSongLiDivider, resultsToTables, scrollToTracklist, showLoading, TRACK_ACTIONS, validUri} from "./functionsvars";
+import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getAlbum, getArtist, getMediaClass, hasSameAlbum, isFavouritesPlaylist, renderSongLi, renderSongLiAlbumInfo, renderSongLiBackButton, renderSongLiDivider, resultsToTables, scrollToTracklist, showLoading, updatePlayIcons, validUri} from "./functionsvars";
 import * as images from "./images";
-import getState, {TrackModel} from "./playerState";
-import {updatePlayIcons} from "./functionsvars";
-import Mopidy from "mopidy";
-import TlTrack = Mopidy.models.TlTrack;
+import {models} from "../mopidy_eboplayer/static/js/mopidy";
+import getState from "./playerState";
+import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
+import TlTrack = models.TlTrack;
 
 export function processCurrenttrack (data: (TlTrack | null)) {
     if(!data)
         return;
-    transformTrackInfo(data);
-    getState().mopidy.playback.getStreamTitle().then(function (title) {
-        getState().getModel().setSelectedStream( {
-            name: title,
-            infoLines: []
-        });
+    transformTrackDataToModel(data);
+    getState().commands.core.playback.getStreamTitle().then(function (title) {
+        getState().getModel().clearActiveTrack();
    }, console.error);
 }
 
-function transformTrackInfo(data: TlTrack) {
-    let trackModel: TrackModel = {
+function transformTrackDataToModel(data: TlTrack) {
+    getState().songdata = data; //todo: make this obsolete
+
+    if(!data.track.track_no) {
+        let model: StreamTrackModel = {
+            type: TrackType.Stream,
+            tlTrack: data,
+            name: data.track.name,
+            infoLines: []
+        };
+        getState().getModel().setActiveTrack(model);
+        return;
+    }
+    //for now, assume it's a file track
+    let model: FileTrackModel = {
+        type: TrackType.File,
+        composer: "",
         tlTrack: data,
-        title: "",
+        title: data.track.name,
         performer: "",
         songlenght: 0
     };
     if (!data.track.name || data.track.name === '') {
         let parts = data.track.uri.split('/');
-        trackModel.title = decodeURI(parts[parts.length - 1])
+        model.title = decodeURI(parts[parts.length - 1])
     }
 
     if (validUri(data.track.name)) {
         for (let key in getState().streamUris) {
             let rs = getState().streamUris[key]
             if (rs && rs[1] === data.track.name) {
-                trackModel.title = (rs[0] || rs[1]);
+                model.title = (rs[0] || rs[1]);
             }
         }
     }
-    getState().songdata = data; //todo: make this obsolete
 
     if (!data.track.length || data.track.length === 0) {
-        trackModel.songlenght = getState().songlength = Infinity;
+        model.songlenght = getState().songlength = Infinity;
    } else {
-        trackModel.songlenght = getState().songlength = data.track.length;
+        model.songlenght = getState().songlength = data.track.length;
     }
 
     //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
     // images.fetchAlbumImage(data.track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
 
-    getState().getModel().setSelectedTrack(trackModel); //todo: how to differenciate between a stream and a track?
+    getState().getModel().setActiveTrack(model); //todo: how to differenciate between a stream and a track?
 }
 
 export function processVolume (data: number | null) {
@@ -133,7 +144,7 @@ function processBrowseDir (resultArr: string | any[]) {
 
     // Look up track details and add album headers
 ;    if (uris.length > 0) {
-        getState().mopidy.library.lookup({'uris': uris}).then(function (resultDict) {
+        getState().commands.core.library.lookup(uris).then(function (resultDict) {
             // Break into albums and put in tables
             let requiredImages = {};
             let track, previousTrack, nextTrack, uri;
@@ -161,7 +172,7 @@ function processBrowseDir (resultArr: string | any[]) {
     }
 }
 
-function processGetPlaylists (resultArr) {
+export function processGetPlaylists (resultArr) {
     if ((!resultArr) || (resultArr === '')) {
         document.getElementById('playlistslist').innerHTML = "";
         return
@@ -203,7 +214,7 @@ export function processPlaylistItems (resultDict) {
         for (let i = 0; i < playlist.tracks.length; i++) {
             trackUris.push(playlist.tracks[i].uri)
         }
-        return getState().mopidy.library.lookup({'uris': trackUris}).then(function (tracks) {
+        return getState().commands.core.library.lookup(trackUris).then(function (tracks) {
             for (let i = 0; i < trackUris.length; i++) {
                 let track = tracks[trackUris[i]][0] || playlist.tracks[i];  // Fall back to using track Ref if lookup failed.
                 getState().playlists[playlistUri].tracks.push(track);
@@ -224,12 +235,12 @@ export function processPlaylistItems (resultDict) {
 /** ******************************************************
  * process results of the queue, the current playlist
  *********************************************************/
-function processCurrentPlaylist (resultArr) {
+export function processCurrentPlaylist (resultArr) {
     getState().currentplaylist = resultArr
     resultsToTables(getState().currentplaylist, CURRENT_PLAYLIST_TABLE)
-    getState().mopidy.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
+    getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
     if (resultArr.length === 0) {
-        getState().getModel().clearSelected();
+        getState().getModel().clearActiveTrack();
     }
 }
 

@@ -1,14 +1,14 @@
 import {library} from "./library";
 import {models, Mopidy, Options} from "../mopidy_eboplayer/static/js/mopidy";
-import {searchBlacklist, showLoading, showOffline, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
+import {searchBlacklist, showLoading, showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
 import {SyncedProgressTimer} from "./synced_timer";
 import {processConsume, processCurrentposition, processCurrenttrack, processMute, processPlaystate, processRandom, processRepeat, processSingle, processVolume} from "./process_ws";
 import * as controls from "./controls";
 import {sendVolume} from "./controls";
 import getState, {setState, State} from "./playerState";
 import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
-import TlTrack = models.TlTrack;
 import {Commands} from "../scripts/commands";
+import TlTrack = models.TlTrack;
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -392,22 +392,18 @@ function isFullscreen () {
     return document.fullscreenElement;
 }
 
-function switchContent (divid: string, uri: string = undefined) {
-    let hash = divid;
-    if (uri) {
-        hash += '?' + uri
-    }
-    location.hash = '#' + hash
-}
-
 function setHeadline (site: string) {
     site = site.trim();
     let headline = document.querySelector('.mainNav').querySelector('a[href$=' + site + ']').textContent;
     if (headline === '') {
         headline = site.charAt(0).toUpperCase() + site.slice(1)
     }
-    document.getElementById('contentHeadline').innerHTML = '<a href="#home" onclick="switchContent(\'home\'); return false;">' + headline + '</a>';
+    document.getElementById('contentHeadline').innerHTML = '<a href="#home" onclick="doSwitchContent(\'home\'); return false;">' + headline + '</a>';
     return headline
+}
+
+function doSwitchContent(divid: string, uri: string = undefined) {
+    switchContent(divid, uri);
 }
 
 // update tracklist options.
@@ -499,17 +495,18 @@ document.addEventListener("DOMContentLoaded",function () {
 
     window.onhashchange = locationHashChanged;
     if (location.hash.length < 2) {
-        switchContent('nowPlaying');
+        doSwitchContent('nowPlaying');
     }
 
-    document.getElementById('songinfo').onclick = () => switchContent('nowPlaying');
-    document.getElementById('albumCoverImg').onclick =  () => switchContent('current');
+    document.getElementById('songinfo').onclick = () => doSwitchContent('nowPlaying');
+    document.getElementById('albumCoverImg').onclick =  () => doSwitchContent('current');
     let slider = document.querySelector<HTMLInputElement>('#volumeslider');
     slider.onchange = (ev) => { sendVolume(parseInt((ev.target as HTMLInputElement).value)).then(); };
     slider.onmousedown = (ev) => { getState().volumeSliding = true;};
     slider.onmouseup = (ev) => { getState().volumeSliding = false; };
     // Connect to server
     let webSocketUrl = document.body.dataset.websocketUrl;
+    webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
     let connectOptions: Options = {
         webSocketUrl
     };

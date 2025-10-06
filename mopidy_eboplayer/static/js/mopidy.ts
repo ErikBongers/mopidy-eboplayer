@@ -862,16 +862,17 @@ export namespace core {
         getLength(): Promise<number>;
     }
 }
+
+//todo: use this one instead?
+// https://javascript.plainenglish.io/building-a-simple-event-emitter-in-javascript-f82f68c214ad
 class EventEmitter {
     listeners = [];
 
-    emit(eventName: string, data?: any) {
+    emit(eventName: string, ...data) {
         this.listeners.filter(({name}) => name === eventName)
             .forEach(({callback}) => {
-                setTimeout(function() {
-                    callback.apply(this, [this, ...data]);
-                }, 0)
-            })
+                setTimeout(() =>  callback.call(this, ...data) , 0);
+            });
     }
 
     on(name: string, callback: any) { //todo: make callback type more specific?
@@ -917,12 +918,13 @@ export class Mopidy extends EventEmitter {
     private _webSocket: WebSocket;
     constructor(options: Options) {
         super();
-        this._options = this._configure(options || {
+        const defaultOptions = {
             backoffDelayMin: 1000,
-            backoffDelayMax: 64000,
+                backoffDelayMax: 64000,
             autoConnect: true,
             webSocketUrl: ''
-        });
+        };
+        this._options = this._configure({...defaultOptions, ...options});
         this._backoffDelay = this._options.backoffDelayMin;
         this._pendingRequests = {};
         this._webSocket = null;
@@ -933,11 +935,8 @@ export class Mopidy extends EventEmitter {
     }
 
     private _configure(options: Options) {
-        let newOptions: Options = { ...options };
-        newOptions.backoffDelayMin = options.backoffDelayMin || 1000;
-        newOptions.backoffDelayMax = options.backoffDelayMax || 64000;
         if(options.webSocketUrl)
-            return newOptions;
+            return options;
 
         let protocol =
             typeof document !== "undefined" && document.location.protocol === "https:"
@@ -946,11 +945,8 @@ export class Mopidy extends EventEmitter {
         let currentHost =
             (typeof document !== "undefined" && document.location.host) ||
             "localhost";
-        newOptions.webSocketUrl = `${protocol}${currentHost}/mopidy/ws`;
-        if (options.autoConnect !== false) {
-            newOptions.autoConnect = true;
-        }
-        return newOptions;
+        options.webSocketUrl = `${protocol}${currentHost}/mopidy/ws`;
+        return options;
     }
 
   _delegateEvents() {
