@@ -8,7 +8,6 @@
 
 h3#modalname a{
     background-color: transparent;
-    color: white;
 }
 #header {
 background-color: var(--header-background);
@@ -17,6 +16,10 @@ background-color: var(--header-background);
 body {
 background-color: var(--body-background);
 color: white;
+}
+
+a {
+    color: white;
 }
 .ui-body-a, .ui-overlay-a {
 background-color: var(--panel-background);
@@ -111,11 +114,11 @@ background-color: var(--panel-button-selected);
  * Side Panel and Navigation *
  *****************************/
 .mainNav .fa {
-    float: right;
+    width: 2em;
 }
 
 .mainNav .navtxt {
-    float: left;
+    margin-left: 1em;
 }
 
 .mainNav .navtxt:after {
@@ -123,7 +126,6 @@ background-color: var(--panel-button-selected);
 }
 
 #contentHeadline a {
-    color:white;
 }
 
 /**headers and controls**/
@@ -169,7 +171,6 @@ background-color: var(--panel-button-selected);
  *  Volume Slider
  ***********************/
 #mutebt {
-    color: white;
     float: left;
     margin-left: 8px;
     margin-top: 8px;
@@ -197,7 +198,7 @@ span.hostInfo {
  *  Pages, content  *
  ********************/
 #page {
-    background-color: #fff;
+    background-color: var(--body-background);
 }
 
 #searchartists {
@@ -234,7 +235,6 @@ span.hostInfo {
     padding: 2px;
     padding-top: 20px;
     border: 2px solid white;
-    color: white;
 }
 
 #homerows div i {
@@ -255,7 +255,6 @@ span.hostInfo {
  *  listviews  *
  ***************/
 .table li a {
-    color: #555 !important;
     font-size: 80% !important;
     display: block;
     padding: 2px;
@@ -296,7 +295,6 @@ span.hostInfo {
 }
 
 .info-table td {
-    color: #555 !important;
     padding: 2px;
     padding-right: 14px;
     padding-left: 14px;
@@ -312,7 +310,6 @@ span.hostInfo {
 }
 
 .info-table input {
-    color: #555;
     border: none;
     font-size: 1em;
     width: 100%;
@@ -384,7 +381,6 @@ span.hostInfo {
 }
 
 .moreBtn i {
-    color: #ddd;
     font-size: initial;
 }
 
@@ -396,8 +392,7 @@ span.hostInfo {
 
 .infoBtn i {
     font-size: 1.33em;
-    color: #ddd;
-    background: white;
+    background: red;
     border-radius: 50%;
     height: 1em;
     width: 1em;
@@ -435,7 +430,6 @@ span.hostInfo {
 }
 
 .footerControls #btplayNowPlaying {
-    font-size: 42px;
     margin-left: 10px;
     margin-right: 10px;
 }
@@ -444,7 +438,6 @@ span.hostInfo {
  *  Popups  *
  ************/
 #modalname a, #modaldetail a {
-    color: #444;
     background-color:#F8F8F5;
     text-decoration: none;
 }
@@ -470,7 +463,7 @@ span.hostInfo {
 #artistpopup,
 #coverpopup {
     max-width: 90%;
-    background: white;
+    background: gree;
     padding: 5px;
 }
 
@@ -493,7 +486,7 @@ span.hostInfo {
 /* Override to make buttons more visible in popups.*/
 #popupTracks .ui-btn-up-c,
 #popupQueue .ui-btn-up-c {
-    background: white;
+    background: orange;
 }
 
 /* Custom icons for popup listviews - see http://demos.jquerymobile.com/1.3.2/#CustomIcons */
@@ -504,7 +497,6 @@ span.hostInfo {
 .ui-icon-add:after,
 .ui-icon-addAll:after,
 .ui-icon-remove:after {
-    color: #34495e;
     font-family: 'FontAwesome';
 }
 
@@ -597,7 +589,6 @@ a {
     min-height: 50px;
     line-height: 48px;
     text-align: center;
-    color: white;
 }
 
 #infoname {
@@ -627,7 +618,6 @@ a {
 }
 
 #btplay {
-    color: white;
 }
 
 .songinfo {
@@ -639,7 +629,6 @@ a {
 .songinfo-text {
     text-align: left;
     line-height: 22px;
-    color: white;
     overflow: hidden;
     padding: 3px;
 }
@@ -650,7 +639,6 @@ a {
 
 /*helper*/
 .ui-loader h1 {
-    color: #efefef;
 }
 
 /*desktop*/

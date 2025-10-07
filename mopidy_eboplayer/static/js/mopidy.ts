@@ -875,7 +875,8 @@ class EventEmitter {
                 setTimeout(() =>  callback.call(this, ...data) , 0);
             });
         this.supervisors.forEach(callback => {
-            setTimeout(() => callback.call(this), 0);
+            console.log("emiting to supervisors");
+            setTimeout(() => callback.call(this, ...data), 0);
         });
     }
 
@@ -885,6 +886,7 @@ class EventEmitter {
             return;
         }
         if(typeof name === 'function') {
+            console.log("registering a supervisor");
             this.supervisors.push(name);
         }
     }
