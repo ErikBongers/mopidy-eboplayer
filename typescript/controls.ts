@@ -618,11 +618,12 @@ export function setVolume(value: number) {
 }
 
 //todo separate the controls gui setters from the send functions?
-
+function quadratic100(x:number) { return (x*x)/100;}
+function cubic100(x:number) { return (x*x*x)/10000;}
 export async function sendVolume(value: number) {
     if (!getState().volumeChanging) {
         getState().volumeChanging = true;
-        await getState().commands.core.mixer.setVolume(value);
+        await getState().commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
         setTimeout(() => getState().volumeChanging = false, 100); //don't allow re-sending volume within 0.1 second.
     }
 }

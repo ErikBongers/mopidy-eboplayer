@@ -8,7 +8,11 @@
   > perhaps merge this pane with Now Playing?
 * get rid of jQuery
 * flex or grid?
-*
+* setVolume(): use a curved function for better low volume control.
+  > User option?
+  > For both input and output in range [0..100]:
+    > Quadratic: (x*x)/100
+    > Cubic: (x*x*x)/10000
 
 
 
