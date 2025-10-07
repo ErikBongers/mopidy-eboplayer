@@ -34,7 +34,7 @@ async function showSongInfo (data) {
         name = activeLines.join("<br>");
     }
 
-    $('#modalname').html('<a href="#" onclick="return controls.showInfoPopup(\'' + data.track.uri + '\', \'\', mopidy);">' + activeLines.join("<br>") + '</span></a>')
+    $('#modalname').html(activeLines.join("<br>"))
     if (!artistsHtml && data.stream) {
         $('#modaldetail').html(data.track.name)
     } else if (artistsHtml.length) {
