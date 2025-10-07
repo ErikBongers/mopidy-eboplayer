@@ -1,6 +1,6 @@
 import logging
 
-from mopidy_eboplayer import Extension
+from mopidy_eboplayer2 import Extension
 
 logger = logging.getLogger(__name__)
 

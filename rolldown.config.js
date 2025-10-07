@@ -4,7 +4,7 @@ import { defineConfig } from 'rolldown';
 export default defineConfig({
     input: 'typescript/gui.ts',
     output: {
-        file: 'mopidy_eboplayer/static/generated/bundle.js',
+        file: 'mopidy_eboplayer2/static/generated/bundle.js',
         sourcemap: true,
     },
     plugins: [

@@ -1,5 +1,5 @@
 import {library} from "./library";
-import {models, Mopidy, Options} from "../mopidy_eboplayer/static/js/mopidy";
+import {models, Mopidy, Options} from "../mopidy_eboplayer2/static/js/mopidy";
 import {searchBlacklist, showLoading, showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
 import {SyncedProgressTimer} from "./synced_timer";
 import {processConsume, processCurrentposition, processCurrenttrack, processMute, processPlaystate, processRandom, processRepeat, processSingle, processVolume} from "./process_ws";

@@ -1,5 +1,5 @@
 {
-  "name": "mopidy-eboplayer",
+  "name": "mopidy-eboplayer2",
   "version": "0.0.1",
   "description": "Mopidy web extension based on Musicbox-webclient",
   "main": "gui.js",

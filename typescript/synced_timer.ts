@@ -1,5 +1,5 @@
 import {ProgressTimer} from "./timer";
-import {Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
+import {Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {Commands} from "../scripts/modules";
 
 function delay_exponential (base: number | 'rand', growthFactor: number, attempts: number) {

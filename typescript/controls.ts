@@ -3,7 +3,7 @@ import {updatePlayIcons} from "./functionsvars";
 import {library} from "./library";
 import {processCurrentposition} from "./process_ws";
 import getState from "./playerState";
-import {models, Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
+import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import Track = models.Track;
 
 /**

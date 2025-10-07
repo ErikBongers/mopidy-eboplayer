@@ -1,7 +1,7 @@
 import * as controls from "./controls";
 import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getAlbum, getArtist, getMediaClass, hasSameAlbum, isFavouritesPlaylist, renderSongLi, renderSongLiAlbumInfo, renderSongLiBackButton, renderSongLiDivider, resultsToTables, scrollToTracklist, showLoading, updatePlayIcons, validUri} from "./functionsvars";
 import * as images from "./images";
-import {models} from "../mopidy_eboplayer/static/js/mopidy";
+import {models} from "../mopidy_eboplayer2/static/js/mopidy";
 import getState from "./playerState";
 import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
 import TlTrack = models.TlTrack;

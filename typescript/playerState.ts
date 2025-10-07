@@ -1,4 +1,4 @@
-import {models, Mopidy} from "../mopidy_eboplayer/static/js/mopidy";
+import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
 import {DeepReadonly, Model} from "./model";
 import TlTrack = models.TlTrack;
