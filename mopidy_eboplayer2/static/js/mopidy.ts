@@ -875,7 +875,6 @@ class EventEmitter {
                 setTimeout(() =>  callback.call(this, ...data) , 0);
             });
         this.supervisors.forEach(callback => {
-            console.log("emiting to supervisors");
             setTimeout(() => callback.call(this, ...data), 0);
         });
     }

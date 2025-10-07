@@ -463,7 +463,7 @@ span.hostInfo {
 #artistpopup,
 #coverpopup {
     max-width: 90%;
-    background: gree;
+    /*background: green;*/
     padding: 5px;
 }
 
@@ -497,7 +497,7 @@ span.hostInfo {
 .ui-icon-add:after,
 .ui-icon-addAll:after,
 .ui-icon-remove:after {
-    font-family: 'FontAwesome';
+    font-family: 'FontAwesome', sans-serif;
 }
 
 .ui-icon-playAll:after {

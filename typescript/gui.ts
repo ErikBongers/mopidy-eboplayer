@@ -506,7 +506,7 @@ document.addEventListener("DOMContentLoaded",function () {
     slider.onmouseup = (ev) => { getState().volumeSliding = false; };
     // Connect to server
     let webSocketUrl = document.body.dataset.websocketUrl;
-    webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
+    // webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
     let connectOptions: Options = {
         webSocketUrl
     };
