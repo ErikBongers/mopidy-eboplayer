@@ -255,18 +255,21 @@ span.hostInfo {
  *  listviews  *
  ***************/
 .table li a {
-    color: #555 !important;
+    color: inherit;
     font-size: 80% !important;
     display: block;
     padding: 2px;
     padding-right: 4px;
     padding-left: 4px;
+    & i.fa-play-circle {
+        padding-top: 10px;
+    }
 }
 
+
 .table li {
-    background-color: #F8F8F5;
-    border: 1px solid  #CECECE;
-    border-bottom: 0;
+    background-color: transparent;
+    border-bottom: 1px solid rgba(206, 206, 206, 0.5);
     padding: 0;
 }
 
@@ -318,12 +321,18 @@ span.hostInfo {
     width: 100%;
 }
 
-.albumdivider h1, .table li h1 {
-    font-size: 120% !important;
+.table {
+    & li {
+        & h1 {
+            font-size: 120%;
+        }
+        &.albumdivider h1 {
+            font-size: 1.5em;
+        }
+    }
 }
 
 .albumdivider {
-    background-color: #ddd !important;
 }
 
 .smalldivider {
@@ -378,7 +387,6 @@ span.hostInfo {
 
 .song .moreBtn {
     float: right;
-    padding: 15px 18px 12px 22px;
     display: inline-block;
     line-height: 100%;
 }
@@ -404,7 +412,7 @@ span.hostInfo {
 }
 
 .backnav {
-    background-color: #ccc !important;
+    background-color: transparent;
 }
 
 .refreshLibraryBtnDiv {

@@ -77,9 +77,9 @@ var uriClassList = [
     ['spotify', 'fa-spotify'],
     ['spotifytunigo', 'fa-spotify'],
     ['spotifyweb', 'fa-spotify'],
-    ['local', 'fa-file-sound-o'],
-    ['file', 'fa-file-sound-o'],
-    ['m3u', 'fa-file-sound-o'],
+    ['local', ''],
+    ['file', ''],
+    ['m3u', ''],
     ['podcast', 'fa-rss-square'],
     ['podcast+file', 'fa-rss-square'],
     ['podcast+itunes', 'fa-apple'],
@@ -523,22 +523,22 @@ function isStreamUri (uri) {
 }
 
 function getMediaClass (track) {
-    var defaultIcon = 'fa-file-sound-o'
-    var type = track.type
+    var defaultIcon = '';
+    var type = track.type;
     if (typeof type === 'undefined' || type === 'track') {
         if (!isPlayable(track)) {
-            return 'fa fa-file-o'  // Unplayable file
+            return 'fa fa-file-o';  // Unplayable file
         } else if (isStreamUri(track.uri)) {
-            return 'fa fa-rss'  // Stream
+            return 'fa fa-rss';  // Stream
         }
     } else if (type === 'directory') {
-        return 'fa fa-folder-o'
+        return 'fa fa-folder-o';
     } else if (type === 'album') {
         // return 'fa fa-bullseye'  // Album
-        defaultIcon = 'fa-folder-o'
+        defaultIcon = 'fa-folder-o';
     } else if (type === 'artist') {
         // return 'fa fa-user-circle-o'  // Artist
-        defaultIcon = 'fa-folder-o'
+        defaultIcon = 'fa-folder-o';
     } else if (type === 'playlist') {
         // return 'fa fa-star'  // Playlist
     }
@@ -546,12 +546,12 @@ function getMediaClass (track) {
         var scheme = getScheme(track.uri)
         for (var i = 0; i < uriClassList.length; i++) {
             if (scheme === uriClassList[i][0]) {
-                return 'fa ' + uriClassList[i][1]
+                return 'fa ' + uriClassList[i][1];
             }
         }
-        return 'fa ' + defaultIcon
+        return 'fa ' + defaultIcon;
     }
-    return ''
+    return '';
 }
 
 function getMediaHuman (uri) {
