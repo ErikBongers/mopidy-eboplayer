@@ -10,6 +10,7 @@ import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import TlTrack = models.TlTrack;
 import {initSocketevents} from "./controler";
+import {HeaderView} from "./views/headerView";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -391,11 +392,12 @@ document.addEventListener("DOMContentLoaded",function () {
     slider.onchange = (ev) => { sendVolume(parseInt((ev.target as HTMLInputElement).value)).then(); };
     slider.onmousedown = (ev) => { getState().volumeSliding = true;};
     slider.onmouseup = (ev) => { getState().volumeSliding = false; };
-    // Connect to server
+
     // let webSocketUrl = document.body.dataset.websocketUrl;
     let webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
     let connectOptions: Options = {
-        webSocketUrl
+        webSocketUrl,
+        autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
     };
     let mopidy = new Mopidy(connectOptions);
     let commands = new Commands(mopidy);
@@ -403,9 +405,13 @@ document.addEventListener("DOMContentLoaded",function () {
     let state = new State(mopidy, commands, timer);
     setState(state);
 
-    // initialize events
+    let headerView = new HeaderView();
+    getState().addView(headerView);
+
     initSocketevents();
     clearSelectedTrack();
+
+    mopidy.connect();
 });
 
 function updateDocumentTitle (headline) {

@@ -3,6 +3,7 @@ import {SyncedProgressTimer} from "./synced_timer";
 import {DeepReadonly, Model} from "./model";
 import TlTrack = models.TlTrack;
 import {Commands} from "../scripts/commands";
+import {HeaderView, View} from "./views/headerView";
 
 export class State {
     mopidy: Mopidy;
@@ -53,8 +54,13 @@ export class State {
         this.syncedProgressTimer = syncedProgressTimer;
         this.model = new Model();
     }
-
+    views: View[] = [];
     getModel(): DeepReadonly<Model> { return this.model; }
+
+    addView(view:View) {
+        this.views.push(view);
+        view.bind();
+    }
 }
 
 let state: State = undefined; //todo: assuming here that all calls to getState() will receive a valid state object.
