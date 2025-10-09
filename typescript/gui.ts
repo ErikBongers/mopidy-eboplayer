@@ -1,14 +1,15 @@
 import {library} from "./library";
 import {models, Mopidy, Options} from "../mopidy_eboplayer2/static/js/mopidy";
-import {searchBlacklist, showLoading, showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
+import {showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
 import {SyncedProgressTimer} from "./synced_timer";
-import {processConsume, processCurrentposition, processCurrenttrack, processMute, processPlaystate, processRandom, processRepeat, processSingle, processVolume} from "./process_ws";
+import {processCurrentposition, processCurrenttrack, processMute, processPlaystate, processVolume} from "./process_ws";
 import * as controls from "./controls";
 import {sendVolume} from "./controls";
 import getState, {setState, State} from "./playerState";
 import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import TlTrack = models.TlTrack;
+import {initSocketevents} from "./controler";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -268,109 +269,6 @@ function showAlbumPopup (popupId) {
     library.showAlbum(getState().popupData[uri].album.uri, getState().mopidy);
 }
 
-/** ********************
- * initialize sockets *
- **********************/
-
-function initSocketevents () {
-    getState().mopidy.on('state:online', function () {
-        showOffline(false);
-        library.getCurrentPlaylist();
-        updateStatusOfAll();
-        library.getPlaylists();
-        controls.getUriSchemes().then(function () {
-            controls.showFavourites();
-        });
-        library.getBrowseDir(undefined);
-        library.getSearchSchemes(searchBlacklist, getState().mopidy);
-        showLoading(false);
-        //todo $(window).hashchange()
-    });
-
-    getState().mopidy.on('state:offline', function () {
-        clearSelectedTrack();
-        showOffline(true);
-    });
-
-    getState().mopidy.on('event:optionsChanged', updateOptions);
-
-    getState().mopidy.on('event:trackPlaybackStarted', function (data) {
-        processCurrenttrack(data.tl_track);
-        controls.setPlayState(true);
-    });
-
-    getState().mopidy.on('event:trackPlaybackResumed', function (data) {
-        processCurrenttrack(data.tl_track);
-        controls.setPlayState(true); //todo: pass this through the model and it's listeners.
-    });
-
-    getState().mopidy.on('event:playlistsLoaded', function () {
-        showLoading(true);
-        library.getPlaylists();
-    });
-
-    getState().mopidy.on('event:playlistChanged', function (data) {
-        (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'none';
-        (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block';
-        delete getState().playlists[data.playlist.uri];
-        library.getPlaylists();
-    })
-
-    getState().mopidy.on('event:playlistDeleted', function (data) {
-        (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'none';
-        (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block';
-        delete getState().playlists[data.uri];
-        library.getPlaylists();
-    })
-
-    getState().mopidy.on('event:volumeChanged', function (data) {
-        controls.setVolume(data.volume)
-    })
-
-    getState().mopidy.on('event:muteChanged', function (data) {
-        controls.setMute(data.mute)
-    })
-
-    getState().mopidy.on('event:playbackStateChanged', function (data) {
-        switch (data.new_state) {
-            case 'paused':
-            case 'stopped':
-                controls.setPlayState(false)
-                break
-            case 'playing':
-                controls.setPlayState(true)
-                break
-        }
-    })
-
-    getState().mopidy.on('event:tracklistChanged', function () {
-        library.getCurrentPlaylist()
-    })
-
-    getState().mopidy.on('event:seeked', function (data) {
-        controls.setPosition(data.time_position);
-        if (getState().play) {
-            getState().syncedProgressTimer.start()
-        }
-    })
-
-    getState().mopidy.on('event:streamTitleChanged', function (data) {
-        // The stream title is separate from the current track.
-        setStreamTitle(data.title)
-        controls.setPlayState(true)
-    })
-
-    // @ts-ignore
-    getState().mopidy.on("event:streamHistoryChanged", function(data: any) {
-        console.log("Stream history changegd:", data);
-        fetchAndShowActiveStreamLines().then(() => {});
-    });
-
-    //log all events:
-   getState().mopidy.on(console.log.bind(console));
-
-}
-
 /** ************
  * gui stuff  *
  **************/
@@ -407,20 +305,11 @@ function doSwitchContent(divid: string, uri: string = undefined) {
 }
 
 // update tracklist options.
-function updateOptions () {
-    getState().commands.core.tracklist.getRepeat().then(processRepeat, console.error)
-    getState().commands.core.tracklist.getRandom().then(processRandom, console.error)
-    getState().commands.core.tracklist.getConsume().then(processConsume, console.error)
-    getState().commands.core.tracklist.getSingle().then(processSingle, console.error)
-}
-
 // update everything as if reloaded
 function updateStatusOfAll () {
     getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
     getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
     getState().commands.core.playback.getState().then(processPlaystate, console.error)
-
-    updateOptions()
 
     getState().commands.core.mixer.getVolume().then(processVolume, console.error)
     getState().commands.core.mixer.getMute().then(processMute, console.error)
@@ -498,15 +387,13 @@ document.addEventListener("DOMContentLoaded",function () {
         doSwitchContent('nowPlaying');
     }
 
-    document.getElementById('songinfo').onclick = () => doSwitchContent('nowPlaying');
-    document.getElementById('albumCoverImg').onclick =  () => doSwitchContent('current');
     let slider = document.querySelector<HTMLInputElement>('#volumeslider');
     slider.onchange = (ev) => { sendVolume(parseInt((ev.target as HTMLInputElement).value)).then(); };
     slider.onmousedown = (ev) => { getState().volumeSliding = true;};
     slider.onmouseup = (ev) => { getState().volumeSliding = false; };
     // Connect to server
-    let webSocketUrl = document.body.dataset.websocketUrl;
-    // webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
+    // let webSocketUrl = document.body.dataset.websocketUrl;
+    let webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
     let connectOptions: Options = {
         webSocketUrl
     };

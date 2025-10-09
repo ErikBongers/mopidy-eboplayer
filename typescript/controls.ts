@@ -480,25 +480,25 @@ export function doShuffle() {
 
 /* Toggle state of play button */
 export function setPlayState(nwplay) {
-    if (nwplay) {
-        document.querySelector('#btplayNowPlaying >i').classList.remove('fa-play');
-        document.querySelector('#btplayNowPlaying >i').classList.add('fa-pause');
-        document.querySelector('#btplayNowPlaying').setAttribute('title', 'Pause');
-        (document.querySelector('#btplay >i') as HTMLElement).classList.remove('fa-play');
-        (document.querySelector('#btplay >i') as HTMLElement).classList.add('fa-pause');
-        document.querySelector('#btplay').setAttribute('title', 'Pause');
-        getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
-        getState().syncedProgressTimer.start();
-    } else {
-        document.querySelector('#btplayNowPlaying >i').classList.remove('fa-pause');
-        document.querySelector('#btplayNowPlaying >i').classList.add('fa-play');
-        document.querySelector('#btplayNowPlaying').setAttribute('title', 'Play');
-        document.querySelector('#btplay >i').classList.remove('fa-pause');
-        document.querySelector('#btplay >i').classList.add('fa-play');
-        document.querySelector('#btplay').setAttribute('title', 'Play');
-        getState().syncedProgressTimer.stop();
-    }
-    getState().play = nwplay;
+    // if (nwplay) {
+    //     document.querySelector('#btplayNowPlaying >i').classList.remove('fa-play');
+    //     document.querySelector('#btplayNowPlaying >i').classList.add('fa-pause');
+    //     document.querySelector('#btplayNowPlaying').setAttribute('title', 'Pause');
+    //     (document.querySelector('#btplay >i') as HTMLElement).classList.remove('fa-play');
+    //     (document.querySelector('#btplay >i') as HTMLElement).classList.add('fa-pause');
+    //     document.querySelector('#btplay').setAttribute('title', 'Pause');
+    //     getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
+    //     getState().syncedProgressTimer.start();
+    // } else {
+    //     document.querySelector('#btplayNowPlaying >i').classList.remove('fa-pause');
+    //     document.querySelector('#btplayNowPlaying >i').classList.add('fa-play');
+    //     document.querySelector('#btplayNowPlaying').setAttribute('title', 'Play');
+    //     document.querySelector('#btplay >i').classList.remove('fa-pause');
+    //     document.querySelector('#btplay >i').classList.add('fa-play');
+    //     document.querySelector('#btplay').setAttribute('title', 'Play');
+    //     getState().syncedProgressTimer.stop();
+    // }
+    // getState().play = nwplay;
 }
 
 // play or pause
@@ -541,30 +541,6 @@ export function setTracklistOption(name: string, new_value: boolean) {
         document.querySelector('#' + name + 'bt').setAttribute('style', 'color:#66DD33');
     }
     return new_value;
-}
-
-export function setRepeat(nwrepeat: boolean) {
-    if (getState().repeat !== nwrepeat) {
-        getState().repeat = setTracklistOption('repeat', nwrepeat);
-    }
-}
-
-export function setRandom(nwrandom: boolean) {
-    if (getState().random !== nwrandom) {
-        getState().random = setTracklistOption('random', nwrandom);
-    }
-}
-
-export function setConsume(nwconsume: boolean) {
-    if (getState().consume !== nwconsume) {
-        getState().consume = setTracklistOption('consume', nwconsume);
-    }
-}
-
-export function setSingle(nwsingle: boolean) {
-    if (getState().single !== nwsingle) {
-        getState().single = setTracklistOption('single', nwsingle);
-    }
 }
 
 export function doRandom() {

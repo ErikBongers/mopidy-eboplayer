@@ -1,16 +1,68 @@
+/* disable text selection for mouse swipe */
+body * {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    -o-user-select: none;
+    user-select: none;
+}
+
+/* but fix for text input (safari certainly needs it)*/
+input[type=text] {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    -o-user-select: text;
+    user-select: text;
+}
+
 * {
---body-background: #323;
---header-background: #2a1c2a;
---panel-background: black;
---panel-button-background: transparent;
---panel-button-selected: purple;
+    --body-background: #323;
+    --header-background: #2a1c2a;
+    --panel-background: black;
+    --panel-button-background: transparent;
+    --panel-button-selected: purple;
+    font-family: "Sofia Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+}
+
+
+.title.condensed  {
+    font-family: "Sofia Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+}
+
+p {
+    padding: 0;
+    margin: 0;
+}
+
+button, input[type="submit"], input[type="reset"] {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font: inherit;
+    cursor: pointer;
+    outline: inherit;
+}
+
+#modalinfo {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 1em;
 }
 
 h3#modalname a{
     background-color: transparent;
 }
-#header {
-background-color: var(--header-background);
+.nobullet {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
 }
 
 body {
@@ -21,6 +73,72 @@ color: white;
 a {
     color: white;
 }
+
+ul#header {
+    background-color: var(--header-background);
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    li {
+        display: inline;
+    }
+}
+
+p.warning  {
+    background-color: #ffaa00a0;
+    border-radius: .5em;
+    padding-left: 1em;
+    padding-right: 1em;
+}
+
+.albumCoverContainer {
+    max-width: 90%;
+    max-height: 90%;
+    text-align: center;
+    img {
+        width: 100%;
+        height: 100%;
+        object-fit: fill;
+        /*display: block;*/
+    }
+}
+
+input[type='range'].minimal {
+
+    & {
+        margin: 0;
+        overflow: hidden;
+        -webkit-appearance: none;
+        background-color: #ffffff30;
+    }
+
+    &::-webkit-slider-runnable-track {
+        height: 2px;
+        -webkit-appearance: none;
+        color: white;
+        margin-top: -1px;
+    }
+
+    &::-webkit-slider-thumb {
+        width: 5px;
+        appearance: none;
+        height: 5px;
+        cursor: ew-resize;
+        background: white;
+        box-shadow: -999px 0 0 999px #ffffff40;
+    }
+}
+
+#buttonBar  {
+    display: flex;
+    flex-wrap: wrap;
+}
+
+
+
+
+
+
 .ui-body-a, .ui-overlay-a {
 background-color: var(--panel-background);
 }
@@ -406,16 +524,6 @@ span.hostInfo {
     display: none;
 }
 
-
-/**********************
- *  Now Playing area  *
- **********************/
-#nowPlayingFooter {
-    height: 50px;
-    line-height: 48px;
-    text-align: center;
-}
-
 .footerControls {
     height: 100%;
     font-size: 25px;
@@ -442,12 +550,6 @@ span.hostInfo {
     text-decoration: none;
 }
 
-#modalinfo {
-    position: relative;
-    display: inline-block;
-    padding-top: .5em;
-}
-
 .popupArtistLi,
 .popupAlbumLi {
     display: none
@@ -472,15 +574,10 @@ span.hostInfo {
     margin-top: 10px;
 }
 
-#albumCoverImg,
 #coverpopupimage,
 #artistpopupimage {
     display: block;
-    margin-left: auto;
-    margin-right: auto;
-    margin-bottom: 10px;
-    max-width: 90%;
-    max-height: 90%;
+    margin: 0;
 }
 
 /* Override to make buttons more visible in popups.*/
@@ -660,67 +757,3 @@ a {
     }
 }
 
-/*tablets and desktop*/
-@media (min-width: 35em) {
-    .ui-responsive-panel .ui-panel-dismiss-display-reveal {
-        display: none;
-    }
-
-    .popupDialog {
-        min-width: 320px;
-    }
-}
-
-/*smartphones*/
-@media (max-width: 35em) {
-    #nowPlayingpane {
-        padding: 15px 25px 0 25px;
-        max-width: 90%;
-        max-height: 90%;
-    }
-
-    .nowPlaying-artistInfo {
-        font-size: 12px;
-    }
-
-    .nowPlaying-artistInfo h3 {
-        margin: 0 0 3px 0;
-        white-space: nowrap;
-        overflow: hidden;
-    }
-
-    #albumCoverImg {
-        max-width: 90%;
-        max-height: 90%;
-        margin-bottom: 3px;
-    }
-
-    #nowPlayingpane #slidercontainer {
-        margin-left: -5px;
-        margin-right: -5px;
-    }
-
-    .nowPlayingControls{
-        font-size: 1.3em;
-        height: 50px;
-        line-height: 48px;
-    }
-}
-
-/* disable text selection for mouse swipe */
-body * {
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
-}
-
-/* but fix for text input (safari certainly needs it)*/
-input[type=text] {
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    -o-user-select: text;
-    user-select: text;
-}

@@ -71,22 +71,6 @@ export function processMute (data: boolean | null) {
     controls.setMute(data);
 }
 
-export function processRepeat (data) {
-    controls.setRepeat(data);
-}
-
-export function processRandom (data) {
-    controls.setRandom(data);
-}
-
-export function processConsume (data) {
-    controls.setConsume(data);
-}
-
-export function processSingle (data) {
-    controls.setSingle(data);
-}
-
 export function processCurrentposition (data) {
     controls.setPosition(parseInt(data))
 }

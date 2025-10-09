@@ -1,6 +1,14 @@
-* Try to create a new version of the Extension in this same repo.
-  > rename sub-folder mopidy_eboplayer2
-  >
+Layout
+=========
+
+Start screen always last track/stream.
+Menu contains: Queue, Playlists.
+Browse is a button within Queue and Playlist(s).
+Browse shows files, streams and playlists.
+Search is an option within browse or a field on top?
+
+
+
 
 * On stream start, and extension start: clear history or at least write a dummy history block:
       ---
@@ -17,7 +25,6 @@
   > For both input and output in range [0..100]:
     > Quadratic: (x*x)/100
     > Cubic: (x*x*x)/10000
-
 
 
 * "Streams" are mopidy playlists.
