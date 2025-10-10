@@ -49,7 +49,7 @@ button, input[type="submit"], input[type="reset"] {
     outline: inherit;
 }
 
-#modalinfo {
+#trackInfoBig {
     display: flex;
     align-items: center;
     justify-content: center;

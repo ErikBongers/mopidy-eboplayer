@@ -106,7 +106,7 @@ function updateFileTrackView (trackInfo: FileTrackModel) {
 
     if (trackInfo.tlTrack.track.uri) {
         // Add 'Show Info' icon to album image
-        document.getElementById('modalinfo').append(
+        document.getElementById('trackInfoBig').append(
             '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
             '<i class="fa fa-info-circle"></i></a>')
     }
@@ -132,7 +132,7 @@ function updateStreamTrackView (trackInfo: StreamTrackModel) {
     getState().albumText = '';
     if (trackInfo.tlTrack.track.uri) {
         // Add 'Show Info' icon to album image
-        document.getElementById('modalinfo').append(
+        document.getElementById('trackInfoBig').append(
             '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
             '<i class="fa fa-info-circle"></i></a>')
     }
