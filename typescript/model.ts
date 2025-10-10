@@ -54,7 +54,14 @@ interface PlaybackState {
     single: boolean
 }
 
-export class Model extends EventTarget {
+export interface ViewModel extends EventTarget {
+    getConnectionState: () => ConnectionState;
+    getActiveTrack: () => DeepReadonly<TrackModel>;
+    getCurrentMessage: () => Message;
+    getVolume: () => number;
+}
+
+export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
     activeTrack: TrackModel = Model.NoTrack;
     volume: number;
@@ -107,7 +114,7 @@ export class Model extends EventTarget {
         this.dispatchEvent(new Event(EboplayerEvents.messageChanged));
     }
 
-    getCurrentMessage =  () => this.currentMessage;
+    getCurrentMessage = () => this.currentMessage;
 
     clearMessage() {
         this.setMessage( { type: MessageType.None, message: ""});

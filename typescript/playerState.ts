@@ -1,9 +1,11 @@
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
-import {DeepReadonly, Model} from "./model";
+import {DeepReadonly, Model, ViewModel} from "./model";
 import TlTrack = models.TlTrack;
 import {Commands} from "../scripts/commands";
-import {HeaderView, View} from "./views/headerView";
+import {HeaderView} from "./views/headerView";
+import {View} from "./views/view";
+import {Controller} from "./controller";
 
 export class State {
     mopidy: Mopidy;
@@ -21,8 +23,6 @@ export class State {
     volumeSliding: boolean = false;
 
     positionChanging: boolean = false;
-
-    initgui: boolean = true;
     popupData = {};  // TODO: Refactor into one shared cache,
     songlength: number = 0;
 
@@ -30,8 +30,6 @@ export class State {
     artistsText: string = '';
     albumHtml: string = '';
     albumText: string = '';
-    songname: string = '';
-
     streamUris = {}; //TODO: EBO added this to make gui.ts compile.
 
     songdata: (TlTrack | undefined) = undefined;
@@ -46,20 +44,23 @@ export class State {
     customTracklists =  [];  // TODO: Refactor into one shared cache,
 
     browseStack =  [];
-    private readonly model: Model;
+    private readonly model: ViewModel;
+    private readonly controller: Controller;
 
-    constructor(mopidy: Mopidy, commands: Commands, syncedProgressTimer: SyncedProgressTimer) {
+    constructor(mopidy: Mopidy, commands: Commands, syncedProgressTimer: SyncedProgressTimer, model: ViewModel, controller: Controller) {
         this.mopidy = mopidy;
         this.commands = commands;
         this.syncedProgressTimer = syncedProgressTimer;
-        this.model = new Model();
+        this.model = model;
+        this.controller = controller;
     }
     views: View[] = [];
-    getModel(): DeepReadonly<Model> { return this.model; }
+    getModel = (): DeepReadonly<ViewModel> => this.model;
+    getController = () => this.controller;
 
-    addView(view:View) {
-        this.views.push(view);
-        view.bind();
+    addViews(...views:View[]) {
+        this.views.push(...views);
+        views.forEach(v => v.bind());
     }
 }
 

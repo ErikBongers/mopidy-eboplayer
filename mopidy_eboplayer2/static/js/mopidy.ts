@@ -923,7 +923,7 @@ function snakeToCamel(name: string) {
 export class Mopidy extends EventEmitter {
     _options: Options;
     private _backoffDelay: number;
-    private _pendingRequests: {};
+    private _pendingRequests: {}; //this initialization gets stripped by rolldown!
     private _webSocket: WebSocket;
     constructor(options: Options) {
         super();

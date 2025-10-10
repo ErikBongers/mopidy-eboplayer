@@ -60,11 +60,11 @@ function transformTrackDataToModel(data: TlTrack) {
     //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
     // images.fetchAlbumImage(data.track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
 
-    getState().getModel().setActiveTrack(model); //todo: how to differenciate between a stream and a track?
+    getState().getController().setActiveTrack(model); //todo: how to differenciate between a stream and a track?
 }
 
 export function processVolume (data: number | null) {
-    controls.setVolume(data);
+    getState().getController().setVolume(data);
 }
 
 export function processMute (data: boolean | null) {

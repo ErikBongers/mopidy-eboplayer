@@ -4,13 +4,13 @@ import {showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./func
 import {SyncedProgressTimer} from "./synced_timer";
 import {processCurrentposition, processCurrenttrack, processMute, processPlaystate, processVolume} from "./process_ws";
 import * as controls from "./controls";
-import {sendVolume} from "./controls";
 import getState, {setState, State} from "./playerState";
-import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
+import {FileTrackModel, Model, StreamTrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import TlTrack = models.TlTrack;
-import {initSocketevents} from "./controler";
 import {HeaderView} from "./views/headerView";
+import {Controller} from "./controller";
+import {VolumeView} from "./views/volumeView";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -21,9 +21,9 @@ import {HeaderView} from "./views/headerView";
  * Song Info Sreen  *
  ********************/
 function clearSelectedTrack () {
-    controls.setPlayState(false);
-    controls.setPosition(0);
-    getState().getModel().clearActiveTrack();
+    // controls.setPlayState(false);
+    // controls.setPosition(0);
+    // getState().getModel().clearActiveTrack();
 }
 
 async function fetchAndShowActiveStreamLines () {
@@ -61,16 +61,16 @@ function resizeMb () {
 }
 
 function onActiveTrackChanged() {
-    if(getState().getModel().activeTrack.type == TrackType.Stream) {
-        let trackInfo = getState().getModel().getActiveTrack();
-        if(trackInfo.type == TrackType.Stream)
-            updateStreamTrackView(trackInfo as StreamTrackModel);
-    }
-    else if (getState().getModel().activeTrack.type == TrackType.File) {
-        let trackInfo = getState().getModel().getActiveTrack();
-        if(trackInfo.type == TrackType.File)
-            updateFileTrackView(trackInfo as FileTrackModel);
-    }
+    // if(getState().getModel().activeTrack.type == TrackType.Stream) {
+    //     let trackInfo = getState().getModel().getActiveTrack();
+    //     if(trackInfo.type == TrackType.Stream)
+    //         updateStreamTrackView(trackInfo as StreamTrackModel);
+    // }
+    // else if (getState().getModel().activeTrack.type == TrackType.File) {
+    //     let trackInfo = getState().getModel().getActiveTrack();
+    //     if(trackInfo.type == TrackType.File)
+    //         updateFileTrackView(trackInfo as FileTrackModel);
+    // }
 }
 
 function updateFileTrackView (trackInfo: FileTrackModel) {
@@ -388,11 +388,6 @@ document.addEventListener("DOMContentLoaded",function () {
         doSwitchContent('nowPlaying');
     }
 
-    let slider = document.querySelector<HTMLInputElement>('#volumeslider');
-    slider.onchange = (ev) => { sendVolume(parseInt((ev.target as HTMLInputElement).value)).then(); };
-    slider.onmousedown = (ev) => { getState().volumeSliding = true;};
-    slider.onmouseup = (ev) => { getState().volumeSliding = false; };
-
     // let webSocketUrl = document.body.dataset.websocketUrl;
     let webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
     let connectOptions: Options = {
@@ -402,13 +397,19 @@ document.addEventListener("DOMContentLoaded",function () {
     let mopidy = new Mopidy(connectOptions);
     let commands = new Commands(mopidy);
     let timer = new SyncedProgressTimer(8, mopidy, commands);
-    let state = new State(mopidy, commands, timer);
+    let model = new Model();
+
+    let controller = new Controller(model, mopidy);
+
+    controller.initSocketevents();
+
+    let state = new State(mopidy, commands, timer, model, controller);
     setState(state);
 
     let headerView = new HeaderView();
-    getState().addView(headerView);
+    let slider = new VolumeView("volumeslider")
+    getState().addViews(headerView, slider);
 
-    initSocketevents();
     clearSelectedTrack();
 
     mopidy.connect();

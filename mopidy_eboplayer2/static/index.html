@@ -18,15 +18,15 @@
     <link href="https://fonts.googleapis.com/css2?family=Sofia+Sans+Extra+Condensed:ital,wght@0,1..1000;1,1..1000&family=Sofia+Sans:ital,wght@0,1..1000;1,1..1000&display=swap" rel="stylesheet">
 </head>
 
-<body data-websocket-url="{{ websocketUrl }}" data-on-track-click="{{ onTrackClick }}" data-hostname="{{ hostname }}" data-title="{{ title }}">
-<div data-role="page" id="page" class="ui-responsive-panel" data-theme="c" data-title="{{ title }}">
+<body data-websocket-url="{{ websocketUrl }}" data-hostname="{{ hostname }}" data-title="{{ title }}">
+<div id="page" data-title="{{ title }}">
 
     <ul id="header" class="nobullet title condensed">
         <li>
             <button id="headermenubtn"><i class="fa fa-align-justify"></i></button>
         </li>
         <li>
-            <p id="contentHeadline" class="warning" >Header text...</p>
+            <p id="contentHeadline">Initializing...</p>
         </li>
         <li>
             <button id="headersearchbtn" onclick="switchContent('search' ); return false;" title="Search"><i class="fa fa-search"></i></button>

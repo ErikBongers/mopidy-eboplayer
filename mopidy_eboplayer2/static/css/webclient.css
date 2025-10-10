@@ -82,11 +82,16 @@ ul#header {
     li {
         display: inline;
     }
+    p {
+        padding: .2em 1em;
+        font-size: .7em;
+        margin-top: .2em;
+    }
 }
 
 p.warning  {
     background-color: #ffaa00a0;
-    border-radius: .5em;
+    border-radius: 50vh;
     padding-left: 1em;
     padding-right: 1em;
 }

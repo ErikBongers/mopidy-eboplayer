@@ -5,7 +5,8 @@
   "main": "gui.js",
   "type": "module",
   "scripts": {
-    "build": "rolldown -c"
+    "build": "rolldown -c",
+    "compile": "tsc"
   },
   "dependencies": {
   },

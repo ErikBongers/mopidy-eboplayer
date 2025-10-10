@@ -1,3 +1,20 @@
+MVC...or whataver
+==================
+* Model contains current state.
+* Controller
+  > receives messages from WebSocket and sets the model.
+    > the model informs it's listeners (Views).
+  > has commands to change data.
+    > changes are sent to WebSocket, NOT to the model directly!
+* Views
+  > listen to model events.
+  > send commands to the controller.
+* Encapsulation
+  > Only the controller can set the model.
+  > Views can only read ( get...() ) the model.
+  > Views can only change data through the commands.
+
+
 Layout
 =========
 

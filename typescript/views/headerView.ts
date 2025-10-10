@@ -1,18 +1,15 @@
 import getState from "../playerState";
-import {ConnectionState, EboplayerEvents, MessageType} from "../model";
+import {EboplayerEvents, MessageType} from "../model";
+import {View} from "./view";
 
-export abstract class View {
-    abstract bind(): void;
-}
-
- export class HeaderView extends View {
+export class HeaderView extends View {
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.messageChanged, () => {
-            this.onMesssageChangegd();
+            this.onMessageChangegd();
         });
     }
 
-    private onMesssageChangegd() {
+    private onMessageChangegd() {
         let msg = getState().getModel().getCurrentMessage();
         let headerSpan = document.getElementById("contentHeadline");
         headerSpan.innerText = msg.message;
@@ -21,5 +18,5 @@ export abstract class View {
         } else {
             headerSpan.classList.remove("warning", "error");
         }
-    }sdfsdfsdf
+    }
 }

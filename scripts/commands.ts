@@ -5,7 +5,7 @@ import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
 
 export class Commands {
-    private mopidy: Mopidy;
+    protected mopidy: Mopidy;
     
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
