@@ -12,6 +12,7 @@ import {HeaderView} from "./views/headerView";
 import {Controller} from "./controller";
 import {VolumeView} from "./views/volumeView";
 import {BigTrackView} from "./views/bigTrackView";
+import {ButtonBarView} from "./views/buttonBarView";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -384,10 +385,10 @@ function locationHashChanged () {
 document.addEventListener("DOMContentLoaded",function () {
     showOffline(true);
 
-    window.onhashchange = locationHashChanged;
-    if (location.hash.length < 2) {
-        doSwitchContent('nowPlaying');
-    }
+    // window.onhashchange = locationHashChanged;
+    // if (location.hash.length < 2) {
+    //     doSwitchContent('nowPlaying');
+    // }
 
     // let webSocketUrl = document.body.dataset.websocketUrl;
     let webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
@@ -410,7 +411,8 @@ document.addEventListener("DOMContentLoaded",function () {
     let headerView = new HeaderView();
     let slider = new VolumeView("volumeslider")
     let currentTrackView = new BigTrackView();
-    getState().addViews(headerView, slider, currentTrackView);
+    let buttonBarView = new ButtonBarView();
+    getState().addViews(headerView, slider, currentTrackView, buttonBarView);
 
     clearSelectedTrack();
 

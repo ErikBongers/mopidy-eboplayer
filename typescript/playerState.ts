@@ -79,6 +79,10 @@ export class State {
                    //todo: convert to FileTrack or StreamTrack
                    this.getController().setCurrentTrack(track);
                    break;
+               case  EboPlayerDataType.PlayState:
+                   let state = await this.commands.core.playback.getState() as string;
+                   this.getController().setPlayState(state);
+                   break;
            }
         }
     }

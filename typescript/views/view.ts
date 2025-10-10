@@ -1,6 +1,7 @@
 export enum EboPlayerDataType {
     Volume,
-    CurrentTrack
+    CurrentTrack,
+    PlayState,
 }
 
 export abstract class View {

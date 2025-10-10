@@ -503,16 +503,6 @@ export function setPlayState(nwplay) {
 
 // play or pause
 export function doPlay() {
-    // toast('Please wait...', 250)
-    if (!getState().play) {
-        getState().commands.core.playback.play();
-    } else {
-        if (isStreamUri(getState().songdata?.track?.uri)) {
-            getState().commands.core.playback.stop();
-        } else {
-            getState().commands.core.playback.pause();
-        }
-    }
     setPlayState(!getState().play);
 }
 

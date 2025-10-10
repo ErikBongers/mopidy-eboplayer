@@ -29,7 +29,7 @@ export enum EboplayerEvents {
     activeTrackChanged = "eboplayer.activeTrackChanged",
     volumeChanged = "eboplayer.volumeChanged",
     connectionChanged = "eboplayer.connectionChanged",
-    playbackStateChanged = "eboplayer.playbackStateChanged",
+    playStateChanged = "eboplayer.playbackStateChanged",
     messageChanged = "eboplayer.messageChanged",
     currentTrackChanged = "eboplayer.currentTrackChanged",
 }
@@ -49,11 +49,17 @@ interface Message {
     message: string
 }
 
-interface PlaybackState {
+interface PlaybackModesState {
     repeat:  boolean,
     random: boolean,
     consume: boolean,
     single: boolean
+}
+
+export enum PlayState  {
+    stopped  = "stopped",
+    playing  =  "playing",
+    paused = "paused"
 }
 
 export interface ViewModel extends EventTarget {
@@ -61,6 +67,7 @@ export interface ViewModel extends EventTarget {
     getActiveTrack: () => DeepReadonly<TrackModel>;
     getCurrentMessage: () => Message;
     getVolume: () => number;
+    getPlayState: () => PlayState;
 }
 
 export class Model extends EventTarget implements ViewModel {
@@ -73,12 +80,13 @@ export class Model extends EventTarget implements ViewModel {
         message: ""
     };
 
-    playbackState: PlaybackState = {
+    playbackModesState: PlaybackModesState = {
         repeat: false,
         random: false,
         consume: false,
         single: false
     }
+    private playState: PlayState;
 
     constructor() {
         super();
@@ -131,9 +139,9 @@ export class Model extends EventTarget implements ViewModel {
         this.setMessage( { type: MessageType.Error, message});
     }
 
-    setPlaybackState(state: PlaybackState) {
-        this.playbackState = {...state};
-        this.dispatchEvent(new Event(EboplayerEvents.playbackStateChanged));
+    setPlaybackState(state: PlaybackModesState) {
+        this.playbackModesState = {...state};
+        this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
     }
 
     getVolume = () => this.volume;
@@ -141,5 +149,14 @@ export class Model extends EventTarget implements ViewModel {
     setCurrentTrack(track: models.TlTrack) {
         this.activeTrack = transformTrackDataToModel(track);
         this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
+    }
+
+    getPlayState(): PlayState {
+        return this.playState;
+    }
+
+    setPlayState(state: PlayState) {
+        this.playState = state;
+        this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
     }
 }

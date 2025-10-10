@@ -3,7 +3,7 @@ import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import * as controls from "./controls";
 import {processCurrenttrack} from "./process_ws";
-import {ConnectionState, EboplayerEvents, Model} from "./model";
+import {ConnectionState, EboplayerEvents, Model, PlayState} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 
@@ -47,51 +47,43 @@ export class Controller extends Commands {
             (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block';
             delete getState().playlists[data.playlist.uri];
             library.getPlaylists();
-        })
+        });
 
         this.mopidy.on('event:playlistDeleted', (data) => {
             (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'none';
             (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block';
             delete getState().playlists[data.uri];
             library.getPlaylists();
-        })
+        });
 
         this.mopidy.on('event:volumeChanged', (data) => {
             this.model.setVolume(data.volume);
-        })
+        });
 
         //TEST
         this.model.addEventListener(EboplayerEvents.volumeChanged, () => {
             console.log("VOLUME EVENT RECEIVED");
-        })
+        });
 
 
         this.mopidy.on('event:muteChanged', (data) => {
-            controls.setMute(data.mute)
-        })
+            controls.setMute(data.mute);
+        });
 
         this.mopidy.on('event:playbackStateChanged', (data) => {
-            switch (data.new_state) {
-                case 'paused':
-                case 'stopped':
-                    controls.setPlayState(false)
-                    break
-                case 'playing':
-                    controls.setPlayState(true)
-                    break
-            }
-        })
+            getState().getController().setPlayState(data.new_state);
+        });
 
         this.mopidy.on('event:tracklistChanged', function () {
-            library.getCurrentPlaylist()
-        })
+            library.getCurrentPlaylist();
+        });
 
         this.mopidy.on('event:seeked', (data) => {
             controls.setPosition(data.time_position);
             if (getState().play) {
-                getState().syncedProgressTimer.start()
+                getState().syncedProgressTimer.start();
             }
-        })
+        });
 
         this.mopidy.on("event:streamHistoryChanged", function() {
         });
@@ -124,6 +116,10 @@ export class Controller extends Commands {
 
     setCurrentTrack(track: models.TlTrack) {
         this.model.setCurrentTrack(track);
+    }
+
+    setPlayState(state: string) {
+        this.model.setPlayState(state as PlayState);
     }
 }
 

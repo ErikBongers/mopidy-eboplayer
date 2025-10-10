@@ -1,24 +1,25 @@
-MVC...or whataver
-==================
-* Model contains current state.
-* Controller
-  > receives messages from WebSocket and sets the model.
-    > the model informs it's listeners (Views).
-  > has commands to change data.
-    > changes are sent to WebSocket, NOT to the model directly!
-* Views
-  > listen to model events.
-  > send commands to the controller.
-* Encapsulation
-  > Only the controller can set the model.
-  > Views can only read ( get...() ) the model.
-  > Views can only change data through the commands.
-
-
 Layout
 =========
 
 Start screen always last track/stream.
+  > what if there is no last track?
+  > A user will want to select something to play.
+    > show the Search/navigation screen
+      > lists all possible sources:
+        - streams
+        - files
+        - albums
+        - artists
+        - history (this one on top?)
+          > or an expanded history and buttons for the other lists on the side?
+  > All lists will highlight the active (if any) track/album,...
+When playing a track of an album, artist, playlist:
+  > user shoud be able to go to the list.
+  > if the window is long (or wide) enough, show the list, centered around the active track.
+  > user can hide this list to have a cleaner view.
+    > need a button to show the list.
+      > icon? a hamburger with 4 lines and a brighter line in the middle?
+
 Menu contains: Queue, Playlists.
 Browse is a button within Queue and Playlist(s).
 Browse shows files, streams and playlists.

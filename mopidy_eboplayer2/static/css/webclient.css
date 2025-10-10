@@ -137,7 +137,16 @@ input[type='range'].minimal {
 #buttonBar  {
     display: flex;
     flex-wrap: wrap;
+    & button {
+        padding-left: .5ch;
+        padding-right: .5ch;
+    }
 }
+
+
+
+
+
 
 
 
@@ -542,7 +551,7 @@ span.hostInfo {
     vertical-align: middle;
 }
 
-.footerControls #btplayNowPlaying {
+.footerControls #btnPlay {
     margin-left: 10px;
     margin-right: 10px;
 }
