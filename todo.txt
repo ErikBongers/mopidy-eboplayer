@@ -4,14 +4,7 @@ Layout
 Start screen always last track/stream.
   > what if there is no last track?
   > A user will want to select something to play.
-    > show the Search/navigation screen
-      > lists all possible sources:
-        - streams
-        - files
-        - albums
-        - artists
-        - history (this one on top?)
-          > or an expanded history and buttons for the other lists on the side?
+    > Goto Search and show history, if present.
   > All lists will highlight the active (if any) track/album,...
 When playing a track of an album, artist, playlist:
   > user shoud be able to go to the list.
@@ -20,13 +13,24 @@ When playing a track of an album, artist, playlist:
     > need a button to show the list.
       > icon? a hamburger with 4 lines and a brighter line in the middle?
 
-Menu contains: Queue, Playlists.
-Browse is a button within Queue and Playlist(s).
-Browse shows files, streams and playlists.
-Search is an option within browse or a field on top?
+ When a track is playing, a mini-player should be displayed at the bottom (or top?).
+ Volume, plus a mute button should always be visible.
+ Playback options should be under a menu, as they are not often used.
 
+Per track or list:
+   > highlight the active one.
+   > a play button to immediately start playing.
+   > a menu for all the other actions.
 
+Search button is entrypoint to all lists of tracks
+  - history (this one on top or even expanded, if present)
+  - streams
+  - files
+  - albums
+  - artists
 
+Have a stream title history as well. Per radio station?
+Stream title history has max of 100 items?
 
 * On stream start, and extension start: clear history or at least write a dummy history block:
       ---
