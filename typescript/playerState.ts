@@ -59,13 +59,13 @@ export class State {
 
     addViews(...views:View[]) {
         this.views.push(...views);
-        views.forEach(v => v.bind());
+        views.forEach(v => v.bindRecursive());
     }
 
     async getRequiredData()  {
         let requiredData = new Set<EboPlayerDataType>();
         this.views.forEach(v => {
-            v.getRequiredData().forEach(dataType => requiredData.add(dataType));
+            v.getRequiredDataRecursive().forEach((dataType: EboPlayerDataType) => requiredData.add(dataType));
         });
 
         for (const dataType of requiredData) {

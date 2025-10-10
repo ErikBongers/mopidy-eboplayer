@@ -1,3 +1,6 @@
+* implement buttonBar
+  > for streams: only the play/stop button and volume slider.
+
 Layout
 =========
 

@@ -409,14 +409,20 @@ document.addEventListener("DOMContentLoaded",function () {
     setState(state);
 
     let headerView = new HeaderView();
-    let slider = new VolumeView("volumeslider")
+    // let slider = new VolumeView("volumeslider")
     let currentTrackView = new BigTrackView();
-    let buttonBarView = new ButtonBarView();
-    getState().addViews(headerView, slider, currentTrackView, buttonBarView);
+    let buttonBarView = new ButtonBarView("buttonBar");
+    getState().addViews(headerView, /*slider, */currentTrackView, buttonBarView);
 
     clearSelectedTrack();
 
     mopidy.connect();
+
+    document.getElementById("showHistory").onclick = () => {
+        getState().commands.core.history.getHistory().then(data => {
+            console.log(data);
+        });
+    };
 });
 
 function updateDocumentTitle (headline) {

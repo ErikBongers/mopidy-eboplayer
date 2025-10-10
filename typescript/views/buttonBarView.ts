@@ -2,14 +2,28 @@ import getState from "../playerState";
 import {EboplayerEvents, PlayState, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {setPlayState} from "../controls";
+import {VolumeView} from "./volumeView";
 
 export class ButtonBarView extends View {
+    private containerId: string;
+    private volumeView: VolumeView;
+
+    constructor(containerId: string) {
+        super();
+        this.containerId = containerId;
+        this.volumeView = new VolumeView(`${this.containerId}.volumeslider`);
+        this.addChildren(this.volumeView);
+    }
+
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.playStateChanged, () => {
             this.onPlaybackStateChangegd();
         });
+        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+            this.onCurrentTrackChanged();
+        });
 
-        document.getElementById("btnPlay").onclick = () => {
+        document.getElementById(`${this.containerId}.btnPlay`).onclick = () => {
             this.playOrStopOrPause().then(r => {});
         };
     }
@@ -30,6 +44,14 @@ export class ButtonBarView extends View {
         }
     }
 
+    private onCurrentTrackChanged() {
+        let currentTrack = getState().getModel().getActiveTrack();
+        if(currentTrack.type == TrackType.Stream) {
+            View.getSubId(this.containerId, "btnNext").style.display = 'none';
+            View.getSubId(this.containerId, "btnPrev").style.display = 'none';
+        }
+    }
+
     private async playOrStopOrPause() {
         let playState = getState().getModel().getPlayState();
         if (playState == PlayState.playing) {
@@ -43,7 +65,7 @@ export class ButtonBarView extends View {
         }
 
     private setPlayButton(title: string, removeClasses: string[], addClass: string) {
-        let btnPlayIcon = document.querySelector('#btnPlay >i');
+        let btnPlayIcon = View.getSubId(this.containerId, 'btnPlay').querySelector('i');
         btnPlayIcon.classList.remove(...removeClasses);
         btnPlayIcon.classList.add(addClass);
         btnPlayIcon.setAttribute('title', title);
@@ -52,4 +74,5 @@ export class ButtonBarView extends View {
     getRequiredData(): EboPlayerDataType[] {
         return [EboPlayerDataType.PlayState];
     }
+
 }
