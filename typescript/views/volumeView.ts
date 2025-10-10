@@ -1,6 +1,6 @@
 import getState from "../playerState";
 import {EboplayerEvents} from "../model";
-import {View} from "./view";
+import {EboPlayerDataType, View} from "./view";
 
 export class VolumeView extends View {
     private readonly sliderId: string;
@@ -38,6 +38,18 @@ export class VolumeView extends View {
 
     async sendVolume(value: number) {
         await getState().commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
+    }
+
+    onOnline(): void {
+        getState().commands.core.mixer.getVolume().then((data) => {
+            console.log("volume data: ");
+            console.log(data);
+        });
+
+    }
+
+    getRequiredData(): EboPlayerDataType[] {
+        return [EboPlayerDataType.Volume];
     }
 }
 

@@ -1,11 +1,10 @@
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
-import {DeepReadonly, Model, ViewModel} from "./model";
-import TlTrack = models.TlTrack;
+import {DeepReadonly, ViewModel} from "./model";
 import {Commands} from "../scripts/commands";
-import {HeaderView} from "./views/headerView";
-import {View} from "./views/view";
+import {EboPlayerDataType, View} from "./views/view";
 import {Controller} from "./controller";
+import TlTrack = models.TlTrack;
 
 export class State {
     mopidy: Mopidy;
@@ -61,6 +60,27 @@ export class State {
     addViews(...views:View[]) {
         this.views.push(...views);
         views.forEach(v => v.bind());
+    }
+
+    async getRequiredData()  {
+        let requiredData = new Set<EboPlayerDataType>();
+        this.views.forEach(v => {
+            v.getRequiredData().forEach(dataType => requiredData.add(dataType));
+        });
+
+        for (const dataType of requiredData) {
+           switch (dataType) {
+               case EboPlayerDataType.Volume:
+                   let volume = await this.commands.core.mixer.getVolume() as number;
+                   this.getController().setVolume(volume);
+                   break;
+               case  EboPlayerDataType.CurrentTrack:
+                   let track = await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
+                   //todo: convert to FileTrack or StreamTrack
+                   this.getController().setCurrentTrack(track);
+                   break;
+           }
+        }
     }
 }
 

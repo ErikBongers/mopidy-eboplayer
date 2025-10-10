@@ -3,7 +3,7 @@ import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLA
 import * as images from "./images";
 import {models} from "../mopidy_eboplayer2/static/js/mopidy";
 import getState from "./playerState";
-import {FileTrackModel, StreamTrackModel, TrackType} from "./model";
+import {FileTrackModel, StreamTrackModel, TrackModel, TrackType} from "./model";
 import TlTrack = models.TlTrack;
 
 export function processCurrenttrack (data: (TlTrack | null)) {
@@ -15,18 +15,16 @@ export function processCurrenttrack (data: (TlTrack | null)) {
    }, console.error);
 }
 
-function transformTrackDataToModel(data: TlTrack) {
-    getState().songdata = data; //todo: make this obsolete
-
+export function transformTrackDataToModel(data: TlTrack): TrackModel {
     if(!data.track.track_no) {
+        // noinspection UnnecessaryLocalVariableJS
         let model: StreamTrackModel = {
             type: TrackType.Stream,
             tlTrack: data,
             name: data.track.name,
             infoLines: []
         };
-        getState().getModel().setActiveTrack(model);
-        return;
+        return model;
     }
     //for now, assume it's a file track
     let model: FileTrackModel = {
@@ -60,7 +58,7 @@ function transformTrackDataToModel(data: TlTrack) {
     //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
     // images.fetchAlbumImage(data.track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
 
-    getState().getController().setActiveTrack(model); //todo: how to differenciate between a stream and a track?
+    return model;
 }
 
 export function processVolume (data: number | null) {

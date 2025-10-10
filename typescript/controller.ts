@@ -5,19 +5,20 @@ import * as controls from "./controls";
 import {processCurrenttrack} from "./process_ws";
 import {ConnectionState, EboplayerEvents, Model} from "./model";
 import {Commands} from "../scripts/commands";
-import {Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
+import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 
 export class Controller extends Commands {
     private model: Model;
 
     constructor(model: Model, mopidy: Mopidy) {
         super(mopidy);
-        this.model = model;
+        this.model  = model;
     }
 
     initSocketevents () {
         this.mopidy.on('state:online', () => {
             this.model.setConnectionState(ConnectionState.Online);
+            getState().getRequiredData().then(r => {});
         });
 
         this.mopidy.on('state:offline', () => {
@@ -119,6 +120,10 @@ export class Controller extends Commands {
 
     setVolume(volume: number) {
         this.model.setVolume(volume);
+    }
+
+    setCurrentTrack(track: models.TlTrack) {
+        this.model.setCurrentTrack(track);
     }
 }
 

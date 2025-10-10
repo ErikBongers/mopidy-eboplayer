@@ -11,6 +11,7 @@ import TlTrack = models.TlTrack;
 import {HeaderView} from "./views/headerView";
 import {Controller} from "./controller";
 import {VolumeView} from "./views/volumeView";
+import {BigTrackView} from "./views/bigTrackView";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -408,7 +409,8 @@ document.addEventListener("DOMContentLoaded",function () {
 
     let headerView = new HeaderView();
     let slider = new VolumeView("volumeslider")
-    getState().addViews(headerView, slider);
+    let currentTrackView = new BigTrackView();
+    getState().addViews(headerView, slider, currentTrackView);
 
     clearSelectedTrack();
 

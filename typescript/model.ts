@@ -1,5 +1,6 @@
 import {models} from "../mopidy_eboplayer2/static/js/mopidy";
 import TlTrack = models.TlTrack;
+import {transformTrackDataToModel} from "./process_ws";
 
 export enum TrackType { None, File, Stream}
 
@@ -30,6 +31,7 @@ export enum EboplayerEvents {
     connectionChanged = "eboplayer.connectionChanged",
     playbackStateChanged = "eboplayer.playbackStateChanged",
     messageChanged = "eboplayer.messageChanged",
+    currentTrackChanged = "eboplayer.currentTrackChanged",
 }
 
 export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -135,4 +137,9 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     getVolume = () => this.volume;
+
+    setCurrentTrack(track: models.TlTrack) {
+        this.activeTrack = transformTrackDataToModel(track);
+        this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
+    }
 }

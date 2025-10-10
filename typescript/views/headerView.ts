@@ -1,6 +1,6 @@
 import getState from "../playerState";
 import {EboplayerEvents, MessageType} from "../model";
-import {View} from "./view";
+import {EboPlayerDataType, View} from "./view";
 
 export class HeaderView extends View {
     bind() {
@@ -18,5 +18,9 @@ export class HeaderView extends View {
         } else {
             headerSpan.classList.remove("warning", "error");
         }
+    }
+
+    getRequiredData(): EboPlayerDataType[] {
+        return [];
     }
 }
