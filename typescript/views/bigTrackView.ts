@@ -14,8 +14,13 @@ export class BigTrackView extends View {
         console.log("VIEW: CURRENT TRACK CHANGGED");
         let name = "???";
         let track  = getState().getModel().getActiveTrack();
-        if(track.type == TrackType.Stream) {
-            name = track.name;
+        switch (track.type) {
+            case TrackType.Stream:
+                name = track.name;
+                break;
+            case TrackType.File:
+                name = track.title;
+                break;
         }
         document.getElementById("currentTrackName").innerText  = name;
     }

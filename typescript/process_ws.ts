@@ -82,76 +82,76 @@ export function processPlaystate (data) {
 }
 
 function processBrowseDir (resultArr: string | any[]) {
-    document.querySelector(BROWSE_TABLE).innerHTML = "";
-    if (getState().browseStack.length > 0) {
-        renderSongLiBackButton(resultArr, BROWSE_TABLE, 'return library.getBrowseDir();');
-    }
-    if (!resultArr || resultArr.length === 0) {
-        showLoading(false);
-        return;
-    }
-    let uris = [];
-    let ref, previousRef, nextRef;
-    let uri = resultArr[0].uri;
-    let length = 0 || resultArr.length;
-    getState().customTracklists[BROWSE_TABLE] = [];
-    let html = '';
-
-    // Render list of tracks
-    for (let i = 0, index = 0; i < resultArr.length; i++) {
-        if (resultArr[i].type === 'track') {
-            previousRef = ref || undefined;
-            nextRef = i < resultArr.length - 1 ? resultArr[i + 1] : undefined;
-            ref = resultArr[i];
-            // TODO: consolidate usage of various arrays for caching URIs, Refs, and Tracks
-            getState().popupData[ref.uri] = ref;
-            getState().customTracklists[BROWSE_TABLE].push(ref);
-            uris.push(ref.uri);
-
-            html += renderSongLi(previousRef, ref, nextRef, BROWSE_TABLE, '', BROWSE_TABLE, index, resultArr.length);
-
-            index++;
-        } else {
-            html += '<li><a href="#" onclick="return library.getBrowseDir(this.id);" id="' + resultArr[i].uri + '">' +
-                    '<h1><i class="' + getMediaClass(resultArr[i]) + '"></i> ' + resultArr[i].name + '</h1></a></li>';
-        }
-    }
-
-    document.querySelector(BROWSE_TABLE).append(html);
-    if (getState().browseStack.length > 0) {
-        window.scrollTo(0, getState().browseStack[getState().browseStack.length - 1].scrollPos || 0)  // Restore scroll position
-    }
-
-    updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction())
-
-    // Look up track details and add album headers
-;    if (uris.length > 0) {
-        getState().commands.core.library.lookup(uris).then(function (resultDict) {
-            // Break into albums and put in tables
-            let requiredImages = {};
-            let track, previousTrack, nextTrack, uri;
-            for (let i = 0, index = 0; i < resultArr.length; i++) {
-                if (resultArr[i].type === 'track') {
-                    previousTrack = track || undefined
-                    if (i < resultArr.length - 1 && resultDict[resultArr[i + 1].uri]) {
-                        nextTrack = resultDict[resultArr[i + 1].uri][0]
-                    } else {
-                        nextTrack = undefined
-                    }
-                    track = resultDict[resultArr[i].uri][0]
-                        getState().popupData[track.uri] = track  // Need full track info in popups in order to display albums and artists.
-                    if (uris.length === 1 || (previousTrack && !hasSameAlbum(previousTrack, track) && !hasSameAlbum(track, nextTrack))) {
-                        renderSongLiAlbumInfo(track, BROWSE_TABLE)
-                    }
-                    requiredImages[track.uri] = renderSongLiDivider(previousTrack, track, nextTrack, BROWSE_TABLE)[1]
-                }
-            }
-            showLoading(false)
-            images.setImages(requiredImages, getState().mopidy, 'small')
-        }, console.error)
-    } else {
-        showLoading(false)
-    }
+//     document.querySelector(BROWSE_TABLE).innerHTML = "";
+//     if (getState().browseStack.length > 0) {
+//         renderSongLiBackButton(resultArr, BROWSE_TABLE, 'return library.getBrowseDir();');
+//     }
+//     if (!resultArr || resultArr.length === 0) {
+//         showLoading(false);
+//         return;
+//     }
+//     let uris = [];
+//     let ref, previousRef, nextRef;
+//     let uri = resultArr[0].uri;
+//     let length = 0 || resultArr.length;
+//     getState().customTracklists[BROWSE_TABLE] = [];
+//     let html = '';
+//
+//     // Render list of tracks
+//     for (let i = 0, index = 0; i < resultArr.length; i++) {
+//         if (resultArr[i].type === 'track') {
+//             previousRef = ref || undefined;
+//             nextRef = i < resultArr.length - 1 ? resultArr[i + 1] : undefined;
+//             ref = resultArr[i];
+//             // TODO: consolidate usage of various arrays for caching URIs, Refs, and Tracks
+//             getState().popupData[ref.uri] = ref;
+//             getState().customTracklists[BROWSE_TABLE].push(ref);
+//             uris.push(ref.uri);
+//
+//             html += renderSongLi(previousRef, ref, nextRef, BROWSE_TABLE, '', BROWSE_TABLE, index, resultArr.length);
+//
+//             index++;
+//         } else {
+//             html += '<li><a href="#" onclick="return library.getBrowseDir(this.id);" id="' + resultArr[i].uri + '">' +
+//                     '<h1><i class="' + getMediaClass(resultArr[i]) + '"></i> ' + resultArr[i].name + '</h1></a></li>';
+//         }
+//     }
+//
+//     document.querySelector(BROWSE_TABLE).append(html);
+//     if (getState().browseStack.length > 0) {
+//         window.scrollTo(0, getState().browseStack[getState().browseStack.length - 1].scrollPos || 0)  // Restore scroll position
+//     }
+//
+//     updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction())
+//
+//     // Look up track details and add album headers
+// ;    if (uris.length > 0) {
+//         getState().commands.core.library.lookup(uris).then(function (resultDict) {
+//             // Break into albums and put in tables
+//             let requiredImages = {};
+//             let track, previousTrack, nextTrack, uri;
+//             for (let i = 0, index = 0; i < resultArr.length; i++) {
+//                 if (resultArr[i].type === 'track') {
+//                     previousTrack = track || undefined
+//                     if (i < resultArr.length - 1 && resultDict[resultArr[i + 1].uri]) {
+//                         nextTrack = resultDict[resultArr[i + 1].uri][0]
+//                     } else {
+//                         nextTrack = undefined
+//                     }
+//                     track = resultDict[resultArr[i].uri][0]
+//                         getState().popupData[track.uri] = track  // Need full track info in popups in order to display albums and artists.
+//                     if (uris.length === 1 || (previousTrack && !hasSameAlbum(previousTrack, track) && !hasSameAlbum(track, nextTrack))) {
+//                         renderSongLiAlbumInfo(track, BROWSE_TABLE)
+//                     }
+//                     requiredImages[track.uri] = renderSongLiDivider(previousTrack, track, nextTrack, BROWSE_TABLE)[1]
+//                 }
+//             }
+//             showLoading(false)
+//             images.setImages(requiredImages, getState().mopidy, 'small')
+//         }, console.error)
+//     } else {
+//         showLoading(false)
+//     }
 }
 
 export function processGetPlaylists (resultArr) {
@@ -218,12 +218,12 @@ export function processPlaylistItems (resultDict) {
  * process results of the queue, the current playlist
  *********************************************************/
 export function processCurrentPlaylist (resultArr) {
-    getState().currentplaylist = resultArr
-    resultsToTables(getState().currentplaylist, CURRENT_PLAYLIST_TABLE)
-    getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
-    if (resultArr.length === 0) {
-        getState().getModel().clearActiveTrack();
-    }
+    // getState().currentplaylist = resultArr
+    // resultsToTables(getState().currentplaylist, CURRENT_PLAYLIST_TABLE)
+    // getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
+    // if (resultArr.length === 0) {
+    //     getState().getModel().clearActiveTrack();
+    // }
 }
 
 /** ******************************************************

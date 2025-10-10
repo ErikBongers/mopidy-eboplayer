@@ -283,31 +283,31 @@ function renderSongLiTrackArtists (track) {
 
 /* Tracklist renderer to insert dividers between albums. */
 export function renderSongLiDivider (previousTrack, track, nextTrack, target) {
-    let html = ''
-    let imageID
-    // Render differently if part of an album.
-    if (!hasSameAlbum(previousTrack, track) && hasSameAlbum(track, nextTrack)) {
-        // Large divider with album cover.
-        let showAlbum = '';
-        if (typeof track.album.uri !== 'undefined') {
-            showAlbum = 'onclick="return library.showAlbum(\'' + track.album.uri + '\', mopidy);"'
-        }
-        html +=
-            '<li class="albumdivider"><a href="#" ' + showAlbum + '>' +
-            '<img id="' + getUniqueId(target + '-cover', track.uri) + '" class="artistcover" width="30" height="30"/>' +
-            '<h1>' + track.album.name + '</h1><p>' +
-            renderSongLiTrackArtists(track) + '</p></a></li>'
-        // The element ID to populate with an album cover.
-        imageID = getUniqueId(target + '-cover', track.uri, true)
-    } else if (previousTrack && !hasSameAlbum(previousTrack, track)) {
-        // Small divider
-        html += '<li class="smalldivider"> &nbsp;</li>'
-    }
-    if (html.length > 0 && typeof target !== 'undefined' && target.length > 0) {
-        target = getUniqueId(target, track.uri, true)
-        document.querySelector(target).before(html);
-    }
-    return [html, imageID];
+    // let html = ''
+    // let imageID
+    // // Render differently if part of an album.
+    // if (!hasSameAlbum(previousTrack, track) && hasSameAlbum(track, nextTrack)) {
+    //     // Large divider with album cover.
+    //     let showAlbum = '';
+    //     if (typeof track.album.uri !== 'undefined') {
+    //         showAlbum = 'onclick="return library.showAlbum(\'' + track.album.uri + '\', mopidy);"'
+    //     }
+    //     html +=
+    //         '<li class="albumdivider"><a href="#" ' + showAlbum + '>' +
+    //         '<img id="' + getUniqueId(target + '-cover', track.uri) + '" class="artistcover" width="30" height="30"/>' +
+    //         '<h1>' + track.album.name + '</h1><p>' +
+    //         renderSongLiTrackArtists(track) + '</p></a></li>'
+    //     // The element ID to populate with an album cover.
+    //     imageID = getUniqueId(target + '-cover', track.uri, true)
+    // } else if (previousTrack && !hasSameAlbum(previousTrack, track)) {
+    //     // Small divider
+    //     html += '<li class="smalldivider"> &nbsp;</li>'
+    // }
+    // if (html.length > 0 && typeof target !== 'undefined' && target.length > 0) {
+    //     target = getUniqueId(target, track.uri, true)
+    //     document.querySelector(target).before(html);
+    // }
+    // return [html, imageID];
 }
 
 export function renderSongLiBackButton (results, target, onClick, optional = undefined) {
@@ -348,38 +348,38 @@ function validateTrackName (track, trackNumber) {
 }
 
 export function resultsToTables (results, target: string, uri: string = undefined, onClickBack = undefined, backIsOptional = undefined) {
-    document.querySelector(target).innerHTML = "";
-    renderSongLiBackButton(results, target, onClickBack, backIsOptional)
-    if (!results || results.length === 0) {
-        return;
-    }
-    document.querySelector(target).setAttribute('data', uri);
-
-    let track, previousTrack, nextTrack, tlid;
-    let html = '';
-    let requiredImages = {};
-
-    // Break into albums and put in tables
-    for (let i = 0; i < results.length; i++) {
-        previousTrack = track || undefined;
-        nextTrack = i < results.length - 1 ? results[i + 1] : undefined;
-        track = results[i];
-        if (track) {
-            if ('tlid' in track) {
-                // Get track information from TlTrack instance
-                tlid = track.tlid;
-                track = track.track;
-                nextTrack = nextTrack ? nextTrack.track : undefined;
-            }
-            getState().popupData[track.uri] = track;
-            let divider = renderSongLiDivider(previousTrack, track, nextTrack, target);
-            html += divider[0] + renderSongLi(previousTrack, track, nextTrack, uri, tlid, target, i, results.length);
-            requiredImages[track.uri] = divider[1];
-        }
-    }
-    document.querySelector(target).append(html);
-    updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction())
-    images.setImages(requiredImages, getState().mopidy, 'small');
+    // document.querySelector(target).innerHTML = "";
+    // renderSongLiBackButton(results, target, onClickBack, backIsOptional)
+    // if (!results || results.length === 0) {
+    //     return;
+    // }
+    // document.querySelector(target).setAttribute('data', uri);
+    //
+    // let track, previousTrack, nextTrack, tlid;
+    // let html = '';
+    // let requiredImages = {};
+    //
+    // // Break into albums and put in tables
+    // for (let i = 0; i < results.length; i++) {
+    //     previousTrack = track || undefined;
+    //     nextTrack = i < results.length - 1 ? results[i + 1] : undefined;
+    //     track = results[i];
+    //     if (track) {
+    //         if ('tlid' in track) {
+    //             // Get track information from TlTrack instance
+    //             tlid = track.tlid;
+    //             track = track.track;
+    //             nextTrack = nextTrack ? nextTrack.track : undefined;
+    //         }
+    //         getState().popupData[track.uri] = track;
+    //         let divider = renderSongLiDivider(previousTrack, track, nextTrack, target);
+    //         html += divider[0] + renderSongLi(previousTrack, track, nextTrack, uri, tlid, target, i, results.length);
+    //         requiredImages[track.uri] = divider[1];
+    //     }
+    // }
+    // document.querySelector(target).append(html);
+    // updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction())
+    // images.setImages(requiredImages, getState().mopidy, 'small');
 }
 
 function getPlaylistTracks (uri: string) {
