@@ -20,7 +20,7 @@ export class BigTrackView extends View {
 
     private onCurrentTrackChangegd() {
         let name = "???";
-        let track  = getState().getModel().getActiveTrack();
+        let track  = getState().getModel().getCurrentTrack();
         switch (track.type) {
             case TrackType.Stream:
                 name = track.name;
@@ -32,7 +32,7 @@ export class BigTrackView extends View {
         document.getElementById("currentTrackName").innerText  = name;
     }
 
-    getRequiredData(): EboPlayerDataType[] {
+    getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.CurrentTrack];
     }
 }

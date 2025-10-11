@@ -35,7 +35,7 @@ export class ButtonBarView extends View {
                 this.setPlayButton('Play', ['fa-pause', 'fa-stop'], 'fa-play');
                 break;
             case PlayState.playing:
-                if(getState().getModel().getActiveTrack().type == TrackType.Stream)
+                if(getState().getModel().getCurrentTrack().type == TrackType.Stream)
                     this.setPlayButton('Pause', ['fa-play'], 'fa-stop');
                 else
                     this.setPlayButton('Pause', ['fa-play'], 'fa-pause');
@@ -44,7 +44,7 @@ export class ButtonBarView extends View {
     }
 
     private onCurrentTrackChanged() {
-        let currentTrack = getState().getModel().getActiveTrack();
+        let currentTrack = getState().getModel().getCurrentTrack();
         if(currentTrack.type == TrackType.Stream) {
             View.getSubId(this.containerId, "btnNext").style.opacity = "0.5";
             View.getSubId(this.containerId, "btnPrev").style.opacity = "0.5";
@@ -54,7 +54,7 @@ export class ButtonBarView extends View {
     private async playOrStopOrPause() {
         let playState = getState().getModel().getPlayState();
         if (playState == PlayState.playing) {
-            if(getState().getModel().getActiveTrack().type == TrackType.Stream)
+            if(getState().getModel().getCurrentTrack().type == TrackType.Stream)
                 return getState().commands.core.playback.stop();
             else
                 return getState().commands.core.playback.pause();
@@ -70,7 +70,7 @@ export class ButtonBarView extends View {
         btnPlayIcon.setAttribute('title', title);
     }
 
-    getRequiredData(): EboPlayerDataType[] {
+    getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.PlayState];
     }
 }

@@ -22,7 +22,7 @@ export class StreamLinesView extends View {
         element.innerHTML = lines.join("<br/>");
     }
 
-    getRequiredData(): EboPlayerDataType[] {
+    getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.StreamLines];
     }
 }

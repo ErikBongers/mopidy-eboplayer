@@ -1,3 +1,8 @@
+* Implement start screen.
+  > if no current track:
+    > get history.
+    > set last track the current track.
+
 * when a new track is played (default click on play button), these commands are sent:
   - play is stopped. (needed? or automatically done when clearinngg the tracklist?)
   - the tracklist is cleared.

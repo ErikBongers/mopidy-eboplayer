@@ -61,8 +61,9 @@ export class State {
     async getRequiredData()  {
         let requiredData = new Set<EboPlayerDataType>();
         this.views.forEach(v => {
-            v.getRequiredDataRecursive().forEach((dataType: EboPlayerDataType) => requiredData.add(dataType));
+            v.getRequiredDataTypesRecursive().forEach((dataType: EboPlayerDataType) => requiredData.add(dataType));
         });
+        this.controller.getRequiredDataTypesRecursive().forEach((dataType => requiredData.add(dataType)));
 
         for (const dataType of requiredData) {
             await this.controller.getData(dataType);

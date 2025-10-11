@@ -20,7 +20,7 @@ export class HeaderView extends View {
         }
     }
 
-    getRequiredData(): EboPlayerDataType[] {
+    getRequiredDataTypes(): EboPlayerDataType[] {
         return [];
     }
 }

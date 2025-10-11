@@ -65,7 +65,7 @@ export enum PlayState  {
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
-    getActiveTrack: () => DeepReadonly<TrackModel>;
+    getCurrentTrack: () => DeepReadonly<TrackModel>;
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
@@ -106,7 +106,7 @@ export class Model extends EventTarget implements ViewModel {
 
     getConnectionState = () => this.connectionState;
 
-    getActiveTrack = (): DeepReadonly<TrackModel> => this.currentTrack;
+    getCurrentTrack = (): DeepReadonly<TrackModel> => this.currentTrack;
 
     setCurrentTrack(track: TrackModel) {
         this.currentTrack = track;

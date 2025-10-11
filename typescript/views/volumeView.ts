@@ -48,7 +48,7 @@ export class VolumeView extends View {
 
     }
 
-    getRequiredData(): EboPlayerDataType[] {
+    getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.Volume];
     }
 }

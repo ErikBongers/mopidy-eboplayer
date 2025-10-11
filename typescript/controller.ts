@@ -3,13 +3,14 @@ import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import * as controls from "./controls";
 import {transformTrackDataToModel} from "./process_ws";
-import {ConnectionState, EboplayerEvents, Model, PlayState} from "./model";
+import {ConnectionState, Model, PlayState, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {EboPlayerDataType} from "./views/view";
+import {DataRequester} from "./views/dataRequester";
 import TlTrack = models.TlTrack;
 
-export class Controller extends Commands {
+export class Controller extends Commands implements DataRequester{
     private model: Model;
 
     constructor(model: Model, mopidy: Mopidy) {
@@ -17,10 +18,21 @@ export class Controller extends Commands {
         this.model  = model;
     }
 
+    getRequiredDataTypes(): EboPlayerDataType[] {
+        return [EboPlayerDataType.CurrentTrack];
+    }
+    getRequiredDataTypesRecursive(): EboPlayerDataType[] {
+        return this.getRequiredDataTypes();
+    }
+
     initSocketevents () {
         this.mopidy.on('state:online', () => {
             this.model.setConnectionState(ConnectionState.Online);
-            getState().getRequiredData().then(r => {});
+            getState().getRequiredData().then(r => {
+                if(this.model.getCurrentTrack().type == TrackType.None) {
+                    console.log("NEED TO BE LOOKING AT HISTORY.");
+                } //else: current track will be handled elsewhere.
+            });
         });
 
         this.mopidy.on('state:offline', () => {
