@@ -22,7 +22,9 @@ def get_all_titles():
 
 SEPARATOR_LINE = "---"
 
-def get_active_titles(titles):
+def get_active_titles(titles = None):
+    if titles is None:
+        titles = get_all_titles()
     active_titles = []
     iterator = titles
     # ignore the final separator line, if any.

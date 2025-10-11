@@ -20,10 +20,8 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def stream_title_changed(self, title: str) -> None:
         logger.info(f"Stream title: {title}")
         if Storage.write_title(title):
-            self.send('stream_history_changed', data={
-                'event': 'stream_history_changed',
-                'data': 'todo?'
-            })
+            lines = Storage.get_active_titles()
+            self.send('stream_history_changed', data={lines})
 
     def volume_changed(self, volume):
         logger.info("Volume changed. Saving to settings file.")
