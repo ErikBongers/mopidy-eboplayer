@@ -26,13 +26,14 @@ export class Controller extends Commands implements DataRequester{
     }
 
     initSocketevents () {
-        this.mopidy.on('state:online', () => {
+        this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
-            getState().getRequiredData().then(r => {
-                if(this.model.getCurrentTrack().type == TrackType.None) {
-                    console.log("NEED TO BE LOOKING AT HISTORY.");
-                } //else: current track will be handled elsewhere.
-            });
+            await getState().getRequiredData();
+            if(this.model.getCurrentTrack().type == TrackType.None) {
+                let history = await getState().commands.core.history.getHistory();
+                console.log("%cHistory:", "background-color: yellow");
+                console.log(history);
+            } //else: current track will be handled elsewhere.
         });
 
         this.mopidy.on('state:offline', () => {

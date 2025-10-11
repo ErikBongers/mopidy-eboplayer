@@ -19,7 +19,7 @@ export class BigTrackView extends View {
     }
 
     private onCurrentTrackChangegd() {
-        let name = "???";
+        let name = "no current track";
         let track  = getState().getModel().getCurrentTrack();
         switch (track.type) {
             case TrackType.Stream:

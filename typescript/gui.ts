@@ -406,11 +406,11 @@ document.addEventListener("DOMContentLoaded",function () {
 
     mopidy.connect();
 
-    // document.getElementById("showHistory").onclick = () => {
-    //     getState().commands.core.history.getHistory().then(data => {
-    //         console.log(data);
-    //     });
-    // };
+    document.getElementById("showHistory").onclick = () => {
+        getState().commands.core.history.getHistory().then(data => {
+            console.log(data);
+        });
+    };
 });
 
 function updateDocumentTitle (headline) {

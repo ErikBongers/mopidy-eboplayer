@@ -5,18 +5,12 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/typescript/views/dataRequester.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/playerState.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/playerState.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/buttonBarView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/buttonBarView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/headerView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/headerView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/streamLinesView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/streamLinesView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/view.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/view.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/volumeView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/volumeView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,6 +120,7 @@
       <workItem from="1760126085861" duration="14423000" />
       <workItem from="1760179064160" duration="10686000" />
       <workItem from="1760199618101" duration="11628000" />
+      <workItem from="1760212991250" duration="3305000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -287,7 +282,31 @@
       <option name="project" value="LOCAL" />
       <updated>1760207924530</updated>
     </task>
-    <option name="localTasksCounter" value="21" />
+    <task id="LOCAL-00021" summary="Copy to player2: 0d987b919ae35e30d27ee57d1428ca71310200f2">
+      <option name="closed" value="true" />
+      <created>1760213207418</created>
+      <option name="number" value="00021" />
+      <option name="presentableId" value="LOCAL-00021" />
+      <option name="project" value="LOCAL" />
+      <updated>1760213207418</updated>
+    </task>
+    <task id="LOCAL-00022" summary="Copy to player2: 0d987b919ae35e30d27ee57d1428ca71310200f2">
+      <option name="closed" value="true" />
+      <created>1760213241600</created>
+      <option name="number" value="00022" />
+      <option name="presentableId" value="LOCAL-00022" />
+      <option name="project" value="LOCAL" />
+      <updated>1760213241600</updated>
+    </task>
+    <task id="LOCAL-00023" summary="Implementing dataRequester.ts. Load history: WIP.">
+      <option name="closed" value="true" />
+      <created>1760213305440</created>
+      <option name="number" value="00023" />
+      <option name="presentableId" value="LOCAL-00023" />
+      <option name="project" value="LOCAL" />
+      <updated>1760213305440</updated>
+    </task>
+    <option name="localTasksCounter" value="24" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -328,7 +347,9 @@
     <MESSAGE value="Allow all origins." />
     <MESSAGE value="Stream lines working!!!" />
     <MESSAGE value="Log all messages: filter out stream_title_changed." />
-    <option name="LAST_COMMIT_MESSAGE" value="Log all messages: filter out stream_title_changed." />
+    <MESSAGE value="Copy to player2: 0d987b919ae35e30d27ee57d1428ca71310200f2" />
+    <MESSAGE value="Implementing dataRequester.ts. Load history: WIP." />
+    <option name="LAST_COMMIT_MESSAGE" value="Implementing dataRequester.ts. Load history: WIP." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
