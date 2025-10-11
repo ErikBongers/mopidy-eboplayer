@@ -1,0 +1,294 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="ALL" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="" />
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="TypeScript File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="PREVIEW_PUSH_ON_COMMIT_AND_PUSH" value="false" />
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;ErikBongers&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/ErikBongers/mopidy-eboplayer.git&quot;,
+    &quot;accountId&quot;: &quot;39295dec-8955-4854-b74a-471b0c6ec182&quot;
+  }
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;customColor&quot;: &quot;&quot;,
+  &quot;associatedIndex&quot;: 7
+}</component>
+  <component name="ProjectId" id="33kqtpLbNEIX3GAT5hyghbHI6jJ" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;last_opened_file_path&quot;: &quot;P:/mopidy/mopidy-eboplayer2/typescript/views&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;npm.build.executor&quot;: &quot;Run&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;com.jetbrains.python.configuration.PyActiveSdkModuleConfigurable&quot;,
+    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views" />
+    </key>
+    <key name="es6.move.members.recent.items">
+      <recent name="P:\mopidy\mopidy-eboplayer2\typescript\controller.ts" />
+      <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views\view.ts" />
+    </key>
+  </component>
+  <component name="RunManager">
+    <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="build" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
+    <recent_temporary>
+      <list>
+        <item itemvalue="npm.build" />
+      </list>
+    </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-WS-252.26830.93" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="" />
+      <created>1759871636812</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1759871636812</updated>
+      <workItem from="1759871643460" duration="2940000" />
+      <workItem from="1759874703086" duration="4476000" />
+      <workItem from="1759943318868" duration="20669000" />
+      <workItem from="1760007252146" duration="1811000" />
+      <workItem from="1760009285098" duration="884000" />
+      <workItem from="1760039926633" duration="14343000" />
+      <workItem from="1760092083205" duration="5291000" />
+      <workItem from="1760126085861" duration="14423000" />
+      <workItem from="1760179064160" duration="10686000" />
+      <workItem from="1760199618101" duration="1362000" />
+    </task>
+    <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
+      <option name="closed" value="true" />
+      <created>1759880135246</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1759880135246</updated>
+    </task>
+    <task id="LOCAL-00002" summary="Starting first view headerView.ts">
+      <option name="closed" value="true" />
+      <created>1759971738105</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1759971738105</updated>
+    </task>
+    <task id="LOCAL-00003" summary="Create Views. Listen for connection on/off and update header text. Works!!!">
+      <option name="closed" value="true" />
+      <created>1760010160755</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1760010160755</updated>
+    </task>
+    <task id="LOCAL-00004" summary="Create read-only ViewModel, create volumeView.ts.">
+      <option name="closed" value="true" />
+      <created>1760054712523</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1760054712523</updated>
+    </task>
+    <task id="LOCAL-00005" summary="Renaame #modalinfo to #trackInfoBig.">
+      <option name="closed" value="true" />
+      <created>1760092467665</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1760092467665</updated>
+    </task>
+    <task id="LOCAL-00006" summary="Create bigTrackView.ts. WIP.">
+      <option name="closed" value="true" />
+      <created>1760096255179</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1760096255179</updated>
+    </task>
+    <task id="LOCAL-00007" summary="bigTrackView.ts added title for file tracks.">
+      <option name="closed" value="true" />
+      <created>1760097565873</created>
+      <option name="number" value="00007" />
+      <option name="presentableId" value="LOCAL-00007" />
+      <option name="project" value="LOCAL" />
+      <updated>1760097565873</updated>
+    </task>
+    <task id="LOCAL-00008" summary="Add buttonBarView.ts.">
+      <option name="closed" value="true" />
+      <created>1760131304260</created>
+      <option name="number" value="00008" />
+      <option name="presentableId" value="LOCAL-00008" />
+      <option name="project" value="LOCAL" />
+      <updated>1760131304260</updated>
+    </task>
+    <task id="LOCAL-00009" summary="Use vertical dots for menu. Brainstorm gui in todo.txt.">
+      <option name="closed" value="true" />
+      <created>1760133892357</created>
+      <option name="number" value="00009" />
+      <option name="presentableId" value="LOCAL-00009" />
+      <option name="project" value="LOCAL" />
+      <updated>1760133892357</updated>
+    </task>
+    <task id="LOCAL-00010" summary="Add nested children to View.">
+      <option name="closed" value="true" />
+      <created>1760138477296</created>
+      <option name="number" value="00010" />
+      <option name="presentableId" value="LOCAL-00010" />
+      <option name="project" value="LOCAL" />
+      <updated>1760138477296</updated>
+    </task>
+    <task id="LOCAL-00011" summary="Move getData() in getRequiredData() to controller.ts.">
+      <option name="closed" value="true" />
+      <created>1760180543498</created>
+      <option name="number" value="00011" />
+      <option name="presentableId" value="LOCAL-00011" />
+      <option name="project" value="LOCAL" />
+      <updated>1760180543498</updated>
+    </task>
+    <task id="LOCAL-00012" summary="Merge setCurrentTrack from setActiveTrack.">
+      <option name="closed" value="true" />
+      <created>1760183982553</created>
+      <option name="number" value="00012" />
+      <option name="presentableId" value="LOCAL-00012" />
+      <option name="project" value="LOCAL" />
+      <updated>1760183982553</updated>
+    </task>
+    <task id="LOCAL-00013" summary="Frontend: change return value of event:stream_history_changed.">
+      <option name="closed" value="true" />
+      <created>1760187142740</created>
+      <option name="number" value="00013" />
+      <option name="presentableId" value="LOCAL-00013" />
+      <option name="project" value="LOCAL" />
+      <updated>1760187142740</updated>
+    </task>
+    <task id="LOCAL-00014" summary="Format console message.">
+      <option name="closed" value="true" />
+      <created>1760187259898</created>
+      <option name="number" value="00014" />
+      <option name="presentableId" value="LOCAL-00014" />
+      <option name="project" value="LOCAL" />
+      <updated>1760187259898</updated>
+    </task>
+    <task id="LOCAL-00015" summary="Console.log: Highlight stream history.">
+      <option name="closed" value="true" />
+      <created>1760200341698</created>
+      <option name="number" value="00015" />
+      <option name="presentableId" value="LOCAL-00015" />
+      <option name="project" value="LOCAL" />
+      <updated>1760200341698</updated>
+    </task>
+    <task id="LOCAL-00016" summary="Copy d9a501a306d6f5034d67c8077a02b39a8dc8ea4c from OldWorking to master.">
+      <option name="closed" value="true" />
+      <created>1760200861912</created>
+      <option name="number" value="00016" />
+      <option name="presentableId" value="LOCAL-00016" />
+      <option name="project" value="LOCAL" />
+      <updated>1760200861912</updated>
+    </task>
+    <option name="localTasksCounter" value="17" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
+    <option name="CHECK_NEW_TODO" value="false" />
+    <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
+    <MESSAGE value="Ebooplayer 2 working!" />
+    <MESSAGE value="Starting first view headerView.ts" />
+    <MESSAGE value="Create Views. Listen for connection on/off and update header text. Works!!!" />
+    <MESSAGE value="Create read-only ViewModel, create volumeView.ts." />
+    <MESSAGE value="Renaame #modalinfo to #trackInfoBig." />
+    <MESSAGE value="Create bigTrackView.ts. WIP." />
+    <MESSAGE value="bigTrackView.ts added title for file tracks." />
+    <MESSAGE value="Add buttonBarView.ts." />
+    <MESSAGE value="Use vertical dots for menu. Brainstorm gui in todo.txt." />
+    <MESSAGE value="Add nested children to View." />
+    <MESSAGE value="Move getData() in getRequiredData() to controller.ts." />
+    <MESSAGE value="Merge setCurrentTrack from setActiveTrack." />
+    <MESSAGE value="Frontend: change return value of event:stream_history_changed." />
+    <MESSAGE value="Format console message." />
+    <MESSAGE value="Console.log: Highlight stream history." />
+    <MESSAGE value="Copy d9a501a306d6f5034d67c8077a02b39a8dc8ea4c from OldWorking to master." />
+    <option name="LAST_COMMIT_MESSAGE" value="Copy d9a501a306d6f5034d67c8077a02b39a8dc8ea4c from OldWorking to master." />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/scripts/commands.ts</url>
+          <line>190</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+</project>
