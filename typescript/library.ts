@@ -221,10 +221,6 @@ export let library = {
         // }, console.error)
     },
 
-    getCurrentPlaylist: function () {
-        getState().commands.core.tracklist.getTlTracks().then(processCurrentPlaylist, console.error)
-    },
-
     /** ******************************************************
      * Show tracks of playlist
      ********************************************************/

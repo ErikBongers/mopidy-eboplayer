@@ -3,19 +3,17 @@ import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLA
 import * as images from "./images";
 import {models} from "../mopidy_eboplayer2/static/js/mopidy";
 import getState from "./playerState";
-import {FileTrackModel, StreamTrackModel, TrackModel, TrackType} from "./model";
+import {FileTrackModel, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./model";
 import TlTrack = models.TlTrack;
 
-export function processCurrenttrack (data: (TlTrack | null)) {
-    if(!data)
-        return;
-    transformTrackDataToModel(data);
-    getState().commands.core.playback.getStreamTitle().then(function (title) {
-        getState().getModel().clearActiveTrack();
-   }, console.error);
-}
-
-export function transformTrackDataToModel(data: TlTrack): TrackModel {
+export function transformTrackDataToModel(data: (TlTrack | null)): TrackModel {
+    if(!data) {
+        // noinspection UnnecessaryLocalVariableJS
+        let model: NoneTrackModel = {
+            type: TrackType.None
+        };
+        return model;
+    }
     if(!data.track.track_no) {
         // noinspection UnnecessaryLocalVariableJS
         let model: StreamTrackModel = {
@@ -218,12 +216,6 @@ export function processPlaylistItems (resultDict) {
  * process results of the queue, the current playlist
  *********************************************************/
 export function processCurrentPlaylist (resultArr) {
-    // getState().currentplaylist = resultArr
-    // resultsToTables(getState().currentplaylist, CURRENT_PLAYLIST_TABLE)
-    // getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
-    // if (resultArr.length === 0) {
-    //     getState().getModel().clearActiveTrack();
-    // }
 }
 
 /** ******************************************************

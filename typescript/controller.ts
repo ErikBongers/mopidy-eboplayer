@@ -2,7 +2,7 @@ import getState from "./playerState";
 import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import * as controls from "./controls";
-import {processCurrenttrack} from "./process_ws";
+import {processCurrentposition, processMute, processPlaystate, processVolume, transformTrackDataToModel} from "./process_ws";
 import {ConnectionState, EboplayerEvents, Model, PlayState} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
@@ -29,17 +29,17 @@ export class Controller extends Commands {
 
         this.mopidy.on('event:optionsChanged', this.fetchPlaybackOptions);
 
-        this.mopidy.on('event:trackPlaybackStarted', (data) => {
-            processCurrenttrack(data.tl_track);
+        this.mopidy.on('event:trackPlaybackStarted', async (data) => {
+            await this.processCurrentTrackAndFetchDetails(data.tl_track);
             controls.setPlayState(true);
         });
 
-        this.mopidy.on('event:trackPlaybackResumed', (data) => {
-            processCurrenttrack(data.tl_track);
+        this.mopidy.on('event:trackPlaybackResumed', async (data) => {
+            await this.processCurrentTrackAndFetchDetails(data.tl_track);
             controls.setPlayState(true); //todo: pass this through the model and it's listeners.
         });
 
-        this.mopidy.on('event:playlistsLoaded', function () {
+        this.mopidy.on('event:playlistsLoaded', ()  => {
             showLoading(true);
             library.getPlaylists();
         });
@@ -76,8 +76,8 @@ export class Controller extends Commands {
             getState().getController().setPlayState(data.new_state);
         });
 
-        this.mopidy.on('event:tracklistChanged', function () {
-            library.getCurrentPlaylist();
+        this.mopidy.on('event:tracklistChanged', async () => {
+            await this.fetchTracklistAndDetails();
         });
 
         this.mopidy.on('event:seeked', (data) => {
@@ -87,12 +87,29 @@ export class Controller extends Commands {
             }
         });
 
-        this.mopidy.on("event:streamHistoryChanged", function() {
+        this.mopidy.on("event:streamHistoryChanged", () => {
         });
 
         //log all events:
         this.mopidy.on(console.log.bind(console));
 
+    }
+
+    async fetchTracklistAndDetails() {
+        let tracks = await getState().commands.core.tracklist.getTlTracks();
+        //todo: model.setTracklist()
+        let currentTrack = await getState().commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
+        await this.processCurrentTrackAndFetchDetails(currentTrack);
+    }
+
+    async processCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
+        this.model.setCurrentTrack(transformTrackDataToModel(data));
+        //todo: do this only when a track is started?s
+        // getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
+        // getState().commands.core.playback.getState().then(processPlaystate, console.error)
+        // getState().commands.core.mixer.getVolume().then(processVolume, console.error)
+        // getState().commands.core.mixer.getMute().then(processMute, console.error)
+        // let title = await getState().commands.core.playback.getStreamTitle(); //todo: set title in model,....but do we need to do this here?
     }
 
     fetchPlaybackOptions () {
@@ -116,10 +133,6 @@ export class Controller extends Commands {
         this.model.setVolume(volume);
     }
 
-    setCurrentTrack(track: models.TlTrack) {
-        this.model.setCurrentTrack(track);
-    }
-
     setPlayState(state: string) {
         this.model.setPlayState(state as PlayState);
     }
@@ -132,7 +145,7 @@ export class Controller extends Commands {
                 break;
             case  EboPlayerDataType.CurrentTrack:
                 let track = await getState().commands.core.playback.getCurrentTlTrack() as TlTrack;
-                this.setCurrentTrack(track);
+                await this.processCurrentTrackAndFetchDetails(track);
                 break;
             case  EboPlayerDataType.PlayState:
                 let state = await getState().commands.core.playback.getState() as string;

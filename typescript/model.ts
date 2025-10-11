@@ -72,7 +72,7 @@ export interface ViewModel extends EventTarget {
 
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
-    activeTrack: TrackModel = Model.NoTrack;
+    currentTrack: TrackModel = Model.NoTrack;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -103,15 +103,15 @@ export class Model extends EventTarget implements ViewModel {
 
     getConnectionState = () => this.connectionState;
 
-    getActiveTrack = (): DeepReadonly<TrackModel> => this.activeTrack;
+    getActiveTrack = (): DeepReadonly<TrackModel> => this.currentTrack;
 
-    setActiveTrack(track: TrackModel) {
-        this.activeTrack = structuredClone(track);
-        this.dispatchEvent(new Event(EboplayerEvents.activeTrackChanged));
+    setCurrentTrack(track: TrackModel) {
+        this.currentTrack = track;
+        this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
     }
 
-    clearActiveTrack() {
-        this.setActiveTrack(Model.NoTrack);
+    clearCurrentTrack() {
+        this.setCurrentTrack(Model.NoTrack);
     }
 
     setVolume(volume: number) {
@@ -145,11 +145,6 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     getVolume = () => this.volume;
-
-    setCurrentTrack(track: models.TlTrack) {
-        this.activeTrack = transformTrackDataToModel(track);
-        this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
-    }
 
     getPlayState(): PlayState {
         return this.playState;

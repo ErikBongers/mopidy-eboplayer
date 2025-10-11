@@ -2,10 +2,10 @@ import {library} from "./library";
 import {models, Mopidy, Options} from "../mopidy_eboplayer2/static/js/mopidy";
 import {showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
 import {SyncedProgressTimer} from "./synced_timer";
-import {processCurrentposition, processCurrenttrack, processMute, processPlaystate, processVolume} from "./process_ws";
+import {processCurrentposition, processMute, processPlaystate, processVolume} from "./process_ws";
 import * as controls from "./controls";
 import getState, {setState, State} from "./playerState";
-import {FileTrackModel, Model, StreamTrackModel, TrackType} from "./model";
+import {FileTrackModel, Model, StreamTrackModel} from "./model";
 import {Commands} from "../scripts/commands";
 import TlTrack = models.TlTrack;
 import {HeaderView} from "./views/headerView";
@@ -305,17 +305,6 @@ function setHeadline (site: string) {
 
 function doSwitchContent(divid: string, uri: string = undefined) {
     switchContent(divid, uri);
-}
-
-// update tracklist options.
-// update everything as if reloaded
-function updateStatusOfAll () {
-    getState().commands.core.playback.getCurrentTlTrack().then(processCurrenttrack, console.error)
-    getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
-    getState().commands.core.playback.getState().then(processPlaystate, console.error)
-
-    getState().commands.core.mixer.getVolume().then(processVolume, console.error)
-    getState().commands.core.mixer.getMute().then(processMute, console.error)
 }
 
 function locationHashChanged () {
