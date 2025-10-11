@@ -2,6 +2,7 @@ export enum EboPlayerDataType {
     Volume,
     CurrentTrack,
     PlayState,
+    StreamLines
 }
 
 export abstract class View {

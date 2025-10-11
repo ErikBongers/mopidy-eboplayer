@@ -1,9 +1,17 @@
 import getState from "../playerState";
 import {EboplayerEvents, StreamTrackModel, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
+import {StreamLinesView} from "./streamLinesView";
 
 export class BigTrackView extends View {
-    //todo: add constructor with id.
+    private streamLinesView: StreamLinesView;
+
+    constructor() {
+        super();
+        this.streamLinesView = new StreamLinesView("currentTrackStreamLines");
+        this.addChildren(this.streamLinesView);
+    }
+
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onCurrentTrackChangegd();
@@ -11,7 +19,7 @@ export class BigTrackView extends View {
     }
 
     private onCurrentTrackChangegd() {
-        console.log("VIEW: CURRENT TRACK CHANGGED");
+        console.log("VIEW: CURRENT TRACK CHANGED");
         let name = "???";
         let track  = getState().getModel().getActiveTrack();
         switch (track.type) {

@@ -2,7 +2,7 @@ import getState from "./playerState";
 import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import * as controls from "./controls";
-import {processCurrentposition, processMute, processPlaystate, processVolume, transformTrackDataToModel} from "./process_ws";
+import {transformTrackDataToModel} from "./process_ws";
 import {ConnectionState, EboplayerEvents, Model, PlayState} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
@@ -88,8 +88,8 @@ export class Controller extends Commands {
         });
 
         this.mopidy.on("event:streamHistoryChanged", (data) => {
-            console.log("%cevent:streamHistoryChanged", "background-color: yellow");
-            console.log(data);
+            let lines = Object.values<string>(data.data);
+            this.model.setActiveStreamLinesHistory(lines);
         });
 
         //log all events:
@@ -152,6 +152,11 @@ export class Controller extends Commands {
             case  EboPlayerDataType.PlayState:
                 let state = await getState().commands.core.playback.getState() as string;
                 this.setPlayState(state);
+                break;
+            case  EboPlayerDataType.StreamLines:
+                let res = await fetch("http://192.168.1.111:6680/eboplayer/stream/activeLines"); //todo: hardcoded url
+                let lines = await res.json();
+                this.model.setActiveStreamLinesHistory(lines);
                 break;
         }
     }

@@ -76,5 +76,5 @@ export class ButtonBarView extends View {
 }
 
 function toggleButton(enabled: boolean) {
-    View.getSubId(this.containerId, "btnPrev").style.opacity =  enabled ? "1" : "0.5";
+    View.getSubId(this.containerId, "btnPrev").style.opacity =  enabled ? "1" : "0.3";
  }
