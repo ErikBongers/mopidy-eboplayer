@@ -87,7 +87,9 @@ export class Controller extends Commands {
             }
         });
 
-        this.mopidy.on("event:streamHistoryChanged", () => {
+        this.mopidy.on("event:streamHistoryChanged", (data) => {
+            console.log("%cevent:streamHistoryChanged", "background-color: yellow");
+            console.log({data});
         });
 
         //log all events:
