@@ -54,6 +54,21 @@ def write_title(title) -> bool:
 
     return True # line written
 
+def add_empty_title():
+    # an empty title means 2 separator lines
+    all_titles = get_all_titles()
+    line_count = len(all_titles)
+    if line_count == 0:
+        return
+    if line_count >= 2 and all_titles[-1] == SEPARATOR_LINE and all_titles[-2] == SEPARATOR_LINE:
+        return # already 2 separators.
+
+    with open(STREAM_TITLES_FILE, 'a+') as the_file:
+        if line_count >= 1 and all_titles[-1] != SEPARATOR_LINE:
+            # not even a single separator line
+            the_file.write(SEPARATOR_LINE + '\n')
+        the_file.write(SEPARATOR_LINE + '\n')
+
 def get_state():
     try:
         with open(STATE_FILE, 'r+') as f:
