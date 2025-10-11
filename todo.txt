@@ -1,6 +1,3 @@
-* The stored volume in the python extension doesn't work.
-  > should set the mopidy volume to the stored setting.
-
 * when a new track is played (default click on play button), these commands are sent:
   - play is stopped. (needed? or automatically done when clearinngg the tracklist?)
   - the tracklist is cleared.

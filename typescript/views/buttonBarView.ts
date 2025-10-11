@@ -1,7 +1,6 @@
 import getState from "../playerState";
 import {EboplayerEvents, PlayState, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
-import {setPlayState} from "../controls";
 import {VolumeView} from "./volumeView";
 
 export class ButtonBarView extends View {
@@ -47,8 +46,8 @@ export class ButtonBarView extends View {
     private onCurrentTrackChanged() {
         let currentTrack = getState().getModel().getActiveTrack();
         if(currentTrack.type == TrackType.Stream) {
-            View.getSubId(this.containerId, "btnNext").style.display = 'none';
-            View.getSubId(this.containerId, "btnPrev").style.display = 'none';
+            View.getSubId(this.containerId, "btnNext").style.opacity = "0.5";
+            View.getSubId(this.containerId, "btnPrev").style.opacity = "0.5";
         }
     }
 
@@ -74,5 +73,8 @@ export class ButtonBarView extends View {
     getRequiredData(): EboPlayerDataType[] {
         return [EboPlayerDataType.PlayState];
     }
-
 }
+
+function toggleButton(enabled: boolean) {
+    View.getSubId(this.containerId, "btnPrev").style.opacity =  enabled ? "1" : "0.5";
+ }
