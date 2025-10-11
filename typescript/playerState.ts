@@ -18,9 +18,6 @@ export class State {
     consume: boolean = false;
     single: boolean = false;
     mute: boolean = false;
-    volumeChanging: boolean = false;
-    volumeSliding: boolean = false;
-
     positionChanging: boolean = false;
     popupData = {};  // TODO: Refactor into one shared cache,
     songlength: number = 0;
@@ -39,7 +36,6 @@ export class State {
 
     // array of cached playlists (not only user-playlists, also search, artist, album-playlists)
     playlists = {};  // TODO: Refactor into one shared cache,
-    currentplaylist: undefined;
     customTracklists =  [];  // TODO: Refactor into one shared cache,
 
     browseStack =  [];
@@ -69,21 +65,7 @@ export class State {
         });
 
         for (const dataType of requiredData) {
-           switch (dataType) {
-               case EboPlayerDataType.Volume:
-                   let volume = await this.commands.core.mixer.getVolume() as number;
-                   this.getController().setVolume(volume);
-                   break;
-               case  EboPlayerDataType.CurrentTrack:
-                   let track = await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
-                   //todo: convert to FileTrack or StreamTrack
-                   this.getController().setCurrentTrack(track);
-                   break;
-               case  EboPlayerDataType.PlayState:
-                   let state = await this.commands.core.playback.getState() as string;
-                   this.getController().setPlayState(state);
-                   break;
-           }
+            await this.controller.getData(dataType);
         }
     }
 }

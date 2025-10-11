@@ -6,6 +6,8 @@ import {processCurrenttrack} from "./process_ws";
 import {ConnectionState, EboplayerEvents, Model, PlayState} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
+import {EboPlayerDataType} from "./views/view";
+import TlTrack = models.TlTrack;
 
 export class Controller extends Commands {
     private model: Model;
@@ -120,6 +122,23 @@ export class Controller extends Commands {
 
     setPlayState(state: string) {
         this.model.setPlayState(state as PlayState);
+    }
+
+    async getData(dataType: EboPlayerDataType) {
+        switch (dataType) {
+            case EboPlayerDataType.Volume:
+                let volume = await getState().commands.core.mixer.getVolume() as number;
+                this.setVolume(volume);
+                break;
+            case  EboPlayerDataType.CurrentTrack:
+                let track = await getState().commands.core.playback.getCurrentTlTrack() as TlTrack;
+                this.setCurrentTrack(track);
+                break;
+            case  EboPlayerDataType.PlayState:
+                let state = await getState().commands.core.playback.getState() as string;
+                this.setPlayState(state);
+                break;
+        }
     }
 }
 
