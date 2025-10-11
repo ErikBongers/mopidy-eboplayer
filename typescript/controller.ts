@@ -62,12 +62,6 @@ export class Controller extends Commands {
             this.model.setVolume(data.volume);
         });
 
-        //TEST
-        this.model.addEventListener(EboplayerEvents.volumeChanged, () => {
-            console.log("VOLUME EVENT RECEIVED");
-        });
-
-
         this.mopidy.on('event:muteChanged', (data) => {
             controls.setMute(data.mute);
         });
@@ -93,7 +87,24 @@ export class Controller extends Commands {
         });
 
         //log all events:
-        this.mopidy.on(console.log.bind(console));
+        this.mopidy.on((data) => {
+            if(data instanceof MessageEvent) {
+                try {
+                    let dataObject = JSON.parse(data.data);
+                    if((dataObject.event ?? "") == "stream_title_changed")
+                        return;
+                } catch (e) {} //not valid json.
+            }
+            if(typeof(data) == "object") {
+                if((data.title && Object.keys(data).length) == 1)
+                    return;
+            }
+            if(data instanceof Array) {
+                if (data.length && data[0] == "event:streamTitleChanged")
+                    return;
+            }
+            console.log(data);
+        });
 
     }
 

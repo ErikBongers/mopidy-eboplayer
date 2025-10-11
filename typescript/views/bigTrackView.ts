@@ -19,7 +19,6 @@ export class BigTrackView extends View {
     }
 
     private onCurrentTrackChangegd() {
-        console.log("VIEW: CURRENT TRACK CHANGED");
         let name = "???";
         let track  = getState().getModel().getActiveTrack();
         switch (track.type) {
