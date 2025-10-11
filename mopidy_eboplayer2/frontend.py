@@ -6,6 +6,7 @@ from . import Storage
 
 logger = logging.getLogger(__name__)
 
+
 class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core) -> None:
         super(EboPlayerFrontend, self).__init__(config, core)
@@ -21,7 +22,8 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         logger.info(f"Stream title: {title}")
         if Storage.write_title(title):
             lines = Storage.get_active_titles()
-            self.send('stream_history_changed', data={lines})
+            linesDict = {index: value for index, value in enumerate(lines)}
+            self.send('stream_history_changed', data=linesDict)
 
     def volume_changed(self, volume):
         logger.info("Volume changed. Saving to settings file.")
