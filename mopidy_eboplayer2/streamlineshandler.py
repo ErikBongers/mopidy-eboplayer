@@ -12,6 +12,7 @@ class ActiveStreamLinesHandler(tornado.web.RequestHandler):
         self.__path = path
 
     def get(self, all):
+        self.set_header("Access-Control-Allow-Origin", "*")
         if all == "/all":
             return self.write(json.dumps(get_all_titles()))
         else:
