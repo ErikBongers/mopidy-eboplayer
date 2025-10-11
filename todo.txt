@@ -1,3 +1,5 @@
+* Webcomponent with template: https://css-tricks.com/web-components-are-easier-than-you-think/
+
 * Implement start screen.
   > if no current track:
     > get history.
