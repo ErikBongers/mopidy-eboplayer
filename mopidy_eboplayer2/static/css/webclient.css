@@ -8,7 +8,9 @@ body * {
 }
 
 /* but fix for text input (safari certainly needs it)*/
-input[type=text] {
+input[type=text],
+.selectable
+{
     -webkit-user-select: text;
     -moz-user-select: text;
     -ms-user-select: text;
