@@ -193,24 +193,24 @@ export class Controller extends Commands implements DataRequester{
         let historyObject: Object = await getState().commands.core.history.getHistory();
         let length = historyObject["length"];
         let history: HistoryLine[] = [];
-        let historyLines = numberedDictToArray(historyObject).map(line => {
-            let historyLine: HistoryLine = {
+        let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
+            return {
                 timestamp: line["0"],
                 ref: line["1"]
             };
-            return historyLine;
         });
         this.model.setHistory(historyLines);
     }
-
 }
 
-export function numberedDictToArray(dict: Object): any[] {
+export function numberedDictToArray<T>(dict: Object, converter?: (object: any) => T): T[] {
     let length = dict["length"];
     let array: any[] = [];
     for(let index = 0; index < length; index++) {
         let line = dict[index.toString()];
         array.push(line);
     }
-    return array;
+    if(!converter)
+        return array;
+    return array.map(converter);
 }
