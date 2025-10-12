@@ -35,5 +35,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         pass
 
     def tracklist_changed(self):
-        logger.info("Tracklist changed.")
+        Storage.add_empty_title()
+
+    def playback_state_changed(self, old_state, new_state):
         Storage.add_empty_title()
