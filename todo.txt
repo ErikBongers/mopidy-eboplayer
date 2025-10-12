@@ -1,3 +1,8 @@
+* Track line: ellipsis button:
+  - Play
+  - Details
+    > shows artist, album and tracklists this track belongs to.
+
 * Webcomponent with template: https://css-tricks.com/web-components-are-easier-than-you-think/
 
 * Implement start screen.

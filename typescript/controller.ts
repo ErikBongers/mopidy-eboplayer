@@ -43,12 +43,12 @@ export class Controller extends Commands implements DataRequester{
         this.mopidy.on('event:optionsChanged', this.fetchPlaybackOptions);
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
-            await this.processCurrentTrackAndFetchDetails(data.tl_track);
+            await this.setCurrentTrackAndFetchDetails(data.tl_track);
             controls.setPlayState(true);
         });
 
         this.mopidy.on('event:trackPlaybackResumed', async (data) => {
-            await this.processCurrentTrackAndFetchDetails(data.tl_track);
+            await this.setCurrentTrackAndFetchDetails(data.tl_track);
             controls.setPlayState(true); //todo: pass this through the model and it's listeners.
         });
 
@@ -125,10 +125,10 @@ export class Controller extends Commands implements DataRequester{
         let tracks = await getState().commands.core.tracklist.getTlTracks();
         //todo: model.setTracklist()
         let currentTrack = await getState().commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
-        await this.processCurrentTrackAndFetchDetails(currentTrack);
+        await this.setCurrentTrackAndFetchDetails(currentTrack);
     }
 
-    async processCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
+    async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
         this.model.setCurrentTrack(transformTrackDataToModel(data));
         //todo: do this only when a track is started?s
         // getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
@@ -163,6 +163,10 @@ export class Controller extends Commands implements DataRequester{
         this.model.setPlayState(state as PlayState);
     }
 
+    setTracklist(trackList: TlTrack[]) {
+        this.model.setTrackList(trackList);
+    }
+
     async getData(dataType: EboPlayerDataType) {
         switch (dataType) {
             case EboPlayerDataType.Volume:
@@ -171,7 +175,7 @@ export class Controller extends Commands implements DataRequester{
                 break;
             case  EboPlayerDataType.CurrentTrack:
                 let track = await getState().commands.core.playback.getCurrentTlTrack() as TlTrack;
-                await this.processCurrentTrackAndFetchDetails(track);
+                await this.setCurrentTrackAndFetchDetails(track);
                 break;
             case  EboPlayerDataType.PlayState:
                 let state = await getState().commands.core.playback.getState() as string;
@@ -189,16 +193,24 @@ export class Controller extends Commands implements DataRequester{
         let historyObject: Object = await getState().commands.core.history.getHistory();
         let length = historyObject["length"];
         let history: HistoryLine[] = [];
-        for(let index = 0; index < length; index++) {
-            let line = historyObject[index.toString()];
+        let historyLines = numberedDictToArray(historyObject).map(line => {
             let historyLine: HistoryLine = {
                 timestamp: line["0"],
                 ref: line["1"]
             };
-            history.push(historyLine);
-        }
-        this.model.setHistory(history);
+            return historyLine;
+        });
+        this.model.setHistory(historyLines);
     }
 
 }
 
+export function numberedDictToArray(dict: Object): any[] {
+    let length = dict["length"];
+    let array: any[] = [];
+    for(let index = 0; index < length; index++) {
+        let line = dict[index.toString()];
+        array.push(line);
+    }
+    return array;
+}

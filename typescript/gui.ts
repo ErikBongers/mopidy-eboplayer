@@ -412,8 +412,16 @@ document.addEventListener("DOMContentLoaded",function () {
     document.getElementById("showHistory").onclick = async () => {
         await getState().getController().getHistory();
     };
+    document.getElementById("showBrowse").onclick = async () => {
+        let browse = await getState().commands.core.library.browse(null);
+        console_yellow("browse");
+        console.log({browse});
+    };
 });
 
+export function console_yellow(msg: string) {
+    console.log(`%c${msg}`, 'background-color: yellow');
+}
 function updateDocumentTitle (headline) {
     headline = headline || document.getElementById('contentHeadline').textContent;
     document.title = headline + ' | ' + document.body.dataset.title;

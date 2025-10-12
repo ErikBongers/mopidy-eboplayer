@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.md" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/model.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/views/historyView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/historyView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -118,7 +122,7 @@
       <workItem from="1760179064160" duration="10686000" />
       <workItem from="1760199618101" duration="11628000" />
       <workItem from="1760212991250" duration="4893000" />
-      <workItem from="1760260301693" duration="19551000" />
+      <workItem from="1760260301693" duration="26370000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -336,7 +340,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760289180967</updated>
     </task>
-    <option name="localTasksCounter" value="28" />
+    <task id="LOCAL-00028" summary="historyView.ts: add button for ellipsis.">
+      <option name="closed" value="true" />
+      <created>1760289521986</created>
+      <option name="number" value="00028" />
+      <option name="presentableId" value="LOCAL-00028" />
+      <option name="project" value="LOCAL" />
+      <updated>1760289521986</updated>
+    </task>
+    <task id="LOCAL-00029" summary="Rename to historyLineElement.ts.">
+      <option name="closed" value="true" />
+      <created>1760289675036</created>
+      <option name="number" value="00029" />
+      <option name="presentableId" value="LOCAL-00029" />
+      <option name="project" value="LOCAL" />
+      <updated>1760289675036</updated>
+    </task>
+    <option name="localTasksCounter" value="30" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -357,8 +377,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Starting first view headerView.ts" />
-    <MESSAGE value="Create Views. Listen for connection on/off and update header text. Works!!!" />
     <MESSAGE value="Create read-only ViewModel, create volumeView.ts." />
     <MESSAGE value="Renaame #modalinfo to #trackInfoBig." />
     <MESSAGE value="Create bigTrackView.ts. WIP." />
@@ -382,7 +400,9 @@
     <MESSAGE value="Make stream lines selectable." />
     <MESSAGE value="Add getHistory() to controller and model." />
     <MESSAGE value="History loaded. Table formatted." />
-    <option name="LAST_COMMIT_MESSAGE" value="History loaded. Table formatted." />
+    <MESSAGE value="historyView.ts: add button for ellipsis." />
+    <MESSAGE value="Rename to historyLineElement.ts." />
+    <option name="LAST_COMMIT_MESSAGE" value="Rename to historyLineElement.ts." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

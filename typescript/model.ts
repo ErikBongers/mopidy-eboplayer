@@ -32,6 +32,7 @@ export enum EboplayerEvents {
     currentTrackChanged = "eboplayer.currentTrackChanged",
     activeStreamLinesChanged = "eboplayer.activeStreamLinesChanged",
     historyChanged = "eboplayer.historyChanged",
+    trackListChanged = "eboplayer.trackListChanged",
 }
 
 export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -102,6 +103,7 @@ export class Model extends EventTarget implements ViewModel {
     private playState: PlayState;
     private activeStreamLines: string[];
     private history: HistoryLine[];
+    private trackList: TlTrack[] = [];
 
     constructor() {
         super();
@@ -183,4 +185,11 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     getHistory = () => this.history;
+
+    setTrackList(trackList: TlTrack[]) {
+        this.trackList = trackList;
+        this.dispatchEvent(new Event(EboplayerEvents.trackListChanged));
+    }
+    getTrackList = () => this.trackList;
+
 }
