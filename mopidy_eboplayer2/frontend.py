@@ -33,3 +33,6 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
 
     def stream_history_changed(self, data): #todo: this function needed?
         pass
+
+    def tracklist_changed(self):
+        logger.info("Tracklist changed.")

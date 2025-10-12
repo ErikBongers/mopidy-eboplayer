@@ -6,8 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/frontend.py" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/frontend.py" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/setup.py" beforeDir="false" afterPath="$PROJECT_DIR$/setup.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -118,7 +118,7 @@
       <workItem from="1760179064160" duration="10686000" />
       <workItem from="1760199618101" duration="11628000" />
       <workItem from="1760212991250" duration="4893000" />
-      <workItem from="1760260301693" duration="31930000" />
+      <workItem from="1760260301693" duration="33943000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -368,7 +368,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760298590555</updated>
     </task>
-    <option name="localTasksCounter" value="32" />
+    <task id="LOCAL-00032" summary="Replace hardcoded hostname with localStorage.">
+      <option name="closed" value="true" />
+      <created>1760303064091</created>
+      <option name="number" value="00032" />
+      <option name="presentableId" value="LOCAL-00032" />
+      <option name="project" value="LOCAL" />
+      <updated>1760303064091</updated>
+    </task>
+    <option name="localTasksCounter" value="33" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -389,7 +397,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Create bigTrackView.ts. WIP." />
     <MESSAGE value="bigTrackView.ts added title for file tracks." />
     <MESSAGE value="Add buttonBarView.ts." />
     <MESSAGE value="Use vertical dots for menu. Brainstorm gui in todo.txt." />
@@ -414,7 +421,8 @@
     <MESSAGE value="Rename to historyLineElement.ts." />
     <MESSAGE value="Send a track to the playlist and start it." />
     <MESSAGE value="Refactor numberedDictToArray to be generic." />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor numberedDictToArray to be generic." />
+    <MESSAGE value="Replace hardcoded hostname with localStorage." />
+    <option name="LAST_COMMIT_MESSAGE" value="Replace hardcoded hostname with localStorage." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
