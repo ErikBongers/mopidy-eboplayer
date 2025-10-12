@@ -899,3 +899,27 @@ xhistory-line {
         }
     }
 }
+
+.movingGradient {
+    height: 1px;
+}
+.movingGradient {
+    background: linear-gradient(to right, black,
+        #23a6d5, black, #ffffff,
+        black, #e73c7e, black, #23a6d5, black, #ee7752, black,
+        #23a6d5
+    );
+    background-size: 1100% 1100%;  /*Must be a multiple of the number of colors above for a smooth transistion and the last color must be the first*/
+    animation: gradient 15s forwards infinite linear;
+    animation-timing-function: linear;
+    animation-direction: normal;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    100% {
+        background-position: 100% 50%;
+    }
+}
