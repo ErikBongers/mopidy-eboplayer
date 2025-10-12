@@ -6,8 +6,10 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/model.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +119,8 @@
       <workItem from="1760126085861" duration="14423000" />
       <workItem from="1760179064160" duration="10686000" />
       <workItem from="1760199618101" duration="11628000" />
-      <workItem from="1760212991250" duration="4197000" />
+      <workItem from="1760212991250" duration="4893000" />
+      <workItem from="1760260301693" duration="2540000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -311,7 +314,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760219689249</updated>
     </task>
-    <option name="localTasksCounter" value="25" />
+    <task id="LOCAL-00025" summary="Make stream lines selectable.">
+      <option name="closed" value="true" />
+      <created>1760220185308</created>
+      <option name="number" value="00025" />
+      <option name="presentableId" value="LOCAL-00025" />
+      <option name="project" value="LOCAL" />
+      <updated>1760220185308</updated>
+    </task>
+    <option name="localTasksCounter" value="26" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -355,7 +366,8 @@
     <MESSAGE value="Copy to player2: 0d987b919ae35e30d27ee57d1428ca71310200f2" />
     <MESSAGE value="Implementing dataRequester.ts. Load history: WIP." />
     <MESSAGE value="Messing around with history." />
-    <option name="LAST_COMMIT_MESSAGE" value="Messing around with history." />
+    <MESSAGE value="Make stream lines selectable." />
+    <option name="LAST_COMMIT_MESSAGE" value="Make stream lines selectable." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

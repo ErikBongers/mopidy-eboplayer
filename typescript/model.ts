@@ -33,6 +33,7 @@ export enum EboplayerEvents {
     messageChanged = "eboplayer.messageChanged",
     currentTrackChanged = "eboplayer.currentTrackChanged",
     activeStreamLinesChanged = "eboplayer.activeStreamLinesChanged",
+    historyChanged = "eboplayer.historyChanged",
 }
 
 export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -72,6 +73,17 @@ export interface ViewModel extends EventTarget {
     getActiveStreamLines: () => string[];
 }
 
+export interface HistoryRef {
+    __model__: string,
+    name: string;
+    type: string;
+    uri: string;
+}
+export interface HistoryLine {
+    timestamp: number;
+    ref: HistoryRef;
+}
+
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
     currentTrack: TrackModel = Model.NoTrack;
@@ -90,6 +102,7 @@ export class Model extends EventTarget implements ViewModel {
     }
     private playState: PlayState;
     private activeStreamLines: string[];
+    private history: HistoryLine[];
 
     constructor() {
         super();
@@ -165,4 +178,8 @@ export class Model extends EventTarget implements ViewModel {
 
     getActiveStreamLines = () => this.activeStreamLines;
 
+    setHistory(history: HistoryLine[]) {
+        this.history = history;
+        this.dispatchEvent(new Event(EboplayerEvents.historyChanged));
+    }
 }

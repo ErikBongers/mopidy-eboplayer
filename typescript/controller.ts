@@ -3,7 +3,7 @@ import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import * as controls from "./controls";
 import {transformTrackDataToModel} from "./process_ws";
-import {ConnectionState, Model, PlayState, TrackType} from "./model";
+import {ConnectionState, HistoryLine, Model, PlayState, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -184,5 +184,22 @@ export class Controller extends Commands implements DataRequester{
                 break;
         }
     }
+
+    async getHistory()  {
+        debugger;
+        let historyObject: Object = await getState().commands.core.history.getHistory();
+        let length = historyObject["length"];
+        let history: HistoryLine[] = [];
+        for(let index = 0; index < length; index++) {
+            let line = historyObject[index.toString()];
+            let historyLine: HistoryLine = {
+                timestamp: line["0"],
+                ref: line["1"]
+            };
+            history.push(historyLine);
+        }
+        this.model.setHistory(history);
+    }
+
 }
 
