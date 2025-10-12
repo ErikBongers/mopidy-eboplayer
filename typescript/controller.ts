@@ -130,12 +130,12 @@ export class Controller extends Commands implements DataRequester{
 
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
         this.model.setCurrentTrack(transformTrackDataToModel(data));
+        await this.fetchActiveStreamLines();
         //todo: do this only when a track is started?s
         // getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // getState().commands.core.playback.getState().then(processPlaystate, console.error)
         // getState().commands.core.mixer.getVolume().then(processVolume, console.error)
         // getState().commands.core.mixer.getMute().then(processMute, console.error)
-        // let title = await getState().commands.core.playback.getStreamTitle(); //todo: set title in model,....but do we need to do this here?
     }
 
     fetchPlaybackOptions () {
@@ -170,7 +170,7 @@ export class Controller extends Commands implements DataRequester{
     async getData(dataType: EboPlayerDataType) {
         switch (dataType) {
             case EboPlayerDataType.Volume:
-                let volume = await getState().commands.core.mixer.getVolume() as number;
+                let volume = await getState().commands.core.mixer.getVolume() as number;  //todo: make fetch functions of these switch cases.
                 this.setVolume(volume);
                 break;
             case  EboPlayerDataType.CurrentTrack:
@@ -182,18 +182,19 @@ export class Controller extends Commands implements DataRequester{
                 this.setPlayState(state);
                 break;
             case  EboPlayerDataType.StreamLines:
-                let res: Response;
-                res = await fetch(`http://${getHostAndPort()}/eboplayer/stream/activeLines`);
-                let lines = await res.json();
-                this.model.setActiveStreamLinesHistory(lines);
+                await this.fetchActiveStreamLines();
                 break;
         }
     }
 
-    async getHistory()  {
+    private async fetchActiveStreamLines() {
+        let res = await fetch(`http://${getHostAndPort()}/eboplayer/stream/activeLines`);
+        let lines = await res.json();
+        this.model.setActiveStreamLinesHistory(lines);
+    }
+
+    async fetchHistory()  {
         let historyObject: Object = await getState().commands.core.history.getHistory();
-        let length = historyObject["length"];
-        let history: HistoryLine[] = [];
         let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
             return {
                 timestamp: line["0"],

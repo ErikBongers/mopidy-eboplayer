@@ -406,7 +406,7 @@ document.addEventListener("DOMContentLoaded",function () {
     mopidy.connect();
 
     document.getElementById("showHistory").onclick = async () => {
-        await getState().getController().getHistory();
+        await getState().getController().fetchHistory();
     };
     document.getElementById("showBrowse").onclick = async () => {
         let browse = await getState().commands.core.library.browse(null);
