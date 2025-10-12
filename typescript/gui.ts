@@ -2,19 +2,17 @@ import {library} from "./library";
 import {models, Mopidy, Options} from "../mopidy_eboplayer2/static/js/mopidy";
 import {showOffline, switchContent, TRACK_ACTIONS, updatePlayIcons} from "./functionsvars";
 import {SyncedProgressTimer} from "./synced_timer";
-import {processCurrentposition, processMute, processPlaystate, processVolume} from "./process_ws";
 import * as controls from "./controls";
 import getState, {setState, State} from "./playerState";
 import {FileTrackModel, Model, StreamTrackModel} from "./model";
 import {Commands} from "../scripts/commands";
-import TlTrack = models.TlTrack;
 import {HeaderView} from "./views/headerView";
-import {Controller} from "./controller";
-import {VolumeView} from "./views/volumeView";
+import {Controller, getWebSocketUrl} from "./controller";
 import {BigTrackView} from "./views/bigTrackView";
 import {ButtonBarView} from "./views/buttonBarView";
 import {HistoryLineElement} from "./components/historyLineElement";
 import {HistoryView} from "./views/historyView";
+import TlTrack = models.TlTrack;
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -380,9 +378,7 @@ document.addEventListener("DOMContentLoaded",function () {
     // if (location.hash.length < 2) {
     //     doSwitchContent('nowPlaying');
     // }
-
-    // let webSocketUrl = document.body.dataset.websocketUrl;
-    let webSocketUrl = "ws://192.168.1.111:6680/mopidy/ws";
+    let webSocketUrl = getWebSocketUrl();
     let connectOptions: Options = {
         webSocketUrl,
         autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.

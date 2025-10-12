@@ -6,12 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.md" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/historyView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/historyView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -50,33 +46,33 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;P:/mopidy/mopidy-eboplayer2/typescript/views&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.build.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;preferences.keymap&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "P:/mopidy/mopidy-eboplayer2/typescript/views",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.build.executor": "Run",
+    "settings.editor.selected.configurable": "reference.settings.ide.settings.web.browsers",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views" />
     </key>
     <key name="es6.move.members.recent.items">
-      <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views\dataRequester.ts" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\controller.ts" />
+      <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views\dataRequester.ts" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views\view.ts" />
     </key>
   </component>
@@ -122,7 +118,7 @@
       <workItem from="1760179064160" duration="10686000" />
       <workItem from="1760199618101" duration="11628000" />
       <workItem from="1760212991250" duration="4893000" />
-      <workItem from="1760260301693" duration="26370000" />
+      <workItem from="1760260301693" duration="31930000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -356,7 +352,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760289675036</updated>
     </task>
-    <option name="localTasksCounter" value="30" />
+    <task id="LOCAL-00030" summary="Send a track to the playlist and start it.">
+      <option name="closed" value="true" />
+      <created>1760296663544</created>
+      <option name="number" value="00030" />
+      <option name="presentableId" value="LOCAL-00030" />
+      <option name="project" value="LOCAL" />
+      <updated>1760296663544</updated>
+    </task>
+    <task id="LOCAL-00031" summary="Refactor numberedDictToArray to be generic.">
+      <option name="closed" value="true" />
+      <created>1760298590555</created>
+      <option name="number" value="00031" />
+      <option name="presentableId" value="LOCAL-00031" />
+      <option name="project" value="LOCAL" />
+      <updated>1760298590555</updated>
+    </task>
+    <option name="localTasksCounter" value="32" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -377,8 +389,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Create read-only ViewModel, create volumeView.ts." />
-    <MESSAGE value="Renaame #modalinfo to #trackInfoBig." />
     <MESSAGE value="Create bigTrackView.ts. WIP." />
     <MESSAGE value="bigTrackView.ts added title for file tracks." />
     <MESSAGE value="Add buttonBarView.ts." />
@@ -402,7 +412,9 @@
     <MESSAGE value="History loaded. Table formatted." />
     <MESSAGE value="historyView.ts: add button for ellipsis." />
     <MESSAGE value="Rename to historyLineElement.ts." />
-    <option name="LAST_COMMIT_MESSAGE" value="Rename to historyLineElement.ts." />
+    <MESSAGE value="Send a track to the playlist and start it." />
+    <MESSAGE value="Refactor numberedDictToArray to be generic." />
+    <option name="LAST_COMMIT_MESSAGE" value="Refactor numberedDictToArray to be generic." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

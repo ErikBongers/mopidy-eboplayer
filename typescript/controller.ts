@@ -182,7 +182,8 @@ export class Controller extends Commands implements DataRequester{
                 this.setPlayState(state);
                 break;
             case  EboPlayerDataType.StreamLines:
-                let res = await fetch("http://192.168.1.111:6680/eboplayer/stream/activeLines"); //todo: hardcoded url
+                let res: Response;
+                res = await fetch(`http://${getHostAndPort()}/eboplayer/stream/activeLines`);
                 let lines = await res.json();
                 this.model.setActiveStreamLinesHistory(lines);
                 break;
@@ -213,4 +214,22 @@ export function numberedDictToArray<T>(dict: Object, converter?: (object: any) =
     if(!converter)
         return array;
     return array.map(converter);
+}
+
+export function getWebSocketUrl() {
+    let webSocketUrl = document.body.dataset.websocketUrl;
+    if (webSocketUrl.startsWith("{{"))
+        webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
+    return webSocketUrl;
+}
+
+export function getHostAndPort() {
+    let hostName = document.body.dataset.hostname;
+    if (!hostName.startsWith("{{"))
+        return hostName;
+
+    hostName = localStorage.getItem("eboplayer.hostName");
+    if(hostName)
+        return hostName;
+    return document.location.host;
 }
