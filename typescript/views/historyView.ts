@@ -20,7 +20,7 @@ export class HistoryView extends View {
 <tr>
     <td>${line.ref.name}</td>
     <td>
-        <i class="fa fa fa-ellipsis-v"></i>
+        <button><i class="fa fa fa-ellipsis-v"></i></button>
     </td>
 </tr>
 <tr>
