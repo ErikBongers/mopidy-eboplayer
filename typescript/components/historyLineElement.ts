@@ -1,4 +1,4 @@
-export class HistoryLine extends HTMLElement {
+export class HistoryLineElement extends HTMLElement {
     private shadow: ShadowRoot;
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["name", "uri"];
@@ -30,6 +30,6 @@ export class HistoryLine extends HTMLElement {
 // `;
     }
     static define() {
-        customElements.define("history-line", HistoryLine);
+        customElements.define("history-line", HistoryLineElement);
     }
 }

@@ -13,7 +13,7 @@ import {Controller} from "./controller";
 import {VolumeView} from "./views/volumeView";
 import {BigTrackView} from "./views/bigTrackView";
 import {ButtonBarView} from "./views/buttonBarView";
-import {HistoryLine} from "./components/historyLine";
+import {HistoryLineElement} from "./components/historyLineElement";
 import {HistoryView} from "./views/historyView";
 
 /* gui interactions here
@@ -419,4 +419,4 @@ function updateDocumentTitle (headline) {
     document.title = headline + ' | ' + document.body.dataset.title;
 }
 
-HistoryLine.define();
+HistoryLineElement.define();
