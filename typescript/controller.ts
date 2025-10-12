@@ -186,7 +186,6 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async getHistory()  {
-        debugger;
         let historyObject: Object = await getState().commands.core.history.getHistory();
         let length = historyObject["length"];
         let history: HistoryLine[] = [];

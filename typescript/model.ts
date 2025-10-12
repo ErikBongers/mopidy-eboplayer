@@ -1,6 +1,5 @@
 import {models} from "../mopidy_eboplayer2/static/js/mopidy";
 import TlTrack = models.TlTrack;
-import {transformTrackDataToModel} from "./process_ws";
 
 export enum TrackType { None, File, Stream}
 
@@ -26,7 +25,6 @@ export interface NoneTrackModel {
 }
 
 export enum EboplayerEvents {
-    activeTrackChanged = "eboplayer.activeTrackChanged",
     volumeChanged = "eboplayer.volumeChanged",
     connectionChanged = "eboplayer.connectionChanged",
     playStateChanged = "eboplayer.playbackStateChanged",
@@ -71,6 +69,7 @@ export interface ViewModel extends EventTarget {
     getVolume: () => number;
     getPlayState: () => PlayState;
     getActiveStreamLines: () => string[];
+    getHistory: () => HistoryLine[];
 }
 
 export interface HistoryRef {
@@ -182,4 +181,6 @@ export class Model extends EventTarget implements ViewModel {
         this.history = history;
         this.dispatchEvent(new Event(EboplayerEvents.historyChanged));
     }
+
+    getHistory = () => this.history;
 }

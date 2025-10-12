@@ -13,6 +13,8 @@ import {Controller} from "./controller";
 import {VolumeView} from "./views/volumeView";
 import {BigTrackView} from "./views/bigTrackView";
 import {ButtonBarView} from "./views/buttonBarView";
+import {HistoryLine} from "./components/historyLine";
+import {HistoryView} from "./views/historyView";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -400,7 +402,8 @@ document.addEventListener("DOMContentLoaded",function () {
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackView();
     let buttonBarView = new ButtonBarView("buttonBar");
-    getState().addViews(headerView, currentTrackView, buttonBarView);
+    let historyView = new HistoryView();
+    getState().addViews(headerView, currentTrackView, buttonBarView, historyView);
 
     clearSelectedTrack();
 
@@ -415,3 +418,5 @@ function updateDocumentTitle (headline) {
     headline = headline || document.getElementById('contentHeadline').textContent;
     document.title = headline + ' | ' + document.body.dataset.title;
 }
+
+HistoryLine.define();
