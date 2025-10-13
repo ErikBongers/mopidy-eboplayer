@@ -1,6 +1,5 @@
 import {ProgressTimer} from "./timer";
 import {Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
-import {Commands} from "../scripts/modules";
 
 function delay_exponential (base: number | 'rand', growthFactor: number, attempts: number) {
     /* Calculate number of beats between syncs based on exponential function.
@@ -38,12 +37,10 @@ export class SyncedProgressTimer {
     positionNode: Text;
     durationNode: Text;
     private _progressTimer: ProgressTimer;
-    private commands: Commands;
 
-    constructor(maxAttempts: number, mopidy: Mopidy, commands: Commands) {
+    constructor(maxAttempts: number, mopidy: Mopidy) {
         this._maxAttempts = maxAttempts;
         this._mopidy = mopidy;
-        this.commands = commands;
         this._syncAttemptsRemaining = this._maxAttempts;
 
         this.positionNode = document.createTextNode('');
@@ -116,39 +113,39 @@ export class SyncedProgressTimer {
     }
 
     _doSync(position: number, duration: number) {
-        let ready = !(duration === Infinity && position === 0);  // Timer has been properly initialized.
-        if (!ready) {
-            // Don't try to sync if progress timer has not been initialized yet.
-            return;
-        }
-
-        this._scheduleSync(-1); // Ensure that only one sync process is active at a time.
-
-        let _this = this;
-        _this.commands.core.playback.getTimePosition().then(function (targetPosition: number) {
-            if (_this.syncState === SYNC_STATE.NOT_SYNCED) {
-                _this.syncState = SYNC_STATE.SYNCING;
-            }
-            if (Math.abs(targetPosition - position) <= 500) {
-                // Less than 500ms == in sync.
-                _this._syncAttemptsRemaining = Math.max(_this._syncAttemptsRemaining - 1, 0);
-                if (_this._syncAttemptsRemaining < _this._maxAttempts - 1 && _this._previousSyncPosition !== targetPosition) {
-                    // Need at least two consecutive syncs to know that Mopidy
-                    // is progressing playback and we are in sync.
-                    _this.syncState = SYNC_STATE.SYNCED;
-                }
-                _this._previousSyncPosition = targetPosition;
-                // Step back exponentially while increasing number of callbacks.
-                _this._scheduleSync(delay_exponential(0.25, 2, _this._maxAttempts - _this._syncAttemptsRemaining) * 1000);
-            } else {
-                // Drift is too large, re-sync with Mopidy.
-                _this.syncState = SYNC_STATE.SYNCING;
-                _this._syncAttemptsRemaining = _this._maxAttempts;
-                _this._previousSyncPosition = null;
-                _this._scheduleSync(1000);
-                _this._progressTimer.set(targetPosition);
-            }
-        });
+        // let ready = !(duration === Infinity && position === 0);  // Timer has been properly initialized.
+        // if (!ready) {
+        //     // Don't try to sync if progress timer has not been initialized yet.
+        //     return;
+        // }
+        //
+        // this._scheduleSync(-1); // Ensure that only one sync process is active at a time.
+        //
+        // let _this = this;
+        // _this.commands.core.playback.getTimePosition().then(function (targetPosition: number) {
+        //     if (_this.syncState === SYNC_STATE.NOT_SYNCED) {
+        //         _this.syncState = SYNC_STATE.SYNCING;
+        //     }
+        //     if (Math.abs(targetPosition - position) <= 500) {
+        //         // Less than 500ms == in sync.
+        //         _this._syncAttemptsRemaining = Math.max(_this._syncAttemptsRemaining - 1, 0);
+        //         if (_this._syncAttemptsRemaining < _this._maxAttempts - 1 && _this._previousSyncPosition !== targetPosition) {
+        //             // Need at least two consecutive syncs to know that Mopidy
+        //             // is progressing playback and we are in sync.
+        //             _this.syncState = SYNC_STATE.SYNCED;
+        //         }
+        //         _this._previousSyncPosition = targetPosition;
+        //         // Step back exponentially while increasing number of callbacks.
+        //         _this._scheduleSync(delay_exponential(0.25, 2, _this._maxAttempts - _this._syncAttemptsRemaining) * 1000);
+        //     } else {
+        //         // Drift is too large, re-sync with Mopidy.
+        //         _this.syncState = SYNC_STATE.SYNCING;
+        //         _this._syncAttemptsRemaining = _this._maxAttempts;
+        //         _this._previousSyncPosition = null;
+        //         _this._scheduleSync(1000);
+        //         _this._progressTimer.set(targetPosition);
+        //     }
+        // });
     }
 
     set(position: number, duration: number = undefined) {

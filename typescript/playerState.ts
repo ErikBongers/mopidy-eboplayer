@@ -8,7 +8,6 @@ import TlTrack = models.TlTrack;
 
 export class State {
     mopidy: Mopidy;
-    commands: Commands;
     syncedProgressTimer: SyncedProgressTimer;
 
     // values for controls
@@ -42,9 +41,8 @@ export class State {
     private readonly model: ViewModel;
     private readonly controller: Controller;
 
-    constructor(mopidy: Mopidy, commands: Commands, syncedProgressTimer: SyncedProgressTimer, model: ViewModel, controller: Controller) {
+    constructor(mopidy: Mopidy, syncedProgressTimer: SyncedProgressTimer, model: ViewModel, controller: Controller) {
         this.mopidy = mopidy;
-        this.commands = commands;
         this.syncedProgressTimer = syncedProgressTimer;
         this.model = model;
         this.controller = controller;

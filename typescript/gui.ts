@@ -76,69 +76,69 @@ function onActiveTrackChanged() {
 }
 
 function updateFileTrackView (trackInfo: FileTrackModel) {
-    updatePlayIcons(trackInfo.tlTrack.track.uri, trackInfo.tlTrack.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED));
-
-    if (trackInfo.songlenght == Infinity) {
-        (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
-    } else {
-        (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'block';
-    }
-
-    getState().artistsHtml = '';
-    getState().artistsText = '';
-    let artists = trackInfo.tlTrack.track.artists;
-    if (artists) {
-        for (let j = 0; j < artists.length; j++) {
-            let artistName = artists[j].name;
-            if (j !== artists.length - 1) {
-                artistName += ', ';
-            }
-            getState().artistsHtml += '<a href="#" onclick="return library.showArtist(\'' + artists[j].uri + '\', getState().mopidy);">' + artistName + '</a>';
-            getState().artistsText += artistName;
-        }
-    }
-
-    getState().albumHtml = '';
-    getState().albumText = '';
-    let album = trackInfo.tlTrack.track.album;
-    if (album && album.name) {
-        getState().albumHtml = '<a href="#" onclick="return library.showAlbum(\'' + album.uri + '\', getState().mopidy);">' + album.name + '</a>';
-        getState().albumText = album.name;
-    }
-
-    if (trackInfo.tlTrack.track.uri) {
-        // Add 'Show Info' icon to album image
-        document.getElementById('trackInfoBig').append(
-            '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
-            '<i class="fa fa-info-circle"></i></a>')
-    }
-
-    document.getElementById('trackslider').setAttribute('min', "0");
-    document.getElementById('trackslider').setAttribute('max', getState().songlength.toString());
-    getState().syncedProgressTimer.reset().set(0, getState().songlength);
-    if (getState().play) {
-        getState().syncedProgressTimer.start()
-    }
-
-    resizeMb()
+    // updatePlayIcons(trackInfo.track.uri, trackInfo.track.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED));
+    //
+    // if (trackInfo.songlenght == Infinity) {
+    //     (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
+    // } else {
+    //     (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'block';
+    // }
+    //
+    // getState().artistsHtml = '';
+    // getState().artistsText = '';
+    // let artists = trackInfo.tlTrack.track.artists;
+    // if (artists) {
+    //     for (let j = 0; j < artists.length; j++) {
+    //         let artistName = artists[j].name;
+    //         if (j !== artists.length - 1) {
+    //             artistName += ', ';
+    //         }
+    //         getState().artistsHtml += '<a href="#" onclick="return library.showArtist(\'' + artists[j].uri + '\', getState().mopidy);">' + artistName + '</a>';
+    //         getState().artistsText += artistName;
+    //     }
+    // }
+    //
+    // getState().albumHtml = '';
+    // getState().albumText = '';
+    // let album = trackInfo.tlTrack.track.album;
+    // if (album && album.name) {
+    //     getState().albumHtml = '<a href="#" onclick="return library.showAlbum(\'' + album.uri + '\', getState().mopidy);">' + album.name + '</a>';
+    //     getState().albumText = album.name;
+    // }
+    //
+    // if (trackInfo.tlTrack.track.uri) {
+    //     // Add 'Show Info' icon to album image
+    //     document.getElementById('trackInfoBig').append(
+    //         '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
+    //         '<i class="fa fa-info-circle"></i></a>')
+    // }
+    //
+    // document.getElementById('trackslider').setAttribute('min', "0");
+    // document.getElementById('trackslider').setAttribute('max', getState().songlength.toString());
+    // getState().syncedProgressTimer.reset().set(0, getState().songlength);
+    // if (getState().play) {
+    //     getState().syncedProgressTimer.start()
+    // }
+    //
+    // resizeMb()
 }
 function updateStreamTrackView (trackInfo: StreamTrackModel) {
-    updatePlayIcons(trackInfo.tlTrack.track.uri, trackInfo.tlTrack.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED));
-
-    (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
-
-    getState().artistsHtml = '';
-    getState().artistsText = '';
-
-    getState().albumHtml = '';
-    getState().albumText = '';
-    if (trackInfo.tlTrack.track.uri) {
-        // Add 'Show Info' icon to album image
-        document.getElementById('trackInfoBig').append(
-            '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
-            '<i class="fa fa-info-circle"></i></a>')
-    }
-    resizeMb()
+    // updatePlayIcons(trackInfo.tlTrack.track.uri, trackInfo.tlTrack.tlid, controls.getIconForAction(TRACK_ACTIONS.UNDEFINED));
+    //
+    // (document.getElementById('trackslider').querySelector('.ui-slider-handle') as HTMLElement).style.display = 'none';
+    //
+    // getState().artistsHtml = '';
+    // getState().artistsText = '';
+    //
+    // getState().albumHtml = '';
+    // getState().albumText = '';
+    // if (trackInfo.tlTrack.track.uri) {
+    //     // Add 'Show Info' icon to album image
+    //     document.getElementById('trackInfoBig').append(
+    //         '<a href="#" class="infoBtn" onclick="return controls.showInfoPopup(\'' + trackInfo.tlTrack.track.uri + '\', \'undefined\', getState().mopidy);">' +
+    //         '<i class="fa fa-info-circle"></i></a>')
+    // }
+    // resizeMb()
 }
 
 /* Name:    Use stream title if we have it, else track name.
@@ -384,15 +384,14 @@ document.addEventListener("DOMContentLoaded",function () {
         autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
     };
     let mopidy = new Mopidy(connectOptions);
-    let commands = new Commands(mopidy);
-    let timer = new SyncedProgressTimer(8, mopidy, commands);
+    let timer = new SyncedProgressTimer(8, mopidy);
     let model = new Model();
 
     let controller = new Controller(model, mopidy);
 
     controller.initSocketevents();
 
-    let state = new State(mopidy, commands, timer, model, controller);
+    let state = new State(mopidy, timer, model, controller);
     setState(state);
 
     let headerView = new HeaderView();
@@ -409,9 +408,9 @@ document.addEventListener("DOMContentLoaded",function () {
         await getState().getController().fetchHistory();
     };
     document.getElementById("showBrowse").onclick = async () => {
-        let browse = await getState().commands.core.library.browse(null);
-        console_yellow("browse");
-        console.log({browse});
+        // let browse = await getState().commands.core.library.browse(null);
+        // console_yellow("browse");
+        // console.log({browse});
     };
 });
 

@@ -873,7 +873,6 @@ xhistory-line {
     width: 100%;
     border-collapse: collapse;
     & tr {
-        opacity: .7;
         div.progressBar {
             background-color: #ffffff20;
             height: 1px;
@@ -897,5 +896,18 @@ xhistory-line {
         & td:first-child {
             padding-right: 1em;
         }
+    }
+}
+
+.trackLine {
+    h1 {
+        font-size: 1rem;
+        color: white;
+        margin: 0;
+    }
+    small {
+        --textColor: white;
+        font-size: .7rem;
+        color: rgb(from var(--textColor) r g b / 50%);
     }
 }

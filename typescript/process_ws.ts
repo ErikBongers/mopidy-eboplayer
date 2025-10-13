@@ -1,62 +1,14 @@
 import * as controls from "./controls";
-import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, BROWSE_TABLE, CURRENT_PLAYLIST_TABLE, getAlbum, getArtist, getMediaClass, hasSameAlbum, isFavouritesPlaylist, renderSongLi, renderSongLiAlbumInfo, renderSongLiBackButton, renderSongLiDivider, resultsToTables, scrollToTracklist, showLoading, updatePlayIcons, validUri} from "./functionsvars";
+import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, getAlbum, getArtist, getMediaClass, isFavouritesPlaylist, resultsToTables, scrollToTracklist, showLoading} from "./functionsvars";
 import * as images from "./images";
 import {models} from "../mopidy_eboplayer2/static/js/mopidy";
 import getState from "./playerState";
-import {FileTrackModel, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./model";
+import {TrackModel} from "./model";
+import {transformTrackDataToModel} from "./controller";
 import TlTrack = models.TlTrack;
 
-export function transformTrackDataToModel(data: (TlTrack | null)): TrackModel {
-    if(!data) {
-        // noinspection UnnecessaryLocalVariableJS
-        let model: NoneTrackModel = {
-            type: TrackType.None
-        };
-        return model;
-    }
-    if(!data.track.track_no) {
-        // noinspection UnnecessaryLocalVariableJS
-        let model: StreamTrackModel = {
-            type: TrackType.Stream,
-            tlTrack: data,
-            name: data.track.name,
-            infoLines: []
-        };
-        return model;
-    }
-    //for now, assume it's a file track
-    let model: FileTrackModel = {
-        type: TrackType.File,
-        composer: "",
-        tlTrack: data,
-        title: data.track.name,
-        performer: "",
-        songlenght: 0
-    };
-    if (!data.track.name || data.track.name === '') {
-        let parts = data.track.uri.split('/');
-        model.title = decodeURI(parts[parts.length - 1])
-    }
-
-    if (validUri(data.track.name)) {
-        for (let key in getState().streamUris) {
-            let rs = getState().streamUris[key]
-            if (rs && rs[1] === data.track.name) {
-                model.title = (rs[0] || rs[1]);
-            }
-        }
-    }
-
-    if (!data.track.length || data.track.length === 0) {
-        model.songlenght = getState().songlength = Infinity;
-   } else {
-        model.songlenght = getState().songlength = data.track.length;
-    }
-
-    //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
-    // images.fetchAlbumImage(data.track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
-
-    return model;
+export function transformTlTrackDataToModel(tlTrack: (TlTrack | null)): TrackModel {
+    return transformTrackDataToModel(tlTrack?.track);
 }
 
 export function processVolume (data: number | null) {

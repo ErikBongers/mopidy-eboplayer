@@ -1,27 +1,46 @@
 import getState from "../playerState";
-import {EboplayerEvents, MessageType} from "../model";
+import {EboplayerEvents, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
-import {console_yellow} from "../gui";
-import {numberedDictToArray} from "../controller";
-import {models} from "../../mopidy_eboplayer2/static/js/mopidy";
+import {transformTrackDataToModel} from "../controller";
 
 export class HistoryView extends View {
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
-            this.onHistoryChangegd();
+            this.onHistoryChangegd().then(r => {});
         });
     }
 
 
-    private onHistoryChangegd() {
+    private async onHistoryChangegd() {
         let history = getState().getModel().getHistory();
         let historyTable = document.getElementById("historyTable") as HTMLTableElement;
         let body = historyTable.tBodies[0];
         body.innerHTML = "";
         for(let line of history) {
+            let title = line.ref.name;
+            let artist = "";
+            let album = "";
+            let tracks = await getState().getController().lookupCached(line.ref.uri);
+            if(tracks) {
+                let track = transformTrackDataToModel(tracks[0]);
+                switch (track.type) {
+                    case TrackType.File:
+                        title = track.title;
+                        artist = track.track.artists[0].name; //todo: add other names?
+                        album = track.track.album.name;
+                        break;
+                    case TrackType.Stream:
+                        title = track.name;
+                        break;
+                }
+            }
+
             body.insertAdjacentHTML('afterbegin', `
-<tr data-uri="${line.ref.uri}">
-    <td>${line.ref.name}</td>
+<tr class="trackLine" data-uri="${line.ref.uri}">
+    <td>
+        <h1>${title}</h1>
+        <small>${artist} • ${album}</small>
+    </td>
     <td>
         <button><i class="fa fa fa-ellipsis-v"></i></button>
     </td>
@@ -36,12 +55,7 @@ export class HistoryView extends View {
 
         body.querySelectorAll("tr").forEach(tr => {
             tr.addEventListener("click", async ev => {
-                await getState().commands.core.tracklist.clear();
-                let tracks = await getState().commands.core.tracklist.add(null, null, [tr.dataset.uri]);
-                let trackList = numberedDictToArray(tracks) as models.TlTrack[];
-                getState().getController().setTracklist(trackList);
-                getState().commands.core.playback.play(null, trackList[0].tlid);
-                await getState().getController().setCurrentTrackAndFetchDetails(trackList[0]);
+                await getState().getController().playTrack(tr.dataset.uri);
             })
         });
     }

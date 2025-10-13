@@ -5,7 +5,7 @@ export enum TrackType { None, File, Stream}
 
 export interface FileTrackModel {
     type: TrackType.File;
-    tlTrack: TlTrack;
+    track: models.Track;
     title: string,
     composer?: string,
     performer: string,
@@ -15,7 +15,7 @@ export interface FileTrackModel {
 
 export interface StreamTrackModel {
     type: TrackType.Stream;
-    tlTrack: TlTrack;
+    track: models.Track;
     name: string,
     infoLines: string[]
 }
@@ -84,6 +84,8 @@ export interface HistoryLine {
     ref: HistoryRef;
 }
 
+export type LibraryDict = { [index: string]: models.Track[] };
+
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
     currentTrack: TrackModel = Model.NoTrack;
@@ -104,9 +106,11 @@ export class Model extends EventTarget implements ViewModel {
     private activeStreamLines: string[];
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
+    private libraryCache: LibraryDict = {};
 
     constructor() {
         super();
+        this.libraryCache = {};
     }
 
     setConnectionState(state: ConnectionState) {
@@ -192,4 +196,11 @@ export class Model extends EventTarget implements ViewModel {
     }
     getTrackList = () => this.trackList;
 
+    addToLibraryCache(tracks: LibraryDict) {
+        this.libraryCache = {...this.libraryCache, ...tracks};
+    }
+
+    getTrackFromCache(uri: string) {
+        return this.libraryCache[uri];
+    }
 }

@@ -1,6 +1,7 @@
 import getState from "../playerState";
 import {EboplayerEvents} from "../model";
 import {EboPlayerDataType, View} from "./view";
+import {inverseQuadratic100} from "../controller";
 
 export class VolumeView extends View {
     private readonly sliderId: string;
@@ -32,28 +33,15 @@ export class VolumeView extends View {
         }
         let volume = getState().getModel().getVolume();
         let slider = document.getElementById(this.sliderId) as HTMLInputElement;
-        let visualVolume = inverseQuadratic100(volume);
+        let visualVolume = inverseQuadratic100(volume); //todo: hide this in Controller?
         slider.value = Math.floor(visualVolume).toString();
     }
 
     async sendVolume(value: number) {
-        await getState().commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
-    }
-
-    onOnline(): void {
-        getState().commands.core.mixer.getVolume().then((data) => {
-            console.log("volume data: ");
-            console.log(data);
-        });
-
+        await getState().getController().sendVolume(value);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.Volume];
     }
 }
-
-function quadratic100(x:number) { return (x*x)/100;}
-function inverseQuadratic100(y:number) { return Math.floor(Math.sqrt(y*100));}
-// noinspection JSUnusedLocalSymbols
-function cubic100(x:number) { return (x*x*x)/10000;}

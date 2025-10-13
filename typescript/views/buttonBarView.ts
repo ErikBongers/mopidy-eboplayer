@@ -55,11 +55,11 @@ export class ButtonBarView extends View {
         let playState = getState().getModel().getPlayState();
         if (playState == PlayState.playing) {
             if(getState().getModel().getCurrentTrack().type == TrackType.Stream)
-                return getState().commands.core.playback.stop();
+                return getState().getController().sendStop();
             else
-                return getState().commands.core.playback.pause();
+                return getState().getController().sendPause();
         } else {
-                return getState().commands.core.playback.play();
+                return getState().getController().sendPlay();
             }
         }
 

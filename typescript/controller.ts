@@ -1,9 +1,9 @@
 import getState from "./playerState";
-import {showLoading} from "./functionsvars";
+import {showLoading, validUri} from "./functionsvars";
 import {library} from "./library";
 import * as controls from "./controls";
-import {transformTrackDataToModel} from "./process_ws";
-import {ConnectionState, HistoryLine, Model, PlayState, TrackType} from "./model";
+import {transformTlTrackDataToModel} from "./process_ws";
+import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -12,10 +12,12 @@ import TlTrack = models.TlTrack;
 
 export class Controller extends Commands implements DataRequester{
     private model: Model;
+    private commands: Commands;
 
     constructor(model: Model, mopidy: Mopidy) {
         super(mopidy);
         this.model  = model;
+        this.commands = new Commands(mopidy);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -30,9 +32,7 @@ export class Controller extends Commands implements DataRequester{
             this.model.setConnectionState(ConnectionState.Online);
             await getState().getRequiredData();
             if(this.model.getCurrentTrack().type == TrackType.None) {
-                let history = await getState().commands.core.history.getHistory();
-                console.log("%cHistory:", "background-color: yellow");
-                console.log(history);
+                let history = await this.commands.core.history.getHistory();
             } //else: current track will be handled elsewhere.
         });
 
@@ -122,28 +122,28 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchTracklistAndDetails() {
-        let tracks = await getState().commands.core.tracklist.getTlTracks();
+        let tracks = await this.commands.core.tracklist.getTlTracks();
         //todo: model.setTracklist()
-        let currentTrack = await getState().commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
+        let currentTrack = await this.commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
         await this.setCurrentTrackAndFetchDetails(currentTrack);
     }
 
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
-        this.model.setCurrentTrack(transformTrackDataToModel(data));
+        this.model.setCurrentTrack(transformTlTrackDataToModel(data));
         await this.fetchActiveStreamLines();
         //todo: do this only when a track is started?s
-        // getState().commands.core.playback.getTimePosition().then(processCurrentposition, console.error)
-        // getState().commands.core.playback.getState().then(processPlaystate, console.error)
-        // getState().commands.core.mixer.getVolume().then(processVolume, console.error)
-        // getState().commands.core.mixer.getMute().then(processMute, console.error)
+        // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
+        // this.core.playback.getState().then(processPlaystate, console.error)
+        // this.core.mixer.getVolume().then(processVolume, console.error)
+        // this.core.mixer.getMute().then(processMute, console.error)
     }
 
     fetchPlaybackOptions () {
         let promises = [
-            getState().commands.core.tracklist.getRepeat(),
-            getState().commands.core.tracklist.getRandom(),
-            getState().commands.core.tracklist.getConsume(),
-            getState().commands.core.tracklist.getSingle(),
+            this.commands.core.tracklist.getRepeat(),
+            this.commands.core.tracklist.getRandom(),
+            this.commands.core.tracklist.getConsume(),
+            this.commands.core.tracklist.getSingle(),
         ];
         Promise.all(promises).then((results) => {
             this.model.setPlaybackState({
@@ -170,15 +170,15 @@ export class Controller extends Commands implements DataRequester{
     async getData(dataType: EboPlayerDataType) {
         switch (dataType) {
             case EboPlayerDataType.Volume:
-                let volume = await getState().commands.core.mixer.getVolume() as number;  //todo: make fetch functions of these switch cases.
+                let volume = await this.commands.core.mixer.getVolume() as number;  //todo: make fetch functions of these switch cases.
                 this.setVolume(volume);
                 break;
             case  EboPlayerDataType.CurrentTrack:
-                let track = await getState().commands.core.playback.getCurrentTlTrack() as TlTrack;
+                let track = await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
                 await this.setCurrentTrackAndFetchDetails(track);
                 break;
             case  EboPlayerDataType.PlayState:
-                let state = await getState().commands.core.playback.getState() as string;
+                let state = await this.commands.core.playback.getState() as string;
                 this.setPlayState(state);
                 break;
             case  EboPlayerDataType.StreamLines:
@@ -194,7 +194,7 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchHistory()  {
-        let historyObject: Object = await getState().commands.core.history.getHistory();
+        let historyObject: Object = await this.commands.core.history.getHistory();
         let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
             return {
                 timestamp: line["0"],
@@ -208,8 +208,47 @@ export class Controller extends Commands implements DataRequester{
             return line.ref.uri != array[pos-1].ref.uri;
         });
         this.model.setHistory(dedupLines);
+        let dict: LibraryDict = await this.commands.core.library.lookup(dedupLines.map(l => l.ref.uri));
+        this.model.addToLibraryCache(dict);
+    }
+
+    async lookupCached(uri: string) {
+        let tracks = this.model.getTrackFromCache(uri);
+        if(tracks)
+            return tracks;
+        let dict: LibraryDict = await this.commands.core.library.lookup([uri]);
+        this.model.addToLibraryCache(dict);
+        return this.model.getTrackFromCache(uri);
+    }
+
+    async playTrack(uri: string) {
+        await this.commands.core.tracklist.clear();
+        let tracks = await this.commands.core.tracklist.add(null, null, [uri]);
+        let trackList = numberedDictToArray(tracks) as models.TlTrack[];
+        this.setTracklist(trackList);
+        this.commands.core.playback.play(null, trackList[0].tlid);
+        await this.setCurrentTrackAndFetchDetails(trackList[0]);
+    }
+
+    async sendVolume(value: number) {
+        await this.commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
+    }
+
+    async sendStop() {
+        return this.commands.core.playback.stop();
+    }
+    async sendPause() {
+        return this.commands.core.playback.pause();
+    }
+    async sendPlay() {
+        return this.commands.core.playback.play();
     }
 }
+
+export function quadratic100(x:number) { return (x*x)/100;}
+export function inverseQuadratic100(y:number) { return Math.floor(Math.sqrt(y*100));}
+// noinspection JSUnusedLocalSymbols
+export function cubic100(x:number) { return (x*x*x)/10000;}
 
 export function numberedDictToArray<T>(dict: Object, converter?: (object: any) => T): T[] {
     let length = dict["length"];
@@ -240,3 +279,57 @@ export function getHostAndPort() {
         return hostName;
     return document.location.host;
 }
+
+export function transformTrackDataToModel(track: (models.Track | undefined)): TrackModel {
+    if (!track) {
+        // noinspection UnnecessaryLocalVariableJS
+        let model: NoneTrackModel = {
+            type: TrackType.None
+        };
+        return model;
+    }
+    if (!track.track_no) {
+        // noinspection UnnecessaryLocalVariableJS
+        let model: StreamTrackModel = {
+            type: TrackType.Stream,
+            track,
+            name: track.name,
+            infoLines: []
+        };
+        return model;
+    }
+    //for now, assume it's a file track
+    let model: FileTrackModel = {
+        type: TrackType.File,
+        composer: "",
+        track,
+        title: track.name,
+        performer: "",
+        songlenght: 0
+    };
+    if (!track.name || track.name === '') {
+        let parts = track.uri.split('/');
+        model.title = decodeURI(parts[parts.length - 1])
+    }
+
+    if (validUri(track.name)) {
+        for (let key in getState().streamUris) {
+            let rs = getState().streamUris[key]
+            if (rs && rs[1] === track.name) {
+                model.title = (rs[0] || rs[1]);
+            }
+        }
+    }
+
+    if (!track.length || track.length === 0) {
+        model.songlenght = getState().songlength = Infinity;
+    } else {
+        model.songlenght = getState().songlength = track.length;
+    }
+
+    //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
+    // images.fetchAlbumImage(track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
+
+    return model;
+}
+
