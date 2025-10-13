@@ -10,7 +10,7 @@ import {HeaderView} from "./views/headerView";
 import {Controller, getWebSocketUrl} from "./controller";
 import {BigTrackView} from "./views/bigTrackView";
 import {ButtonBarView} from "./views/buttonBarView";
-import {HistoryLineElement} from "./components/historyLineElement";
+import {EboProgressBar} from "./components/eboProgressBar";
 import {HistoryView} from "./views/historyView";
 import TlTrack = models.TlTrack;
 
@@ -423,4 +423,4 @@ function updateDocumentTitle (headline) {
     document.title = headline + ' | ' + document.body.dataset.title;
 }
 
-HistoryLineElement.define();
+EboProgressBar.define(); //todo: move elsewhere? Initialize them from a static registy?
