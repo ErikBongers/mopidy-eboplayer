@@ -5,12 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/components/historyLineElement.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +121,7 @@
       <workItem from="1760260301693" duration="43639000" />
       <workItem from="1760345741328" duration="330000" />
       <workItem from="1760346124794" duration="2156000" />
-      <workItem from="1760374049934" duration="3495000" />
+      <workItem from="1760374049934" duration="12883000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -430,7 +427,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760311301295</updated>
     </task>
-    <option name="localTasksCounter" value="39" />
+    <task id="LOCAL-00039" summary="Webcomponent progressbar workin!">
+      <option name="closed" value="true" />
+      <created>1760378965143</created>
+      <option name="number" value="00039" />
+      <option name="presentableId" value="LOCAL-00039" />
+      <option name="project" value="LOCAL" />
+      <updated>1760378965143</updated>
+    </task>
+    <option name="localTasksCounter" value="40" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -451,7 +456,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Merge setCurrentTrack from setActiveTrack." />
     <MESSAGE value="Frontend: change return value of event:stream_history_changed." />
     <MESSAGE value="Format console message." />
     <MESSAGE value="Console.log: Highlight stream history." />
@@ -476,7 +480,8 @@
     <MESSAGE value="frontend.py on playback changed: add empty stream title. See 0f051368708ad5092b3b42e85518faa6c4122e73" />
     <MESSAGE value="Fetch stream lines on track change event." />
     <MESSAGE value="Testing gradient to show a playing stream." />
-    <option name="LAST_COMMIT_MESSAGE" value="Testing gradient to show a playing stream." />
+    <MESSAGE value="Webcomponent progressbar workin!" />
+    <option name="LAST_COMMIT_MESSAGE" value="Webcomponent progressbar workin!" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
