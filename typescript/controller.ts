@@ -201,7 +201,13 @@ export class Controller extends Commands implements DataRequester{
                 ref: line["1"]
             };
         });
-        this.model.setHistory(historyLines);
+
+        let dedupLines = historyLines.filter((line, pos, array) => {
+            if(pos == 0)
+                return true; //always keep the first line.
+            return line.ref.uri != array[pos-1].ref.uri;
+        });
+        this.model.setHistory(dedupLines);
     }
 }
 
