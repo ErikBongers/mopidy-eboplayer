@@ -886,13 +886,13 @@ xhistory-line {
             }
         }
         &.behind-1 {
-            opacity: 0.4;
+            opacity: 0.35;
         }
         &.behind-2 {
-            opacity: 0.2;
+            opacity: 0.3;
         }
         &.behind {
-            opacity: 0.1;
+            opacity: 0.2;
         }
         & td:first-child {
             padding-right: 1em;
@@ -906,9 +906,9 @@ xhistory-line {
 .movingGradient {
     --darkGradient: #555;
     background: linear-gradient(to right, var(--darkGradient),
-        #23a6d5, var(--darkGradient), #ffffff,
-        var(--darkGradient), #e73c7e, var(--darkGradient), #23a6d5, var(--darkGradient), #ee7752, var(--darkGradient),
-        #23a6d5
+    #2a84a5, var(--darkGradient), #ffffff,
+        var(--darkGradient), #872f51, var(--darkGradient), #757421, var(--darkGradient), #ee7752, var(--darkGradient),
+        #2a84a5
     );
     background-size: 1100% 1100%;  /*Must be a multiple of the number of colors above for a smooth transistion and the last color must be the first*/
     animation: gradient 15s forwards infinite linear;

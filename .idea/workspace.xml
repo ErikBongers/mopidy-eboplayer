@@ -7,6 +7,7 @@
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -117,7 +118,7 @@
       <workItem from="1760179064160" duration="10686000" />
       <workItem from="1760199618101" duration="11628000" />
       <workItem from="1760212991250" duration="4893000" />
-      <workItem from="1760260301693" duration="39657000" />
+      <workItem from="1760260301693" duration="43639000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -415,7 +416,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760311048112</updated>
     </task>
-    <option name="localTasksCounter" value="38" />
+    <task id="LOCAL-00038" summary="Testing gradient to show a playing stream.">
+      <option name="closed" value="true" />
+      <created>1760311301295</created>
+      <option name="number" value="00038" />
+      <option name="presentableId" value="LOCAL-00038" />
+      <option name="project" value="LOCAL" />
+      <updated>1760311301295</updated>
+    </task>
+    <option name="localTasksCounter" value="39" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
