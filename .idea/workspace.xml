@@ -5,8 +5,6 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -121,7 +119,7 @@
       <workItem from="1760260301693" duration="43639000" />
       <workItem from="1760345741328" duration="330000" />
       <workItem from="1760346124794" duration="2156000" />
-      <workItem from="1760374049934" duration="12883000" />
+      <workItem from="1760374049934" duration="13432000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -435,7 +433,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760378965143</updated>
     </task>
-    <option name="localTasksCounter" value="40" />
+    <task id="LOCAL-00040" summary="ProgressBar with active and button properties.">
+      <option name="closed" value="true" />
+      <created>1760389280882</created>
+      <option name="number" value="00040" />
+      <option name="presentableId" value="LOCAL-00040" />
+      <option name="project" value="LOCAL" />
+      <updated>1760389280882</updated>
+    </task>
+    <option name="localTasksCounter" value="41" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -456,7 +462,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Frontend: change return value of event:stream_history_changed." />
     <MESSAGE value="Format console message." />
     <MESSAGE value="Console.log: Highlight stream history." />
     <MESSAGE value="Copy d9a501a306d6f5034d67c8077a02b39a8dc8ea4c from OldWorking to master." />
@@ -481,7 +486,8 @@
     <MESSAGE value="Fetch stream lines on track change event." />
     <MESSAGE value="Testing gradient to show a playing stream." />
     <MESSAGE value="Webcomponent progressbar workin!" />
-    <option name="LAST_COMMIT_MESSAGE" value="Webcomponent progressbar workin!" />
+    <MESSAGE value="ProgressBar with active and button properties." />
+    <option name="LAST_COMMIT_MESSAGE" value="ProgressBar with active and button properties." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

@@ -14,7 +14,6 @@ export class EboProgressBar extends HTMLElement {
 
     constructor() {
         super();
-        console_yellow("Constructed");
         this.styleTemplate = document.createElement("template");
         // noinspection CssUnresolvedCustomProperty
         this.styleTemplate.innerHTML = `
@@ -93,7 +92,6 @@ export class EboProgressBar extends HTMLElement {
 
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
-        console_yellow("Connected");
     }
 
 
