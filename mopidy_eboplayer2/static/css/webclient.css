@@ -138,7 +138,9 @@ input[type='range'].minimal {
 
 #buttonBar  {
     display: flex;
+    justify-content: center;
     flex-wrap: wrap;
+    font-size: .7em;
     & button {
         padding-left: .5ch;
         padding-right: .5ch;

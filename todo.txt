@@ -1,3 +1,25 @@
+Timeline  listView
+==================
+A list of past, present and future.
+  > At the top, the history.
+  > current track (if any)
+  > queued tracks
+
+  > if current track is album track: show album in bigInfo, else the stream logo (of any)
+  > if current track is a stream...
+    > the history of the stream lines is embedded in the TimeLine.
+      > for previous streams, this history has to be expanded via the track menu.
+
+ Buttons (ellipsis), double click, long click
+ =============================================
+ * These can be set via settings.
+   > default is buttons=visible.
+* Single click is selection by default.
+* Double click is play.
+* Long click is same as button.
+
+
+
 * Iris player seems to have a way to get all the tracks really fast.
   > but cannot add radio strams (with names) to playlists.
   > also only possible to add a track to a list via the "now playing" screen.
