@@ -9,6 +9,7 @@ import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import TlTrack = models.TlTrack;
+import {console_yellow} from "./gui";
 
 export class Controller extends Commands implements DataRequester{
     private model: Model;
@@ -207,9 +208,25 @@ export class Controller extends Commands implements DataRequester{
                 return true; //always keep the first line.
             return line.ref.uri != array[pos-1].ref.uri;
         });
-        this.model.setHistory(dedupLines);
-        let dict: LibraryDict = await this.commands.core.library.lookup(dedupLines.map(l => l.ref.uri));
+        let unique = [...new Set(dedupLines)];
+        let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
         this.model.addToLibraryCache(dict);
+
+        //remove duplicate streams. Only  keep the last one. (first one in list)
+        let foundStreams = new Set<string>();
+        let filtered = dedupLines.filter(line => {
+            let tracks = this.model.getTrackFromCache(line.ref.uri);
+            if(!tracks)
+                return true;
+            if(!isStream(tracks[0]))
+                return true;
+            if(foundStreams.has(tracks[0].uri))
+                return false;
+            foundStreams.add(tracks[0].uri);
+            return true;
+        });
+
+        this.model.setHistory(filtered);
     }
 
     async lookupCached(uri: string) {
@@ -280,6 +297,9 @@ export function getHostAndPort() {
     return document.location.host;
 }
 
+export function isStream(track: models.Track) {
+    return track?.track_no == undefined;
+}
 export function transformTrackDataToModel(track: (models.Track | undefined)): TrackModel {
     if (!track) {
         // noinspection UnnecessaryLocalVariableJS
@@ -288,7 +308,7 @@ export function transformTrackDataToModel(track: (models.Track | undefined)): Tr
         };
         return model;
     }
-    if (!track.track_no) {
+    if (isStream(track)) {
         // noinspection UnnecessaryLocalVariableJS
         let model: StreamTrackModel = {
             type: TrackType.Stream,

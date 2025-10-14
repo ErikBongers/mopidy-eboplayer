@@ -1,5 +1,3 @@
-* Add progressbarView to bigTrackView.
-
 * Iris player seems to have a way to get all the tracks really fast.
   > but cannot add radio strams (with names) to playlists.
   > also only possible to add a track to a list via the "now playing" screen.

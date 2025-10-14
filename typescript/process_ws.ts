@@ -132,36 +132,36 @@ export function processGetPlaylists (resultArr) {
  * process results of a returned list of playlist track refs
  *********************************************************/
 export function processPlaylistItems (resultDict) {
-    var playlist = resultDict.playlist
-    if (!playlist || playlist === '') {
-        console.log('Playlist', resultDict.uri, 'is invalid')
-        showLoading(false)
-        return
-    }
-    let playlistUri = resultDict.uri;
-    getState().playlists[playlistUri] = {'uri': playlistUri, 'tracks': []}
-    if (playlistUri.startsWith('m3u')) {
-        console.log('Playlist', playlistUri, 'requires tracks lookup');
-        let trackUris = [];
-        for (let i = 0; i < playlist.tracks.length; i++) {
-            trackUris.push(playlist.tracks[i].uri)
-        }
-        return getState().commands.core.library.lookup(trackUris).then(function (tracks) {
-            for (let i = 0; i < trackUris.length; i++) {
-                let track = tracks[trackUris[i]][0] || playlist.tracks[i];  // Fall back to using track Ref if lookup failed.
-                getState().playlists[playlistUri].tracks.push(track);
-            }
-            showLoading(false);
-            return getState().playlists[playlistUri].tracks;
-        })
-    } else {
-        for (let i = 0; i < playlist.tracks.length; i++) {
-            let track = playlist.tracks[i];
-            getState().playlists[playlistUri].tracks.push(track);
-        }
-        showLoading(false);
-        return getState().playlists[playlistUri].tracks;
-    }
+    // var playlist = resultDict.playlist
+    // if (!playlist || playlist === '') {
+    //     console.log('Playlist', resultDict.uri, 'is invalid')
+    //     showLoading(false)
+    //     return
+    // }
+    // let playlistUri = resultDict.uri;
+    // getState().playlists[playlistUri] = {'uri': playlistUri, 'tracks': []}
+    // if (playlistUri.startsWith('m3u')) {
+    //     console.log('Playlist', playlistUri, 'requires tracks lookup');
+    //     let trackUris = [];
+    //     for (let i = 0; i < playlist.tracks.length; i++) {
+    //         trackUris.push(playlist.tracks[i].uri)
+    //     }
+    //     return getState().commands.core.library.lookup(trackUris).then(function (tracks) {
+    //         for (let i = 0; i < trackUris.length; i++) {
+    //             let track = tracks[trackUris[i]][0] || playlist.tracks[i];  // Fall back to using track Ref if lookup failed.
+    //             getState().playlists[playlistUri].tracks.push(track);
+    //         }
+    //         showLoading(false);
+    //         return getState().playlists[playlistUri].tracks;
+    //     })
+    // } else {
+    //     for (let i = 0; i < playlist.tracks.length; i++) {
+    //         let track = playlist.tracks[i];
+    //         getState().playlists[playlistUri].tracks.push(track);
+    //     }
+    //     showLoading(false);
+    //     return getState().playlists[playlistUri].tracks;
+    // }
 }
 
 /** ******************************************************

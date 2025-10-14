@@ -7,9 +7,8 @@
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/process_ws.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/process_ws.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -124,7 +123,8 @@
       <workItem from="1760345741328" duration="330000" />
       <workItem from="1760346124794" duration="2156000" />
       <workItem from="1760374049934" duration="23261000" />
-      <workItem from="1760435941167" duration="1901000" />
+      <workItem from="1760435941167" duration="2098000" />
+      <workItem from="1760470065138" duration="3638000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -470,7 +470,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760398834069</updated>
     </task>
-    <option name="localTasksCounter" value="44" />
+    <task id="LOCAL-00044" summary="bigTrackView.ts: Set progressBar to 100 for streams.">
+      <option name="closed" value="true" />
+      <created>1760438701482</created>
+      <option name="number" value="00044" />
+      <option name="presentableId" value="LOCAL-00044" />
+      <option name="project" value="LOCAL" />
+      <updated>1760438701482</updated>
+    </task>
+    <option name="localTasksCounter" value="45" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -491,7 +499,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Adding Idea project files for smoother branch switching." />
     <MESSAGE value="Allow all origins." />
     <MESSAGE value="Stream lines working!!!" />
     <MESSAGE value="Log all messages: filter out stream_title_changed." />
@@ -516,7 +523,8 @@
     <MESSAGE value="remove log." />
     <MESSAGE value="History: dedup lines." />
     <MESSAGE value="Move commands to controller.ts. Add library cache." />
-    <option name="LAST_COMMIT_MESSAGE" value="Move commands to controller.ts. Add library cache." />
+    <MESSAGE value="bigTrackView.ts: Set progressBar to 100 for streams." />
+    <option name="LAST_COMMIT_MESSAGE" value="bigTrackView.ts: Set progressBar to 100 for streams." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
