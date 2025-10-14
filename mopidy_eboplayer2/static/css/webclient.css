@@ -136,6 +136,34 @@ input[type='range'].minimal {
     }
 }
 
+
+input[type='range'] {
+    & {
+        margin: 10px 5px;
+        height: 2px;
+        background-color: gray;
+        -webkit-appearance: none;
+    }
+
+    &::x-webkit-slider-runnable-track {
+        height: 2px;
+        x-webkit-appearance: none;
+        color: white;
+        margin-top: -1px;
+    }
+
+    &::-webkit-slider-thumb {
+        /*width: 5px;*/
+        /*appearance: none;*/
+        /*height: 5px;*/
+        /*cursor: ew-resize;*/
+        background: white;
+        color: white;
+        border-color: white;
+        /*box-shadow: -999px 0 0 999px #ffffff40;*/
+    }
+}
+
 #buttonBar  {
     display: flex;
     justify-content: center;
@@ -756,24 +784,6 @@ a {
 .ui-loader h1 {
 }
 
-/*desktop*/
-@media (min-width: 55em) {
-    /* panel workaround to make it responsive wrap push on wide viewports once open */
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-fixed-toolbar-open.ui-panel-content-fixed-toolbar-display-push,
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-fixed-toolbar-open.ui-panel-content-fixed-toolbar-display-reveal,
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-wrap-open.ui-panel-content-wrap-display-push,
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-wrap-open.ui-panel-content-wrap-display-reveal {
-        margin-right: 17em;
-        width: auto;
-    }
-
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-fixed-toolbar-open.ui-panel-content-wrap-display-push.ui-panel-content-fixed-toolbar-position-right,
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-fixed-toolbar-open.ui-panel-content-wrap-display-reveal.ui-panel-content-fixed-toolbar-position-right,
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-wrap-open.ui-panel-content-wrap-display-push.ui-panel-content-wrap-position-right,
-    .ui-responsive-panel.ui-page-panel .ui-panel-content-wrap-open.ui-panel-content-wrap-display-reveal.ui-panel-content-wrap-position-right {
-        margin: 0 0 0 17em;
-    }
-}
 
 xhistory-line p{
     background-color: yellow;
@@ -912,4 +922,18 @@ xhistory-line {
         font-size: .7rem;
         color: rgb(from var(--textColor) r g b / 50%);
     }
+}
+
+#stickyTop {
+    position: sticky;
+    top: 0;
+    z-index: 999;
+    background-color: var(--body-background);
+}
+#header {
+    padding-top: 8px;
+}
+
+body {
+    margin-top: 0;
 }

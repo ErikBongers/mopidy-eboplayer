@@ -32,9 +32,7 @@ export class Controller extends Commands implements DataRequester{
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await getState().getRequiredData();
-            if(this.model.getCurrentTrack().type == TrackType.None) {
-                let history = await this.commands.core.history.getHistory();
-            } //else: current track will be handled elsewhere.
+            await this.fetchHistory();
         });
 
         this.mopidy.on('state:offline', () => {

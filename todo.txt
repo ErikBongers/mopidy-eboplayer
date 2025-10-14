@@ -18,6 +18,14 @@ A list of past, present and future.
 * Double click is play.
 * Long click is same as button.
 
+Active vs selected
+===================
+By default the active track's info is shown big.
+If another track is selected (single click), the active track moves to the side and smaller (3d side view?).
+This allows browsing the time line, with details, while keeping the active track in view.
+Clicking the small active track restores it of course.
+The active track get's a moving glow to indicate it is active.
+
 
 
 * Iris player seems to have a way to get all the tracks really fast.
