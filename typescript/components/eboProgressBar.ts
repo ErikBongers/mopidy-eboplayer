@@ -1,6 +1,10 @@
 import {console_yellow} from "../gui";
 
-export class EboProgressBar extends HTMLElement {
+export interface HasName {
+    tagName: string;
+}
+
+export class EboProgressBar extends HTMLElement implements HasName {
     private shadow: ShadowRoot;
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["position", "min", "max", "button", "active"];
@@ -106,8 +110,11 @@ export class EboProgressBar extends HTMLElement {
         this.setClassFromBoolAttribute("active", fragment.firstElementChild as HTMLElement);
         this.shadow.appendChild(fragment);
     }
+
+    static readonly tagName=  "ebo-progressbar";
+
     static define() {
-        customElements.define("ebo-progressbar", EboProgressBar);
+        customElements.define(this.tagName, EboProgressBar);
     }
 
     setClassFromBoolAttribute(attName: string, el: HTMLElement) {
