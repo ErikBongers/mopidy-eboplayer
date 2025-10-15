@@ -6,9 +6,9 @@ import {transformTlTrackDataToModel} from "./process_ws";
 import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
+import TlTrack = models.TlTrack;
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
-import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
 
 export class Controller extends Commands implements DataRequester{
@@ -225,6 +225,7 @@ export class Controller extends Commands implements DataRequester{
         let unique = [...new Set(dedupLines)];
         let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
         this.model.addToLibraryCache(dict);
+        console.log(`cache filled with ${Object.keys(dict).length}`);
 
         this.model.setHistory(dedupLines);
     }
