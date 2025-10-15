@@ -338,7 +338,7 @@ function locationHashChanged () {
     switch (divid) {
         case 'nowPlaying':  // Show 'now playing' footer
             (document.getElementById('normalFooter') as HTMLElement).style.display = 'none';
-            (document.getElementById('nowPlayingFooter') as HTMLElement).style.display = 'block';
+            (document.getElementById('nowPlaying_footer') as HTMLElement).style.display = 'block';
             break
         case 'search':
             document.getElementById('searchinput').focus()
@@ -363,7 +363,7 @@ function locationHashChanged () {
             break
         default:  // Default footer
             (document.getElementById('normalFooter') as HTMLElement).style.display = 'block';
-            (document.getElementById('nowPlayingFooter') as HTMLElement).style.display = 'none';
+            (document.getElementById('nowPlaying_footer') as HTMLElement).style.display = 'none';
     }
     return false
 }

@@ -20,7 +20,8 @@
 </head>
 
 <body data-websocket-url="{{ websocketUrl }}" data-hostname="{{ hostname }}" data-title="{{ title }}">
-    <div id="stickyTop">
+<div id="layout">
+    <div id="XXXXstickyTop" class="flex_wrap_content">
 
         <ul id="header" class="nobullet title condensed">
             <li>
@@ -37,48 +38,45 @@
 
         <div id="nowPlayingpane" class="pane">
 
-            <div id="trackInfoBig">
+            <div id="albumBig">
                 <div class="albumCoverContainer">
                     <img id="albumCoverImg" src="images/default_cover.png" alt="Album cover"/>
-    <!--                <input id="trackslider" class="minimal" name="trackslider" type="range"/>-->
                     <ebo-progressbar position="60" active="true" button="false"></ebo-progressbar>
                 </div>
             </div>
 
-            <div>
-                <h3 id="currentTrackName"></h3>
-                <p id="currentTrackStreamLines" class="selectable" ></p>
+            <div id="trackInfoBig">
+                <h3 id="trackInfoBig_trackName"></h3>
+                <p id="trackInfoBig_streamLines" class="selectable" ></p>
+                <p id="trackInfoBig_extraInfo" class="selectable" ></p>
             </div>
 
-            <div id="slidercontainer"><!-- slider for track position -->
-            </div>
-        </div>
-        <!-- /nowplaying -->
+            <div id="nowPlaying_footer">
+                <div class="footerControls" style="padding-left: 10px;">
+                    <div id="buttonBar">
+                        <button id="buttonBar.btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
+                        <button id="buttonBar.btnPlay" title="Play"><i class="fa fa-play"></i></button>
+                        <button id="buttonBar.btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
+                        <input id="buttonBar.volumeslider" data-highlight="true" name="volumeslider" data-mini="true" type="range" min="0" value="0" max="100"/>
+                        <button id="buttonBar.btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+                        <!--                <button id="buttonBar.randombt" title="Random"><i class="fa fa-random"></i></button>-->
+                        <!--                <button id="buttonBar.repeatbt" title="Repeat"><i class="fa fa-repeat"></i></button>-->
+                        <!--                <button id="buttonBar.consumebt" title="Consume"><i class="fa fa-cutlery"></i></button>-->
+                        <!--                <button id="buttonBar.singlebt" title="Single"><i class="fa fa-dot-circle-o"></i></button>-->
+                        <!--                <button id="buttonBar.shufflebt" title="Shuffle"><i class="fa fa-arrows-v"></i></button>-->
 
-
-        <div id="nowPlayingFooter">
-            <div class="footerControls" style="padding-left: 10px;">
-                <div id="buttonBar">
-                    <button id="buttonBar.btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
-                    <button id="buttonBar.btnPlay" title="Play"><i class="fa fa-play"></i></button>
-                    <button id="buttonBar.btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
-                    <input id="buttonBar.volumeslider" data-highlight="true" name="volumeslider" data-mini="true" type="range" min="0" value="0" max="100"/>
-                    <button id="buttonBar.btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
-    <!--                <button id="buttonBar.randombt" title="Random"><i class="fa fa-random"></i></button>-->
-    <!--                <button id="buttonBar.repeatbt" title="Repeat"><i class="fa fa-repeat"></i></button>-->
-    <!--                <button id="buttonBar.consumebt" title="Consume"><i class="fa fa-cutlery"></i></button>-->
-    <!--                <button id="buttonBar.singlebt" title="Single"><i class="fa fa-dot-circle-o"></i></button>-->
-    <!--                <button id="buttonBar.shufflebt" title="Shuffle"><i class="fa fa-arrows-v"></i></button>-->
-
-    <!--                <button id="showHistory" title="History"><i >HIST</i></button>-->
-    <!--                <button id="showBrowse" title="History"><i >BROWSE</i></button>-->
+                        <!--                <button id="showHistory" title="History"><i >HIST</i></button>-->
+                        <!--                <button id="showBrowse" title="History"><i >BROWSE</i></button>-->
+                    </div>
                 </div>
             </div>
         </div>
-        <!-- /footer -->
 
-    </div>
-    <table id="historyTable">
+        </div >
+        <!-- /nowplaying -->
+
+    <div id="tableWrapper" class="flex_fill_remainder">
+        <table id="historyTable">
             <colgroup>
                 <col span="1" style="width: auto;">
                 <col span="1" style="width: 1em;">
@@ -111,7 +109,7 @@
                 </td>
             </tr>
             <tr class="behind-2">
-                <td>Brol  en zever</td>
+                <td>Brol en zever</td>
                 <td>*</td>
             </tr>
             <tr class="behind-2">
@@ -120,7 +118,7 @@
                 </td>
             </tr>
             <tr class="behind-1">
-                <td>sdfsdf  sdff sd</td>
+                <td>sdfsdf sdff sd</td>
                 <td>
                     <i class="fa fa fa-ellipsis-v"></i>
                 </td>
@@ -131,7 +129,7 @@
                 </td>
             </tr>
             <tr class="active textGlow">
-                <td>sdf   dsfd sdf sdf</td>
+                <td>sdf dsfd sdf sdf</td>
                 <td>*</td>
             </tr>
             <tr class="active textGlow">
@@ -140,7 +138,7 @@
                 </td>
             </tr>
             <tr>
-                <td>Nog meer variatie </td>
+                <td>Nog meer variatie</td>
                 <td>*</td>
             </tr>
             <tr>
@@ -158,7 +156,7 @@
                 </td>
             </tr>
             <tr>
-                <td>Track  12345 ...</td>
+                <td>Track 12345 ...</td>
                 <td>*</td>
             </tr>
             <tr>
@@ -176,7 +174,7 @@
                 </td>
             </tr>
             <tr>
-                <td>Track  12345 ...</td>
+                <td>Track 12345 ...</td>
                 <td>*</td>
             </tr>
             <tr>
@@ -194,7 +192,7 @@
                 </td>
             </tr>
             <tr>
-                <td>Track  12345 ...</td>
+                <td>Track 12345 ...</td>
                 <td>*</td>
             </tr>
             <tr>
@@ -203,7 +201,7 @@
                 </td>
             </tr>
         </table>
-    <!--    <button class="glow-on-hover" type="button">HOVER ME, THEN CLICK ME!</button>-->
+    </div>    <!--    <button class="glow-on-hover" type="button">HOVER ME, THEN CLICK ME!</button>-->
     <!-- use lastfm for image search -->
     <script type="text/javascript" src="vendors/lastfm/lastfm.api.md5.js"></script>
     <script type="text/javascript" src="vendors/lastfm/lastfm.api.js"></script>
@@ -213,5 +211,6 @@
 
     <!-- load plugins -->
     <script type="text/javascript" src="plugins/plugin-loader.js"></script>
+</div>
 </body>
 </html>

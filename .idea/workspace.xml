@@ -9,7 +9,8 @@
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -125,7 +126,8 @@
       <workItem from="1760346124794" duration="2156000" />
       <workItem from="1760374049934" duration="23261000" />
       <workItem from="1760435941167" duration="2098000" />
-      <workItem from="1760470065138" duration="11037000" />
+      <workItem from="1760470065138" duration="11201000" />
+      <workItem from="1760550491202" duration="7521000" />
     </task>
     <task id="LOCAL-00001" summary="Ebooplayer 2 working!">
       <option name="closed" value="true" />
@@ -495,7 +497,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760477608568</updated>
     </task>
-    <option name="localTasksCounter" value="47" />
+    <task id="LOCAL-00047" summary="layout.">
+      <option name="closed" value="true" />
+      <created>1760485259588</created>
+      <option name="number" value="00047" />
+      <option name="presentableId" value="LOCAL-00047" />
+      <option name="project" value="LOCAL" />
+      <updated>1760485259588</updated>
+    </task>
+    <option name="localTasksCounter" value="48" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -516,7 +526,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Log all messages: filter out stream_title_changed." />
     <MESSAGE value="Copy to player2: 0d987b919ae35e30d27ee57d1428ca71310200f2" />
     <MESSAGE value="Implementing dataRequester.ts. Load history: WIP." />
     <MESSAGE value="Messing around with history." />
@@ -541,7 +550,8 @@
     <MESSAGE value="bigTrackView.ts: Set progressBar to 100 for streams." />
     <MESSAGE value="History: remove duplicate streams. Only keep recent one." />
     <MESSAGE value="Layout" />
-    <option name="LAST_COMMIT_MESSAGE" value="Layout" />
+    <MESSAGE value="layout." />
+    <option name="LAST_COMMIT_MESSAGE" value="layout." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

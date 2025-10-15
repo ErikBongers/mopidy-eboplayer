@@ -4,6 +4,9 @@ A list of past, present and future.
   > At the top, the history.
   > current track (if any)
   > queued tracks
+    > finished tracks (often) stay in the queue and are also added to the history when they are started.
+      > merge the overlapping tracks in the history and the queue.
+      > this may not work well with random play.
 
   > if current track is album track: show album in bigInfo, else the stream logo (of any)
   > if current track is a stream...
@@ -26,6 +29,14 @@ This allows browsing the time line, with details, while keeping the active track
 Clicking the small active track restores it of course.
 The active track get's a moving glow to indicate it is active.
 
+
+Queue
+======
+When queue goes to the next track, these events occur:
+  - volume_changed
+  - track_playback_ended -> time_positin, tl_Track
+  - playback_state_changed -> playing
+  - track_playback_started -> TlTrack
 
 
 * Iris player seems to have a way to get all the tracks really fast.
