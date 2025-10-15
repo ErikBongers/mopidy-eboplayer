@@ -395,7 +395,7 @@ document.addEventListener("DOMContentLoaded",function () {
     setState(state);
 
     let headerView = new HeaderView();
-    let currentTrackView = new BigTrackView("trackInfoBig");
+    let currentTrackView = new BigTrackView("nowPlayingpane");
     let buttonBarView = new ButtonBarView("buttonBar");
     let historyView = new HistoryView();
     getState().addViews(headerView, currentTrackView, buttonBarView, historyView);
