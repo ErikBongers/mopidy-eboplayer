@@ -17,10 +17,11 @@ export class HistoryView extends View {
         let body = historyTable.tBodies[0];
         body.innerHTML = "";
         for(let line of history) {
-            let title = line.ref.name;
-            let artist = "";
-            let album = "";
-            let tracks = await getState().getController().lookupCached(line.ref.uri);
+            let slices = line.ref.name.split(" - ");
+            let title = slices.pop();
+            let artist = "⚬⚬⚬";
+            let album = "⚬⚬⚬";
+            let tracks = undefined; //await getState().getController().lookupCached(line.ref.uri);
             if(tracks) {
                 let track = transformTrackDataToModel(tracks[0]);
                 switch (track.type) {

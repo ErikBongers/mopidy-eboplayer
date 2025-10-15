@@ -1,3 +1,8 @@
+Load history
+=============
+Loading history takes 1s, but no info on stream vs file.
+
+
 Timeline  listView
 ==================
 A list of past, present and future.

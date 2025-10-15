@@ -201,30 +201,32 @@ export class Controller extends Commands implements DataRequester{
             };
         });
 
-        let dedupLines = historyLines.filter((line, pos, array) => {
-            if(pos == 0)
-                return true; //always keep the first line.
-            return line.ref.uri != array[pos-1].ref.uri;
+
+        //Make sure a stream is only listed once.
+        let foundStreams = new Set<string>();
+        let filtered = historyLines.filter(line => {
+            if(!line.ref.uri.startsWith("http:"))
+                return true; //assume not a stream
+            if(foundStreams.has(line.ref.uri))
+                return false;
+            foundStreams.add(line.ref.uri);
+            return true;
         });
+
+
+        let prev = {ref: {uri:""}};
+        let dedupLines = filtered.filter((line) => {
+            if(line.ref.uri == prev.ref.uri)
+                return false;
+            prev = line;
+            return true;
+        });
+
         let unique = [...new Set(dedupLines)];
         let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
         this.model.addToLibraryCache(dict);
 
-        //remove duplicate streams. Only  keep the last one. (first one in list)
-        let foundStreams = new Set<string>();
-        let filtered = dedupLines.filter(line => {
-            let tracks = this.model.getTrackFromCache(line.ref.uri);
-            if(!tracks)
-                return true;
-            if(!isStream(tracks[0]))
-                return true;
-            if(foundStreams.has(tracks[0].uri))
-                return false;
-            foundStreams.add(tracks[0].uri);
-            return true;
-        });
-
-        this.model.setHistory(filtered);
+        this.model.setHistory(dedupLines);
     }
 
     async lookupCached(uri: string) {
