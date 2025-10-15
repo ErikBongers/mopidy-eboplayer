@@ -5,7 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/historyView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/historyView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -122,15 +123,7 @@
       <workItem from="1760374049934" duration="23261000" />
       <workItem from="1760435941167" duration="2098000" />
       <workItem from="1760470065138" duration="11201000" />
-      <workItem from="1760550491202" duration="15113000" />
-    </task>
-    <task id="LOCAL-00003" summary="Create Views. Listen for connection on/off and update header text. Works!!!">
-      <option name="closed" value="true" />
-      <created>1760010160755</created>
-      <option name="number" value="00003" />
-      <option name="presentableId" value="LOCAL-00003" />
-      <option name="project" value="LOCAL" />
-      <updated>1760010160755</updated>
+      <workItem from="1760550491202" duration="17283000" />
     </task>
     <task id="LOCAL-00004" summary="Create read-only ViewModel, create volumeView.ts.">
       <option name="closed" value="true" />
@@ -516,7 +509,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760567638319</updated>
     </task>
-    <option name="localTasksCounter" value="52" />
+    <task id="LOCAL-00052" summary="Bugfix bigTrackView.ts query ebo-progressbar.">
+      <option name="closed" value="true" />
+      <created>1760568008915</created>
+      <option name="number" value="00052" />
+      <option name="presentableId" value="LOCAL-00052" />
+      <option name="project" value="LOCAL" />
+      <updated>1760568008915</updated>
+    </task>
+    <option name="localTasksCounter" value="53" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -537,7 +538,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Add getHistory() to controller and model." />
     <MESSAGE value="History loaded. Table formatted." />
     <MESSAGE value="historyView.ts: add button for ellipsis." />
     <MESSAGE value="Rename to historyLineElement.ts." />
@@ -562,7 +562,8 @@
     <MESSAGE value="Bugfix dedup history lines." />
     <MESSAGE value="Sped up history loading." />
     <MESSAGE value="remove logs." />
-    <option name="LAST_COMMIT_MESSAGE" value="remove logs." />
+    <MESSAGE value="Bugfix bigTrackView.ts query ebo-progressbar." />
+    <option name="LAST_COMMIT_MESSAGE" value="Bugfix bigTrackView.ts query ebo-progressbar." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

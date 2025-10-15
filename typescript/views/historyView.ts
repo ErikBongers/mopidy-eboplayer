@@ -18,9 +18,20 @@ export class HistoryView extends View {
         let historyTable = document.getElementById("historyTable") as HTMLTableElement;
         let body = historyTable.tBodies[0];
         body.innerHTML = "";
+
+        let allLookups: Promise<void>[] = [];
         for(let line of history) {
-            this.insertTrackLine(line, body);
+            allLookups.push(this.insertTrackLine(line, body));
         }
+
+        Promise.all(allLookups).then(()=> {
+            let currentTrack = getState().getModel().getCurrentTrack();
+            if(currentTrack.type != TrackType.None) {
+                let currentUri = currentTrack.track.uri;
+                let tr = historyTable.querySelector(`tr[data-uri="${currentUri}"]`);
+                tr.scrollIntoView();
+            }
+        });
 
         body.querySelectorAll("tr").forEach(tr => {
             tr.addEventListener("click", async ev => {
@@ -47,7 +58,7 @@ export class HistoryView extends View {
             `);
 
         //delayed update of track info.
-        getState().getController().lookupCached(line.ref.uri).then(tracks => {
+        return getState().getController().lookupCached(line.ref.uri).then(tracks => {
             this.updateTrackLineFromLookup(tr, tracks, title);
         });
     }
