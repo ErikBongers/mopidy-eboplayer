@@ -48,7 +48,6 @@ export class HistoryView extends View {
 
         //delayed update of track info.
         getState().getController().lookupCached(line.ref.uri).then(tracks => {
-            console.log("lookup...");
             this.updateTrackLineFromLookup(tr, tracks, title);
         });
     }
