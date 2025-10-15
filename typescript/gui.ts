@@ -404,14 +404,11 @@ document.addEventListener("DOMContentLoaded",function () {
 
     mopidy.connect();
 
-    document.getElementById("showHistory").onclick = async () => {
-        await getState().getController().fetchHistory();
-    };
-    document.getElementById("showBrowse").onclick = async () => {
+    // document.getElementById("showBrowse").onclick = async () => {
         // let browse = await getState().commands.core.library.browse(null);
         // console_yellow("browse");
         // console.log({browse});
-    };
+    // };
 });
 
 export function console_yellow(msg: string) {
