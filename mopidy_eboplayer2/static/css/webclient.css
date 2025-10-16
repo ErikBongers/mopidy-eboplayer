@@ -909,15 +909,16 @@ xhistory-line {
     font-size:1rem;
     margin-top:5vh;
     animation-name:glow;
-    animation-duration:3s;
+    animation-duration:2s;
     animation-iteration-count:infinite;
-    animation-direction:alternate;
+    animation-direction:normal;
 
 }
 
 @keyframes glow{
-    from{text-shadow: 0 0 0px #fff, 0 0 0px #ffff00;}
-    to{text-shadow: 0 0 66px #00f, 0 0 66px #ffff00;}
+    0%{text-shadow: 0 0 0px #ffff0000;}
+    50%{text-shadow: 0 0 10px #ffff00;}
+    100%{text-shadow: 0 0 0px #ffff0000;}
 }
 
 #timelineTable {

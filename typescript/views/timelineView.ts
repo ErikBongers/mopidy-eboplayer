@@ -3,11 +3,15 @@ import {EboplayerEvents, HistoryLine, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {transformTrackDataToModel} from "../controller";
 import {models} from "../../mopidy_eboplayer2/static/js/mopidy";
+import {console_yellow} from "../gui";
 
 export class TimelineView extends View {
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
             this.onHistoryChangegd().then(r => {});
+        });
+        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+            this.onCurrentTrackChanged();
         });
     }
 
@@ -23,20 +27,35 @@ export class TimelineView extends View {
             allLookups.push(this.insertTrackLine(line, body));
         }
 
+        // noinspection ES6MissingAwait
+        getState().getController().fetchCurrentTrackAndDetails();
+
         Promise.all(allLookups).then(()=> {
-            let currentTrack = getState().getModel().getCurrentTrack();
-            if(currentTrack.type != TrackType.None) {
-                let currentUri = currentTrack.track.uri;
-                let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
-                tr.scrollIntoView();
-            }
+            this.setActiveTrack();
         });
 
         body.querySelectorAll("tr").forEach(tr => {
             tr.addEventListener("click", async ev => {
                 await getState().getController().playTrack(tr.dataset.uri);
-            })
+            });
         });
+    }
+
+    private setActiveTrack() {
+        let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
+        let currentTrack = getState().getModel().getCurrentTrack();
+        console_yellow(`setting active track to ${currentTrack?.type}`);
+        if (currentTrack.type == TrackType.None)
+            return; // don't clear the screen as this is probably temporary and will cause a flicker.
+        /*if (currentTrack.type != TrackType.None)*/ {
+            let currentUri = currentTrack.track.uri;
+            let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
+            if(!tr)
+                return;
+            tr.scrollIntoView( { block: "nearest" });
+            timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("active", "textGlow"));
+            tr.classList.add("active", "textGlow");
+        }
     }
 
     private insertTrackLine(line: HistoryLine, body: HTMLTableSectionElement) {
@@ -93,5 +112,10 @@ export class TimelineView extends View {
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.TrackList];
+    }
+
+    private onCurrentTrackChanged() {
+        console_yellow("todo: visually set the current track in the timeline.");
+        this.setActiveTrack();
     }
 }

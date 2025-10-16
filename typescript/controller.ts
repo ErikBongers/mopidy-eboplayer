@@ -123,8 +123,9 @@ export class Controller extends Commands implements DataRequester{
     async fetchTracklistAndDetails() {
         let tracks = await this.commands.core.tracklist.getTlTracks();
         this.model.setTrackList(tracks);
+    }
 
-        //todo: this should not be here! Split it up.
+    async fetchCurrentTrackAndDetails() {
         let currentTrack = await this.commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
         await this.setCurrentTrackAndFetchDetails(currentTrack);
     }

@@ -26,13 +26,15 @@ export class BigTrackView extends View {
     }
 
     private onTrackListChangegd() {
-        console_yellow("tracklist changed");
-
+        getState().getController().fetchCurrentTrackAndDetails();
     }
+
     private onCurrentTrackChangegd() {
+        let track  = getState().getModel().getCurrentTrack();
+        if(track.type == TrackType.None)
+            return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let div = document.getElementById(this.id);
         let name = "no current track";
-        let track  = getState().getModel().getCurrentTrack();
         let info = "";
         let progressBar = div.querySelector(EboProgressBar.tagName); //todo: assuming there's only one progressBar.
         switch (track.type) {
