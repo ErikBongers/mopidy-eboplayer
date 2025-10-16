@@ -92,6 +92,6 @@ export class TimelineView extends View {
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
-        return [];
+        return [EboPlayerDataType.TrackList];
     }
 }

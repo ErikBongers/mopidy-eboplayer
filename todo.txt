@@ -1,5 +1,9 @@
-* rename historyView to timelineView
+* Split up fetchTracklistAndDetails
+  > should not do anything with current track.
 * load and add queue to timeline.
+  > core.tracklist.getTlTracks()
+  > store tlid in tr dataset.
+
 
 Timeline  listView
 ==================

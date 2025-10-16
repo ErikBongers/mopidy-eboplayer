@@ -4,7 +4,8 @@ export enum EboPlayerDataType {
     Volume,
     CurrentTrack,
     PlayState,
-    StreamLines
+    StreamLines,
+    TrackList,
 }
 
 export abstract class View extends NestedDataRequester<View> {

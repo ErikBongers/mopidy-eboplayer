@@ -3,6 +3,7 @@ import {EboplayerEvents, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {StreamLinesView} from "./streamLinesView";
 import {EboProgressBar} from "../components/eboProgressBar";
+import {console_yellow} from "../gui";
 
 export class BigTrackView extends View {
     private streamLinesView: StreamLinesView;
@@ -19,8 +20,15 @@ export class BigTrackView extends View {
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onCurrentTrackChangegd();
         });
+        getState().getModel().addEventListener(EboplayerEvents.trackListChanged, () => {
+            this.onTrackListChangegd();
+        });
     }
 
+    private onTrackListChangegd() {
+        console_yellow("tracklist changed");
+
+    }
     private onCurrentTrackChangegd() {
         let div = document.getElementById(this.id);
         let name = "no current track";
@@ -48,6 +56,6 @@ export class BigTrackView extends View {
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.CurrentTrack];
+        return [EboPlayerDataType.CurrentTrack, EboPlayerDataType.TrackList];
     }
 }
