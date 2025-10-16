@@ -6,6 +6,7 @@ import {models} from "../../mopidy_eboplayer2/static/js/mopidy";
 import {console_yellow} from "../gui";
 
 export class TimelineView extends View {
+    private clickedRow: HTMLTableRowElement;
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
             this.onHistoryChangegd().then(r => {});
@@ -35,10 +36,13 @@ export class TimelineView extends View {
         });
 
         body.querySelectorAll("tr").forEach(tr => {
-            tr.addEventListener("click", async ev => {
-                await getState().getController().playTrack(tr.dataset.uri);
-            });
+            tr.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
+    }
+
+    private async onRowClicked(ev: MouseEvent) {
+        this.clickedRow = ev.currentTarget as HTMLTableRowElement;
+        await getState().getController().playTrack(this.clickedRow.dataset.uri);
     }
 
     private setActiveTrack() {
@@ -52,7 +56,8 @@ export class TimelineView extends View {
             let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
             if(!tr)
                 return;
-            tr.scrollIntoView( { block: "nearest" });
+            if(this.clickedRow?.dataset?.uri != currentTrack.track.uri)
+                tr.scrollIntoView( { block: "nearest" });
             timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("active", "textGlow"));
             tr.classList.add("active", "textGlow");
         }

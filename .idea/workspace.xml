@@ -6,9 +6,6 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/views/timelineView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/timelineView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -128,15 +125,7 @@
       <workItem from="1760470065138" duration="11201000" />
       <workItem from="1760550491202" duration="17564000" />
       <workItem from="1760613170411" duration="1694000" />
-      <workItem from="1760644971491" duration="4859000" />
-    </task>
-    <task id="LOCAL-00009" summary="Use vertical dots for menu. Brainstorm gui in todo.txt.">
-      <option name="closed" value="true" />
-      <created>1760133892357</created>
-      <option name="number" value="00009" />
-      <option name="presentableId" value="LOCAL-00009" />
-      <option name="project" value="LOCAL" />
-      <updated>1760133892357</updated>
+      <workItem from="1760644971491" duration="6802000" />
     </task>
     <task id="LOCAL-00010" summary="Add nested children to View.">
       <option name="closed" value="true" />
@@ -522,7 +511,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760614837149</updated>
     </task>
-    <option name="localTasksCounter" value="58" />
+    <task id="LOCAL-00058" summary="Activate the current track if clicked on.">
+      <option name="closed" value="true" />
+      <created>1760650448030</created>
+      <option name="number" value="00058" />
+      <option name="presentableId" value="LOCAL-00058" />
+      <option name="project" value="LOCAL" />
+      <updated>1760650448030</updated>
+    </task>
+    <option name="localTasksCounter" value="59" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -543,7 +540,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Replace hardcoded hostname with localStorage." />
     <MESSAGE value="frontent: listening for tracklist changes." />
     <MESSAGE value="frontend.py on track changed: add empty stream title. See  73ad6e3a0f188ee9da0eddc3c2abeee33cac547e" />
     <MESSAGE value="frontend.py on playback changed: add empty stream title. See 0f051368708ad5092b3b42e85518faa6c4122e73" />
@@ -568,7 +564,8 @@
     <MESSAGE value="Rename hstoryView to timelineView.ts." />
     <MESSAGE value="cosmetic." />
     <MESSAGE value="bigTrackView.ts captures trackListChanged events." />
-    <option name="LAST_COMMIT_MESSAGE" value="bigTrackView.ts captures trackListChanged events." />
+    <MESSAGE value="Activate the current track if clicked on." />
+    <option name="LAST_COMMIT_MESSAGE" value="Activate the current track if clicked on." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
