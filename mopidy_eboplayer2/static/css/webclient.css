@@ -73,7 +73,6 @@ button, input[type="submit"], input[type="reset"] {
 }
 
 #tableWrapper {
-    border: solid 1px red;
     height: 100%;
     overflow: scroll;
     scrollbar-width: none;

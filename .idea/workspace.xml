@@ -4,12 +4,7 @@
     <option name="autoReloadType" value="ALL" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/historyView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/timelineView.ts" afterDir="false" />
-    </list>
+    <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -126,15 +121,7 @@
       <workItem from="1760435941167" duration="2098000" />
       <workItem from="1760470065138" duration="11201000" />
       <workItem from="1760550491202" duration="17564000" />
-      <workItem from="1760613170411" duration="216000" />
-    </task>
-    <task id="LOCAL-00006" summary="Create bigTrackView.ts. WIP.">
-      <option name="closed" value="true" />
-      <created>1760096255179</created>
-      <option name="number" value="00006" />
-      <option name="presentableId" value="LOCAL-00006" />
-      <option name="project" value="LOCAL" />
-      <updated>1760096255179</updated>
+      <workItem from="1760613170411" duration="493000" />
     </task>
     <task id="LOCAL-00007" summary="bigTrackView.ts added title for file tracks.">
       <option name="closed" value="true" />
@@ -520,7 +507,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760570299342</updated>
     </task>
-    <option name="localTasksCounter" value="55" />
+    <task id="LOCAL-00055" summary="Rename hstoryView to timelineView.ts.">
+      <option name="closed" value="true" />
+      <created>1760613608168</created>
+      <option name="number" value="00055" />
+      <option name="presentableId" value="LOCAL-00055" />
+      <option name="project" value="LOCAL" />
+      <updated>1760613608168</updated>
+    </task>
+    <option name="localTasksCounter" value="56" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -541,7 +536,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Rename to historyLineElement.ts." />
     <MESSAGE value="Send a track to the playlist and start it." />
     <MESSAGE value="Refactor numberedDictToArray to be generic." />
     <MESSAGE value="Replace hardcoded hostname with localStorage." />
@@ -566,7 +560,8 @@
     <MESSAGE value="Bugfix bigTrackView.ts query ebo-progressbar." />
     <MESSAGE value="Scroll active track into view for history list." />
     <MESSAGE value="Remove test." />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove test." />
+    <MESSAGE value="Rename hstoryView to timelineView.ts." />
+    <option name="LAST_COMMIT_MESSAGE" value="Rename hstoryView to timelineView.ts." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
