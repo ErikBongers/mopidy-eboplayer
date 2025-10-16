@@ -1,7 +1,5 @@
-Load history
-=============
-Loading history takes 1s, but no info on stream vs file.
-
+* rename historyView to timelineView
+* load and add queue to timeline.
 
 Timeline  listView
 ==================

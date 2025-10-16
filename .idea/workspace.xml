@@ -6,7 +6,9 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/historyView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/historyView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/historyView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/timelineView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -123,23 +125,8 @@
       <workItem from="1760374049934" duration="23261000" />
       <workItem from="1760435941167" duration="2098000" />
       <workItem from="1760470065138" duration="11201000" />
-      <workItem from="1760550491202" duration="17283000" />
-    </task>
-    <task id="LOCAL-00004" summary="Create read-only ViewModel, create volumeView.ts.">
-      <option name="closed" value="true" />
-      <created>1760054712523</created>
-      <option name="number" value="00004" />
-      <option name="presentableId" value="LOCAL-00004" />
-      <option name="project" value="LOCAL" />
-      <updated>1760054712523</updated>
-    </task>
-    <task id="LOCAL-00005" summary="Renaame #modalinfo to #trackInfoBig.">
-      <option name="closed" value="true" />
-      <created>1760092467665</created>
-      <option name="number" value="00005" />
-      <option name="presentableId" value="LOCAL-00005" />
-      <option name="project" value="LOCAL" />
-      <updated>1760092467665</updated>
+      <workItem from="1760550491202" duration="17564000" />
+      <workItem from="1760613170411" duration="216000" />
     </task>
     <task id="LOCAL-00006" summary="Create bigTrackView.ts. WIP.">
       <option name="closed" value="true" />
@@ -517,7 +504,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760568008915</updated>
     </task>
-    <option name="localTasksCounter" value="53" />
+    <task id="LOCAL-00053" summary="Scroll active track into view for history list.">
+      <option name="closed" value="true" />
+      <created>1760570233493</created>
+      <option name="number" value="00053" />
+      <option name="presentableId" value="LOCAL-00053" />
+      <option name="project" value="LOCAL" />
+      <updated>1760570233493</updated>
+    </task>
+    <task id="LOCAL-00054" summary="Remove test.">
+      <option name="closed" value="true" />
+      <created>1760570299342</created>
+      <option name="number" value="00054" />
+      <option name="presentableId" value="LOCAL-00054" />
+      <option name="project" value="LOCAL" />
+      <updated>1760570299342</updated>
+    </task>
+    <option name="localTasksCounter" value="55" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -538,8 +541,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="History loaded. Table formatted." />
-    <MESSAGE value="historyView.ts: add button for ellipsis." />
     <MESSAGE value="Rename to historyLineElement.ts." />
     <MESSAGE value="Send a track to the playlist and start it." />
     <MESSAGE value="Refactor numberedDictToArray to be generic." />
@@ -563,7 +564,9 @@
     <MESSAGE value="Sped up history loading." />
     <MESSAGE value="remove logs." />
     <MESSAGE value="Bugfix bigTrackView.ts query ebo-progressbar." />
-    <option name="LAST_COMMIT_MESSAGE" value="Bugfix bigTrackView.ts query ebo-progressbar." />
+    <MESSAGE value="Scroll active track into view for history list." />
+    <MESSAGE value="Remove test." />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove test." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

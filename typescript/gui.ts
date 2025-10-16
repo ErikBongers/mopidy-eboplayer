@@ -11,7 +11,7 @@ import {Controller, getWebSocketUrl} from "./controller";
 import {BigTrackView} from "./views/bigTrackView";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
-import {HistoryView} from "./views/historyView";
+import {TimelineView} from "./views/timelineView";
 import TlTrack = models.TlTrack;
 
 /* gui interactions here
@@ -397,7 +397,7 @@ document.addEventListener("DOMContentLoaded",function () {
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackView("nowPlayingpane");
     let buttonBarView = new ButtonBarView("buttonBar");
-    let historyView = new HistoryView();
+    let historyView = new TimelineView();
     getState().addViews(headerView, currentTrackView, buttonBarView, historyView);
 
     clearSelectedTrack();

@@ -3,9 +3,8 @@ import {EboplayerEvents, HistoryLine, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {transformTrackDataToModel} from "../controller";
 import {models} from "../../mopidy_eboplayer2/static/js/mopidy";
-import Track = models.Track;
 
-export class HistoryView extends View {
+export class TimelineView extends View {
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
             this.onHistoryChangegd().then(r => {});
@@ -15,8 +14,8 @@ export class HistoryView extends View {
 
     private async onHistoryChangegd() {
         let history = getState().getModel().getHistory();
-        let historyTable = document.getElementById("historyTable") as HTMLTableElement;
-        let body = historyTable.tBodies[0];
+        let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
+        let body = timelineTable.tBodies[0];
         body.innerHTML = "";
 
         let allLookups: Promise<void>[] = [];
@@ -28,7 +27,7 @@ export class HistoryView extends View {
             let currentTrack = getState().getModel().getCurrentTrack();
             if(currentTrack.type != TrackType.None) {
                 let currentUri = currentTrack.track.uri;
-                let tr = historyTable.querySelector(`tr[data-uri="${currentUri}"]`);
+                let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
                 tr.scrollIntoView();
             }
         });

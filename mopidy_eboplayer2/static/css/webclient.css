@@ -921,7 +921,7 @@ xhistory-line {
     to{text-shadow: 0 0 66px #00f, 0 0 66px #ffff00;}
 }
 
-#historyTable {
+#timelineTable {
     width: 100%;
     border-collapse: collapse;
     & tr {
