@@ -125,15 +125,7 @@
       <workItem from="1760470065138" duration="11201000" />
       <workItem from="1760550491202" duration="17564000" />
       <workItem from="1760613170411" duration="1694000" />
-      <workItem from="1760644971491" duration="6802000" />
-    </task>
-    <task id="LOCAL-00010" summary="Add nested children to View.">
-      <option name="closed" value="true" />
-      <created>1760138477296</created>
-      <option name="number" value="00010" />
-      <option name="presentableId" value="LOCAL-00010" />
-      <option name="project" value="LOCAL" />
-      <updated>1760138477296</updated>
+      <workItem from="1760644971491" duration="7014000" />
     </task>
     <task id="LOCAL-00011" summary="Move getData() in getRequiredData() to controller.ts.">
       <option name="closed" value="true" />
@@ -519,7 +511,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760650448030</updated>
     </task>
-    <option name="localTasksCounter" value="59" />
+    <task id="LOCAL-00059" summary="Timeline: avoid flickering and unnecessary flickering.">
+      <option name="closed" value="true" />
+      <created>1760651943609</created>
+      <option name="number" value="00059" />
+      <option name="presentableId" value="LOCAL-00059" />
+      <option name="project" value="LOCAL" />
+      <updated>1760651943609</updated>
+    </task>
+    <option name="localTasksCounter" value="60" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -540,7 +540,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="frontent: listening for tracklist changes." />
     <MESSAGE value="frontend.py on track changed: add empty stream title. See  73ad6e3a0f188ee9da0eddc3c2abeee33cac547e" />
     <MESSAGE value="frontend.py on playback changed: add empty stream title. See 0f051368708ad5092b3b42e85518faa6c4122e73" />
     <MESSAGE value="Fetch stream lines on track change event." />
@@ -565,7 +564,8 @@
     <MESSAGE value="cosmetic." />
     <MESSAGE value="bigTrackView.ts captures trackListChanged events." />
     <MESSAGE value="Activate the current track if clicked on." />
-    <option name="LAST_COMMIT_MESSAGE" value="Activate the current track if clicked on." />
+    <MESSAGE value="Timeline: avoid flickering and unnecessary flickering." />
+    <option name="LAST_COMMIT_MESSAGE" value="Timeline: avoid flickering and unnecessary flickering." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

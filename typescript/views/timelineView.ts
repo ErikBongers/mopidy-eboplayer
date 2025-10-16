@@ -3,7 +3,6 @@ import {EboplayerEvents, HistoryLine, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {transformTrackDataToModel} from "../controller";
 import {models} from "../../mopidy_eboplayer2/static/js/mopidy";
-import {console_yellow} from "../gui";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
@@ -48,7 +47,6 @@ export class TimelineView extends View {
     private setActiveTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
         let currentTrack = getState().getModel().getCurrentTrack();
-        console_yellow(`setting active track to ${currentTrack?.type}`);
         if (currentTrack.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         /*if (currentTrack.type != TrackType.None)*/ {
@@ -120,7 +118,6 @@ export class TimelineView extends View {
     }
 
     private onCurrentTrackChanged() {
-        console_yellow("todo: visually set the current track in the timeline.");
         this.setActiveTrack();
     }
 }
