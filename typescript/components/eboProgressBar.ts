@@ -1,9 +1,5 @@
 import {EboComponent} from "./EboComponent";
 
-export interface HasName {
-    tagName: string;
-}
-
 export class EboProgressBar extends EboComponent {
     static readonly tagName=  "ebo-progressbar";
     private shadow: ShadowRoot;
