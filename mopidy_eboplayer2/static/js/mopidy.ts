@@ -885,7 +885,6 @@ class EventEmitter {
             return;
         }
         if(typeof name === 'function') {
-            console.log("registering a supervisor");
             this.supervisors.push(name);
         }
     }
