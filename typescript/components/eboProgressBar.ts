@@ -5,6 +5,7 @@ export interface HasName {
 }
 
 export class EboProgressBar extends HTMLElement implements HasName {
+    static readonly tagName=  "ebo-progressbar";
     private shadow: ShadowRoot;
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["position", "min", "max", "button", "active"];
@@ -14,6 +15,7 @@ export class EboProgressBar extends HTMLElement implements HasName {
     private active: boolean = false;
     private button: boolean = true;
     private styleTemplate: HTMLTemplateElement;
+
     private divTemplate: HTMLTemplateElement;
 
     constructor() {
@@ -98,7 +100,6 @@ export class EboProgressBar extends HTMLElement implements HasName {
     connectedCallback() {
     }
 
-
     render() {
         let percent = (this.position - this.min) / (this.max-this.min) * 100;
         this.shadow.innerHTML="";
@@ -110,8 +111,6 @@ export class EboProgressBar extends HTMLElement implements HasName {
         this.setClassFromBoolAttribute("active", fragment.firstElementChild as HTMLElement);
         this.shadow.appendChild(fragment);
     }
-
-    static readonly tagName=  "ebo-progressbar";
 
     static define() {
         customElements.define(this.tagName, EboProgressBar);
