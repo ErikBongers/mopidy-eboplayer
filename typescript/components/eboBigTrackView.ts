@@ -9,8 +9,8 @@ export class EboBigTrackView extends EboComponent {
         "name", "stream_lines", "extra", "img", "disabled",
         ...EboBigTrackView.progressBarAttributes
     ];
-    private name: string;
-    private stream_lines: string;
+    private name: string = "";
+    private stream_lines: string = "";
     private extra: string = "";
     private enabled: boolean = false;
     //for progressBar
