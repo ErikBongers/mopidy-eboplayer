@@ -13,6 +13,7 @@ import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
 import TlTrack = models.TlTrack;
+import {EboBigTrackView} from "./components/eboBigTrackView";
 
 /* gui interactions here
 * set- functions only set/update the gui elements
@@ -338,7 +339,7 @@ function locationHashChanged () {
     switch (divid) {
         case 'nowPlaying':  // Show 'now playing' footer
             (document.getElementById('normalFooter') as HTMLElement).style.display = 'none';
-            (document.getElementById('nowPlaying_footer') as HTMLElement).style.display = 'block';
+            (document.getElementById('buttonBar') as HTMLElement).style.display = 'block';
             break
         case 'search':
             document.getElementById('searchinput').focus()
@@ -363,7 +364,7 @@ function locationHashChanged () {
             break
         default:  // Default footer
             (document.getElementById('normalFooter') as HTMLElement).style.display = 'block';
-            (document.getElementById('nowPlaying_footer') as HTMLElement).style.display = 'none';
+            (document.getElementById('buttonBar') as HTMLElement).style.display = 'none';
     }
     return false
 }
@@ -395,7 +396,7 @@ document.addEventListener("DOMContentLoaded",function () {
     setState(state);
 
     let headerView = new HeaderView();
-    let currentTrackView = new BigTrackView("nowPlayingpane");
+    let currentTrackView = new BigTrackView("currentTrackBigView");
     let buttonBarView = new ButtonBarView("buttonBar");
     let historyView = new TimelineView();
     getState().addViews(headerView, currentTrackView, buttonBarView, historyView);
@@ -406,7 +407,6 @@ document.addEventListener("DOMContentLoaded",function () {
 
     // document.getElementById("showBrowse").onclick = async () => {
         // let browse = await getState().commands.core.library.browse(null);
-        // console_yellow("browse");
         // console.log({browse});
     // };
 });
@@ -420,3 +420,4 @@ function updateDocumentTitle (headline) {
 }
 
 EboProgressBar.define(); //todo: move elsewhere? Initialize them from a static registy?
+EboBigTrackView.define();

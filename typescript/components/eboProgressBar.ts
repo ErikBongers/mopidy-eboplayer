@@ -1,15 +1,15 @@
-import {console_yellow} from "../gui";
+import {EboComponent} from "./EboComponent";
 
 export interface HasName {
     tagName: string;
 }
 
-export class EboProgressBar extends HTMLElement implements HasName {
+export class EboProgressBar extends EboComponent {
     static readonly tagName=  "ebo-progressbar";
     private shadow: ShadowRoot;
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["position", "min", "max", "button", "active"];
-    private position: number = 50;
+    private position: number = 51;
     private min: number = 0;
     private max: number = 100;
     private active: boolean = false;
@@ -74,7 +74,7 @@ export class EboProgressBar extends HTMLElement implements HasName {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeChangedCallback(name: string, _oldValue: string, newValue: string) {
+    attributeReallyChangedCallback(name: string, oldValue: string, newValue: string) {
         switch (name) {
             case "position":
             case "min":

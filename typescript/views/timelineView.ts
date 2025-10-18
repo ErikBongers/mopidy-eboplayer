@@ -35,12 +35,16 @@ export class TimelineView extends View {
         });
 
         body.querySelectorAll("tr").forEach(tr => {
-            tr.addEventListener("click", ev => {this.onRowClicked(ev)});
+            tr.addEventListener("click", ev => {this.onRowDoubleClicked(ev)});
+            tr.addEventListener("dblclick", ev => {this.onRowClicked(ev)});
         });
     }
 
-    private async onRowClicked(ev: MouseEvent) {
+    private onRowClicked(ev: MouseEvent) {
         this.clickedRow = ev.currentTarget as HTMLTableRowElement;
+    }
+
+    private async onRowDoubleClicked(ev: MouseEvent) {
         await getState().getController().playTrack(this.clickedRow.dataset.uri);
     }
 
@@ -120,4 +124,5 @@ export class TimelineView extends View {
     private onCurrentTrackChanged() {
         this.setActiveTrack();
     }
+
 }

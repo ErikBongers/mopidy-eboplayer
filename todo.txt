@@ -1,5 +1,18 @@
-* Split up fetchTracklistAndDetails
-  > should not do anything with current track.
+* make bigTrackView independent
+  > no global ids.
+* implement click/dbl-click
+  > dlb is play
+  > click is select
+    > is the selected track displayd in big view?
+      > if so, what happens to the current track?
+        > moved to the side?
+          > swipe left/right between selected and playing song?
+          > playing song glowing in mini-view?
+        > or mini view next to navigation/volume?
+* when currrent track is not playing: don't glow.
+  > change classNames to
+    - current
+    - playing
 * load and add queue to timeline.
   > core.tracklist.getTlTracks()
   > store tlid in tr dataset.

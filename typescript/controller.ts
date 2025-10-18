@@ -9,7 +9,6 @@ import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
 import TlTrack = models.TlTrack;
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
-import {console_yellow} from "./gui";
 
 export class Controller extends Commands implements DataRequester{
     private model: Model;
