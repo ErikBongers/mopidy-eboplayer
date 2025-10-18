@@ -382,17 +382,6 @@ export function resultsToTables (results, target: string, uri: string = undefine
     // images.setImages(requiredImages, getState().mopidy, 'small');
 }
 
-function getPlaylistTracks (uri: string) {
-    if (getState().playlists[uri] && getState().playlists[uri].tracks) {
-        // return Mopidy.when(getState.playlists[uri].tracks);
-    } else {
-        showLoading(true);
-        return getState().commands.core.playlists.lookup(uri).then(function (playlist) {
-            return processPlaylistItems({'uri': uri, 'playlist': playlist});
-        }, console.error);
-    }
-}
-
 function getUris (tracks) {
     let results = []
     for (let i = 0; i < tracks.length; i++) {
@@ -455,19 +444,6 @@ export function showLoading (on) {
     //     })
     // } else {
     //     $('body').css('cursor', 'default')
-    //     $.mobile.loading('hide')
-    // }
-}
-
-export function showOffline (on) {
-    //todo
-    // if (on) {
-    //     $.mobile.loading('show', {
-    //         text: 'Trying to reach on ' + HOSTNAME + '. Please wait...',
-    //         textVisible: true,
-    //         theme: 'a'
-    //     })
-    // } else {
     //     $.mobile.loading('hide')
     // }
 }

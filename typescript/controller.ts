@@ -6,9 +6,9 @@ import {transformTlTrackDataToModel} from "./process_ws";
 import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
 import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
-import TlTrack = models.TlTrack;
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
+import TlTrack = models.TlTrack;
 
 export class Controller extends Commands implements DataRequester{
     private model: Model;
@@ -282,13 +282,6 @@ export function numberedDictToArray<T>(dict: Object, converter?: (object: any) =
     if(!converter)
         return array;
     return array.map(converter);
-}
-
-export function getWebSocketUrl() {
-    let webSocketUrl = document.body.dataset.websocketUrl;
-    if (webSocketUrl.startsWith("{{"))
-        webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
-    return webSocketUrl;
 }
 
 export function getHostAndPort() {
