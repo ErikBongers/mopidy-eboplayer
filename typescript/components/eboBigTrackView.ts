@@ -109,11 +109,6 @@ export class EboBigTrackView extends EboComponent {
         this.shadow.appendChild(fragment);
     }
 
-    static define() {
-        customElements.define(this.tagName, EboBigTrackView);
-    }
-
-
     //todo: move in a base class.
     setClassFromBoolAttribute(attName: string, el: HTMLElement) {
         if (this[attName] == true)

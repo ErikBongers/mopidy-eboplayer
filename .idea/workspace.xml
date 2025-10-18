@@ -5,21 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/typescript/components/EboComponent.ts" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/typescript/components/eboBigTrackView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/mopidy-eboplayer2.iml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/mopidy-eboplayer2.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/css/webclient.css" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/index.html" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/components/eboBigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/components/eboBigTrackView.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/custom_scripting.js" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/streamLinesView.ts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/timelineView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/timelineView.ts" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,23 +129,7 @@
       <workItem from="1760550491202" duration="17564000" />
       <workItem from="1760613170411" duration="1694000" />
       <workItem from="1760644971491" duration="9942000" />
-      <workItem from="1760805242076" duration="18676000" />
-    </task>
-    <task id="LOCAL-00014" summary="Format console message.">
-      <option name="closed" value="true" />
-      <created>1760187259898</created>
-      <option name="number" value="00014" />
-      <option name="presentableId" value="LOCAL-00014" />
-      <option name="project" value="LOCAL" />
-      <updated>1760187259898</updated>
-    </task>
-    <task id="LOCAL-00015" summary="Console.log: Highlight stream history.">
-      <option name="closed" value="true" />
-      <created>1760200341698</created>
-      <option name="number" value="00015" />
-      <option name="presentableId" value="LOCAL-00015" />
-      <option name="project" value="LOCAL" />
-      <updated>1760200341698</updated>
+      <workItem from="1760805242076" duration="21552000" />
     </task>
     <task id="LOCAL-00016" summary="Copy d9a501a306d6f5034d67c8077a02b39a8dc8ea4c from OldWorking to master.">
       <option name="closed" value="true" />
@@ -534,7 +507,23 @@
       <option name="project" value="LOCAL" />
       <updated>1760821820402</updated>
     </task>
-    <option name="localTasksCounter" value="63" />
+    <task id="LOCAL-00063" summary="Create eboBigTrackView.ts component.">
+      <option name="closed" value="true" />
+      <created>1760824297556</created>
+      <option name="number" value="00063" />
+      <option name="presentableId" value="LOCAL-00063" />
+      <option name="project" value="LOCAL" />
+      <updated>1760824297556</updated>
+    </task>
+    <task id="LOCAL-00064" summary="Remove duplicate code.">
+      <option name="closed" value="true" />
+      <created>1760826859856</created>
+      <option name="number" value="00064" />
+      <option name="presentableId" value="LOCAL-00064" />
+      <option name="project" value="LOCAL" />
+      <updated>1760826859856</updated>
+    </task>
+    <option name="localTasksCounter" value="65" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -555,8 +544,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Fetch stream lines on track change event." />
-    <MESSAGE value="Testing gradient to show a playing stream." />
     <MESSAGE value="Webcomponent progressbar workin!" />
     <MESSAGE value="ProgressBar with active and button properties." />
     <MESSAGE value="remove log." />
@@ -580,7 +567,9 @@
     <MESSAGE value="remove logs." />
     <MESSAGE value="re-arrange code." />
     <MESSAGE value="Remove log." />
-    <option name="LAST_COMMIT_MESSAGE" value="Remove log." />
+    <MESSAGE value="Create eboBigTrackView.ts component." />
+    <MESSAGE value="Remove duplicate code." />
+    <option name="LAST_COMMIT_MESSAGE" value="Remove duplicate code." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

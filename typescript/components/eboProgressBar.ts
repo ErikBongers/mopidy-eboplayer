@@ -108,10 +108,6 @@ export class EboProgressBar extends EboComponent {
         this.shadow.appendChild(fragment);
     }
 
-    static define() {
-        customElements.define(this.tagName, EboProgressBar);
-    }
-
     setClassFromBoolAttribute(attName: string, el: HTMLElement) {
         if (this[attName] == true)
             el.classList.add(attName);

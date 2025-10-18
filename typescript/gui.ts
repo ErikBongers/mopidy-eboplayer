@@ -419,5 +419,5 @@ function updateDocumentTitle (headline) {
     document.title = headline + ' | ' + document.body.dataset.title;
 }
 
-EboProgressBar.define(); //todo: move elsewhere? Initialize them from a static registy?
-EboBigTrackView.define();
+customElements.define(EboProgressBar.tagName, EboProgressBar);
+customElements.define(EboBigTrackView.tagName, EboBigTrackView);
