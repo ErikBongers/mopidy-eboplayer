@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html>
+<head>
+<style>
+.container {
+	background-color: yellow;
+    width: 200px;
+    height: 200px;
+    perspective-origin: bottom;
+}
+
+.persp {
+    background-color: red;
+    xxperspective-origin: bottom;
+    perspective: 10cm;
+    transform:
+        perspective(4cm)
+        translateZ(-4cm)
+        rotateX(0deg)
+        rotateY(60deg)
+        ;
+}
+
+.paper {
+  background-color: limegreen;
+  width: 100px;
+  height: 100px;
+  text-align: center;
+}
+</style>
+</head>
+<body>
+
+<h1>Perspective</h1>
+
+<div class="container">
+  <div class="persp">
+    <div class="paper">
+      <h2>Header</h2>
+      <div>A text</div>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
+
+

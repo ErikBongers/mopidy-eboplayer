@@ -1,5 +1,7 @@
-* make bigTrackView independent
-  > no global ids.
+* click on album flips it and shows content
+  > for real album: it's artists and tracks.
+  > for streams: the history.
+
 * implement click/dbl-click
   > dlb is play
   > click is select
