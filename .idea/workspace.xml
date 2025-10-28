@@ -5,9 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/pers1.html" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/static/pers1.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/static/pers1.html" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -133,15 +132,9 @@
       <workItem from="1760613170411" duration="1694000" />
       <workItem from="1760644971491" duration="9942000" />
       <workItem from="1760805242076" duration="23703000" />
-      <workItem from="1760873958927" duration="993000" />
-    </task>
-    <task id="LOCAL-00019" summary="Stream lines working!!!">
-      <option name="closed" value="true" />
-      <created>1760205887356</created>
-      <option name="number" value="00019" />
-      <option name="presentableId" value="LOCAL-00019" />
-      <option name="project" value="LOCAL" />
-      <updated>1760205887356</updated>
+      <workItem from="1760873958927" duration="5618000" />
+      <workItem from="1760894909742" duration="1802000" />
+      <workItem from="1761648482607" duration="381000" />
     </task>
     <task id="LOCAL-00020" summary="Log all messages: filter out stream_title_changed.">
       <option name="closed" value="true" />
@@ -527,7 +520,15 @@
       <option name="project" value="LOCAL" />
       <updated>1760828843296</updated>
     </task>
-    <option name="localTasksCounter" value="68" />
+    <task id="LOCAL-00068" summary="pers working kind of. Where's the horizon?">
+      <option name="closed" value="true" />
+      <created>1760875943044</created>
+      <option name="number" value="00068" />
+      <option name="presentableId" value="LOCAL-00068" />
+      <option name="project" value="LOCAL" />
+      <updated>1760875943044</updated>
+    </task>
+    <option name="localTasksCounter" value="69" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -548,7 +549,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="History: dedup lines." />
     <MESSAGE value="Move commands to controller.ts. Add library cache." />
     <MESSAGE value="bigTrackView.ts: Set progressBar to 100 for streams." />
     <MESSAGE value="History: remove duplicate streams. Only keep recent one." />
@@ -573,7 +573,8 @@
     <MESSAGE value="Move component registration outside the components." />
     <MESSAGE value="Clean up old code" />
     <MESSAGE value="Default values and general cleanup." />
-    <option name="LAST_COMMIT_MESSAGE" value="Default values and general cleanup." />
+    <MESSAGE value="pers working kind of. Where's the horizon?" />
+    <option name="LAST_COMMIT_MESSAGE" value="pers working kind of. Where's the horizon?" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

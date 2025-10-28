@@ -3,25 +3,29 @@
 <head>
 <style>
 .container {
+    display: flex;
 	background-color: yellow;
-    width: 200px;
-    height: 200px;
-    perspective-origin: bottom;
 }
 
-.persp {
-    background-color: red;
-    xxperspective-origin: bottom;
-    perspective: 10cm;
-    transform:
-        perspective(4cm)
-        translateZ(-4cm)
-        rotateX(0deg)
-        rotateY(60deg)
-        ;
+.cell {
+    perspective-origin: 100px 100px;
+    perspective: 100mm;  /*The distance from the user to the z=0 plane. Negaative is nt allowed.*/
 }
 
 .paper {
+    width: 50px;
+    height: 100px;
+    background-color: red;
+    transform:
+        perspective(20mm)
+        translateX(-70px)
+        translateZ(-55mm)
+        rotateX(0deg)
+        rotateY(85deg)
+        ;
+}
+
+.justTheContent {
   background-color: limegreen;
   width: 100px;
   height: 100px;
@@ -34,12 +38,22 @@
 <h1>Perspective</h1>
 
 <div class="container">
-  <div class="persp">
-    <div class="paper">
-      <h2>Header</h2>
-      <div>A text</div>
+    <div class="cell">
+        <div class="paper">
+            <div class="justTheContent">
+                <h2>Header</h2>
+                <div>A text</div>
+            </div>
+        </div>
     </div>
-  </div>
+    <div class="cell">
+        <div class="">
+            <div class="justTheContent">
+                <h2>Header</h2>
+                <div>A text</div>
+            </div>
+        </div>
+    </div>
 </div>
 
 </body>
