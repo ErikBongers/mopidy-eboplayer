@@ -7,17 +7,8 @@
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controls.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controls.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/functionsvars.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/functionsvars.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/images.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/images.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/library.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/library.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/playerState.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/playerState.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/process_ws.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/process_ws.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/synced_timer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/synced_timer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/package.json" beforeDir="false" afterPath="$PROJECT_DIR$/package.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/tsconfig.json" beforeDir="false" afterPath="$PROJECT_DIR$/tsconfig.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -56,26 +47,27 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;P:/mopidy/mopidy-eboplayer2/mopidy_eboplayer2/www&quot;,
-    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
-    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
-    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
-    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
-    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
-    &quot;npm.build.executor&quot;: &quot;Run&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;advanced.settings&quot;,
-    &quot;ts.external.directory.path&quot;: &quot;C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external&quot;,
-    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "ModuleVcsDetector.initialDetectionPerformed": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "git-widget-placeholder": "master",
+    "ignore.virus.scanning.warn.message": "true",
+    "last_opened_file_path": "P:/mopidy/mopidy-eboplayer2/mopidy_eboplayer2/www",
+    "node.js.detected.package.eslint": "true",
+    "node.js.detected.package.tslint": "true",
+    "node.js.selected.package.eslint": "(autodetect)",
+    "node.js.selected.package.tslint": "(autodetect)",
+    "nodejs_package_manager_path": "npm",
+    "npm.build.executor": "Run",
+    "npm.tsc.executor": "Run",
+    "settings.editor.selected.configurable": "advanced.settings",
+    "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
+    "vue.rearranger.settings.migration": "true"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\www" />
@@ -94,7 +86,7 @@
       <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\static" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="npm.tsc">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -105,8 +97,19 @@
       <envs />
       <method v="2" />
     </configuration>
+    <configuration name="tsc" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
+      <package-json value="$PROJECT_DIR$/package.json" />
+      <command value="run" />
+      <scripts>
+        <script value="tsc" />
+      </scripts>
+      <node-interpreter value="project" />
+      <envs />
+      <method v="2" />
+    </configuration>
     <recent_temporary>
       <list>
+        <item itemvalue="npm.tsc" />
         <item itemvalue="npm.build" />
       </list>
     </recent_temporary>
@@ -150,15 +153,7 @@
       <workItem from="1760894909742" duration="1802000" />
       <workItem from="1761648482607" duration="5203000" />
       <workItem from="1761653774101" duration="737000" />
-      <workItem from="1761654782369" duration="2933000" />
-    </task>
-    <task id="LOCAL-00024" summary="Messing around with history.">
-      <option name="closed" value="true" />
-      <created>1760219689249</created>
-      <option name="number" value="00024" />
-      <option name="presentableId" value="LOCAL-00024" />
-      <option name="project" value="LOCAL" />
-      <updated>1760219689249</updated>
+      <workItem from="1761654782369" duration="5285000" />
     </task>
     <task id="LOCAL-00025" summary="Make stream lines selectable.">
       <option name="closed" value="true" />
@@ -544,7 +539,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761656432622</updated>
     </task>
-    <option name="localTasksCounter" value="73" />
+    <task id="LOCAL-00073" summary="Update refs after folder restructuring.">
+      <option name="closed" value="true" />
+      <created>1761658452863</created>
+      <option name="number" value="00073" />
+      <option name="presentableId" value="LOCAL-00073" />
+      <option name="project" value="LOCAL" />
+      <updated>1761658452863</updated>
+    </task>
+    <option name="localTasksCounter" value="74" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -568,7 +571,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="layout." />
     <MESSAGE value="More info in bigTrackView.ts. Improve overall layout." />
     <MESSAGE value="Bugfix dedup history lines." />
     <MESSAGE value="Sped up history loading." />
@@ -593,7 +595,8 @@
     <MESSAGE value="rename static folder to www." />
     <MESSAGE value="/static/ to /www/ : update all references." />
     <MESSAGE value="Move typescript folder in /www/" />
-    <option name="LAST_COMMIT_MESSAGE" value="Move typescript folder in /www/" />
+    <MESSAGE value="Update refs after folder restructuring." />
+    <option name="LAST_COMMIT_MESSAGE" value="Update refs after folder restructuring." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

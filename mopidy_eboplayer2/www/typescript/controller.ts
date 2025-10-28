@@ -238,6 +238,7 @@ export class Controller extends Commands implements DataRequester{
         let tracks = this.model.getTrackFromCache(uri);
         if(tracks)
             return tracks;
+
         let dict: LibraryDict = await this.commands.core.library.lookup([uri]);
         this.model.addToLibraryCache(dict);
         return this.model.getTrackFromCache(uri);
@@ -250,6 +251,10 @@ export class Controller extends Commands implements DataRequester{
         this.setTracklist(trackList);
         this.commands.core.playback.play(null, trackList[0].tlid);
         await this.setCurrentTrackAndFetchDetails(trackList[0]);
+    }
+
+    async setSelectedTrack(uri: string) {
+        //todo
     }
 
     async sendVolume(value: number) {

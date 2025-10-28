@@ -30,6 +30,7 @@ export enum EboplayerEvents {
     playStateChanged = "eboplayer.playbackStateChanged",
     messageChanged = "eboplayer.messageChanged",
     currentTrackChanged = "eboplayer.currentTrackChanged",
+    selectedTrackChanged = "eboplayer.selectedTrackChanged",
     activeStreamLinesChanged = "eboplayer.activeStreamLinesChanged",
     historyChanged = "eboplayer.historyChanged",
     trackListChanged = "eboplayer.trackListChanged",
@@ -89,6 +90,9 @@ export type LibraryDict = { [index: string]: models.Track[] };
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
     currentTrack: TrackModel = Model.NoTrack;
+    //note that selectedTrack is not part of the mopidy server.
+    //don't set selectedTrack to currentTrack unless you want it displayed
+    selectedTrack: TrackModel = Model.NoTrack;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -131,8 +135,11 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
     }
 
-    clearCurrentTrack() {
-        this.setCurrentTrack(Model.NoTrack);
+    getSelectedTrack = (): DeepReadonly<TrackModel> => this.selectedTrack;
+
+    setSelectedTrack(track: TrackModel) {
+        this.selectedTrack = track;
+        this.dispatchEvent(new Event(EboplayerEvents.selectedTrackChanged));
     }
 
     setVolume(volume: number) {
