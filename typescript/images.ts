@@ -1,5 +1,5 @@
 import Mopidy from "mopidy";
-// import {LastFM} from "../mopidy_eboplayer/static/vendors/lastfm/lastfm.api.js";
+// import {LastFM} from "../mopidy_eboplayer/www/vendors/lastfm/lastfm.api.js";
 
 const API_KEY = 'b6d34c3af91d62ab0ae00ab1b6fa8733';
 const API_SECRET = '2c631802c2285d5d5d1502462fe42a2b';

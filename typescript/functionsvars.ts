@@ -2,7 +2,7 @@ import * as images from "./images";
 import {processPlaylistItems} from "./process_ws";
 import * as controls from "./controls";
 import getState from "./playerState";
-import {models} from "../mopidy_eboplayer2/static/js/mopidy";
+import {models} from "../mopidy_eboplayer2/www/js/mopidy";
 import TlTrack = models.TlTrack;
 
 // interface ArtistInfo {

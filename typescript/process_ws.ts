@@ -1,7 +1,7 @@
 import * as controls from "./controls";
 import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, getAlbum, getArtist, getMediaClass, isFavouritesPlaylist, resultsToTables, scrollToTracklist, showLoading} from "./functionsvars";
 import * as images from "./images";
-import {models} from "../mopidy_eboplayer2/static/js/mopidy";
+import {models} from "../mopidy_eboplayer2/www/js/mopidy";
 import getState from "./playerState";
 import {TrackModel} from "./model";
 import {transformTrackDataToModel} from "./controller";

@@ -1,4 +1,4 @@
-import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
+import {models, Mopidy} from "../mopidy_eboplayer2/www/js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
 import {DeepReadonly, ViewModel} from "./model";
 import {Commands} from "../scripts/commands";

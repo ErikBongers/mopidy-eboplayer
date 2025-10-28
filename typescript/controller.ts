@@ -5,7 +5,7 @@ import * as controls from "./controls";
 import {transformTlTrackDataToModel} from "./process_ws";
 import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "../scripts/commands";
-import {models, Mopidy} from "../mopidy_eboplayer2/static/js/mopidy";
+import {models, Mopidy} from "../mopidy_eboplayer2/www/js/mopidy";
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import TlTrack = models.TlTrack;

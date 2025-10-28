@@ -10,5 +10,5 @@
 /.karma_coverage
 /node_modules
 package-lock.json
-/mopidy_eboplayer2/static/generated/bundle.js
-/mopidy_eboplayer2/static/generated/
+/mopidy_eboplayer2/www/generated/bundle.js
+/mopidy_eboplayer2/www/generated/
