@@ -2,7 +2,7 @@
   "include": ["typescript/**/*"],
   "exclude": [],
   "compilerOptions": {
-   "outDir": "./mopidy_eboplayer2/static/generated",
+   "outDir": "./mopidy_eboplayer2/www/generated",
     "target": "es2021",
     "sourceMap": true,
     "noEmit": true,

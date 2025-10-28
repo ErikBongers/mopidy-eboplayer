@@ -16,9 +16,10 @@ recursive-include tests *.py *.js
 recursive-include tests/data *
 
 include *.js
+include *.ts
 include .coveragerc
 include .csslintrc
 include .eslintrc
 include package.json
 
-recursive-include mopidy_eboplayer2/static *
+recursive-include mopidy_eboplayer2/www *

@@ -50,7 +50,7 @@ class Extension(ext.Extension):
         from .web import IndexHandler, StaticHandler
         from .streamlineshandler import ActiveStreamLinesHandler
 
-        path = pathlib.Path(__file__).parent / "static"
+        path = pathlib.Path(__file__).parent / "www"
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
