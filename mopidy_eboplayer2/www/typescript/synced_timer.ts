@@ -1,5 +1,5 @@
 import {ProgressTimer} from "./timer";
-import {Mopidy} from "../mopidy_eboplayer2/www/js/mopidy";
+import {Mopidy} from "../js/mopidy";
 
 function delay_exponential (base: number | 'rand', growthFactor: number, attempts: number) {
     /* Calculate number of beats between syncs based on exponential function.

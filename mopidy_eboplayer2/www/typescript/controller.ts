@@ -1,7 +1,7 @@
 import getState from "./playerState";
 import {showLoading, validUri} from "./functionsvars";
 import {library} from "./library";
-import * as controls from "./controls";
+// import * as controls from "./controls";
 import {transformTlTrackDataToModel} from "./process_ws";
 import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "./commands";
@@ -42,12 +42,12 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
-            controls.setPlayState(true);
+            // controls.setPlayState(true);
         });
 
         this.mopidy.on('event:trackPlaybackResumed', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
-            controls.setPlayState(true); //todo: pass this through the model and it's listeners.
+            // controls.setPlayState(true); //todo: pass this through the model and it's listeners.
         });
 
         this.mopidy.on('event:playlistsLoaded', ()  => {
@@ -74,7 +74,7 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:muteChanged', (data) => {
-            controls.setMute(data.mute);
+            // controls.setMute(data.mute);
         });
 
         this.mopidy.on('event:playbackStateChanged', (data) => {
@@ -86,7 +86,7 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:seeked', (data) => {
-            controls.setPosition(data.time_position);
+            // controls.setPosition(data.time_position);
             if (getState().play) {
                 getState().syncedProgressTimer.start();
             }

@@ -192,7 +192,7 @@ export let library = {
      *********************************/
     getPlaylists: function () {
         //  get playlists without tracks
-        getState().commands.core.playlists.asList().then(processGetPlaylists, console.error)
+        // getState().commands.core.playlists.asList().then(processGetPlaylists, console.error)
     },
 
     getBrowseDir: function (rootdir: string | undefined) {

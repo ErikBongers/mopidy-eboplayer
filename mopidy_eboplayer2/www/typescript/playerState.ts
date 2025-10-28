@@ -1,7 +1,6 @@
-import {models, Mopidy} from "../mopidy_eboplayer2/www/js/mopidy";
+import {models, Mopidy} from "../js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
 import {DeepReadonly, ViewModel} from "./model";
-import {Commands} from "../scripts/commands";
 import {EboPlayerDataType, View} from "./views/view";
 import {Controller} from "./controller";
 import TlTrack = models.TlTrack;

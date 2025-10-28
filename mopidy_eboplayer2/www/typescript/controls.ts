@@ -1,12 +1,14 @@
+/*
 import {artistsToString, CURRENT_PLAYLIST_TABLE, getScheme, getTracksFromUri, isStreamUri, STREAMS_PLAYLIST_NAME, STREAMS_PLAYLIST_SCHEME, TRACK_ACTIONS} from "./functionsvars";
 import {updatePlayIcons} from "./functionsvars";
 import {library} from "./library";
 import {processCurrentposition} from "./process_ws";
 import getState from "./playerState";
-import {models, Mopidy} from "../mopidy_eboplayer2/www/js/mopidy";
+import {models, Mopidy} from "../js/mopidy";
 import Track = models.Track;
+*/
 
-/**
+/*
  * 'onClick' handler for tracks that are rendered in a list.
  *
  * Adds tracks to current tracklist and starts playback if necessary.
@@ -32,8 +34,9 @@ import Track = models.Track;
  * @param {string} index - (Optional) The tracklist index of the reference track that the
  *                         action should be performed on. Defaults to the index of the currently
  *                         playing track.
- */
+*/
 
+/*
 export function playTracks(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri: string, playlistUri: string, index: number = null) {
     //todo toast('Updating queue...');
 
@@ -99,7 +102,7 @@ export function playTracks(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri: stri
     // document.querySelector('#popupQueue').popup('close')
 }
 
-/* Getter function for 'action' variable. Also checks config settings and cookies if required. */
+// Getter function for 'action' variable. Also checks config settings and cookies if required.
 export function getAction(action: TRACK_ACTIONS) {
     if (action == TRACK_ACTIONS.UNDEFINED) {  // Action parameter not provided, use defaults
         action = window[document.body.dataset.onTrackClick] as TRACK_ACTIONS;
@@ -114,7 +117,7 @@ export function getAction(action: TRACK_ACTIONS) {
     return action;
 }
 
-/* Retrieves the Font Awesome character for the given action. */
+// Retrieves the Font Awesome character for the given action.
 export function getIconForAction(action: TRACK_ACTIONS = TRACK_ACTIONS.UNDEFINED) {
     action = getAction(action);
 
@@ -134,7 +137,7 @@ export function getIconForAction(action: TRACK_ACTIONS = TRACK_ACTIONS.UNDEFINED
     }
 }
 
-/* Retrieves the relevant track URIs for the given action. */
+// Retrieves the relevant track URIs for the given action.
 export function _getTrackURIsForAction(action: TRACK_ACTIONS, trackUri: string, playlistUri: string): string[] {
     let trackUris: string[] = [];
     // Fill 'trackUris', by determining which tracks should be added.
@@ -172,15 +175,15 @@ export function _addTrackAtIndex(action: TRACK_ACTIONS, mopidy: Mopidy, trackUri
     })
 }
 
-/** ******************************************************
+//* ******************************************************
  * play an uri from the queue
- *********************************************************/
+ *********************************************************
 
-/** *
+//* *
  * Plays a Track from a Playlist.
  * @param tlid
  * @returns {boolean}
- */
+
 export function playQueueTrack(tlid) {
     // Stop directly, for user feedback
 
@@ -192,9 +195,9 @@ export function playQueueTrack(tlid) {
     // document.querySelector('#popupQueue').popup('close')
 }
 
-/** *********************************
+//* *********************************
  *  remove a track from the queue  *
- ***********************************/
+ ***********************************
 export function removeTrack(tlid, mopidy) {
     // toast('Deleting...')
 
@@ -468,9 +471,9 @@ export function refreshLibrary() {
     return false;
 }
 
-/** ***********
+//* ***********
  *  Buttons  *
- *************/
+ *************
 
 export function doShuffle() {
     getState().commands.core.playback.stop();
@@ -478,7 +481,7 @@ export function doShuffle() {
     getState().commands.core.playback.play();
 }
 
-/* Toggle state of play button */
+// Toggle state of play button
 export function setPlayState(nwplay) {
     // if (nwplay) {
     //     document.querySelector('#btplayNowPlaying >i').classList.remove('fa-play');
@@ -521,9 +524,9 @@ export function backbt() {
     return false;
 }
 
-/** ***********
+//* ***********
  *  Options  *
- *************/
+ *************
 export function setTracklistOption(name: string, new_value: boolean) {
     if (!new_value) {
         document.querySelector('#' + name + 'bt').setAttribute('style', 'color:#2489ce');
@@ -549,10 +552,10 @@ export function doSingle() {
     getState().commands.core.tracklist.setSingle(!getState().single).then();
 }
 
-/** *********************************************
+//* *********************************************
  * Track Slider                                *
  * Use a timer to prevent looping of commands  *
- ***********************************************/
+ ***********************************************
 export function doSeekPos(value) {
     if (!getState().positionChanging) {
         getState().positionChanging = value; //todo: number or boolean
@@ -568,10 +571,10 @@ export function setPosition(pos) {
     }
 }
 
-/** *********************************************
+//* *********************************************
  * Volume slider                               *
  * Use a timer to prevent looping of commands  *
- ***********************************************/
+ ***********************************************
 
 //todo separate the controls gui setters from the send functions?
 export function setMute(nwmute) {
@@ -589,9 +592,9 @@ export function doMute() {
     getState().commands.core.mixer.setMute(!getState().mute);
 }
 
-/** **********
+//* **********
  *  Stream  *
- ************/
+ ************
 export function streamPressed(key) {
     if (key === 13) {
         playStreamUri();
@@ -811,3 +814,4 @@ export function upgradeStreamUrisToFavourites() {
     //     console.log('No streamUris cookie found')
     // }
 }
+*/

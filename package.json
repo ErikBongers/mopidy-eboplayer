@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "build": "rolldown -c",
-    "compile": "tsc"
+    "tsc": "tsc"
   },
   "dependencies": {
   },

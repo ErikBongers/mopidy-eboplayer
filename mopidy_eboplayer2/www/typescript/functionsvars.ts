@@ -1,8 +1,8 @@
 import * as images from "./images";
 import {processPlaylistItems} from "./process_ws";
-import * as controls from "./controls";
+// import * as controls from "./controls";
 import getState from "./playerState";
-import {models} from "../mopidy_eboplayer2/www/js/mopidy";
+import {models} from "../js/mopidy";
 import TlTrack = models.TlTrack;
 
 // interface ArtistInfo {
@@ -215,7 +215,7 @@ export function albumTracksToTable (pl, target, uri) {
         html += renderSongLi(previousTrack, track, nextTrack, uri, '', target, i, pl.length);
     }
     document.querySelector(target).append(html);
-    updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction());
+    // updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction());
 }
 
 export function renderSongLi (previousTrack, track, nextTrack, uri, tlid, target, currentIndex, listLength) {

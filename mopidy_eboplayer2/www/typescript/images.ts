@@ -1,4 +1,4 @@
-import {Mopidy} from "../mopidy_eboplayer2/www/js/mopidy";
+import {Mopidy} from "../js/mopidy";
 // import {LastFM} from "../mopidy_eboplayer/www/vendors/lastfm/lastfm.api.js";
 
 const API_KEY = 'b6d34c3af91d62ab0ae00ab1b6fa8733';

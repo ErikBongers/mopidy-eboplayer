@@ -1,7 +1,7 @@
-import * as controls from "./controls";
+// import * as controls from "./controls";
 import {ALBUM_TABLE, albumTracksToTable, ARTIST_TABLE, getAlbum, getArtist, getMediaClass, isFavouritesPlaylist, resultsToTables, scrollToTracklist, showLoading} from "./functionsvars";
 import * as images from "./images";
-import {models} from "../mopidy_eboplayer2/www/js/mopidy";
+import {models} from "../js/mopidy";
 import getState from "./playerState";
 import {TrackModel} from "./model";
 import {transformTrackDataToModel} from "./controller";
@@ -16,18 +16,18 @@ export function processVolume (data: number | null) {
 }
 
 export function processMute (data: boolean | null) {
-    controls.setMute(data);
+    // controls.setMute(data);
 }
 
 export function processCurrentposition (data) {
-    controls.setPosition(parseInt(data))
+    // controls.setPosition(parseInt(data))
 }
 
 export function processPlaystate (data) {
     if (data === 'playing') {
-        controls.setPlayState(true)
+        // controls.setPlayState(true)
     } else {
-        controls.setPlayState(false)
+        // controls.setPlayState(false)
     }
 }
 

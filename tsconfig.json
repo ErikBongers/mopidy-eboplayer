@@ -1,5 +1,5 @@
 {
-  "include": ["typescript/**/*"],
+  "include": ["mopidy_eboplayer2/www/typescript/**/*"],
   "exclude": [],
   "compilerOptions": {
    "outDir": "./mopidy_eboplayer2/www/generated",
