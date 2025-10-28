@@ -1,4 +1,4 @@
-import {Mopidy, Options} from "../mopidy_eboplayer2/www/js/mopidy";
+import {Mopidy, Options} from "../js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
 import getState, {setState, State} from "./playerState";
 import {Model} from "./model";

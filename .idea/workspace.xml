@@ -5,22 +5,51 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/generated/bundle.js" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/generated/bundle.js.map" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/components/EboComponent.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/components/eboBigTrackView.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/components/eboProgressBar.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controls.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/functionsvars.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/gui.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/images.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/library.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/model.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/playerState.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/process_ws.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/synced_timer.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/timer.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/bigTrackView.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/buttonBarView.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/dataRequester.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/headerView.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/view.ts" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/volumeView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/rolldown.config.js" beforeDir="false" afterPath="$PROJECT_DIR$/rolldown.config.js" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/build_commands.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/build_commands.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/scripts/commands.ts" beforeDir="false" afterPath="$PROJECT_DIR$/scripts/commands.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controller.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/controls.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/controls.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/functionsvars.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/functionsvars.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/gui.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/images.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/images.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/model.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/playerState.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/playerState.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/process_ws.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/process_ws.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/synced_timer.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/synced_timer.ts" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/typescript/views/timelineView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/typescript/views/timelineView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/scripts/commands.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/commands.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/components/EboComponent.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/components/eboBigTrackView.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/components/eboProgressBar.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/controller.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/controls.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/functionsvars.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/gui.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/images.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/library.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/model.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/playerState.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/process_ws.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/synced_timer.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/timer.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/bigTrackView.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/buttonBarView.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/dataRequester.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/headerView.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/timelineView.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/view.ts" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/typescript/views/volumeView.ts" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -67,7 +96,7 @@
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;git-widget-placeholder&quot;: &quot;master&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;P:/mopidy/mopidy-eboplayer2/typescript/components&quot;,
+    &quot;last_opened_file_path&quot;: &quot;P:/mopidy/mopidy-eboplayer2/mopidy_eboplayer2/www&quot;,
     &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
     &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
     &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
@@ -81,6 +110,7 @@
 }</component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
+      <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\www" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\components" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views" />
     </key>
@@ -91,6 +121,8 @@
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views\view.ts" />
     </key>
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\www\typescript" />
+      <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\www" />
       <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\static" />
     </key>
   </component>
@@ -114,7 +146,7 @@
   <component name="SharedIndexes">
     <attachedChunks>
       <set>
-        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-WS-252.26830.93" />
+        <option value="bundled-js-predefined-d6986cc7102b-3aa1da707db6-JavaScript-WS-252.27397.92" />
       </set>
     </attachedChunks>
   </component>
@@ -148,15 +180,9 @@
       <workItem from="1760805242076" duration="23703000" />
       <workItem from="1760873958927" duration="5618000" />
       <workItem from="1760894909742" duration="1802000" />
-      <workItem from="1761648482607" duration="4298000" />
-    </task>
-    <task id="LOCAL-00022" summary="Copy to player2: 0d987b919ae35e30d27ee57d1428ca71310200f2">
-      <option name="closed" value="true" />
-      <created>1760213241600</created>
-      <option name="number" value="00022" />
-      <option name="presentableId" value="LOCAL-00022" />
-      <option name="project" value="LOCAL" />
-      <updated>1760213241600</updated>
+      <workItem from="1761648482607" duration="5203000" />
+      <workItem from="1761653774101" duration="737000" />
+      <workItem from="1761654782369" duration="998000" />
     </task>
     <task id="LOCAL-00023" summary="Implementing dataRequester.ts. Load history: WIP.">
       <option name="closed" value="true" />
@@ -542,7 +568,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761652289586</updated>
     </task>
-    <option name="localTasksCounter" value="71" />
+    <task id="LOCAL-00071" summary="/static/ to /www/ : update all references.">
+      <option name="closed" value="true" />
+      <created>1761652912066</created>
+      <option name="number" value="00071" />
+      <option name="presentableId" value="LOCAL-00071" />
+      <option name="project" value="LOCAL" />
+      <updated>1761652912066</updated>
+    </task>
+    <option name="localTasksCounter" value="72" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -566,7 +600,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="History: remove duplicate streams. Only keep recent one." />
     <MESSAGE value="Layout" />
     <MESSAGE value="layout." />
     <MESSAGE value="More info in bigTrackView.ts. Improve overall layout." />
@@ -591,13 +624,14 @@
     <MESSAGE value="pers working kind of. Where's the horizon?" />
     <MESSAGE value="Messing with perspective." />
     <MESSAGE value="rename static folder to www." />
-    <option name="LAST_COMMIT_MESSAGE" value="rename static folder to www." />
+    <MESSAGE value="/static/ to /www/ : update all references." />
+    <option name="LAST_COMMIT_MESSAGE" value="/static/ to /www/ : update all references." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>
       <breakpoints>
         <line-breakpoint enabled="true" type="javascript">
-          <url>file://$PROJECT_DIR$/scripts/commands.ts</url>
+          <url>file://$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/commands.ts</url>
           <line>190</line>
           <option name="timeStamp" value="1" />
         </line-breakpoint>

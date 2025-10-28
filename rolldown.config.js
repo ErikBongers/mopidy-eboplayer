@@ -2,7 +2,7 @@ import { defineConfig } from 'rolldown';
 // import nodePolyfills from '@rolldown/plugin-node-polyfills';
 
 export default defineConfig({
-    input: 'typescript/gui.ts',
+    input: 'mopidy_eboplayer2/www/typescript/gui.ts',
     output: {
         file: 'mopidy_eboplayer2/www/generated/bundle.js',
         sourcemap: true,
