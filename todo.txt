@@ -1,15 +1,17 @@
-Refactor model with cache
-===========================
-* model works with uris and the library cache.
-  > if a uri is not found in the cache - that's not the model's problem!!
-  > if you add a (current or selected) track to the model, it will store it in the cache if you provide a full track object.
-* model remains passive (no fetches - that's for the controller)
-* model only informs listeners of changes
-* single tracks can be added to the library cache.
+* A track in a list can be:
+  - selected
+  - current
+    - playing.
+    - stopped.
 
-
-
-
+* A track can appear multiple times in a list.
+  > only the listView 'knows' which track this is.
+  > the model has nothing to do with this.
+  > yet, if a track is selected in one list, this can get hightlighted in other lists as well.
+    > so, lists should highlight all instances of this track
+  > tracks in mopidy lists have TLid...that can be used to uniquely id an item.
+    > this id is not part of the cache.
+    > history and cache do not have such an id.
 
 
 * add SelectedTrack (next to currentTrack) in model

@@ -3,6 +3,7 @@ import {EboplayerEvents, HistoryLine, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {transformTrackDataToModel} from "../controller";
 import {models} from "../../js/mopidy";
+import {console_yellow} from "../gui";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
@@ -12,6 +13,9 @@ export class TimelineView extends View {
         });
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onCurrentTrackChanged();
+        });
+        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+            this.onSelectedTrackChanged();
         });
     }
 
@@ -31,7 +35,7 @@ export class TimelineView extends View {
         getState().getController().fetchCurrentTrackAndDetails();
 
         Promise.all(allLookups).then(()=> {
-            this.setActiveTrack();
+            this.setCurrentTrack();
         });
 
         body.querySelectorAll("tr").forEach(tr => {
@@ -41,7 +45,10 @@ export class TimelineView extends View {
     }
 
     private onRowClicked(ev: MouseEvent) {
-        this.clickedRow = ev.currentTarget as HTMLTableRowElement;
+        let row = ev.currentTarget as HTMLTableRowElement;
+        this.setRowsClass(row, ["clicked"]);
+
+        getState().getController().setSelectedTrack(row.dataset.uri);
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
@@ -49,7 +56,31 @@ export class TimelineView extends View {
         await getState().getController().playTrack(this.clickedRow.dataset.uri);
     }
 
-    private async setActiveTrack() {
+    private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {
+        document
+            .getElementById("timelineTable")
+            .querySelectorAll(`tr`)
+            .forEach(tr =>
+                tr.classList.remove(...classes)
+            );
+        if(rowOrSelector instanceof HTMLTableRowElement)
+            rowOrSelector.classList.add(...classes);
+        else {
+            document
+                .getElementById("timelineTable")
+                .querySelectorAll(rowOrSelector)
+                .forEach(tr =>
+                    tr.classList.add(...classes)
+                );
+        }
+    }
+
+    private setSelectedTrack() {
+        let selectedTrackUri = getState().getModel().getSelectedTrack();
+        this.setRowsClass(`tr[data-uri="${selectedTrackUri}"]`, ["selected"]);
+    }
+
+    private async setCurrentTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
         let currentTrack = await getState().getController().getCurrertTrackInfo();
         if (currentTrack.type == TrackType.None)
@@ -60,8 +91,8 @@ export class TimelineView extends View {
             return;
         if(this.clickedRow?.dataset?.uri != currentTrack.track.uri)
             tr.scrollIntoView( { block: "nearest" });
-        timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("active", "textGlow"));
-        tr.classList.add("active", "textGlow");
+        timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("current", "textGlow"));
+        tr.classList.add("current", "textGlow");
     }
 
     private insertTrackLine(line: HistoryLine, body: HTMLTableSectionElement) {
@@ -121,7 +152,11 @@ export class TimelineView extends View {
     }
 
     private onCurrentTrackChanged() {
-        this.setActiveTrack();
+        this.setCurrentTrack();
+    }
+
+    private onSelectedTrackChanged() {
+        this.setSelectedTrack();
     }
 
 }

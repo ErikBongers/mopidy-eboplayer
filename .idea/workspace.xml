@@ -6,7 +6,11 @@
   <component name="ChangeListManager">
     <list default="true" id="8b860b2c-ef73-4fe2-a10d-51c436557374" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/css/webclient.css" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/css/webclient.css" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/index.html" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/index.html" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -153,15 +157,7 @@
       <workItem from="1761648482607" duration="5203000" />
       <workItem from="1761653774101" duration="737000" />
       <workItem from="1761654782369" duration="9892000" />
-      <workItem from="1761729482775" duration="5725000" />
-    </task>
-    <task id="LOCAL-00027" summary="History loaded. Table formatted.">
-      <option name="closed" value="true" />
-      <created>1760289180967</created>
-      <option name="number" value="00027" />
-      <option name="presentableId" value="LOCAL-00027" />
-      <option name="project" value="LOCAL" />
-      <updated>1760289180967</updated>
+      <workItem from="1761729482775" duration="8904000" />
     </task>
     <task id="LOCAL-00028" summary="historyView.ts: add button for ellipsis.">
       <option name="closed" value="true" />
@@ -547,7 +543,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761734494620</updated>
     </task>
-    <option name="localTasksCounter" value="76" />
+    <task id="LOCAL-00076" summary="Oepsie in timelineView.ts.">
+      <option name="closed" value="true" />
+      <created>1761735311155</created>
+      <option name="number" value="00076" />
+      <option name="presentableId" value="LOCAL-00076" />
+      <option name="project" value="LOCAL" />
+      <updated>1761735311155</updated>
+    </task>
+    <option name="localTasksCounter" value="77" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -571,7 +575,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="Sped up history loading." />
     <MESSAGE value="Bugfix bigTrackView.ts query ebo-progressbar." />
     <MESSAGE value="Scroll active track into view for history list." />
     <MESSAGE value="Remove test." />
@@ -596,7 +599,8 @@
     <MESSAGE value="Update refs after folder restructuring." />
     <MESSAGE value="Add model.selectedTrack. (scaffolding only for now)" />
     <MESSAGE value="Refactor library cache to use a map.&#10;Refactor model to use uris as much as possible." />
-    <option name="LAST_COMMIT_MESSAGE" value="Refactor library cache to use a map.&#10;Refactor model to use uris as much as possible." />
+    <MESSAGE value="Oepsie in timelineView.ts." />
+    <option name="LAST_COMMIT_MESSAGE" value="Oepsie in timelineView.ts." />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

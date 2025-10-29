@@ -930,9 +930,16 @@ xhistory-line {
             background-color: #ffffff20;
             height: 1px;
         }
-        &.active {
+        &.selected {
             opacity: 1;
             background-color: #fffff010;
+        }
+        &.clicked {
+            opacity: 1;
+            background-color: #fffff020;
+        }
+        &.current {
+            opacity: 1;
             & div.progressBar {
                 background-color: #ffff8840;
             }

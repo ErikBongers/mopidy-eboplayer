@@ -262,8 +262,8 @@ export class Controller extends Commands implements DataRequester{
         await this.setCurrentTrackAndFetchDetails(trackList[0]);
     }
 
-    async setSelectedTrack(uri: string) {
-        //todo
+    setSelectedTrack(uri: string) {
+        this.model.setSelectedTrack(uri);
     }
 
     async sendVolume(value: number) {
