@@ -48,7 +48,7 @@ class IndexHandler(tornado.web.RequestHandler):
         self.__dict = {
             "websocketUrl": webclient.get_websocket_url(self.request),
             "onTrackClick": webclient.get_default_click_action(),
-            "hostname": url.hostname,
+            "hostname": url.hostname+":"+str(port),
             "serverIP": ip,
             "serverPort": port,
         }
