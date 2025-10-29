@@ -35,8 +35,8 @@ export class TimelineView extends View {
         });
 
         body.querySelectorAll("tr").forEach(tr => {
-            tr.addEventListener("click", ev => {this.onRowDoubleClicked(ev)});
-            tr.addEventListener("dblclick", ev => {this.onRowClicked(ev)});
+            tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev)});
+            tr.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
     }
 
