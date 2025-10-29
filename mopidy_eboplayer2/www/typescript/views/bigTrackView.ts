@@ -38,7 +38,6 @@ export class BigTrackView extends View {
         let track = await getState().getController().getTrackInfo(trackUri);
         if(track.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
-        let div = document.getElementById(this.id);
         let name = "no current track";
         let info = "";
         let position: string;
