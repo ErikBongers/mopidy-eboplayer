@@ -1,42 +1,42 @@
 import getState from "../playerState";
 import {EboplayerEvents, Model, TrackModel, TrackType} from "../model";
-import {EboPlayerDataType, View} from "./view";
+import {EboPlayerDataType} from "./view";
+import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
 
-export class BigTrackView extends View {
-    private componentId: string;
+export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     private streamLines: string;
     private track: TrackModel;
+    private uri: string;
 
     constructor(id: string) {
-        super();
-        this.componentId = id;
+        super(id);
         this.streamLines = "";
         this.track = Model.NoTrack;
-        // source =
-        // currentTrack
-        // selectedTrack
-        // current or selectedTrack: with prio for selectedTrack
-        //anyTrack
-
+        this.uri = "";
     }
 
     bind() {
-        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
-            let trackUri  = getState().getModel().getCurrentTrack();
-            this.track = await getState().getController().getTrackInfo(trackUri);
-            await this.setComponentData();
-        });
+        //todo: streamlines belong to specific stream uris. Make seperate streamline files for per stream (uri).
         getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
             this.onStreamLinesChanged();
         });
     }
 
-    private onStreamLinesChanged() {
+    setUri(uri: string) {
+        this.uri = uri;
+        getState().getController().getTrackInfo(this.uri)
+            .then(track => {
+                this.track = track;
+                this.setComponentData();
+            });
+    }
+
+    protected onStreamLinesChanged() {
         this.streamLines = getState().getModel().getActiveStreamLines().join("<br/>");
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
     }
 
-    private async setComponentData() {
+    protected setComponentData() {
         if(this.track.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let name = "no current track";
@@ -70,7 +70,7 @@ export class BigTrackView extends View {
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.CurrentTrack, EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines];
+        return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines, ...super.getRequiredDataTypes()];
     }
 
 }

@@ -4,11 +4,12 @@ import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
 import {Controller, getHostAndPort} from "./controller";
-import {BigTrackView} from "./views/bigTrackView";
+import {BigTrackViewAdapter} from "./views/bigTrackViewAdapter";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
 import {EboBigTrackView} from "./components/eboBigTrackView";
+import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -35,7 +36,7 @@ document.addEventListener("DOMContentLoaded",function () {
     setState(state);
 
     let headerView = new HeaderView();
-    let currentTrackView = new BigTrackView("currentTrackBigView");
+    let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
     let buttonBarView = new ButtonBarView("buttonBar");
     let historyView = new TimelineView();
     getState().addViews(headerView, currentTrackView, buttonBarView, historyView);

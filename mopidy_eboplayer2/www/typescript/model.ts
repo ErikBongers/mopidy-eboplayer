@@ -67,7 +67,7 @@ export enum PlayState  {
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
     getCurrentTrack: () => string;
-    getSelectedTrack: () => string;
+    getSelectedTrack: () => string | undefined;
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
@@ -95,7 +95,7 @@ export class Model extends EventTarget implements ViewModel {
     currentTrack: string;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
-    selectedTrack: string;
+    selectedTrack?: string;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -131,7 +131,7 @@ export class Model extends EventTarget implements ViewModel {
     getConnectionState = () => this.connectionState;
 
     getTrackInfo(uri: string): LibraryItem {
-        return this.libraryCache.get(this.currentTrack);
+        return this.libraryCache.get(uri);
     }
 
     getCurrentTrack(): string {
@@ -148,10 +148,13 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
     }
 
-    getSelectedTrack = (): string => this.selectedTrack;
+    getSelectedTrack = () => this.selectedTrack;
 
-    setSelectedTrack(uri: string) {
-        this.selectedTrack = uri;
+    setSelectedTrack(uri?: string) {
+        if(uri == "")
+            this.selectedTrack = undefined;
+        else
+            this.selectedTrack = uri;
         this.dispatchEvent(new Event(EboplayerEvents.selectedTrackChanged));
     }
 
