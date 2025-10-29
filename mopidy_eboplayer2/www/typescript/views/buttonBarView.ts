@@ -21,6 +21,9 @@ export class ButtonBarView extends View {
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onCurrentTrackChanged();
         });
+        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+            this.onSelectedTrackChanged();
+        });
 
         document.getElementById(`${this.containerId}.btnPlay`).onclick = () => {
             this.playOrStopOrPause().then(r => {});
@@ -50,6 +53,21 @@ export class ButtonBarView extends View {
             View.getSubId(this.containerId, "btnNext").style.opacity = "0.5";
             View.getSubId(this.containerId, "btnPrev").style.opacity = "0.5";
         }
+        this.showHideSelectedImage();
+    }
+
+    private async onSelectedTrackChanged() {
+        this.showHideSelectedImage();
+    }
+
+    private showHideSelectedImage() {
+        let currentTrack = getState().getModel().getCurrentTrack();
+        let selectedTrack = getState().getModel().getSelectedTrack();
+        let img = document.querySelector("#buttonBarWrapper img") as HTMLElement;
+        if (currentTrack == selectedTrack || !selectedTrack)
+            img.style.visibility = "hidden";
+        else
+            img.style.visibility = "visible";
     }
 
     private async playOrStopOrPause() {
