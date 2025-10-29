@@ -110,7 +110,7 @@ export class Model extends EventTarget implements ViewModel {
         single: false
     }
     private playState: PlayState;
-    private activeStreamLines: string[];
+    private activeStreamLines: string[] = [];
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, LibraryItem> = new Map();

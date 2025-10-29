@@ -31,9 +31,6 @@ export class TimelineView extends View {
             allLookups.push(this.insertTrackLine(line, body));
         }
 
-        // noinspection ES6MissingAwait
-        getState().getController().fetchCurrentTrackAndDetails();
-
         Promise.all(allLookups).then(()=> {
             this.setCurrentTrack();
         });

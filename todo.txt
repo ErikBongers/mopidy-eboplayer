@@ -1,17 +1,57 @@
-UI
-==
-Clicking on not the playing track
-  - replaces big view with the selected track
-  - adds a mini image to the left of the play buttons.
-    > clicking on this re-selects the current track
-      > what if the current track isn't present in the currenly displayed list?
-        > problems for later.
+* create BigViewDataAdapter class
+  - has uri
+  - fetches trackinfo (if not in cache yet)
+    > will fetch image.
+  - sets properties of the given component
+  > perhaps adapter the bigTrackview class
+    - it now only handles model.currentTracke
 
-* A track in a list can be:
-  - selected
-  - current
-    - playing.
-    - stopped.
+
+Big Views
+=========
+> where does it's data come from?
+  A big view may display the current track or the selected track.
+  > The component should not know what it is viewing.
+  > The controller?
+  > The model?
+  > There may be n viewers on screen.
+    - the current track
+    - the selected track
+    - an expanded view of a list or tree item.
+
+  * have some adapter between the bigview and the data.
+    > the adapter knows what data it's interested in.
+    > the controller has a list of adapters?
+    > when/how does a view go out of scope/hidden/not applicable?
+    > the adapter has a URI.
+      > the adapter gathers the data of the uri and provides it to the component.
+  * the controller adds bigviews to the ui
+    > creates and inserts the component.
+    > creates adapter.
+    > links adapter and component.
+      > how?
+        > the adapter has
+          - the component's wrapper element (id)
+            > or the element itself?
+          - the uri
+          - the component.
+        > adapter
+          - gathers data
+          - sets attributes on the component
+          - listens for stuff, if needed?
+            - start/stop of track
+            - removal of uri from mopidy?
+  * controller removes component and adapter when finished.
+    > risk of dangling pointers?
+      - first disable adapter
+      - remove component (component never accesses adapter)
+      - remove adapter.
+
+
+
+
+
+
 
 * A track can appear multiple times in a list.
   > only the listView 'knows' which track this is.
