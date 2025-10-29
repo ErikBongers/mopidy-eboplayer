@@ -2,7 +2,7 @@ import logging
 import pykka
 from mopidy import core
 
-from . import Storage
+from mopidy_eboplayer2.Storage import Storage
 
 logger = logging.getLogger(__name__)
 
@@ -11,30 +11,33 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def __init__(self, config, core) -> None:
         super(EboPlayerFrontend, self).__init__(config, core)
         self.core = core
+        self.config = config
+        self.storage = Storage(self.config['eboplayer2']['storage_dir'])
+        self.storage.setup()
 
     def on_start(self) -> None:
         logger.info("STARTING....")
-        volume = Storage.get('volume', 50)
+
+        volume = self.storage.get('volume', 50)
         self.core.mixer.set_volume(volume)
-        Storage.add_empty_title()
-        return None
+        self.storage.add_empty_title()
 
     def stream_title_changed(self, title: str) -> None:
         logger.info(f"Stream title: {title}")
-        if Storage.write_title(title):
-            lines = Storage.get_active_titles()
+        if self.storage.write_title(title):
+            lines = self.storage.get_active_titles()
             lines_dict = {index: value for index, value in enumerate(lines)}
             self.send('stream_history_changed', data=lines_dict)
 
     def volume_changed(self, volume):
         logger.info("Volume changed. Saving to settings file.")
-        Storage.save('volume', volume)
+        self.storage.save('volume', volume)
 
-    def stream_history_changed(self, data): #todo: this function needed?
+    def stream_history_changed(self, data):
         pass
 
     def tracklist_changed(self):
-        Storage.add_empty_title()
+        self.storage.add_empty_title()
 
     def playback_state_changed(self, old_state, new_state):
-        Storage.add_empty_title()
+        self.storage.add_empty_title()
