@@ -26,8 +26,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
             lines_dict = {index: value for index, value in enumerate(lines)}
             self.send('stream_history_changed', data=lines_dict)
 
-    @staticmethod
-    def volume_changed(volume):
+    def volume_changed(self, volume):
         logger.info("Volume changed. Saving to settings file.")
         Storage.save('volume', volume)
 
