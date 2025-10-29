@@ -33,8 +33,9 @@ export class BigTrackView extends View {
         getState().getController().fetchCurrentTrackAndDetails();
     }
 
-    private onCurrentTrackChangegd() {
-        let track  = getState().getModel().getCurrentTrack();
+    private async onCurrentTrackChangegd() {
+        let trackUri  = getState().getModel().getCurrentTrack();
+        let track = await getState().getController().getTrackInfo(trackUri);
         if(track.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let div = document.getElementById(this.id);

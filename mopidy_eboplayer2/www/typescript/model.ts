@@ -66,12 +66,14 @@ export enum PlayState  {
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
-    getCurrentTrack: () => DeepReadonly<TrackModel>;
+    getCurrentTrack: () => string;
+    getSelectedTrack: () => string;
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
     getActiveStreamLines: () => string[];
     getHistory: () => HistoryLine[];
+    getTrackInfo(uri: string): LibraryItem;
 }
 
 export interface HistoryRef {
@@ -85,14 +87,15 @@ export interface HistoryLine {
     ref: HistoryRef;
 }
 
-export type LibraryDict = { [index: string]: models.Track[] };
+export type LibraryItem = models.Track[];
+export type LibraryDict = { [index: string]: LibraryItem };
 
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
-    currentTrack: TrackModel = Model.NoTrack;
+    currentTrack: string;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
-    selectedTrack: TrackModel = Model.NoTrack;
+    selectedTrack: string;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -110,11 +113,10 @@ export class Model extends EventTarget implements ViewModel {
     private activeStreamLines: string[];
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
-    private libraryCache: LibraryDict = {};
+    private libraryCache: Map<string, LibraryItem> = new Map();
 
     constructor() {
         super();
-        this.libraryCache = {};
     }
 
     setConnectionState(state: ConnectionState) {
@@ -128,17 +130,28 @@ export class Model extends EventTarget implements ViewModel {
 
     getConnectionState = () => this.connectionState;
 
-    getCurrentTrack = (): DeepReadonly<TrackModel> => this.currentTrack;
+    getTrackInfo(uri: string): LibraryItem {
+        return this.libraryCache.get(this.currentTrack);
+    }
+
+    getCurrentTrack(): string {
+        return this.currentTrack;
+    }
 
     setCurrentTrack(track: TrackModel) {
-        this.currentTrack = track;
+        if(track.type == TrackType.None) {
+            this.currentTrack = "";
+            return;
+        }
+        this.currentTrack = track.track.uri;
+        this.addToLibraryCache(this.currentTrack, [track.track]);
         this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
     }
 
-    getSelectedTrack = (): DeepReadonly<TrackModel> => this.selectedTrack;
+    getSelectedTrack = (): string => this.selectedTrack;
 
-    setSelectedTrack(track: TrackModel) {
-        this.selectedTrack = track;
+    setSelectedTrack(uri: string) {
+        this.selectedTrack = uri;
         this.dispatchEvent(new Event(EboplayerEvents.selectedTrackChanged));
     }
 
@@ -203,11 +216,24 @@ export class Model extends EventTarget implements ViewModel {
     }
     getTrackList = () => this.trackList;
 
-    addToLibraryCache(tracks: LibraryDict) {
-        this.libraryCache = {...this.libraryCache, ...tracks};
+    //Doesn't overwrite
+    addToLibraryCache(uri: string, item: LibraryItem) {
+        if(!this.libraryCache.has(uri))
+        this.libraryCache.set(uri, item);
+    }
+
+    updateLibraryCache(uri: string, item: LibraryItem) {
+        this.libraryCache.set(uri, item);
+    }
+
+    //Overwrites!
+    addDictToLibraryCache(dict: LibraryDict) {
+        for(let key in dict) {
+            this.updateLibraryCache(key, dict[key]);
+        }
     }
 
     getTrackFromCache(uri: string) {
-        return this.libraryCache[uri];
+        return this.libraryCache.get(uri);
     }
 }

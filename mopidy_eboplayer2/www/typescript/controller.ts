@@ -3,7 +3,7 @@ import {showLoading, validUri} from "./functionsvars";
 import {library} from "./library";
 // import * as controls from "./controls";
 import {transformTlTrackDataToModel} from "./process_ws";
-import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
+import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, LibraryItem, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "./commands";
 import {models, Mopidy} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -197,6 +197,15 @@ export class Controller extends Commands implements DataRequester{
         this.model.setActiveStreamLinesHistory(lines);
     }
 
+
+    async getTrackInfo(uri: string) {
+        let track  = getState().getModel().getTrackInfo(uri);
+        if(!track)
+            await this.lookupCached(uri);
+
+        return transformLibraryItem(track);
+    }
+
     async fetchHistory()  {
         let historyObject: Object = await this.commands.core.history.getHistory();
         let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
@@ -229,7 +238,7 @@ export class Controller extends Commands implements DataRequester{
 
         let unique = [...new Set(dedupLines)];
         let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
-        this.model.addToLibraryCache(dict);
+        this.model.addDictToLibraryCache(dict);
 
         this.model.setHistory(dedupLines);
     }
@@ -240,7 +249,7 @@ export class Controller extends Commands implements DataRequester{
             return tracks;
 
         let dict: LibraryDict = await this.commands.core.library.lookup([uri]);
-        this.model.addToLibraryCache(dict);
+        this.model.addDictToLibraryCache(dict);
         return this.model.getTrackFromCache(uri);
     }
 
@@ -269,6 +278,11 @@ export class Controller extends Commands implements DataRequester{
     }
     async sendPlay() {
         return this.commands.core.playback.play();
+    }
+
+    async getCurrertTrackInfo() {
+        let trackUri = this.model.getCurrentTrack();
+        return await this.getTrackInfo(trackUri);
     }
 }
 
@@ -303,6 +317,12 @@ export function getHostAndPort() {
 export function isStream(track: models.Track) {
     return track?.track_no == undefined;
 }
+
+export function transformLibraryItem(item: LibraryItem) {
+    if(item.length == 1)
+        return transformTrackDataToModel(item[0]);
+}
+
 export function transformTrackDataToModel(track: (models.Track | undefined)): TrackModel {
     if (!track) {
         // noinspection UnnecessaryLocalVariableJS

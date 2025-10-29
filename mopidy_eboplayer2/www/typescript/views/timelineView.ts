@@ -49,21 +49,19 @@ export class TimelineView extends View {
         await getState().getController().playTrack(this.clickedRow.dataset.uri);
     }
 
-    private setActiveTrack() {
+    private async setActiveTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
-        let currentTrack = getState().getModel().getCurrentTrack();
+        let currentTrack = await getState().getController().getCurrertTrackInfo();
         if (currentTrack.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
-        /*if (currentTrack.type != TrackType.None)*/ {
-            let currentUri = currentTrack.track.uri;
-            let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
-            if(!tr)
-                return;
-            if(this.clickedRow?.dataset?.uri != currentTrack.track.uri)
-                tr.scrollIntoView( { block: "nearest" });
-            timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("active", "textGlow"));
-            tr.classList.add("active", "textGlow");
-        }
+        let currentUri = currentTrack.track.uri;
+        let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
+        if(!tr)
+            return;
+        if(this.clickedRow?.dataset?.uri != currentTrack.track.uri)
+            tr.scrollIntoView( { block: "nearest" });
+        timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("active", "textGlow"));
+        tr.classList.add("active", "textGlow");
     }
 
     private insertTrackLine(line: HistoryLine, body: HTMLTableSectionElement) {

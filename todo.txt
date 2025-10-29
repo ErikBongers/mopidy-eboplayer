@@ -1,3 +1,17 @@
+Refactor model with cache
+===========================
+* model works with uris and the library cache.
+  > if a uri is not found in the cache - that's not the model's problem!!
+  > if you add a (current or selected) track to the model, it will store it in the cache if you provide a full track object.
+* model remains passive (no fetches - that's for the controller)
+* model only informs listeners of changes
+* single tracks can be added to the library cache.
+
+
+
+
+
+
 * add SelectedTrack (next to currentTrack) in model
 
 * click on album flips it and shows content

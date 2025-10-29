@@ -8,6 +8,9 @@
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/controller.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/model.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/model.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/bigTrackView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/bigTrackView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/buttonBarView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/buttonBarView.ts" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" beforeDir="false" afterPath="$PROJECT_DIR$/mopidy_eboplayer2/www/typescript/views/timelineView.ts" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/todo.txt" beforeDir="false" afterPath="$PROJECT_DIR$/todo.txt" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -63,7 +66,7 @@
     "nodejs_package_manager_path": "npm",
     "npm.build.executor": "Run",
     "npm.tsc.executor": "Run",
-    "settings.editor.selected.configurable": "advanced.settings",
+    "settings.editor.selected.configurable": "settings.typescriptcompiler",
     "ts.external.directory.path": "C:\\Program Files\\JetBrains\\WebStorm 2025.2.2\\plugins\\javascript-plugin\\jsLanguageServicesImpl\\external",
     "vue.rearranger.settings.migration": "true"
   }
@@ -75,6 +78,7 @@
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views" />
     </key>
     <key name="es6.move.members.recent.items">
+      <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\www\typescript\controller.ts" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\gui.ts" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\controller.ts" />
       <recent name="P:\mopidy\mopidy-eboplayer2\typescript\views\dataRequester.ts" />
@@ -86,7 +90,7 @@
       <recent name="P:\mopidy\mopidy-eboplayer2\mopidy_eboplayer2\static" />
     </key>
   </component>
-  <component name="RunManager" selected="npm.tsc">
+  <component name="RunManager" selected="npm.build">
     <configuration name="build" type="js.build_tools.npm" temporary="true" nameIsGenerated="true">
       <package-json value="$PROJECT_DIR$/package.json" />
       <command value="run" />
@@ -109,8 +113,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="npm.tsc" />
         <item itemvalue="npm.build" />
+        <item itemvalue="npm.tsc" />
       </list>
     </recent_temporary>
   </component>
@@ -153,15 +157,8 @@
       <workItem from="1760894909742" duration="1802000" />
       <workItem from="1761648482607" duration="5203000" />
       <workItem from="1761653774101" duration="737000" />
-      <workItem from="1761654782369" duration="5285000" />
-    </task>
-    <task id="LOCAL-00025" summary="Make stream lines selectable.">
-      <option name="closed" value="true" />
-      <created>1760220185308</created>
-      <option name="number" value="00025" />
-      <option name="presentableId" value="LOCAL-00025" />
-      <option name="project" value="LOCAL" />
-      <updated>1760220185308</updated>
+      <workItem from="1761654782369" duration="9892000" />
+      <workItem from="1761729482775" duration="4867000" />
     </task>
     <task id="LOCAL-00026" summary="Add getHistory() to controller and model.">
       <option name="closed" value="true" />
@@ -547,7 +544,15 @@
       <option name="project" value="LOCAL" />
       <updated>1761658452863</updated>
     </task>
-    <option name="localTasksCounter" value="74" />
+    <task id="LOCAL-00074" summary="Add model.selectedTrack. (scaffolding only for now)">
+      <option name="closed" value="true" />
+      <created>1761660763046</created>
+      <option name="number" value="00074" />
+      <option name="presentableId" value="LOCAL-00074" />
+      <option name="project" value="LOCAL" />
+      <updated>1761660763046</updated>
+    </task>
+    <option name="localTasksCounter" value="75" />
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
@@ -571,7 +576,6 @@
     <option name="CHECK_CODE_SMELLS_BEFORE_PROJECT_COMMIT" value="false" />
     <option name="CHECK_NEW_TODO" value="false" />
     <option name="CLEAR_INITIAL_COMMIT_MESSAGE" value="true" />
-    <MESSAGE value="More info in bigTrackView.ts. Improve overall layout." />
     <MESSAGE value="Bugfix dedup history lines." />
     <MESSAGE value="Sped up history loading." />
     <MESSAGE value="Bugfix bigTrackView.ts query ebo-progressbar." />
@@ -596,7 +600,8 @@
     <MESSAGE value="/static/ to /www/ : update all references." />
     <MESSAGE value="Move typescript folder in /www/" />
     <MESSAGE value="Update refs after folder restructuring." />
-    <option name="LAST_COMMIT_MESSAGE" value="Update refs after folder restructuring." />
+    <MESSAGE value="Add model.selectedTrack. (scaffolding only for now)" />
+    <option name="LAST_COMMIT_MESSAGE" value="Add model.selectedTrack. (scaffolding only for now)" />
   </component>
   <component name="XDebuggerManager">
     <breakpoint-manager>

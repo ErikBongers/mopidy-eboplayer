@@ -27,7 +27,7 @@ export class ButtonBarView extends View {
         };
     }
 
-    private onPlaybackStateChangegd() {
+    private async onPlaybackStateChangegd() {
         let state = getState().getModel().getPlayState();
         switch (state) {
             case PlayState.paused:
@@ -35,7 +35,8 @@ export class ButtonBarView extends View {
                 this.setPlayButton('Play', ['fa-pause', 'fa-stop'], 'fa-play');
                 break;
             case PlayState.playing:
-                if(getState().getModel().getCurrentTrack().type == TrackType.Stream)
+                let track = await getState().getController().getCurrertTrackInfo();
+                if(track.type == TrackType.Stream)
                     this.setPlayButton('Pause', ['fa-play'], 'fa-stop');
                 else
                     this.setPlayButton('Pause', ['fa-play'], 'fa-pause');
@@ -43,8 +44,8 @@ export class ButtonBarView extends View {
         }
     }
 
-    private onCurrentTrackChanged() {
-        let currentTrack = getState().getModel().getCurrentTrack();
+    private async onCurrentTrackChanged() {
+        let currentTrack = await getState().getController().getCurrertTrackInfo();
         if(currentTrack.type == TrackType.Stream) {
             View.getSubId(this.containerId, "btnNext").style.opacity = "0.5";
             View.getSubId(this.containerId, "btnPrev").style.opacity = "0.5";
@@ -54,7 +55,8 @@ export class ButtonBarView extends View {
     private async playOrStopOrPause() {
         let playState = getState().getModel().getPlayState();
         if (playState == PlayState.playing) {
-            if(getState().getModel().getCurrentTrack().type == TrackType.Stream)
+            let currentTrack = await getState().getController().getCurrertTrackInfo();
+            if(currentTrack.type == TrackType.Stream)
                 return getState().getController().sendStop();
             else
                 return getState().getController().sendPause();
