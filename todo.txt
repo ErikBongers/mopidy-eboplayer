@@ -1,3 +1,12 @@
+UI
+==
+Clicking on not the playing track
+  - replaces big view with the selected track
+  - adds a mini image to the left of the play buttons.
+    > clicking on this re-selects the current track
+      > what if the current track isn't present in the currenly displayed list?
+        > problems for later.
+
 * A track in a list can be:
   - selected
   - current

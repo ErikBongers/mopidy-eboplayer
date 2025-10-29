@@ -198,7 +198,8 @@ input[type='range'] {
     display: flex;
     justify-content: center;
     flex-wrap: wrap;
-    padding-bottom: 1em;
+    align-items: center;
+    align-content: center;
 
     & button {
         padding-left: .5ch;
@@ -206,7 +207,21 @@ input[type='range'] {
     }
 }
 
+#buttonBarWrapper {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    align-content: center;
+    flex-wrap: wrap;
+    padding-top: .5em;
+    padding-bottom: .5em;
 
+    & img {
+        width: 2em;
+        height: 2em;
+        margin-right: 1em;
+    }
+}
 
 
 

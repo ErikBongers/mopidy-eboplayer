@@ -57,8 +57,8 @@ export class EboBigTrackView extends EboComponent {
 
             <div id="info">
                 <h3 id="name"></h3>
-                <p id="stream_lines" class="selectable"></p>
-                <p id="extra" class="selectable"></p>
+                <div id="stream_lines" class="selectable"></div>
+                <div id="extra" class="selectable"></div>
             </div>
         `;
         this.shadow = this.attachShadow({mode: "open"});

@@ -40,12 +40,15 @@
         </ebo-big-track-view>
         <!-- /Container -->
 
-        <div id="buttonBar">
-            <button id="buttonBar.btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
-            <button id="buttonBar.btnPlay" title="Play"><i class="fa fa-play"></i></button>
-            <button id="buttonBar.btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
-            <input id="buttonBar.volumeslider" data-highlight="true" name="volumeslider" data-mini="true" type="range" min="0" value="0" max="100"/>
-            <button id="buttonBar.btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+        <div id="buttonBarWrapper">
+            <img id="img" src="images/default_cover.png" alt="Album cover"/>
+            <div id="buttonBar">
+                <button id="buttonBar.btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
+                <button id="buttonBar.btnPlay" title="Play"><i class="fa fa-play"></i></button>
+                <button id="buttonBar.btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
+                <input id="buttonBar.volumeslider" data-highlight="true" name="volumeslider" data-mini="true" type="range" min="0" value="0" max="100"/>
+                <button id="buttonBar.btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+        </div>
         </div>
     </div>
 
@@ -56,125 +59,7 @@
                 <col span="1" style="width: auto;">
                 <col span="1" style="width: 1em;">
             </colgroup>
-            <tr class="behind">
-                <td>Nogg van da</td>
-                <td>*</td>
-            </tr>
-            <tr class="behind">
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr class="behind">
-                <td>Den track is hier</td>
-                <td>*</td>
-            </tr>
-            <tr class="behind">
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr class="behind">
-                <td>Variatie</td>
-                <td>*</td>
-            </tr>
-            <tr class="behind">
-                <td colspan="2">
-                    <div class="progrebssBar"></div>
-                </td>
-            </tr>
-            <tr class="behind-2">
-                <td>Brol en zever</td>
-                <td>*</td>
-            </tr>
-            <tr class="behind-2">
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr class="behind-1">
-                <td>sdfsdf sdff sd</td>
-                <td>
-                    <i class="fa fa fa-ellipsis-v"></i>
-                </td>
-            </tr>
-            <tr class="behind-1">
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr class="active textGlow">
-                <td>sdf dsfd sdf sdf</td>
-                <td>*</td>
-            </tr>
-            <tr class="active textGlow">
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>Nog meer variatie</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>sdf</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>Track 12345 ...</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>Totaal anders</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>Track 12345 ...</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>GGgeen inspiratie</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            <tr>
-                <td>Track 12345 ...</td>
-                <td>*</td>
-            </tr>
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
+            <tbody></tbody>
         </table>
     </div>    <!--    <button class="glow-on-hover" type="button">HOVER ME, THEN CLICK ME!</button>-->
     <!-- use lastfm for image search -->
