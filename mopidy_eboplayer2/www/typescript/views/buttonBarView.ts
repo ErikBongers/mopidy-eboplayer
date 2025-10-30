@@ -36,6 +36,7 @@ export class ButtonBarView extends View {
             case PlayState.paused:
             case PlayState.stopped:
                 this.setPlayButton('Play', ['fa-pause', 'fa-stop'], 'fa-play');
+                document.getElementById(this.containerId).parentElement.classList.remove("playing");
                 break;
             case PlayState.playing:
                 let track = await getState().getController().getCurrertTrackInfo();
@@ -43,6 +44,7 @@ export class ButtonBarView extends View {
                     this.setPlayButton('Pause', ['fa-play'], 'fa-stop');
                 else
                     this.setPlayButton('Pause', ['fa-play'], 'fa-pause');
+                document.getElementById(this.containerId).parentElement.classList.add("playing");
                 break;
         }
     }

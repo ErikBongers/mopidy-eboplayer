@@ -10,6 +10,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends BigTrackViewUriAdapter
     }
 
     bind() {
+        super.bind();
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
             this.onCurrentOrSelectedChanged();
         });

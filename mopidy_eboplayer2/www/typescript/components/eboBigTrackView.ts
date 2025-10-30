@@ -1,4 +1,5 @@
 import {EboComponent} from "./EboComponent";
+import {console_yellow} from "../gui";
 
 export class EboBigTrackView extends EboComponent {
     static readonly tagName=  "ebo-big-track-view";
@@ -6,13 +7,14 @@ export class EboBigTrackView extends EboComponent {
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled",
+        "name", "stream_lines", "extra", "img", "disabled", "show_back",
         ...EboBigTrackView.progressBarAttributes
     ];
     private name: string = "";
     private stream_lines: string = "";
     private extra: string = "";
     private enabled: boolean = false;
+    private show_back: boolean = false;
     //for progressBar
     private position: string = "40";
     private min: string = "0";
@@ -23,6 +25,7 @@ export class EboBigTrackView extends EboComponent {
     private img: string  = "images/default_cover.png";
     private styleTemplate: HTMLTemplateElement;
     private divTemplate: HTMLTemplateElement;
+    private albumClickEvent: CustomEvent<unknown>;
 
     constructor() {
         super();
@@ -46,24 +49,49 @@ export class EboBigTrackView extends EboComponent {
                     -o-user-select: text;
                     user-select: text;
                 }
+                #wrapper.front {
+                    #back {
+                        /*display: none;*/
+                        visibility: hidden; /* don't collapse */
+                    }                
+                }
+                #wrapper.back {
+                    #front {
+                        /*display: none;*/
+                        visibility: hidden; /* don't collapse */
+                    }                
+                }
             </style>
         `;
         this.divTemplate = document.createElement("template");
         this.divTemplate.innerHTML = `
-            <div class="albumCoverContainer">
-                <img id="img" src="${this.img}" alt="Album cover"/>
-                <ebo-progressbar position="${this.position}" active="${this.active}" button="${this.button}"></ebo-progressbar>
-            </div>
-
-            <div id="info">
-                <h3 id="name"></h3>
-                <div id="stream_lines" class="selectable"></div>
-                <div id="extra" class="selectable"></div>
-            </div>
+            <div id="wrapper" class="front">
+                <div id="front">
+                    <div class="albumCoverContainer">
+                        <img id="img" src="${this.img}" alt="Album cover"/>
+                        <ebo-progressbar position="${this.position}" active="${this.active}" button="${this.button}"></ebo-progressbar>
+                    </div>
+        
+                    <div id="info">
+                        <h3 id="name"></h3>
+                        <div id="stream_lines" class="selectable"></div>
+                        <div id="extra" class="selectable"></div>
+                    </div>
+                </div>
+                <div id="back">
+                    <p>Loading...</p>
+                </div>
+            </div>        
         `;
         this.shadow = this.attachShadow({mode: "open"});
 
         this.render();
+        this.albumClickEvent = new CustomEvent("albumClick", {
+            bubbles: true,
+            cancelable: false,
+            composed: true, //needed to 'break' out of the shadow.
+            detail: "todo: tadaaa!"
+        });
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -81,6 +109,7 @@ export class EboBigTrackView extends EboComponent {
                 this[name] = newValue;
                 break;
             case "enabled":
+            case "show_back":
                 if (!["true", "false"].includes(newValue))
                     throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
                 this[name] = newValue == "true";
@@ -107,6 +136,21 @@ export class EboBigTrackView extends EboComponent {
         });
         //todo: image.
         this.shadow.appendChild(fragment);
+        // let img = this.shadow.getElementById("img");
+        // img.addEventListener("click", (ev) => {
+        //     console_yellow('CKICK');
+        //     this.dispatchEvent(this.albumClickEvent);
+        // });
+        let wrapper = this.shadow.getElementById("wrapper");
+        wrapper.classList.remove("front", "back");
+        if(this.show_back)
+            wrapper.classList.add("back");
+        else
+            wrapper.classList.add("front");
+        wrapper.addEventListener("click", (ev) => {
+            console_yellow('CKICK');
+            this.dispatchEvent(this.albumClickEvent);
+        });
     }
 
     //todo: move in a base class.

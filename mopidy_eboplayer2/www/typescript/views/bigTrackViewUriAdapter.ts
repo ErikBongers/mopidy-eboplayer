@@ -2,23 +2,76 @@ import getState from "../playerState";
 import {EboplayerEvents, Model, TrackModel, TrackType} from "../model";
 import {EboPlayerDataType} from "./view";
 import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
+import {console_yellow} from "../gui";
+import {numberedDictToArray} from "../controller";
+import {models} from "../../js/mopidy";
+import Track = models.Track;
+
+enum AlbumDataType {
+    None,
+    Loading,
+    Loaded
+}
+
+interface AlbumDataNone {
+    type: AlbumDataType.None;
+}
+interface AlbumDataLoading {
+    type: AlbumDataType.Loading;
+}
+interface AlbumDataLoaded {
+    type: AlbumDataType.Loaded;
+    tracks: Track[];
+}
+
+const AlbumNone: AlbumDataNone = {
+    type: AlbumDataType.None
+}
+
+const AlbumLoading: AlbumDataLoading = {
+    type: AlbumDataType.Loading
+}
+
+type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading;
 
 export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     private streamLines: string;
     private track: TrackModel;
     private uri: string;
+    private albumInfo: AlbumData;
 
     constructor(id: string) {
         super(id);
         this.streamLines = "";
         this.track = Model.NoTrack;
         this.uri = "";
+        this.albumInfo = AlbumNone;
     }
 
     bind() {
+        super.bind();
         //todo: streamlines belong to specific stream uris. Make seperate streamline files for per stream (uri).
         getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
             this.onStreamLinesChanged();
+        });
+        let comp = document.getElementById(this.componentId);
+        comp.addEventListener("albumClick", async (e) => {
+            console_yellow("ALBUM CLICKKK");
+            let show_back = comp.getAttribute("show_back");
+            comp.setAttribute("show_back",  show_back == "true" ? "false" : "true");
+            console.log(e);
+            if(this.albumInfo.type == AlbumDataType.None) {
+                console_yellow("TODO: load extra data");
+                if(this.track.type == TrackType.File) {
+                    console.log(this.track.track.album.uri);
+                    let album = await getState().getController().lookupCached(this.track.track.album.uri);
+                    let albumTracks = numberedDictToArray<Track>(album);
+                    this.albumInfo = <AlbumDataLoaded> {
+                        type: AlbumDataType.Loaded,
+                        tracks: albumTracks
+                    };
+                }
+            }
         });
     }
 
@@ -27,6 +80,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         getState().getController().getTrackInfo(this.uri)
             .then(track => {
                 this.track = track;
+                this.albumInfo = AlbumNone;
                 this.setComponentData();
             });
     }
@@ -58,7 +112,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                 position = "60"; //todo: just a test
                 button = "true";
                 let artists = this.track.track.artists.map(a => a.name).join(", ");
-                let composers = this.track.track.composers.map(c => c.name).join(", ");
+                let composers = this.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
                 if(artists)
                     info += "<br>" + artists;
                 if(composers)

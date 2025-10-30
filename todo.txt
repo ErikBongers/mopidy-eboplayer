@@ -1,3 +1,9 @@
+* album click
+  > if a flag is set, the album flips.
+  > the adapter should check on the albumClick event if the extra data is loaded:
+    - album tracks.
+    > do this lazily.
+
 * stream lines: web server:
   > add a required param to the request: uri
     > reason being, the handler doesn't know what the current track is!
