@@ -94,6 +94,10 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on("event:streamHistoryChanged", (data) => {
+            //ignore: old version.
+        });
+
+        this.mopidy.on("event:streamHistoryChanged2", (data) => {
             let lines = Object.values<string>(data.data);
             this.model.setActiveStreamLinesHistory(lines);
         });

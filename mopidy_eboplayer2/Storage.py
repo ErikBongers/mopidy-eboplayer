@@ -1,6 +1,7 @@
 import os
 import logging
 import json
+from pathlib import Path
 
 logger = logging.getLogger(__name__)
 
@@ -93,3 +94,10 @@ class Storage:
         state[key] = value
         with open(self.stateFile, 'w+') as f:
             json.dump(state, f)
+
+    def set_stream_file_name(self, file_name):
+        if self.streamTitlesFile != "":
+            self.add_empty_title()
+        self.streamTitlesFile = self.storage_dir + "/" + file_name
+        Path(self.streamTitlesFile, exist_ok=True).touch()
+        self.add_empty_title()
