@@ -32,7 +32,10 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     }
 
     protected onStreamLinesChanged() {
-        this.streamLines = getState().getModel().getActiveStreamLines()?.active_titles?.join("<br/>") ?? "";
+        this.streamLines = "";
+        let linesObject = getState().getModel().getActiveStreamLines();
+        if(linesObject?.uri == this.uri)
+            this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
     }
 

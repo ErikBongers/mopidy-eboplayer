@@ -1,4 +1,4 @@
-* streamlinesandler.py
+* stream lines: web server:
   > add a required param to the request: uri
     > reason being, the handler doesn't know what the current track is!
 
