@@ -71,7 +71,7 @@ export interface ViewModel extends EventTarget {
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
-    getActiveStreamLines: () => string[];
+    getActiveStreamLines: () => StreamTitles;
     getHistory: () => HistoryLine[];
     getTrackInfo(uri: string): LibraryItem;
 }
@@ -89,6 +89,11 @@ export interface HistoryLine {
 
 export type LibraryItem = models.Track[];
 export type LibraryDict = { [index: string]: LibraryItem };
+
+export interface StreamTitles {
+    uri: string;
+    active_titles: string[]
+}
 
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
@@ -110,7 +115,7 @@ export class Model extends EventTarget implements ViewModel {
         single: false
     }
     private playState: PlayState;
-    private activeStreamLines: string[] = [];
+    private activeStreamLines: StreamTitles;
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, LibraryItem> = new Map();
@@ -199,8 +204,8 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
     }
 
-    setActiveStreamLinesHistory(lines: string[]) {
-        this.activeStreamLines = lines;
+    setActiveStreamLinesHistory(streamTitles: StreamTitles) {
+        this.activeStreamLines = streamTitles;
         this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
     }
 

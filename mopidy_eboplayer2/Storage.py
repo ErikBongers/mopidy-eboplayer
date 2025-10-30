@@ -3,6 +3,8 @@ import logging
 import json
 from pathlib import Path
 
+from mopidy_eboplayer2.tools import url_to_filename
+
 logger = logging.getLogger(__name__)
 
 # STORAGE_DIR = '/var/lib/eboplayer'
@@ -14,8 +16,9 @@ SEPARATOR_LINE = "---"
 class Storage:
     def __init__(self, storage_dir):
         self.storage_dir = storage_dir
-        self.streamTitlesFile = self.storage_dir + '/streamLines.txt'
         self.stateFile = self.storage_dir + '/state.json'
+        self.streamTitlesFile = ""
+        self.current_track_uri = ""
 
     def setup(self):
         if not os.path.exists(self.storage_dir):
@@ -27,6 +30,15 @@ class Storage:
             for line in file:
                 lines.append(line.rstrip('\n'))
         return lines
+
+    def get_active_titles_dict(self, titles = None):
+        active_titles = self.get_active_titles(titles)
+        lines_dict = {index: value for index, value in enumerate(active_titles)}
+        stream_titles = {
+            "uri": self.current_track_uri,
+            "active_titles": lines_dict
+        }
+        return stream_titles
 
     def get_active_titles(self, titles = None):
         if titles is None:
@@ -95,9 +107,15 @@ class Storage:
         with open(self.stateFile, 'w+') as f:
             json.dump(state, f)
 
-    def set_stream_file_name(self, file_name):
-        if self.streamTitlesFile != "":
+    def set_stream_uri(self, uri):
+        if uri != "":
             self.add_empty_title()
-        self.streamTitlesFile = self.storage_dir + "/" + file_name
+
+        self.current_track_uri = uri
+        self.streamTitlesFile = uri
+        self.streamTitlesFile = self.streamTitlesFile.replace("http://", "")
+        self.streamTitlesFile = url_to_filename(self.streamTitlesFile)
+        self.streamTitlesFile = self.storage_dir + "/" + self.streamTitlesFile + ".txt"
+        logger.info(self.streamTitlesFile)
         Path(self.streamTitlesFile, exist_ok=True).touch()
         self.add_empty_title()

@@ -1,14 +1,6 @@
-* A track can appear multiple times in a list.
-  > only the listView 'knows' which track this is.
-  > the model has nothing to do with this.
-  > yet, if a track is selected in one list, this can get hightlighted in other lists as well.
-    > so, lists should highlight all instances of this track
-  > tracks in mopidy lists have TLid...that can be used to uniquely id an item.
-    > this id is not part of the cache.
-    > history and cache do not have such an id.
-
-
-* add SelectedTrack (next to currentTrack) in model
+* streamlinesandler.py
+  > add a required param to the request: uri
+    > reason being, the handler doesn't know what the current track is!
 
 * click on album flips it and shows content
   > for real album: it's artists and tracks.

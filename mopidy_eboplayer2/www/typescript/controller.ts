@@ -3,7 +3,7 @@ import {showLoading, validUri} from "./functionsvars";
 import {library} from "./library";
 // import * as controls from "./controls";
 import {transformTlTrackDataToModel} from "./process_ws";
-import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, LibraryItem, Model, NoneTrackModel, PlayState, StreamTrackModel, TrackModel, TrackType} from "./model";
+import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, LibraryItem, Model, NoneTrackModel, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "./commands";
 import {models, Mopidy} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -98,8 +98,9 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on("event:streamHistoryChanged2", (data) => {
-            let lines = Object.values<string>(data.data);
-            this.model.setActiveStreamLinesHistory(lines);
+            let streamTitles: StreamTitles = data.data;
+            streamTitles.active_titles = Object.values<string>(streamTitles.active_titles)
+            this.model.setActiveStreamLinesHistory(streamTitles);
         });
 
         //log all events:
