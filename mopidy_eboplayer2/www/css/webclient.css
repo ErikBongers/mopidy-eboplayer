@@ -70,7 +70,7 @@ button, input[type="submit"], input[type="reset"] {
 
 
 #tableWrapper {
-    height: 100%;
+    height: 50vh;
     overflow: scroll;
     scrollbar-width: none;
 }
@@ -78,7 +78,7 @@ button, input[type="submit"], input[type="reset"] {
 #layout {
     display: flex;
     flex-flow: column;
-    height: 100vh;
+    height: 100%;
 }
 
 .flex_wrap_content {
@@ -101,6 +101,25 @@ h3#modalname a{
     margin: 0;
     padding: 0;
 }
+
+#stickyTop {
+    height: 50vh;
+    display: flex;
+    flex-direction: column;
+}
+
+#currentTrackBigView {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+}
+
+#header {
+    padding-top: 8px;
+}
+
+
+
 
 a {
     color: white;
@@ -225,604 +244,6 @@ input[type='range'] {
 }
 
 
-
-
-
-
-
-
-
-.ui-body-a, .ui-overlay-a {
-background-color: var(--panel-background);
-}
-.ui-panel-inner {
-background-color: transparent;
-}
-
-.ui-btn-up-a {
-background-color: var(--panel-button-background);
-}
-
-.ui-btn-active {
-background-color: var(--panel-button-selected);
-}
-
-@media all and (min-width: 961px) {
-
-    /*playlists*/
-    .pl-breakpoint.ui-grid-a .ui-block-a {
-        width: 32.95%;
-    }
-
-    .pl-breakpoint.ui-grid-a .ui-block-b {
-        width: 65.4%;
-    }
-
-    .pl-breakpoint.ui-grid-a .ui-block-a {
-        clear: left;
-    }
-
-    .pl-breakpoint.ui-grid-a .ui-block-a {
-        clear: left;
-    }
-
-    #playlisttracksdiv {
-        margin-left: 10px;
-    }
-
-    .backnav-optional {
-        display: none;
-    }
-
-    #playlisttracksdiv {
-        display: block;
-    }
-
-    #playlistslistdiv {
-        display: block;
-    }
-
-    /*search*/
-    .srch-breakpoint.ui-grid-a .ui-block-b {
-        margin-left: .5em;
-    }
-
-    .srch-breakpoint.ui-grid-a .ui-block-a,
-    .srch-breakpoint.ui-grid-a .ui-block-b {
-        width: 49%;
-    }
-}
-
-/* phone landscape */
-@media all and (max-width: 960px) {
-
-    /*playlists*/
-    .pl-breakpoint .ui-block-a,
-    .pl-breakpoint .ui-block-b {
-        width: 100%;
-  }
-
-    /*search*/
-    .srch-breakpoint.ui-grid-a .ui-block-a,
-    .srch-breakpoint.ui-grid-a .ui-block-b {
-        width: 100%;
-    }
-
-    .backnav-optional {
-        display: block;
-    }
-
-    #playlisttracksdiv {
-        display: none;
-    }
-
-    #playlistslistdiv {
-        display: block;
-    }
-}
-
-/*****************************
- * Side Panel and Navigation *
- *****************************/
-.mainNav .fa {
-    width: 2em;
-}
-
-.mainNav .navtxt {
-    margin-left: 1em;
-}
-
-.mainNav .navtxt:after {
-    clear: left;
-}
-
-#contentHeadline a {
-}
-
-/**headers and controls**/
-#headermenubtn {
-    padding-top: 2px;
-}
-
-#headersearchbtn span {
-    font-size: 15px;
-}
-
-/******************
- *  Track Slider  *
- ******************/
-#trackslider {
-    display: inline;
-    width: 100%;
-}
-
-#slidercontainer {
-    margin-top: 7px;
-    margin-bottom: 5px;
-    margin-right: 10px;
-}
-
-.ui-slider-track {
-    margin-left: 38px;
-    margin-right: 35px;
-}
-
-/* Increase slider handle by 30%. */
-.ui-slider-track.ui-mini .ui-slider-handle {
-    height: 22px;
-    width: 22px;
-    margin: -12px 0 0 -12px;
-}
-
-.ui-slider-input {
-    display: none !important;
-}
-
-/************************
- *  Volume Slider
- ***********************/
-#mutebt {
-    float: left;
-    margin-left: 8px;
-    margin-top: 8px;
-}
-
-#volumeslider {
-    display: inline;
-}
-
-div.hostInfo {
-    width: 100%;
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-span.hostInfo {
-    font-weight: normal;
-    font-size: 0.75em;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-/********************
- *  Pages, content  *
- ********************/
-#page {
-    background-color: var(--body-background);
-}
-
-#searchartists {
-    display: none;
-}
-
-#searchalbums {
-    display: none;
-}
-
-#searchtracks {
-    display: none;
-}
-
-#currentpane,
-#searchpane,
-#albumspane,
-#artistspane,
-#streampane {
-    display: none;
-}
-
-#artistviewimage,
-#albumviewcover {
-    float: right;
-    height: 90px;
-    max-width: 90%;
-}
-
-/*** home ***/
-#homerows div {
-    text-align: center;
-    background-color: #333;
-    padding: 2px;
-    padding-top: 20px;
-    border: 2px solid white;
-}
-
-#homerows div i {
-    font-size: 28px;
-}
-
-.ui-block-a-min {
-    float: left !important;
-    width: initial !important;
-}
-
-.ui-block-b-min {
-    float:right !important;
-    width: initial !important;
-}
-
-/***************
- *  listviews  *
- ***************/
-.table li a {
-    font-size: 80% !important;
-    display: block;
-    padding: 2px;
-    padding-right: 4px;
-    padding-left: 4px;
-}
-
-.table li {
-    background-color: #F8F8F5;
-    border: 1px solid  #CECECE;
-    border-bottom: 0;
-    padding: 0;
-}
-
-.table {
-    padding: 0;
-    list-style-type: none;
-}
-
-.table li:last-child {
-    border-bottom: 1px solid #CECECE;
-}
-
-.info-table {
-    display: table !important;
-}
-
-.info-table thead {
-    visibility: collapse;
-}
-
-.info-table th {
-    border-bottom: none !important;
-}
-
-.info-table tr {
-    border-bottom: 1px solid #f2f2f2
-}
-
-.info-table td {
-    padding: 2px;
-    padding-right: 14px;
-    padding-left: 14px;
-    border: none !important;
-}
-
-.info-table td.label {
-    font-weight: bold;
-}
-
-.info-table td.label-center {
-    vertical-align: middle;
-}
-
-.info-table input {
-    border: none;
-    font-size: 1em;
-    width: 100%;
-}
-
-.albumdivider h1, .table li h1 {
-    font-size: 120% !important;
-}
-
-.albumdivider {
-    background-color: #ddd !important;
-}
-
-.smalldivider {
-    font-size: 10%;
-    height: 2px;
-    background-color: #ddd !important;
-}
-
-#playlistslist li a {
-    padding: 7px;
-}
-
-#playlistslist, #playlisttracks {
-    margin: 0 !important;
-    padding: 0 !important;
-}
-
-.albumli {
-    padding-left: 5px;
-}
-
-.playlistactive {
-    background-color: #ccc;
-}
-
-.artistcover {
-    float: right;
-    width: 30px;
-    height: 30px;
-    margin-right: 3px;
-    margin-top: 3px;
-}
-
-.currenttrack2 {
-    background-image: url('../images/icons/play_alt_12x12.png');
-    background-repeat: no-repeat;
-    background-position: 4px 51%;
-}
-.currenttrack {
-    background-image: url('../images/icons/play_alt_16x16.png');
-    background-repeat: no-repeat;
-    background-color: #eee;
-    background-position: 4px 50%;
-}
-
-.currenttrack2 a {
-    margin-left: 15px;
-}
-.currenttrack a {
-    margin-left: 20px;
-}
-
-.song .moreBtn {
-    float: right;
-    padding: 15px 18px 12px 22px;
-    display: inline-block;
-    line-height: 100%;
-}
-
-.moreBtn i {
-    font-size: initial;
-}
-
-.infoBtn {
-    top: 0;
-    width: 90%;
-    position: absolute;
-}
-
-.infoBtn i {
-    font-size: 1.33em;
-    background: red;
-    border-radius: 50%;
-    height: 1em;
-    width: 1em;
-}
-
-.backnav {
-    background-color: #ccc !important;
-}
-
-.refreshLibraryBtnDiv {
-    display: none;
-}
-
-.footerControls {
-    height: 100%;
-    font-size: 25px;
-    padding-right: 10px;
-}
-
-.footerControls div span {
-    padding-left: 3px;
-    padding-right: 3px;
-    height: 100%;
-    vertical-align: middle;
-}
-
-.footerControls #btnPlay {
-    margin-left: 10px;
-    margin-right: 10px;
-}
-
-/************
- *  Popups  *
- ************/
-#modalname a, #modaldetail a {
-    background-color:#F8F8F5;
-    text-decoration: none;
-}
-
-.popupArtistLi,
-.popupAlbumLi {
-    display: none
-}
-
-.popupArtistName,
-.popupTrackName,
-.popupAlbumName,
-.popupArtistName {
-    font-style: oblique;
-}
-
-#artistpopup,
-#coverpopup {
-    max-width: 90%;
-    /*background: green;*/
-    padding: 5px;
-}
-
-#h_artistname {
-    margin-bottom: 65px;
-    margin-top: 10px;
-}
-
-#coverpopupimage,
-#artistpopupimage {
-    display: block;
-    margin: 0;
-}
-
-/* Override to make buttons more visible in popups.*/
-#popupTracks .ui-btn-up-c,
-#popupQueue .ui-btn-up-c {
-    background: orange;
-}
-
-/* Custom icons for popup listviews - see http://demos.jquerymobile.com/1.3.2/#CustomIcons */
-.ui-icon-playAll:after,
-.ui-icon-play:after,
-.ui-icon-playNext:after,
-.ui-icon-insert:after,
-.ui-icon-add:after,
-.ui-icon-addAll:after,
-.ui-icon-remove:after {
-    font-family: 'FontAwesome', sans-serif;
-}
-
-.ui-icon-playAll:after {
-    content: '\f144';
-}
-
-.ui-icon-play:after {
-    content: '\f01d';
-}
-
-.ui-icon-playNext:after {
-    content: '\f149';
-}
-
-.ui-icon-insert:after {
-    content: '\f177';
-}
-
-.ui-icon-add:after {
-    content: '\f196';
-}
-
-.ui-icon-addAll:after {
-    content: '\f0fe';
-}
-
-.ui-icon-remove:after {
-    content: '\f00d';
-}
-
-.ui-icon-playAll,
-.ui-icon-play,
-.ui-icon-playNext,
-.ui-icon-add,
-.ui-icon-addAll, 
-.ui-icon-remove {
-    background-color: unset;
-    background-image: none;
-    font-weight: normal;
-}
-
-.popupDialog,
-.popupDialog-full-width {
-    padding: 10px;
-    text-align: center;
-}
-
-.popupDialog-full-width {
-    padding-left: 0;
-    padding-right: 0;
-}
-
-/*dont hide clear buttons in text input */
-.ui-input-clear-hidden {
-    display: block !important;
-}
-
-/****************
- *  Common use  *
- ****************/
-#playlistspane {
-    margin: 0 !important;
-}
-
-a {
-    text-decoration: none !important;
-}
-
-.pull-right {
-    float: right;
-    font-size: 10px;
-    margin-top: 12px;
-}
-
-.pull-left {
-    float: left;
-    font-size: 10px;
-    margin-top: 12px;
-}
-
-/**********************
- *  Song information  *
- **********************/
-.ui-footer {
-    border: 0;
-}
-
-#normalFooter {
-    min-height: 50px;
-    line-height: 48px;
-    text-align: center;
-}
-
-#infoname {
-    overflow: hidden;
-    white-space: nowrap;
-    font-weight: bold;
-    font-size: 14px;
-    text-overflow: ellipsis;
-}
-
-#infodetail {
-    overflow: hidden;
-    font-size: 11px;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-}
-
-#infocover {
-    height: 50px;
-    width: 50px;
-}
-
-.playicon {
-    width: 10%;
-    float: right;
-    text-align: right;
-}
-
-#btplay {
-}
-
-.songinfo {
-    height: 100%;
-    width: 90%;
-    float: left;
-}
-
-.songinfo-text {
-    text-align: left;
-    line-height: 22px;
-    overflow: hidden;
-    padding: 3px;
-}
-
 ebo-big-track-view {
     text-align: center;
     & h3 {
@@ -838,22 +259,6 @@ ebo-big-track-view {
 }
 /*helper*/
 .ui-loader h1 {
-}
-
-
-xhistory-line p{
-    background-color: yellow;
-    color: yellow;
-}
-
-xhistory-line {
-    background-color: purple;
-    color: orange; /* this one is being used!!!*/
-}
-
-.redder  {
-    background-color: red;
-    color: red;
 }
 
 
@@ -977,24 +382,14 @@ xhistory-line {
 
 .trackLine {
     h1 {
-        font-size: 1rem;
+        font-size: .8rem;
         color: white;
         margin: 0;
     }
     small {
         --textColor: white;
-        font-size: .7rem;
+        font-size: .6rem;
         color: rgb(from var(--textColor) r g b / 50%);
     }
-}
-
-#stickyTop {
-    position: sticky;
-    top: 0;
-    z-index: 999;
-    background-color: var(--body-background);
-}
-#header {
-    padding-top: 8px;
 }
 

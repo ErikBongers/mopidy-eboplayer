@@ -45,11 +45,19 @@ export class EboBigTrackView extends EboComponent {
         // noinspection CssUnresolvedCustomProperty
         this.styleTemplate.innerHTML = `
             <style>
+                :host { 
+                    display: flex;
+                } 
                 .albumCoverContainer {
                     display: flex;
                     flex-direction: column;
-                    flex-wrap: wrap;
                     align-content: center;
+                    overflow: hidden;
+                }
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -64,6 +72,13 @@ export class EboBigTrackView extends EboComponent {
                 #wrapper {
                     display: flex;
                     flex-direction: row;
+                    height: 100%;
+                    width: 100%;
+                    #front {
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
+                    }
                 }
                 #wrapper.front {
                     #back {
