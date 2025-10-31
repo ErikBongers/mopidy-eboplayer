@@ -1,7 +1,16 @@
 import {EboComponent} from "./EboComponent";
 import {console_yellow} from "../gui";
+import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
 
 export class EboBigTrackView extends EboComponent {
+    get albumInfo(): AlbumData {
+        return this._albumInfo;
+    }
+
+    set albumInfo(value: AlbumData) {
+        this._albumInfo = value;
+        this.render();
+    }
     static readonly tagName=  "ebo-big-track-view";
     private shadow: ShadowRoot;
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -26,9 +35,12 @@ export class EboBigTrackView extends EboComponent {
     private styleTemplate: HTMLTemplateElement;
     private divTemplate: HTMLTemplateElement;
     private albumClickEvent: CustomEvent<unknown>;
+    private _albumInfo: AlbumData;
+
 
     constructor() {
         super();
+        this.albumInfo = AlbumNone;
         this.styleTemplate = document.createElement("template");
         // noinspection CssUnresolvedCustomProperty
         this.styleTemplate.innerHTML = `
@@ -49,15 +61,18 @@ export class EboBigTrackView extends EboComponent {
                     -o-user-select: text;
                     user-select: text;
                 }
+                #wrapper {
+                    display: flex;
+                    flex-direction: row;
+                }
                 #wrapper.front {
                     #back {
-                        /*display: none;*/
                         visibility: hidden; /* don't collapse */
                     }                
                 }
                 #wrapper.back {
                     #front {
-                        /*display: none;*/
+                        position: absolute;
                         visibility: hidden; /* don't collapse */
                     }                
                 }
@@ -123,6 +138,8 @@ export class EboBigTrackView extends EboComponent {
     }
 
     render() {
+        if(!this.shadow)
+            return;
         this.shadow.innerHTML="";
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
@@ -151,6 +168,21 @@ export class EboBigTrackView extends EboComponent {
             console_yellow('CKICK');
             this.dispatchEvent(this.albumClickEvent);
         });
+        this.renderTrackList();
+    }
+
+    renderTrackList() {
+        let back = this.shadow.getElementById("back");
+        back.innerHTML = "";
+        let table =  back.appendChild(document.createElement("table"));
+        let tbody = table.appendChild(document.createElement("tbody"));
+        if(this.albumInfo?.type ==  AlbumDataType.Loaded) {
+            this.albumInfo.tracks.forEach(track => {
+                let tr = tbody.appendChild(document.createElement("tr"));
+                let td = tr.appendChild(document.createElement("td"));
+                td.innerText = track.name;
+            });
+        }
     }
 
     //todo: move in a base class.

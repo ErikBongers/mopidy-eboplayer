@@ -6,8 +6,9 @@ import {console_yellow} from "../gui";
 import {numberedDictToArray} from "../controller";
 import {models} from "../../js/mopidy";
 import Track = models.Track;
+import {EboBigTrackView} from "../components/eboBigTrackView";
 
-enum AlbumDataType {
+export enum AlbumDataType {
     None,
     Loading,
     Loaded
@@ -24,7 +25,7 @@ interface AlbumDataLoaded {
     tracks: Track[];
 }
 
-const AlbumNone: AlbumDataNone = {
+export const AlbumNone: AlbumDataNone = {
     type: AlbumDataType.None
 }
 
@@ -32,7 +33,7 @@ const AlbumLoading: AlbumDataLoading = {
     type: AlbumDataType.Loading
 }
 
-type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading;
+export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading;
 
 export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     private streamLines: string;
@@ -54,7 +55,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
             this.onStreamLinesChanged();
         });
-        let comp = document.getElementById(this.componentId);
+        let comp = document.getElementById(this.componentId) as EboBigTrackView;
         comp.addEventListener("albumClick", async (e) => {
             console_yellow("ALBUM CLICKKK");
             let show_back = comp.getAttribute("show_back");
@@ -70,6 +71,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                         type: AlbumDataType.Loaded,
                         tracks: albumTracks
                     };
+                    comp.albumInfo = this.albumInfo;
                 }
             }
         });
@@ -86,6 +88,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     }
 
     protected onStreamLinesChanged() {
+        console_yellow("STREAM");
         this.streamLines = "";
         let linesObject = getState().getModel().getActiveStreamLines();
         if(linesObject?.uri == this.uri)
