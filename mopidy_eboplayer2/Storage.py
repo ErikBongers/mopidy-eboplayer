@@ -107,10 +107,14 @@ class Storage:
         with open(self.stateFile, 'w+') as f:
             json.dump(state, f)
 
-    def set_stream_uri(self, uri):
+    def switch_stream_uri(self, uri):
         if uri != "":
             self.add_empty_title()
 
+        self.set_stream_uri(uri)
+        self.add_empty_title()
+
+    def set_stream_uri(self, uri):
         self.current_track_uri = uri
         self.streamTitlesFile = uri
         self.streamTitlesFile = self.streamTitlesFile.replace("http://", "")
@@ -118,4 +122,3 @@ class Storage:
         self.streamTitlesFile = self.storage_dir + "/" + self.streamTitlesFile + ".txt"
         logger.info(self.streamTitlesFile)
         Path(self.streamTitlesFile, exist_ok=True).touch()
-        self.add_empty_title()

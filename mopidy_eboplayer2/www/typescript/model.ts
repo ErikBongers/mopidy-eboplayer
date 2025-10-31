@@ -145,7 +145,7 @@ export class Model extends EventTarget implements ViewModel {
 
     setCurrentTrack(track: TrackModel) {
         if(track.type == TrackType.None) {
-            this.currentTrack = "";
+            this.currentTrack = undefined;
             return;
         }
         this.currentTrack = track.track.uri;
@@ -205,6 +205,7 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     setActiveStreamLinesHistory(streamTitles: StreamTitles) {
+        streamTitles.active_titles = Object.values<string>(streamTitles.active_titles); //todo: this really is a hack. Can't python return an array, like normal people?
         this.activeStreamLines = streamTitles;
         this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
     }

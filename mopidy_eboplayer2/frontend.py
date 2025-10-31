@@ -25,7 +25,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         logger.info("STARTED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
         logger.info(tl_track.track.uri)
         self.current_track_uri = tl_track.track.uri
-        self.storage.set_stream_uri(self.current_track_uri)
+        self.storage.switch_stream_uri(self.current_track_uri)
 
 
     def track_playback_ended(self, tl_track, time_position):
@@ -58,4 +58,4 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
 
     def on_track_ended(self):
         self.current_track_uri = ""
-        self.storage.set_stream_uri(self.current_track_uri)
+        self.storage.switch_stream_uri(self.current_track_uri)

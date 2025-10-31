@@ -99,7 +99,6 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on("event:streamHistoryChanged2", (data) => {
             let streamTitles: StreamTitles = data.data;
-            streamTitles.active_titles = Object.values<string>(streamTitles.active_titles)
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
 
@@ -198,7 +197,14 @@ export class Controller extends Commands implements DataRequester{
     }
 
     private async fetchActiveStreamLines() {
-        let res = await fetch(`http://${getHostAndPort()}/eboplayer/stream/activeLines`);
+        if(!this.model.currentTrack) {
+            this.model.setActiveStreamLinesHistory(undefined);
+            return;
+        }
+
+        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
+        url.searchParams.set("uri", this.model.currentTrack);
+        let res = await fetch(url);
         let lines = await res.json();
         this.model.setActiveStreamLinesHistory(lines);
     }
