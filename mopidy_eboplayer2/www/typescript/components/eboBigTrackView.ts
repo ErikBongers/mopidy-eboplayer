@@ -98,6 +98,11 @@ export class EboBigTrackView extends EboComponent {
                 .info {
                     font-size: .7em;
                 }
+                #albumTableWrapper {
+                    overflow: scroll;
+                    scrollbar-width: none;    
+                    height: 100%;
+                }
             </style>
         `;
         this.divTemplate = document.createElement("template");
@@ -116,7 +121,9 @@ export class EboBigTrackView extends EboComponent {
                     </div>
                 </div>
                 <div id="back">
-                    <p>Loading...</p>
+                    <div id="albumTableWrapper">
+                        <p>Loading...</p>
+                    /div>
                 </div>
             </div>        
         `;
@@ -198,9 +205,9 @@ export class EboBigTrackView extends EboComponent {
     }
 
     renderTrackList() {
-        let back = this.shadow.getElementById("back");
-        back.innerHTML = "";
-        let table =  back.appendChild(document.createElement("table"));
+        let tableWrapper = this.shadow.getElementById("albumTableWrapper");
+        tableWrapper.innerHTML = "";
+        let table =  tableWrapper.appendChild(document.createElement("table"));
         let tbody = table.appendChild(document.createElement("tbody"));
         if(this.albumInfo?.type ==  AlbumDataType.Loaded) {
             this.albumInfo.tracks.forEach(track => {
