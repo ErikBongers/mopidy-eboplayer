@@ -27,12 +27,18 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         self.current_track_uri = tl_track.track.uri
         self.storage.switch_stream_uri(self.current_track_uri)
 
-
     def track_playback_ended(self, tl_track, time_position):
         self.on_track_ended()
 
     def track_playback_paused(self, tl_track, time_position):
         self.on_track_ended()
+
+    def get_current_uri(self):
+        if self.current_track_uri == "":
+            tl_track = self.core.playback.get_current_tl_track
+            if tl_track is None:
+                return
+            self.current_track_uri = tl_track.track.uri
 
     def stream_title_changed(self, title: str) -> None:
         if self.storage.write_title(title):

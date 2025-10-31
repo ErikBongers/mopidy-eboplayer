@@ -108,7 +108,7 @@ class Storage:
             json.dump(state, f)
 
     def switch_stream_uri(self, uri):
-        if uri != "":
+        if self.current_track_uri != "":
             self.add_empty_title()
 
         self.set_stream_uri(uri)
