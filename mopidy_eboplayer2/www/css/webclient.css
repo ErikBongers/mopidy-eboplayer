@@ -118,7 +118,9 @@ h3#modalname a{
     padding-top: 8px;
 }
 
-
+.info {
+    font-size: .5em;
+}
 
 
 a {

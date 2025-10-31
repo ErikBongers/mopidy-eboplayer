@@ -48,6 +48,10 @@ export class EboBigTrackView extends EboComponent {
                 :host { 
                     display: flex;
                 } 
+                h3 {
+                    margin-block-start: .5em;
+                    margin-block-end: .5em;
+                }
                 .albumCoverContainer {
                     display: flex;
                     flex-direction: column;
@@ -82,14 +86,17 @@ export class EboBigTrackView extends EboComponent {
                 }
                 #wrapper.front {
                     #back {
-                        visibility: hidden; /* don't collapse */
+                        display: none;
                     }                
                 }
                 #wrapper.back {
                     #front {
                         position: absolute;
-                        visibility: hidden; /* don't collapse */
+                        display: none;
                     }                
+                }
+                .info {
+                    font-size: .7em;
                 }
             </style>
         `;
@@ -103,9 +110,9 @@ export class EboBigTrackView extends EboComponent {
                     </div>
         
                     <div id="info">
-                        <h3 id="name"></h3>
-                        <div id="stream_lines" class="selectable"></div>
-                        <div id="extra" class="selectable"></div>
+                        <h3 id="name" class="selectable"></h3>
+                        <div id="stream_lines" class="selectable info"></div>
+                        <div id="extra" class="selectable info"></div>
                     </div>
                 </div>
                 <div id="back">
@@ -179,7 +186,11 @@ export class EboBigTrackView extends EboComponent {
             wrapper.classList.add("back");
         else
             wrapper.classList.add("front");
-        wrapper.addEventListener("click", (ev) => {
+        this.shadow.getElementById("img").addEventListener("click", (ev) => {
+            console_yellow('CKICK');
+            this.dispatchEvent(this.albumClickEvent);
+        });
+        this.shadow.getElementById("back").addEventListener("click", (ev) => {
             console_yellow('CKICK');
             this.dispatchEvent(this.albumClickEvent);
         });
