@@ -3,6 +3,7 @@ import {console_yellow} from "../gui";
 import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
 
 export class EboAlbumTracksView extends EboComponent {
+    static globalCss: CSSStyleSheet;
     get albumInfo(): AlbumData {
         return this._albumInfo;
     }
@@ -31,7 +32,6 @@ export class EboAlbumTracksView extends EboComponent {
         // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
         this.styleTemplate.innerHTML = `
             <link rel="stylesheet" href="vendors/font_awesome/css/font-awesome.css">
-            <link rel="stylesheet" href="css/global.css">
             <style>
                 :host { 
                     display: flex;
@@ -56,11 +56,14 @@ export class EboAlbumTracksView extends EboComponent {
                 .info {
                     font-size: .7em;
                 }
-                #albumInfo {
+                #albumInfoWrapper {
                     display: flex;
                     flex-direction: row;
                     margin-top: .3em;
                     align-content: center;
+                }
+                #albumInfo {
+                    flex-grow: 1;
                 }
                 #tracksTable {
                     margin-left: 1em;
@@ -70,9 +73,9 @@ export class EboAlbumTracksView extends EboComponent {
         this.divTemplate = document.createElement("template");
         this.divTemplate.innerHTML = `
             <div id="wrapper">
-                <div id="albumInfo">
+                <div id="albumInfoWrapper">
                     <img src="" id="img" alt="">
-                    <div>
+                    <div id="albumInfo">
                         <h3 id="albumTitle"></h3>                    
                     </div>
                     <button><i class="fa fa fa-ellipsis-v"></i></button>
@@ -112,6 +115,8 @@ export class EboAlbumTracksView extends EboComponent {
         if(!this.shadow)
             return;
         this.shadow.innerHTML="";
+        if(EboAlbumTracksView.globalCss)
+            this.shadow.adoptedStyleSheets = [EboAlbumTracksView.globalCss];
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
         let img = this.shadow.getElementById("img") as HTMLImageElement;
@@ -134,4 +139,9 @@ export class EboAlbumTracksView extends EboComponent {
         }
     }
 
+    static setGlobalCss(text: string) {
+        this.globalCss = new CSSStyleSheet();
+        this.globalCss.replaceSync(text);
+        console_yellow("Set global css.");
+    }
 }

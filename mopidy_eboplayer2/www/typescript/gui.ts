@@ -61,3 +61,9 @@ function updateDocumentTitle (headline) {
 customElements.define(EboProgressBar.tagName, EboProgressBar);
 customElements.define(EboBigTrackView.tagName, EboBigTrackView);
 customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
+
+let globalCss = fetch("mopidy_eboplayer2/www/css/global.css")
+    .then(res => res.text() )
+    .then(text => {
+        EboAlbumTracksView.setGlobalCss(text);
+});
