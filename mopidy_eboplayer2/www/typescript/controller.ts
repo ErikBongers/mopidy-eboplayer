@@ -209,6 +209,13 @@ export class Controller extends Commands implements DataRequester{
         this.model.setActiveStreamLinesHistory(lines);
     }
 
+    async fetchAllStreamLines(uri: string) {
+        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines/all`); //todo: activeLines/all doesn't make sense - they are mutually exclusive.
+        url.searchParams.set("uri", uri);
+        let res = await fetch(url);
+        return await res.json() as string[];
+    }
+
 
     async getTrackInfo(uri: string) {
         let track  = getState().getModel().getTrackInfo(uri);

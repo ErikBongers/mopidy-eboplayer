@@ -62,6 +62,10 @@ export class EboAlbumTracksView extends EboComponent {
                 }
                 #tracksTable {
                     margin-left: 1em;
+                    border-collapse: collapse;
+                    tr {
+                        border-bottom: 1px solid #ffffff80;
+                    }
                 }
             </style>
         `;
@@ -117,15 +121,25 @@ export class EboAlbumTracksView extends EboComponent {
     renderTrackList() {
         let tbody = (this.shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
-        if(this.albumInfo?.type ==  AlbumDataType.Loaded) {
-            let title = this.shadow.querySelector("#albumTitle") as HTMLTitleElement;
-            title.innerText = this.albumInfo.albumTrack.album.name;
+        let title = this.shadow.querySelector("#albumTitle") as HTMLTitleElement;
+        switch (this.albumInfo?.type) {
+            case AlbumDataType.Loaded:
+                title.innerText = this.albumInfo.albumTrack.album.name;
+                this.albumInfo.tracks.forEach(track => {
+                    let tr = tbody.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.innerText = track.name;
+                });
+                break;
+            case AlbumDataType.StreamLinesLoaded:
+                title.innerText = "todo";
 
-            this.albumInfo.tracks.forEach(track => {
-                let tr = tbody.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"));
-                td.innerText = track.name;
-            });
+                this.albumInfo.lines.forEach(lineGroup => {
+                    let tr = tbody.appendChild(document.createElement("tr"));
+                    let td = tr.appendChild(document.createElement("td"));
+                    td.innerHTML = lineGroup.join("<br>");
+                });
+                break;
         }
     }
 

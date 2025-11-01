@@ -3,7 +3,7 @@ import logging
 import json
 from pathlib import Path
 
-from mopidy_eboplayer2.tools import url_to_filename
+from mopidy_eboplayer2.tools import url_to_filename, tail
 
 logger = logging.getLogger(__name__)
 
@@ -26,9 +26,8 @@ class Storage:
 
     def get_all_titles(self):
         lines = []
-        with open(self.streamTitlesFile, 'r+') as file:
-            for line in file:
-                lines.append(line.rstrip('\n'))
+        with open(self.streamTitlesFile, 'rb+') as file:
+            lines = tail(file, 100)
         return lines
 
     def get_active_titles_dict(self, titles = None):

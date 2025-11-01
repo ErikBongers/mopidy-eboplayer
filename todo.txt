@@ -1,14 +1,4 @@
-* album back
-  > fetch immediately if displayed.
-  > in case of stream: get last 20 historylines.
-
-* stream lines: web server:
-  > add a required param to the request: uri
-    > reason being, the handler doesn't know what the current track is!
-
-* click on album flips it and shows content
-  > for real album: it's artists and tracks.
-  > for streams: the history.
+*
 
 * implement click/dbl-click
   > dlb is play

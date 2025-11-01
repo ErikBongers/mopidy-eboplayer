@@ -5,13 +5,14 @@ import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
 import {console_yellow} from "../gui";
 import {numberedDictToArray} from "../controller";
 import {models} from "../../js/mopidy";
-import Track = models.Track;
 import {EboBigTrackView} from "../components/eboBigTrackView";
+import Track = models.Track;
 
 export enum AlbumDataType {
     None,
     Loading,
-    Loaded
+    Loaded,
+    StreamLinesLoaded
 }
 
 interface AlbumDataNone {
@@ -26,6 +27,11 @@ interface AlbumDataLoaded {
     albumTrack: models.Track
 }
 
+interface AlbumStreamLinesLoaded {
+    type: AlbumDataType.StreamLinesLoaded;
+    lines: string[][]
+}
+
 export const AlbumNone: AlbumDataNone = {
     type: AlbumDataType.None
 }
@@ -34,7 +40,7 @@ const AlbumLoading: AlbumDataLoading = {
     type: AlbumDataType.Loading
 }
 
-export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading;
+export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
 
 export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     private streamLines: string;
@@ -69,16 +75,37 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     private async fetchAlbumData(comp: EboBigTrackView) {
         if (this.albumInfo.type == AlbumDataType.None) {
             console_yellow("TODO: load extra data");
-            if (this.track.type == TrackType.File) {
-                console.log(this.track.track.album.uri);
-                let album = await getState().getController().lookupCached(this.track.track.album.uri);
-                let albumTracks = numberedDictToArray<Track>(album);
-                this.albumInfo = <AlbumDataLoaded>{
-                    type: AlbumDataType.Loaded,
-                    tracks: albumTracks,
-                    albumTrack: this.track.track
-                };
-                comp.albumInfo = this.albumInfo;
+            switch (this.track.type) {
+                case TrackType.File:
+                    console.log(this.track.track.album.uri);
+                    let album = await getState().getController().lookupCached(this.track.track.album.uri);
+                    let albumTracks = numberedDictToArray<Track>(album);
+                    this.albumInfo = <AlbumDataLoaded>{
+                        type: AlbumDataType.Loaded,
+                        tracks: albumTracks,
+                        albumTrack: this.track.track
+                    };
+                    comp.albumInfo = this.albumInfo;
+                    break;
+                case TrackType.Stream:
+                    let stream_lines = await getState().getController().fetchAllStreamLines(this.uri);
+                    let groupLines = function (grouped: string[][], line: string){
+                        if(line == "---") {
+                            grouped.push([]);
+                            return grouped;
+                        }
+                        grouped[grouped.length-1].push(line);
+                        return grouped;
+                    }
+                    let grouped = stream_lines
+                        .reduce<string[][]>(groupLines, [])
+                        .filter(lineGroup => lineGroup.length);
+                    this.albumInfo = <AlbumStreamLinesLoaded>{
+                        type: AlbumDataType.StreamLinesLoaded,
+                        lines: grouped
+                    };
+                    comp.albumInfo = this.albumInfo;
+                    break;
             }
         }
     }
