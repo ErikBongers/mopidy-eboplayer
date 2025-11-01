@@ -176,7 +176,7 @@ export class Controller extends Commands implements DataRequester{
     async getData(dataType: EboPlayerDataType) {
         switch (dataType) {
             case EboPlayerDataType.Volume:
-                let volume = await this.commands.core.mixer.getVolume() as number;  //todo: make fetch functions of these switch cases.
+                let volume = await this.commands.core.mixer.getVolume() as number;
                 this.setVolume(volume);
                 break;
             case  EboPlayerDataType.CurrentTrack:
