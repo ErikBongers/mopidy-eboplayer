@@ -42,4 +42,11 @@ export abstract class EboComponent extends HTMLElement implements HasName {
 
     abstract renderPrepared(): void;
 
+    setClassFromBoolAttribute(attName: string, el: HTMLElement) {
+        if (this[attName] == true)
+            el.classList.add(attName);
+        else
+            el.classList.remove(attName);
+    }
+
 }

@@ -196,11 +196,4 @@ export class EboBigTrackView extends EboComponent {
         tracksComp.albumInfo = this.albumInfo;
     }
 
-    //todo: move in a base class.
-    setClassFromBoolAttribute(attName: string, el: HTMLElement) {
-        if (this[attName] == true)
-            el.classList.add(attName);
-        else
-            el.classList.remove(attName);
-    }
 }
