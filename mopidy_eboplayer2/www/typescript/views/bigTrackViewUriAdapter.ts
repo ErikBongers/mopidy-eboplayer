@@ -97,7 +97,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                         return grouped;
                     }
                     let grouped = stream_lines
-                        .reduce<string[][]>(groupLines, [])
+                        .reduce<string[][]>(groupLines, new Array([]))
                         .filter(lineGroup => lineGroup.length);
                     this.albumInfo = <AlbumStreamLinesLoaded>{
                         type: AlbumDataType.StreamLinesLoaded,
