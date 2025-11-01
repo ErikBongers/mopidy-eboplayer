@@ -210,7 +210,7 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchAllStreamLines(uri: string) {
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines/all`); //todo: activeLines/all doesn't make sense - they are mutually exclusive.
+        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as string[];

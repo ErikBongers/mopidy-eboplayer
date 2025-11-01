@@ -13,11 +13,11 @@ class ActiveStreamLinesHandler(tornado.web.RequestHandler):
         self.config = config
         self.storage = Storage(self.config['eboplayer2']['storage_dir'])
 
-    def get(self, all):
+    def get(self, all_or_active):
         self.set_header("Access-Control-Allow-Origin", "*")
         uri = self.get_argument("uri")
         self.storage.set_stream_uri(uri)
-        if all == "/all":
+        if all_or_active == "all":
             return self.write(json.dumps(self.storage.get_all_titles()))
         else:
             return self.write(json.dumps(self.storage.get_active_titles_dict(self.storage.get_all_titles())))

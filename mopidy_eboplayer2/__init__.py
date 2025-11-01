@@ -51,6 +51,6 @@ class Extension(ext.Extension):
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
-            (r"/stream/activeLines(/all)?", ActiveStreamLinesHandler, {"config": config, "path": path}),
+            (r"/stream/(active|all)Lines", ActiveStreamLinesHandler, {"config": config, "path": path}),
             (r"/(.*)", StaticHandler, {"path": path}),
         ]
