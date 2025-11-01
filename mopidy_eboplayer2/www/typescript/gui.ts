@@ -11,6 +11,7 @@ import {TimelineView} from "./views/timelineView";
 import {EboBigTrackView} from "./components/eboBigTrackView";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
 import {EboAlbumTracksView} from "./components/eboAlbumTracksView";
+import {EboComponent} from "./components/EboComponent";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -62,8 +63,6 @@ customElements.define(EboProgressBar.tagName, EboProgressBar);
 customElements.define(EboBigTrackView.tagName, EboBigTrackView);
 customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
 
-let globalCss = fetch("mopidy_eboplayer2/www/css/global.css")
+fetch("mopidy_eboplayer2/www/css/global.css")
     .then(res => res.text() )
-    .then(text => {
-        EboAlbumTracksView.setGlobalCss(text);
-});
+    .then(text => EboComponent.setGlobalCss(text));

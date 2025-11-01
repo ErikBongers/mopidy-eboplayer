@@ -2,7 +2,6 @@ import {EboComponent} from "./EboComponent";
 
 export class EboProgressBar extends EboComponent {
     static readonly tagName=  "ebo-progressbar";
-    private shadow: ShadowRoot;
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["position", "min", "max", "button", "active"];
     private position: number = 51;
@@ -64,8 +63,6 @@ export class EboProgressBar extends EboComponent {
     <div id="button"></div>
 </div>
 `;
-        this.shadow = this.attachShadow({mode: "open"});
-
         this.render();
     }
 
@@ -96,9 +93,8 @@ export class EboProgressBar extends EboComponent {
     connectedCallback() {
     }
 
-    render() {
+    renderPrepared() {
         let percent = (this.position - this.min) / (this.max-this.min) * 100;
-        this.shadow.innerHTML="";
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let styleElement = this.shadow.appendChild(document.createElement("style"));
         styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;

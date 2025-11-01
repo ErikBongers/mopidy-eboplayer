@@ -13,7 +13,6 @@ export class EboBigTrackView extends EboComponent {
         this.render();
     }
     static readonly tagName=  "ebo-big-track-view";
-    private shadow: ShadowRoot;
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
@@ -41,7 +40,6 @@ export class EboBigTrackView extends EboComponent {
 
     constructor() {
         super();
-        this.albumInfo = AlbumNone;
         this.styleTemplate = document.createElement("template");
         // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
         this.styleTemplate.innerHTML = `
@@ -122,8 +120,7 @@ export class EboBigTrackView extends EboComponent {
                 </div>
             </div>        
         `;
-        this.shadow = this.attachShadow({mode: "open"});
-
+        this.albumInfo = AlbumNone;
         this.render();
         this.albumClickEvent = new CustomEvent("albumClick", {
             bubbles: true,
@@ -137,7 +134,7 @@ export class EboBigTrackView extends EboComponent {
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboBigTrackView.progressBarAttributes.includes(name)) {
             this[name] = newValue;
-            this.shadow.querySelector("ebo-progressbar").setAttribute(name, newValue);
+            this.shadow.querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
         }
         switch (name) {
@@ -161,10 +158,7 @@ export class EboBigTrackView extends EboComponent {
     connectedCallback() {
     }
 
-    render() {
-        if(!this.shadow)
-            return;
-        this.shadow.innerHTML="";
+    renderPrepared() {
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         ["name", "stream_lines", "extra"].forEach(attName => {
