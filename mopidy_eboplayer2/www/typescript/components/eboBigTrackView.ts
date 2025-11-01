@@ -43,7 +43,6 @@ export class EboBigTrackView extends EboComponent {
         this.styleTemplate = document.createElement("template");
         // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
         this.styleTemplate.innerHTML = `
-            <link rel="stylesheet" href="css/global.css">
             <style>
                 :host { 
                     display: flex;

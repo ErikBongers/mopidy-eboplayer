@@ -27,7 +27,6 @@ export class EboAlbumTracksView extends EboComponent {
         this.styleTemplate = document.createElement("template");
         // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
         this.styleTemplate.innerHTML = `
-            <link rel="stylesheet" href="vendors/font_awesome/css/font-awesome.css">
             <style>
                 :host { 
                     display: flex;

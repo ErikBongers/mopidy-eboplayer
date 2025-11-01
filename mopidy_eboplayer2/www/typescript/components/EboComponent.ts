@@ -5,7 +5,7 @@ export interface HasName {
 }
 
 export abstract class EboComponent extends HTMLElement implements HasName {
-    static globalCss: CSSStyleSheet;
+    static globalCss: CSSStyleSheet[];
     protected shadow: ShadowRoot;
 
     protected constructor() {
@@ -21,10 +21,12 @@ export abstract class EboComponent extends HTMLElement implements HasName {
 
     abstract attributeReallyChangedCallback(name: string, oldValue: string, newValue: string): void;
 
-    static setGlobalCss(text: string) {
-        this.globalCss = new CSSStyleSheet();
-        this.globalCss.replaceSync(text);
-        console_yellow("Set global css.");
+    static setGlobalCss(text: string[]) {
+        this.globalCss = text.map(text => {
+            let css = new CSSStyleSheet();
+            css.replaceSync(text);
+            return css;
+        });
     }
 
     render() {
@@ -32,7 +34,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             return;
         this.shadow.innerHTML = "";
         if(EboComponent.globalCss) {
-            this.shadow.adoptedStyleSheets = [EboComponent.globalCss];
+            this.shadow.adoptedStyleSheets = EboComponent.globalCss;
         }
 
         this.renderPrepared();

@@ -63,6 +63,10 @@ customElements.define(EboProgressBar.tagName, EboProgressBar);
 customElements.define(EboBigTrackView.tagName, EboBigTrackView);
 customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
 
-fetch("mopidy_eboplayer2/www/css/global.css")
-    .then(res => res.text() )
-    .then(text => EboComponent.setGlobalCss(text));
+Promise.all([
+    fetch("mopidy_eboplayer2/www/css/global.css").then(res => res.text()),
+    fetch("mopidy_eboplayer2/www/vendors/font_awesome/css/font-awesome.css").then(res => res.text()),
+])
+.then(texts => {
+    EboComponent.setGlobalCss(texts);
+})
