@@ -58,7 +58,6 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
 
     bind() {
         super.bind();
-        //todo: streamlines belong to specific stream uris. Make seperate streamline files for per stream (uri).
         getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
             this.onStreamLinesChanged();
         });

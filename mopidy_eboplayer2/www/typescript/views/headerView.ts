@@ -5,18 +5,21 @@ import {EboPlayerDataType, View} from "./view";
 export class HeaderView extends View {
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.messageChanged, () => {
-            this.onMessageChangegd();
+            this.onMessageChanged();
         });
     }
 
-    private onMessageChangegd() {
+    private onMessageChanged() {
         let msg = getState().getModel().getCurrentMessage();
         let headerSpan = document.getElementById("contentHeadline");
         headerSpan.innerText = msg.message;
-        if (msg.type == MessageType.Error) {
-            headerSpan.classList.add("warning"); //todo: implement all MessageTypes
-        } else {
-            headerSpan.classList.remove("warning", "error");
+        switch (msg.type) {
+            case MessageType.Error:
+                headerSpan.classList.add("warning");
+                break;
+            default:
+                headerSpan.classList.remove("warning", "error");
+                break;
         }
     }
 
