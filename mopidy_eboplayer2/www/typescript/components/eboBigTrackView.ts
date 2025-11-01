@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {console_yellow} from "../gui";
 import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
+import {EboAlbumTracksView} from "./eboAlbumTracksView";
 
 export class EboBigTrackView extends EboComponent {
     get albumInfo(): AlbumData {
@@ -122,8 +123,8 @@ export class EboBigTrackView extends EboComponent {
                 </div>
                 <div id="back">
                     <div id="albumTableWrapper">
-                        <p>Loading...</p>
-                    /div>
+                        <ebo-album-tracks-view img="${this.img}" ></ebo-album-tracks-view>
+                    </div>
                 </div>
             </div>        
         `;
@@ -201,21 +202,8 @@ export class EboBigTrackView extends EboComponent {
             console_yellow('CKICK');
             this.dispatchEvent(this.albumClickEvent);
         });
-        this.renderTrackList();
-    }
-
-    renderTrackList() {
-        let tableWrapper = this.shadow.getElementById("albumTableWrapper");
-        tableWrapper.innerHTML = "";
-        let table =  tableWrapper.appendChild(document.createElement("table"));
-        let tbody = table.appendChild(document.createElement("tbody"));
-        if(this.albumInfo?.type ==  AlbumDataType.Loaded) {
-            this.albumInfo.tracks.forEach(track => {
-                let tr = tbody.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"));
-                td.innerText = track.name;
-            });
-        }
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksView;
+        tracksComp.albumInfo = this.albumInfo;
     }
 
     //todo: move in a base class.

@@ -10,6 +10,7 @@ import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
 import {EboBigTrackView} from "./components/eboBigTrackView";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
+import {EboAlbumTracksView} from "./components/eboAlbumTracksView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -59,3 +60,4 @@ function updateDocumentTitle (headline) {
 
 customElements.define(EboProgressBar.tagName, EboProgressBar);
 customElements.define(EboBigTrackView.tagName, EboBigTrackView);
+customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
