@@ -43,8 +43,9 @@ export class EboBigTrackView extends EboComponent {
         super();
         this.albumInfo = AlbumNone;
         this.styleTemplate = document.createElement("template");
-        // noinspection CssUnresolvedCustomProperty
+        // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
         this.styleTemplate.innerHTML = `
+            <link rel="stylesheet" href="css/global.css">
             <style>
                 :host { 
                     display: flex;
@@ -66,13 +67,6 @@ export class EboBigTrackView extends EboComponent {
                 }
                 ebo-progressbar {
                     margin-top: .5em;
-                }
-                .selectable {
-                    -webkit-user-select: text;
-                    -moz-user-select: text;
-                    -ms-user-select: text;
-                    -o-user-select: text;
-                    user-select: text;
                 }
                 #wrapper {
                     display: flex;

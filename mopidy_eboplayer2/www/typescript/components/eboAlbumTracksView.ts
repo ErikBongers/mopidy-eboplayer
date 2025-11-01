@@ -28,36 +28,42 @@ export class EboAlbumTracksView extends EboComponent {
         super();
         this.albumInfo = AlbumNone;
         this.styleTemplate = document.createElement("template");
-        // noinspection CssUnresolvedCustomProperty
+        // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
         this.styleTemplate.innerHTML = `
+            <link rel="stylesheet" href="vendors/font_awesome/css/font-awesome.css">
+            <link rel="stylesheet" href="css/global.css">
             <style>
                 :host { 
                     display: flex;
+                    text-align: start;
                 } 
                 h3 {
-                    margin-block-start: .5em;
-                    margin-block-end: .5em;
+                    margin-block-start: 0;
+                    margin-block-end: 0;
                 }
                 img {
-                    width: 100px;
-                    height: 100px;
+                    width: 50px;
+                    height: 50px;
                     object-fit: contain;
-                }
-                .selectable {
-                    -webkit-user-select: text;
-                    -moz-user-select: text;
-                    -ms-user-select: text;
-                    -o-user-select: text;
-                    user-select: text;
+                    margin-right: .5em;
                 }
                 #wrapper {
                     display: flex;
-                    flex-direction: row;
+                    flex-direction: column;
                     height: 100%;
                     width: 100%;
                 }
                 .info {
                     font-size: .7em;
+                }
+                #albumInfo {
+                    display: flex;
+                    flex-direction: row;
+                    margin-top: .3em;
+                    align-content: center;
+                }
+                #tracksTable {
+                    margin-left: 1em;
                 }
             </style>
         `;
@@ -67,8 +73,9 @@ export class EboAlbumTracksView extends EboComponent {
                 <div id="albumInfo">
                     <img src="" id="img" alt="">
                     <div>
-                        TODO: The album title and stuff.....                    
+                        <h3 id="albumTitle"></h3>                    
                     </div>
+                    <button><i class="fa fa fa-ellipsis-v"></i></button>
                 </div>\
                 <table id="tracksTable">
                     <tbody>
@@ -116,6 +123,9 @@ export class EboAlbumTracksView extends EboComponent {
         let tbody = (this.shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.albumInfo?.type ==  AlbumDataType.Loaded) {
+            let title = this.shadow.querySelector("#albumTitle") as HTMLTitleElement;
+            title.innerText = this.albumInfo.albumTrack.album.name;
+
             this.albumInfo.tracks.forEach(track => {
                 let tr = tbody.appendChild(document.createElement("tr"));
                 let td = tr.appendChild(document.createElement("td"));

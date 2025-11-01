@@ -23,6 +23,7 @@ interface AlbumDataLoading {
 interface AlbumDataLoaded {
     type: AlbumDataType.Loaded;
     tracks: Track[];
+    albumTrack: models.Track
 }
 
 export const AlbumNone: AlbumDataNone = {
@@ -69,7 +70,8 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                     let albumTracks = numberedDictToArray<Track>(album);
                     this.albumInfo = <AlbumDataLoaded> {
                         type: AlbumDataType.Loaded,
-                        tracks: albumTracks
+                        tracks: albumTracks,
+                        albumTrack: this.track.track
                     };
                     comp.albumInfo = this.albumInfo;
                 }

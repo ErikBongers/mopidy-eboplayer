@@ -13,17 +13,6 @@ body * {
     -o-user-select: none;
     user-select: none;
 }
-/* but fix for text input (safari certainly needs it)*/
-input[type=text],
-.selectable
-{
-    -webkit-user-select: text;
-    -moz-user-select: text;
-    -ms-user-select: text;
-    -o-user-select: text;
-    user-select: text;
-}
-
 * {
     --body-background: #323;
     --header-background: #2a1c2a;
