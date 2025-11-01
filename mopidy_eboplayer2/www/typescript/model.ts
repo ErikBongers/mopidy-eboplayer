@@ -205,6 +205,8 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     setActiveStreamLinesHistory(streamTitles: StreamTitles) {
+        if(!streamTitles) //todo: why can this be empty (at PC startup?)
+            return;
         streamTitles.active_titles = Object.values<string>(streamTitles.active_titles); //todo: this really is a hack. Can't python return an array, like normal people?
         this.activeStreamLines = streamTitles;
         this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
