@@ -1,5 +1,8 @@
 {
-  "include": ["mopidy_eboplayer2/www/typescript/**/*"],
+//  "include": ["mopidy_eboplayer2/www/typescript/**/*"],
+  "files": [
+    "mopidy_eboplayer2/www/typescript/gui.ts"
+  ],
   "exclude": [],
   "compilerOptions": {
    "outDir": "./mopidy_eboplayer2/www/generated",
