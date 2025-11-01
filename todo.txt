@@ -1,8 +1,6 @@
-* album click
-  > if a flag is set, the album flips.
-  > the adapter should check on the albumClick event if the extra data is loaded:
-    - album tracks.
-    > do this lazily.
+* album back
+  > fetch immediately if displayed.
+  > in case of stream: get last 20 historylines.
 
 * stream lines: web server:
   > add a required param to the request: uri

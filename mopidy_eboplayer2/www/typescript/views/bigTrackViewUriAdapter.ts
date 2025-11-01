@@ -62,21 +62,25 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
             let show_back = comp.getAttribute("show_back");
             comp.setAttribute("show_back",  show_back == "true" ? "false" : "true");
             console.log(e);
-            if(this.albumInfo.type == AlbumDataType.None) {
-                console_yellow("TODO: load extra data");
-                if(this.track.type == TrackType.File) {
-                    console.log(this.track.track.album.uri);
-                    let album = await getState().getController().lookupCached(this.track.track.album.uri);
-                    let albumTracks = numberedDictToArray<Track>(album);
-                    this.albumInfo = <AlbumDataLoaded> {
-                        type: AlbumDataType.Loaded,
-                        tracks: albumTracks,
-                        albumTrack: this.track.track
-                    };
-                    comp.albumInfo = this.albumInfo;
-                }
-            }
+            await this.fetchAlbumData(comp);
         });
+    }
+
+    private async fetchAlbumData(comp: EboBigTrackView) {
+        if (this.albumInfo.type == AlbumDataType.None) {
+            console_yellow("TODO: load extra data");
+            if (this.track.type == TrackType.File) {
+                console.log(this.track.track.album.uri);
+                let album = await getState().getController().lookupCached(this.track.track.album.uri);
+                let albumTracks = numberedDictToArray<Track>(album);
+                this.albumInfo = <AlbumDataLoaded>{
+                    type: AlbumDataType.Loaded,
+                    tracks: albumTracks,
+                    albumTrack: this.track.track
+                };
+                comp.albumInfo = this.albumInfo;
+            }
+        }
     }
 
     setUri(uri: string) {
@@ -86,6 +90,9 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                 this.track = track;
                 this.albumInfo = AlbumNone;
                 this.setComponentData();
+                let comp = document.getElementById(this.componentId) as EboBigTrackView;
+                if(comp.getAttribute("show_back") == "true")
+                    this.fetchAlbumData(comp).then(r => {});
             });
     }
 

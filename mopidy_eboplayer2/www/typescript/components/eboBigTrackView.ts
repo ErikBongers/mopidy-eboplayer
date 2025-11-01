@@ -75,6 +75,9 @@ export class EboBigTrackView extends EboComponent {
                         flex-direction: column;
                         width: 100%;
                     }
+                    #back {
+                        width: 100%;
+                    }
                 }
                 #wrapper.front {
                     #back {
