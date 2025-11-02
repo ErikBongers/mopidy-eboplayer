@@ -63,9 +63,12 @@ customElements.define(EboProgressBar.tagName, EboProgressBar);
 customElements.define(EboBigTrackView.tagName, EboBigTrackView);
 customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
 
+//intellij live preview hack because they don't allow to set a root folder for the built-in server:
+let rootDir = document.location.pathname.replace("index.html", "");
+
 Promise.all([
-    fetch("mopidy_eboplayer2/www/css/global.css").then(res => res.text()),
-    fetch("mopidy_eboplayer2/www/vendors/font_awesome/css/font-awesome.css").then(res => res.text()),
+    fetch(`${rootDir}css/global.css`).then(res => res.text()),
+    fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
 ])
 .then(texts => {
     EboComponent.setGlobalCss(texts);

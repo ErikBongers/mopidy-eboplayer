@@ -178,22 +178,27 @@ export class EboBigTrackView extends EboComponent {
         //     console_yellow('CKICK');
         //     this.dispatchEvent(this.albumClickEvent);
         // });
-        let wrapper = this.shadow.getElementById("wrapper");
-        wrapper.classList.remove("front", "back");
-        if(this.show_back)
-            wrapper.classList.add("back");
-        else
-            wrapper.classList.add("front");
+        this.switchFrontBackNoRender();
         this.shadow.getElementById("img").addEventListener("click", (ev) => {
             console_yellow('CKICK');
             this.dispatchEvent(this.albumClickEvent);
         });
         this.shadow.getElementById("back").addEventListener("click", (ev) => {
-            console_yellow('CKICK');
-            this.dispatchEvent(this.albumClickEvent);
+            // this.dispatchEvent(this.albumClickEvent);
         });
         let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksView;
         tracksComp.albumInfo = this.albumInfo;
+        tracksComp.addEventListener("albumClick", (ev) => {
+            // this.show_back = !this.show_back; //note that this may be out of sync with the compoment's attribute!
+        });
     }
 
+    private switchFrontBackNoRender() {
+        let wrapper = this.shadow.getElementById("wrapper");
+        wrapper.classList.remove("front", "back");
+        if (this.show_back)
+            wrapper.classList.add("back");
+        else
+            wrapper.classList.add("front");
+    }
 }

@@ -1,5 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
+import {console_yellow} from "../gui";
 
 export class EboAlbumTracksView extends EboComponent {
     get albumInfo(): AlbumData {
@@ -88,7 +89,7 @@ export class EboAlbumTracksView extends EboComponent {
 
         this.albumInfo = AlbumNone;
         this.render();
-        this.albumClickEvent = new CustomEvent("XXXalbumClick", {
+        this.albumClickEvent = new CustomEvent("albumClick", {
             bubbles: true,
             cancelable: false,
             composed: true, //needed to 'break' out of the shadow.
@@ -115,7 +116,13 @@ export class EboAlbumTracksView extends EboComponent {
         this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
         let img = this.shadow.getElementById("img") as HTMLImageElement;
         img.src = this.img;
+        img.addEventListener("click", (ev) => {
+            console_yellow('small img clicked.');
+            this.dispatchEvent(this.albumClickEvent);
+        });
+
         this.renderTrackList();
+
     }
 
     renderTrackList() {
@@ -138,6 +145,7 @@ export class EboAlbumTracksView extends EboComponent {
                     let tr = tbody.appendChild(document.createElement("tr"));
                     let td = tr.appendChild(document.createElement("td"));
                     td.innerHTML = lineGroup.join("<br>");
+                    td.classList.add("selectable");
                 });
                 break;
         }
