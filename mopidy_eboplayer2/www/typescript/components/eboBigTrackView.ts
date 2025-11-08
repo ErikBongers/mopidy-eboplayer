@@ -32,17 +32,10 @@ export class EboBigTrackView extends EboComponent {
     private active: string = "true";
 
     private img: string  = "images/default_cover.png";
-    private styleTemplate: HTMLTemplateElement;
-    private divTemplate: HTMLTemplateElement;
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: AlbumData;
 
-
-    constructor() {
-        super();
-        this.styleTemplate = document.createElement("template");
-        // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
-        this.styleTemplate.innerHTML = `
+    static styleText= `
             <style>
                 :host { 
                     display: flex;
@@ -101,13 +94,14 @@ export class EboBigTrackView extends EboComponent {
                 }
             </style>
         `;
-        this.divTemplate = document.createElement("template");
-        this.divTemplate.innerHTML = `
+
+    // noinspection HtmlUnknownTarget
+    static htmlText = `
             <div id="wrapper" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" src="${this.img}" alt="Album cover"/>
-                        <ebo-progressbar position="${this.position}" active="${this.active}" button="${this.button}"></ebo-progressbar>
+                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                        <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
                     <div id="info">
@@ -118,11 +112,14 @@ export class EboBigTrackView extends EboComponent {
                 </div>
                 <div id="back">
                     <div id="albumTableWrapper">
-                        <ebo-album-tracks-view img="${this.img}" ></ebo-album-tracks-view>
+                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
                     </div>
                 </div>
             </div>        
         `;
+
+    constructor() {
+        super(EboBigTrackView.styleText, EboBigTrackView.htmlText);
         this.albumInfo = AlbumNone;
         this.render();
         this.albumClickEvent = new CustomEvent("albumClick", {

@@ -9,60 +9,58 @@ export class EboProgressBar extends EboComponent {
     private max: number = 100;
     private active: boolean = false;
     private button: boolean = true;
-    private styleTemplate: HTMLTemplateElement;
 
-    private divTemplate: HTMLTemplateElement;
+    // noinspection CssUnresolvedCustomProperty
+    static styleText = `
+        <style>
+        .movingGradient {
+            background-color: #555;
+        }
+        .active .movingGradient {
+            --darkGradient: #555;
+            background: linear-gradient(to right, var(--darkGradient),
+            #2a84a5, var(--darkGradient), #ffffff,
+                var(--darkGradient), #ca497c, var(--darkGradient), #9e9c2d, var(--darkGradient), #ee7752, var(--darkGradient),
+                #2a84a5
+            );
+            background-size: 1100% 1100%;  /*Must be a multiple of the number of colors above for a smooth transistion and the last color must be the first*/
+            animation: gradient 15s forwards infinite linear;
+            animation-timing-function: linear;
+            animation-direction: normal;
+        }
+        .button #button {
+                background-color: white;
+                width: 3px; 
+                display: inline-block;
+                box-shadow: 0 0 5px white, 0 0 5px white,  0 0 5px white, 0 0 5px white, 0 0 15px white;
+        }
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+        </style>
+    `;
+
+    static htmlText = `
+        <div style="
+            background-color: #444; 
+            height: 1px; 
+            display: flex; 
+            ">
+            <div class="movingGradient" style="
+                height: 1px;
+                display: inline-block;">
+            </div>
+            <div id="button"></div>
+        </div>
+        `;
 
     constructor() {
-        super();
-        this.styleTemplate = document.createElement("template");
-        // noinspection CssUnresolvedCustomProperty
-        this.styleTemplate.innerHTML = `
-<style>
-.movingGradient {
-    background-color: #555;
-}
-.active .movingGradient {
-    --darkGradient: #555;
-    background: linear-gradient(to right, var(--darkGradient),
-    #2a84a5, var(--darkGradient), #ffffff,
-        var(--darkGradient), #ca497c, var(--darkGradient), #9e9c2d, var(--darkGradient), #ee7752, var(--darkGradient),
-        #2a84a5
-    );
-    background-size: 1100% 1100%;  /*Must be a multiple of the number of colors above for a smooth transistion and the last color must be the first*/
-    animation: gradient 15s forwards infinite linear;
-    animation-timing-function: linear;
-    animation-direction: normal;
-}
-.button #button {
-        background-color: white;
-        width: 3px; 
-        display: inline-block;
-        box-shadow: 0 0 5px white, 0 0 5px white,  0 0 5px white, 0 0 5px white, 0 0 15px white;
-}
-@keyframes gradient {
-    0% {
-        background-position: 0% 50%;
-    }
-    100% {
-        background-position: 100% 50%;
-    }
-}
-</style>`;
-        this.divTemplate = document.createElement("template");
-        this.divTemplate.innerHTML = `
-<div style="
-    background-color: #444; 
-    height: 1px; 
-    display: flex; 
-    ">
-    <div class="movingGradient" style="
-        height: 1px;
-        display: inline-block;">
-    </div>
-    <div id="button"></div>
-</div>
-`;
+        super(EboProgressBar.styleText, EboProgressBar.htmlText);
         this.render();
     }
 

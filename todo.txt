@@ -1,37 +1,30 @@
 *
 
-* implement click/dbl-click
-  > dlb is play
-  > click is select
-    > is the selected track displayd in big view?
-      > if so, what happens to the current track?
-        > moved to the side?
-          > swipe left/right between selected and playing song?
-          > playing song glowing in mini-view?
-        > or mini view next to navigation/volume?
-* when currrent track is not playing: don't glow.
-  > change classNames to
-    - current
-    - playing
-* load and add queue to timeline.
-  > core.tracklist.getTlTracks()
-  > store tlid in tr dataset.
+Browse
+======
+- a searc field
+- a "root" view
+  - Streams
+  - Other sources like "Local files" and "Files"
+    > try to get rid of Files as this is redundant when local files are present.
+      > configurable?
+* lower button bar to bottom to give more room.
+* have image view and a list view.
+  > have a wall-of-albums,
+    > perhaps even random?
+    > perhaps 3 views: list, album (/w title) and wall?
+* image views are configurable
+  > number of columns.
+  > spacing configurable?
 
-
-Timeline  listView
-==================
-A list of past, present and future.
-  > At the top, the history.
-  > current track (if any)
-  > queued tracks
-    > finished tracks (often) stay in the queue and are also added to the history when they are started.
-      > merge the overlapping tracks in the history and the queue.
-      > this may not work well with random play.
-
-  > if current track is album track: show album in bigInfo, else the stream logo (of any)
-  > if current track is a stream...
-    > the history of the stream lines is embedded in the TimeLine.
-      > for previous streams, this history has to be expanded via the track menu.
+Browse: user behaviour:
+  > cursor immediately in search field,, which is the header field?
+    > could give conflict with error messages.
+  > last search is prefilled.
+  > submit search per key-stroke.
+    > if not fast enough: local cache.
+  > how to go back?
+    > the browse icon changes in a mini album.
 
  Buttons (ellipsis), double click, long click
  =============================================
@@ -40,15 +33,6 @@ A list of past, present and future.
 * Single click is selection by default.
 * Double click is play.
 * Long click is same as button.
-
-Active vs selected
-===================
-By default the active track's info is shown big.
-If another track is selected (single click), the active track moves to the side and smaller (3d side view?).
-This allows browsing the time line, with details, while keeping the active track in view.
-Clicking the small active track restores it of course.
-The active track get's a moving glow to indicate it is active.
-
 
 Queue
 ======

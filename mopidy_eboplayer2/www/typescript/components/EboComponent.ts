@@ -7,10 +7,16 @@ export interface HasName {
 export abstract class EboComponent extends HTMLElement implements HasName {
     static globalCss: CSSStyleSheet[];
     protected shadow: ShadowRoot;
+    protected styleTemplate: HTMLTemplateElement;
+    protected divTemplate: HTMLTemplateElement;
 
-    protected constructor() {
+    protected constructor(styleText: string, htmlText: string) {
         super();
         this.shadow = this.attachShadow({mode: "open"});
+        this.styleTemplate = document.createElement("template");
+        this.divTemplate = document.createElement("template");
+        this.styleTemplate.innerHTML = styleText;
+        this.divTemplate.innerHTML = htmlText;
     }
         // noinspection JSUnusedGlobalSymbols
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {

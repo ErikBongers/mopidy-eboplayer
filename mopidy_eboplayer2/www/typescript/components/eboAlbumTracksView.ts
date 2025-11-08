@@ -17,17 +17,24 @@ export class EboAlbumTracksView extends EboComponent {
         "img",
     ];
     private img: string  = "images/default_cover.png";
-    private styleTemplate: HTMLTemplateElement;
-    private divTemplate: HTMLTemplateElement;
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: AlbumData;
 
 
     constructor() {
-        super();
-        this.styleTemplate = document.createElement("template");
-        // noinspection CssUnresolvedCustomProperty,HtmlUnknownTarget
-        this.styleTemplate.innerHTML = `
+        super(EboAlbumTracksView.styleText, EboAlbumTracksView.htmlText);
+
+        this.albumInfo = AlbumNone;
+        this.render();
+        this.albumClickEvent = new CustomEvent("albumClick", {
+            bubbles: true,
+            cancelable: false,
+            composed: true, //needed to 'break' out of the shadow.
+            detail: "todo"
+        });
+    }
+
+    static styleText = `
             <style>
                 :host { 
                     display: flex;
@@ -75,8 +82,7 @@ export class EboAlbumTracksView extends EboComponent {
                 }
             </style>
         `;
-        this.divTemplate = document.createElement("template");
-        this.divTemplate.innerHTML = `
+        static htmlText = `
             <div id="wrapper">
                 <div id="albumInfoWrapper">
                     <img src="" id="img" alt="">
@@ -93,16 +99,6 @@ export class EboAlbumTracksView extends EboComponent {
                 </div>          
             </div>        
         `;
-
-        this.albumInfo = AlbumNone;
-        this.render();
-        this.albumClickEvent = new CustomEvent("albumClick", {
-            bubbles: true,
-            cancelable: false,
-            composed: true, //needed to 'break' out of the shadow.
-            detail: "todo"
-        });
-    }
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
@@ -138,7 +134,6 @@ export class EboAlbumTracksView extends EboComponent {
         });
 
         this.renderTrackList();
-
     }
 
     renderTrackList() {
