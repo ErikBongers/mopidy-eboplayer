@@ -12,6 +12,7 @@ import {EboBigTrackView} from "./components/eboBigTrackView";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
 import {EboAlbumTracksView} from "./components/eboAlbumTracksView";
 import {EboComponent} from "./components/EboComponent";
+import {MainView} from "./views/mainView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -37,11 +38,12 @@ document.addEventListener("DOMContentLoaded",function () {
     let state = new State(mopidy, timer, model, controller);
     setState(state);
 
+    let mainView = new MainView();
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
     let buttonBarView = new ButtonBarView("buttonBar");
     let historyView = new TimelineView();
-    getState().addViews(headerView, currentTrackView, buttonBarView, historyView);
+    getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 
     mopidy.connect();
 
