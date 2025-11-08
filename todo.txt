@@ -5,6 +5,7 @@ Browse
 - a searc field
 - a "root" view
   - Streams
+  - Playlists
   - Other sources like "Local files" and "Files"
     > try to get rid of Files as this is redundant when local files are present.
       > configurable?
@@ -16,6 +17,8 @@ Browse
 * image views are configurable
   > number of columns.
   > spacing configurable?
+* buttons to filter search results for albums, artists and tracks.
+* when on a track, allow to browse upward into album, artist, playlists.
 
 Browse: user behaviour:
   > cursor immediately in search field,, which is the header field?

@@ -1,6 +1,5 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
-import {console_yellow} from "../gui";
 
 export class EboAlbumTracksView extends EboComponent {
     get albumInfo(): AlbumData {
@@ -129,7 +128,6 @@ export class EboAlbumTracksView extends EboComponent {
                 break;
         }
         img.addEventListener("click", (ev) => {
-            console_yellow('small img clicked.');
             this.dispatchEvent(this.albumClickEvent);
         });
 

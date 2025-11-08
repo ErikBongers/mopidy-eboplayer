@@ -1,6 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {console_yellow} from "../gui";
-import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
+import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksView} from "./eboAlbumTracksView";
 
 export class EboBigTrackView extends EboComponent {
@@ -178,7 +177,6 @@ export class EboBigTrackView extends EboComponent {
         // });
         this.switchFrontBackNoRender();
         this.shadow.getElementById("img").addEventListener("click", (ev) => {
-            console_yellow('CKICK');
             this.dispatchEvent(this.albumClickEvent);
         });
         this.shadow.getElementById("back").addEventListener("click", (ev) => {
