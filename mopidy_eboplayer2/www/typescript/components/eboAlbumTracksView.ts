@@ -123,6 +123,15 @@ export class EboAlbumTracksView extends EboComponent {
         this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
         let img = this.shadow.getElementById("img") as HTMLImageElement;
         img.src = this.img;
+        let title = this.shadow.getElementById("albumTitle") as HTMLElement;
+        switch (this.albumInfo.type) {
+            case AlbumDataType.Loaded:
+                title.innerText = this.albumInfo.albumTrack.album.name;
+                break;
+            case AlbumDataType.StreamLinesLoaded:
+                title.innerText = this.albumInfo.albumTrack.name;
+                break;
+        }
         img.addEventListener("click", (ev) => {
             console_yellow('small img clicked.');
             this.dispatchEvent(this.albumClickEvent);
@@ -146,8 +155,6 @@ export class EboAlbumTracksView extends EboComponent {
                 });
                 break;
             case AlbumDataType.StreamLinesLoaded:
-                title.innerText = "todo";
-
                 this.albumInfo.lines.forEach(lineGroup => {
                     let tr = tbody.appendChild(document.createElement("tr"));
                     let td = tr.appendChild(document.createElement("td"));

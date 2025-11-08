@@ -24,12 +24,13 @@ interface AlbumDataLoading {
 interface AlbumDataLoaded {
     type: AlbumDataType.Loaded;
     tracks: Track[];
-    albumTrack: models.Track
+    albumTrack: models.Track;
 }
 
 interface AlbumStreamLinesLoaded {
     type: AlbumDataType.StreamLinesLoaded;
-    lines: string[][]
+    lines: string[][];
+    albumTrack: models.Track;
 }
 
 export const AlbumNone: AlbumDataNone = {
@@ -101,7 +102,8 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                         .filter(lineGroup => lineGroup.length);
                     this.albumInfo = <AlbumStreamLinesLoaded>{
                         type: AlbumDataType.StreamLinesLoaded,
-                        lines: grouped
+                        lines: grouped,
+                        albumTrack: this.track.track
                     };
                     comp.albumInfo = this.albumInfo;
                     break;
