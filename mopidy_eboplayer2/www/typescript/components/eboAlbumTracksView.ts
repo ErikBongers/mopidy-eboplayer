@@ -61,6 +61,11 @@ export class EboAlbumTracksView extends EboComponent {
                 #albumInfo {
                     flex-grow: 1;
                 }
+                #tableScroller {
+                    overflow: scroll;
+                    scrollbar-width: none;
+                    height: 100%;    
+                }
                 #tracksTable {
                     margin-left: 1em;
                     border-collapse: collapse;
@@ -79,11 +84,13 @@ export class EboAlbumTracksView extends EboComponent {
                         <h3 id="albumTitle"></h3>                    
                     </div>
                     <button><i class="fa fa-ellipsis-v"></i></button>
-                </div>\
-                <table id="tracksTable">
-                    <tbody>
-                    </tbody>                
-                </table>
+                </div>
+                <div id="tableScroller">
+                    <table id="tracksTable">
+                        <tbody>
+                        </tbody>                
+                    </table>
+                </div>          
             </div>        
         `;
 

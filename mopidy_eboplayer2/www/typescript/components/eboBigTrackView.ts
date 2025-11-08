@@ -94,8 +94,9 @@ export class EboBigTrackView extends EboComponent {
                     font-size: .7em;
                 }
                 #albumTableWrapper {
-                    overflow: scroll;
-                    scrollbar-width: none;    
+                    height: 100%;
+                }
+                ebo-album-tracks-view {
                     height: 100%;
                 }
             </style>
