@@ -57,6 +57,22 @@ button, input[type="submit"], input[type="reset"] {
     margin-bottom: 1em;
 }
 
+#topContent {
+    flex: 1;
+    display: flex;
+    overflow: hidden;
+    .browse &{
+         ebo-big-track-view {
+             display: none;
+         }
+    }
+    .bigTrack &{
+        ebo-browse-view {
+            display: none;
+        }
+    }
+}
+
 #layout {
     display: flex;
     flex-flow: column;

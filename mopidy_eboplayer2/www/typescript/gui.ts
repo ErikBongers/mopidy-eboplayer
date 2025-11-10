@@ -13,6 +13,7 @@ import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentO
 import {EboAlbumTracksView} from "./components/eboAlbumTracksView";
 import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
+import {EboBrowseView} from "./components/eboBrowseView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -22,6 +23,23 @@ export function getWebSocketUrl() {
 }
 
 document.addEventListener("DOMContentLoaded",function () {
+    Promise.all([
+        fetch(`${rootDir}css/global.css`).then(res => res.text()),
+        fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
+    ])
+        .then(texts => {
+            EboComponent.setGlobalCss(texts);
+
+            customElements.define(EboProgressBar.tagName, EboProgressBar);
+            customElements.define(EboBigTrackView.tagName, EboBigTrackView);
+            customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
+            customElements.define(EboBrowseView.tagName, EboBrowseView);
+
+            setupStuff();
+        });
+});
+
+function setupStuff() {
     let webSocketUrl = getWebSocketUrl();
     let connectOptions: Options = {
         webSocketUrl,
@@ -48,10 +66,10 @@ document.addEventListener("DOMContentLoaded",function () {
     mopidy.connect();
 
     // document.getElementById("showBrowse").onclick = async () => {
-        // let browse = await getState().commands.core.library.browse(null);
-        // console.log({browse});
+    // let browse = await getState().commands.core.library.browse(null);
+    // console.log({browse});
     // };
-});
+}
 
 export function console_yellow(msg: string) {
     console.log(`%c${msg}`, 'background-color: yellow');
@@ -61,17 +79,6 @@ function updateDocumentTitle (headline) {
     document.title = headline + ' | ' + document.body.dataset.title;
 }
 
-customElements.define(EboProgressBar.tagName, EboProgressBar);
-customElements.define(EboBigTrackView.tagName, EboBigTrackView);
-customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
-
 //intellij live preview hack because they don't allow to set a root folder for the built-in server:
 let rootDir = document.location.pathname.replace("index.html", "");
 
-Promise.all([
-    fetch(`${rootDir}css/global.css`).then(res => res.text()),
-    fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
-])
-.then(texts => {
-    EboComponent.setGlobalCss(texts);
-})

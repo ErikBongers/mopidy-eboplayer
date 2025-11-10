@@ -6,18 +6,23 @@ import {console_yellow} from "../gui";
 export class MainView extends View {
     bind() {
         document.getElementById("headerSearchBtn").addEventListener("click", () => {
-            console_yellow("SEARRC");
-            let browseBtn = document.getElementById("headerSearchBtn");
-            let layout = document.getElementById("layout");
-            if(browseBtn.title == "Search") {
-                browseBtn.title = "Now playing";
-                layout.classList.add("browse");
-            } else {
-                browseBtn.title = "Search";
-                layout.classList.remove("browse");
-            }
-            // > move other views in here.
+            this.onSearchButtonClick();
         });
+    }
+
+    private onSearchButtonClick() {
+        let browseBtn = document.getElementById("headerSearchBtn");
+        let layout = document.getElementById("layout");
+        if (browseBtn.title == "Search") {
+            browseBtn.title = "Now playing";
+            layout.classList.add("browse");
+            layout.classList.remove("bigTrack");
+        } else {
+            browseBtn.title = "Search";
+            layout.classList.remove("browse");
+            layout.classList.add("bigTrack");
+        }
+        // > move other views in here.
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {

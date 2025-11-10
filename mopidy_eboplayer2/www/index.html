@@ -21,7 +21,7 @@
 </head>
 
 <body data-websocket-url="{{ websocketUrl }}" data-hostname="{{ hostname }}" data-title="{{ title }}">
-<div id="layout">
+<div id="layout" class="bigTrack">
     <div id="stickyTop" class="">
 
         <ul id="header" class="nobullet title condensed">
@@ -39,7 +39,10 @@
             </li>
         </ul>
 
-        <ebo-big-track-view id="currentTrackBigView"></ebo-big-track-view>
+        <div id="topContent">
+            <ebo-big-track-view id="currentTrackBigView"></ebo-big-track-view>
+            <ebo-browse-view id="currentTrackBigView"></ebo-browse-view>
+        </div>
 
         <div id="buttonBarWrapper">
             <img id="img" src="images/default_cover.png" alt="Album cover"/>

@@ -1,13 +1,23 @@
 Browse
 ======
-- a searc field
-- a "root" view
-  - Streams
-  - Playlists
-  - Other sources like "Local files" and "Files"
-    > try to get rid of Files as this is redundant when local files are present.
-      > configurable?
-* lower button bar to bottom to give more room.
+- a search field
+  > pre-filled with last search.
+- search results
+- filter buttons:
+  > a row of buttons for each of the following:
+    - albums: square with disc sticking out?
+    - artists: torso silhouette?
+    - tracks: lines?
+    - streams/radio: radio icon or antenna? (wifi logo-like)
+    - files: file icon
+    - playlists: stacked page of lines > tracks icon, but stacked.
+    - history: history icon: curled up lines.
+    - radio: radio icon?
+    - genre: veritas or flower icon.
+      > a circle, a square and a triangle?
+      > Arrows pointing in different directions?
+        > different shapes?
+
 * have image view and a list view.
   > have a wall-of-albums,
     > perhaps even random?
