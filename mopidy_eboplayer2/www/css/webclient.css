@@ -142,6 +142,10 @@ h3#modalname a{
     overflow: hidden;
 }
 
+#browseView {
+    width: 100%;
+}
+
 #header {
     padding-top: 8px;
 }

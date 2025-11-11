@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksView} from "./eboAlbumTracksView";
+import {console_yellow} from "../gui";
 
 export class EboBrowseView extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
@@ -14,7 +15,27 @@ export class EboBrowseView extends EboComponent {
                 } 
                 #wrapper {
                     display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                }
+                #filterButtons {
+                    margin-top: .3em;
+                    display: flex;
                     flex-direction: row;
+                }
+                #searchBox {
+                    display: flex;
+                    flex-direction: row;
+                    border-bottom: 1px solid #ffffff80;
+                    & input {
+                        flex-grow: 1;
+                        background-color: transparent;
+                        color: white;
+                        border: none;
+                        &:focus {
+                            outline: none;
+                        }
+                    }
                 }
                 .filterButton {
                     width: 2em;
@@ -28,13 +49,19 @@ export class EboBrowseView extends EboComponent {
     // noinspection HtmlUnknownTarget
     static htmlText = `
             <div id="wrapper">
-                <button><img src="images/icons/Album.svg" alt="" class="filterButton whiteIconFilter"></button>
-                <button><img src="images/icons/Track.svg" alt="" class="filterButton whiteIconFilter"></button>
-                <button><img src="images/icons/Radio.svg" alt="" class="filterButton whiteIconFilter"></button>
-                <button><img src="images/icons/Artist.svg" alt="" class="filterButton whiteIconFilter"></button>
-                <button><img src="images/icons/Playlist.svg" alt="" class="filterButton whiteIconFilter"></button>
-                <button><img src="images/icons/Genre.svg" alt="" class="filterButton whiteIconFilter"></button>
-                <button> X </button>
+                <div id="searchBox">
+                    <button><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <input id="searchText" type="text" value="sdfsdf" autofocus>
+                </div>
+                <div id="filterButtons">
+                    <button><img src="images/icons/Album.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button><img src="images/icons/Track.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button><img src="images/icons/Radio.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button><img src="images/icons/Artist.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button><img src="images/icons/Playlist.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button><img src="images/icons/Genre.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button> X </button>
+                </div>
             </div>        
         `;
 
@@ -64,6 +91,12 @@ export class EboBrowseView extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
+    }
+
+    setFocusAndSelect() {
+        let searchText = this.shadow.getElementById("searchText") as HTMLInputElement;
+        searchText.focus();
+        searchText.select();
     }
 
     renderPrepared() {
