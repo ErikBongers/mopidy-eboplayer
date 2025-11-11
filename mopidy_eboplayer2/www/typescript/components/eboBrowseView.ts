@@ -28,7 +28,13 @@ export class EboBrowseView extends EboComponent {
     // noinspection HtmlUnknownTarget
     static htmlText = `
             <div id="wrapper">
-                <img src="images/icons/Radio.svg" alt="" class="filterButton whiteIconFilter">
+                <button><img src="images/icons/Album.svg" alt="" class="filterButton whiteIconFilter"></button>
+                <button><img src="images/icons/Track.svg" alt="" class="filterButton whiteIconFilter"></button>
+                <button><img src="images/icons/Radio.svg" alt="" class="filterButton whiteIconFilter"></button>
+                <button><img src="images/icons/Artist.svg" alt="" class="filterButton whiteIconFilter"></button>
+                <button><img src="images/icons/Playlist.svg" alt="" class="filterButton whiteIconFilter"></button>
+                <button><img src="images/icons/Genre.svg" alt="" class="filterButton whiteIconFilter"></button>
+                <button> X </button>
             </div>        
         `;
 

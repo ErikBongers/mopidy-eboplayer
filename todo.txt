@@ -1,3 +1,12 @@
+* Prepare list of items to browse.
+  > From what sources?
+    > Mopidy
+    > Local files
+      > any source or protocol!
+    > Other extensions?
+      > Url protocols?
+        > unlikely: too technical. Perhaps configure in settings.
+
 Browse
 ======
 - a search field
