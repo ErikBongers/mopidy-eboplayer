@@ -2,6 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksView} from "./eboAlbumTracksView";
 import {console_yellow} from "../gui";
+import getState from "../playerState";
 
 export class EboBrowseView extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
@@ -50,7 +51,7 @@ export class EboBrowseView extends EboComponent {
     static htmlText = `
             <div id="wrapper">
                 <div id="searchBox">
-                    <button><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
                     <input id="searchText" type="text" value="sdfsdf" autofocus>
                 </div>
                 <div id="filterButtons">
@@ -104,5 +105,17 @@ export class EboBrowseView extends EboComponent {
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         this.shadow.appendChild(fragment);
         //todo: put the above in EboComponent?
+        this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
+            // returns "Files" and "Local media"
+            let roots = await getState().getController().getRootDirs();
+            console_yellow("Roots:");
+            console.log(roots);
+            let subDir1 = await getState().getController().browse(roots[1].uri);
+            console_yellow("subDir1:");
+            console.log(subDir1);
+            let artists = await getState().getController().getTracksforArtist();
+            console_yellow("artists:");
+            console.log(artists);
+        });
     }
 }

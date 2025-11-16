@@ -303,6 +303,18 @@ export class Controller extends Commands implements DataRequester{
         let trackUri = this.model.getCurrentTrack();
         return await this.getTrackInfo(trackUri);
     }
+
+    async getRootDirs() {
+        return await this.commands.core.library.browse(null);
+    }
+
+    async browse(uri: string) {
+        return await this.commands.core.library.browse(uri);
+    }
+    async getTracksforArtist() {
+        let tracksforArtist = await this.commands.core.library.search({artist: ["Sting"]}, null);
+        return tracksforArtist;
+    }
 }
 
 export function quadratic100(x:number) { return (x*x)/100;}

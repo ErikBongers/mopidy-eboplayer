@@ -1,7 +1,44 @@
+
+Build indexedDb
+===============
+* Tracks are the lowest level.
+* Albums contain tracks.
+  > possibly of multiple artists.
+* Artists 'contain'
+  - albums
+  - tracks
+  - genres?
+* Genres contain
+  - albums
+  - tracks
+
+* data sources:
+  - local files : //local:
+  - files : //file:
+  - urls for streams. : //http, etc...
+
+* commands for database:
+  - browse
+    > find directory structure
+    > for every backend root
+  - search
+    > where `field` contains...
+      > e.g. `artist` = ['ikke', 'gij']
+      > special field `any` to search all fields.
+  - distinct: DO NOT USE
+  > Iris uses this url to get all artists:
+    : local:directory?type=artist&role=albumartist
+      > after removing the role, all the artists are shown.
+
+
 * Prepare list of items to browse.
   > From what sources?
-    > Mopidy
-    > Local files
+    > Mopidy has:
+      - history
+      - library: backends
+      - playlists
+      -
+    > Local files: this is a http protocol?
       > any source or protocol!
     > Other extensions?
       > Url protocols?

@@ -360,23 +360,6 @@ ebo-big-track-view {
     100% { background-position: 0 0; }
 }
 
-/*TEXT GLOW*/
-.textGlow{
-    font-size:1rem;
-    margin-top:5vh;
-    animation-name:glow;
-    animation-duration:2s;
-    animation-iteration-count:infinite;
-    animation-direction:normal;
-
-}
-
-@keyframes glow{
-    0%{text-shadow: 0 0 0px #ffff0000;}
-    50%{text-shadow: 0 0 10px #ffff00;}
-    100%{text-shadow: 0 0 0px #ffff0000;}
-}
-
 #timelineTable {
     width: 100%;
     border-collapse: collapse;

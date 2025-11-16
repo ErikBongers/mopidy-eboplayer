@@ -3,6 +3,13 @@ import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksView} from "./eboAlbumTracksView";
 
 export class EboBigTrackView extends EboComponent {
+    get activeTrackUri(): string | null {
+        return this._activeTrackUri;
+    }
+    set activeTrackUri(value: string | null) {
+        this._activeTrackUri = value;
+        this.onActiveTrackChanged();
+    }
     get albumInfo(): AlbumData {
         return this._albumInfo;
     }
@@ -11,6 +18,8 @@ export class EboBigTrackView extends EboComponent {
         this._albumInfo = value;
         this.render();
     }
+
+    private _activeTrackUri: string | null = null;
     static readonly tagName=  "ebo-big-track-view";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
@@ -196,5 +205,10 @@ export class EboBigTrackView extends EboComponent {
             wrapper.classList.add("back");
         else
             wrapper.classList.add("front");
+    }
+
+    private onActiveTrackChanged() {
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksView;
+        tracksComp.activeTrackUri = this.activeTrackUri;
     }
 }

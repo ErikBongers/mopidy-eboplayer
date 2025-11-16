@@ -6,6 +6,7 @@ import {numberedDictToArray} from "../controller";
 import {models} from "../../js/mopidy";
 import {EboBigTrackView} from "../components/eboBigTrackView";
 import Track = models.Track;
+import {EboAlbumTracksView} from "../components/eboAlbumTracksView";
 
 export enum AlbumDataType {
     None,
@@ -60,6 +61,9 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         super.bind();
         getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
             this.onStreamLinesChanged();
+        });
+        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+            this.onActiveTrackChanged();
         });
         let comp = document.getElementById(this.componentId) as EboBigTrackView;
         comp.addEventListener("albumClick", async (e) => {
@@ -127,6 +131,15 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         if(linesObject?.uri == this.uri)
             this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
+    }
+
+    protected onActiveTrackChanged() {
+        let linesObject = getState().getModel().getActiveStreamLines();
+        if(linesObject?.uri == this.uri)
+            this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
+        document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
+        let comp = document.getElementById(this.componentId) as EboBigTrackView;
+        comp.activeTrackUri = getState().getModel().getCurrentTrack();
     }
 
     protected setComponentData() {

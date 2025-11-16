@@ -1,7 +1,13 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
+import {console_yellow} from "../gui";
+import getState from "../playerState";
 
 export class EboAlbumTracksView extends EboComponent {
+    set activeTrackUri(value: string | null) {
+        this._activeTrackUri = value;
+        this.onActiveTrackChanged();
+    }
     get albumInfo(): AlbumData {
         return this._albumInfo;
     }
@@ -10,6 +16,9 @@ export class EboAlbumTracksView extends EboComponent {
         this._albumInfo = value;
         this.render();
     }
+
+    private _activeTrackUri: string | null = null;
+
     static readonly tagName=  "ebo-album-tracks-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
@@ -144,6 +153,7 @@ export class EboAlbumTracksView extends EboComponent {
                 this.albumInfo.tracks.forEach(track => {
                     let tr = tbody.appendChild(document.createElement("tr"));
                     let td = tr.appendChild(document.createElement("td"));
+                    tr.dataset.uri = track.uri;
                     td.innerText = track.name;
                 });
                 break;
@@ -156,6 +166,17 @@ export class EboAlbumTracksView extends EboComponent {
                 });
                 break;
         }
+        this.onActiveTrackChanged();
     }
 
- }
+    private onActiveTrackChanged() {
+        let activeTrack = getState().getModel().getCurrentTrack();
+        if(!activeTrack)
+            return;
+        console_yellow(`Active track changed to ${activeTrack}.`);
+        let tr = this.shadow.querySelector(`tr[data-uri="${activeTrack}"]`) as HTMLTableRowElement;
+        if(tr) {
+            tr.classList.add("current", "textGlow");
+        }
+    }
+}
