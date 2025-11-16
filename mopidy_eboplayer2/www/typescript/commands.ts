@@ -106,7 +106,7 @@ export class Commands {
                 //:rtype: set of values corresponding to the requested field type.
                 //
                 //.. versionadded:: 1.0
-            getDistinct(field?: string, query?: string) {
+            getDistinct(field?: string, query?: Object) {
                 return this.commands.send("core.library.get_distinct", {field, query});
             },
                 //Lookup the images for the given URIs
@@ -184,7 +184,7 @@ export class Commands {
                 //
                 //.. versionadded:: 1.0
                 //    The ``exact`` keyword argument.
-            search(query?: string, uris?: string[], exact: boolean = false) {
+            search(query?: Object, uris?: string[], exact: boolean = false) {
                 return this.commands.send("core.library.search", {query, uris, exact});
             },
         },
