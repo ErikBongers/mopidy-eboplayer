@@ -1,8 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
-import {EboAlbumTracksView} from "./eboAlbumTracksView";
 import {console_yellow} from "../gui";
 import getState from "../playerState";
+import {EboButton, PressedChangeEvent} from "./eboButton";
 
 export class EboBrowseView extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
@@ -55,12 +54,12 @@ export class EboBrowseView extends EboComponent {
                     <input id="searchText" type="text" value="sdfsdf" autofocus>
                 </div>
                 <div id="filterButtons">
-                    <ebo-button img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
                     <button> X </button>
                 </div>
             </div>        
@@ -108,13 +107,62 @@ export class EboBrowseView extends EboComponent {
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             await testDataGrab();
         });
+
+        let browseFilters = getBrowseFilters();
         this.shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
-                btn.addEventListener("pressedChange", async (ev) => {
-                    console_yellow("PRRESSED");
-                })
-            );
+                this.renderFilterButton(btn, browseFilters));
     }
+
+    private renderFilterButton(btn: Element, browseFilters: BrowseFilter) {
+        if (btn.id.startsWith("filter")) {
+            let propName = btn.id
+                    .replace("filter", "").charAt(0).toLowerCase()
+                + btn.id.replace("filter", "").slice(1);
+            btn.setAttribute("pressed", browseFilters[propName].toString());
+        }
+
+        btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
+            let btn: EboButton = ev.target as EboButton;
+            let propName = btn.id.replace("filter", "");
+            propName = propName.charAt(0).toLowerCase() + propName.slice(1);
+            let browseFilters = getBrowseFilters();
+            browseFilters[propName] = !browseFilters[propName];
+            saveBrowseFilters(browseFilters);
+            this.render(); //todo: not needed?
+        });
+    }
+}
+
+interface BrowseFilter {
+    album: boolean;
+    track: boolean;
+    radio: boolean;
+    artist: boolean;
+    playlist: boolean;
+    genre: boolean;
+}
+
+//todo: move to controller -> model -> state
+const BROWSE_FILTERS_KEY = "browseFilters";
+
+function getBrowseFilters(): BrowseFilter {
+    let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
+    if(browseFilters) {
+        return JSON.parse(browseFilters);
+    }
+    return {
+        album: false,
+        track: false,
+        radio: false,
+        artist: false,
+        playlist: false,
+        genre: false
+    }
+}
+
+function saveBrowseFilters(browseFilters: BrowseFilter) {
+    localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(browseFilters));
 }
 
 async function testDataGrab() {

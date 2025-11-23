@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 
-class PressedChangeEvent extends Event {
+export class PressedChangeEvent extends Event {
     private _pressed: boolean;
 
     constructor(pressed: boolean) {
@@ -28,7 +28,7 @@ export class EboButton extends EboComponent {
             img {
                 width: 100%;
                 opacity: 0.5;
-                .pressed & { 
+                &.pressed { 
                     opacity: 1; 
                 }
             }
@@ -79,6 +79,7 @@ export class EboButton extends EboComponent {
         button.addEventListener("click", (ev) => {
             this.pressed = !this.pressed;
             this.setClassFromBoolAttribute("pressed", button);
+            this.setAttribute("pressed",  this.pressed.toString());
             let event = new PressedChangeEvent(this.pressed);
             this.dispatchEvent(event);
         });
