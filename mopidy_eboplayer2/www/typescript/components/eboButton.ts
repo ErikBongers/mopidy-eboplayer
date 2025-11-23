@@ -28,6 +28,9 @@ export class EboButton extends EboComponent {
             img {
                 width: 100%;
                 opacity: 0.5;
+                .pressed & { 
+                    opacity: 1; 
+                }
             }
         </style>
     `;
@@ -75,6 +78,7 @@ export class EboButton extends EboComponent {
         let button = this.shadow.querySelector("button");
         button.addEventListener("click", (ev) => {
             this.pressed = !this.pressed;
+            this.setClassFromBoolAttribute("pressed", button);
             let event = new PressedChangeEvent(this.pressed);
             this.dispatchEvent(event);
         });
