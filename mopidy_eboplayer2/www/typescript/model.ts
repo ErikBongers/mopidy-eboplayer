@@ -3,6 +3,15 @@ import TlTrack = models.TlTrack;
 
 export enum TrackType { None, File, Stream}
 
+export interface BrowseFilter {
+    album: boolean;
+    track: boolean;
+    radio: boolean;
+    artist: boolean;
+    playlist: boolean;
+    genre: boolean;
+}
+
 export interface FileTrackModel {
     type: TrackType.File;
     track: models.Track;

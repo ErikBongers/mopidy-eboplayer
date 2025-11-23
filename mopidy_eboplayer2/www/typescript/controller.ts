@@ -3,7 +3,7 @@ import {showLoading, validUri} from "./functionsvars";
 import {library} from "./library";
 // import * as controls from "./controls";
 import {transformTlTrackDataToModel} from "./process_ws";
-import {ConnectionState, FileTrackModel, HistoryLine, LibraryDict, LibraryItem, Model, NoneTrackModel, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackType} from "./model";
+import {BrowseFilter, ConnectionState, FileTrackModel, HistoryLine, LibraryDict, LibraryItem, Model, NoneTrackModel, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {Commands} from "./commands";
 import {models, Mopidy} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -316,6 +316,26 @@ export class Controller extends Commands implements DataRequester{
         let tracksforArtist = await this.commands.core.library.search({artist: ["Sting"]}, null);
         return tracksforArtist;
     }
+
+    saveBrowseFilters(browseFilters: BrowseFilter) {
+        localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(browseFilters));
+    }
+
+    getBrowseFilters(): BrowseFilter {
+        let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
+        if (browseFilters) {
+            return JSON.parse(browseFilters);
+        }
+        return {
+            album: false,
+            track: false,
+            radio: false,
+            artist: false,
+            playlist: false,
+            genre: false
+        }
+    }
+
 }
 
 export function quadratic100(x:number) { return (x*x)/100;}
@@ -407,4 +427,6 @@ export function transformTrackDataToModel(track: (models.Track | undefined)): Tr
 
     return model;
 }
+
+const BROWSE_FILTERS_KEY = "browseFilters";
 

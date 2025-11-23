@@ -2,6 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
+import {BrowseFilter} from "../model";
 
 export class EboBrowseView extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
@@ -108,7 +109,7 @@ export class EboBrowseView extends EboComponent {
             await testDataGrab();
         });
 
-        let browseFilters = getBrowseFilters();
+        let browseFilters = getState().getController().getBrowseFilters();
         this.shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
                 this.renderFilterButton(btn, browseFilters));
@@ -126,42 +127,11 @@ export class EboBrowseView extends EboComponent {
             let btn: EboButton = ev.target as EboButton;
             let propName = btn.id.replace("filter", "");
             propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-            let browseFilters = getBrowseFilters();
+            let browseFilters = getState().getController().getBrowseFilters();
             browseFilters[propName] = !browseFilters[propName];
-            saveBrowseFilters(browseFilters);
+            getState().getController().saveBrowseFilters(browseFilters); //todo: component should not query controller. Controller should set model and model should notify listeners.
         });
     }
-}
-
-interface BrowseFilter {
-    album: boolean;
-    track: boolean;
-    radio: boolean;
-    artist: boolean;
-    playlist: boolean;
-    genre: boolean;
-}
-
-//todo: move to controller -> model -> state
-const BROWSE_FILTERS_KEY = "browseFilters";
-
-function getBrowseFilters(): BrowseFilter {
-    let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
-    if(browseFilters) {
-        return JSON.parse(browseFilters);
-    }
-    return {
-        album: false,
-        track: false,
-        radio: false,
-        artist: false,
-        playlist: false,
-        genre: false
-    }
-}
-
-function saveBrowseFilters(browseFilters: BrowseFilter) {
-    localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(browseFilters));
 }
 
 async function testDataGrab() {
