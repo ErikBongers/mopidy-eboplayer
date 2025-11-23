@@ -129,7 +129,6 @@ export class EboBrowseView extends EboComponent {
             let browseFilters = getBrowseFilters();
             browseFilters[propName] = !browseFilters[propName];
             saveBrowseFilters(browseFilters);
-            this.render(); //todo: not needed?
         });
     }
 }
