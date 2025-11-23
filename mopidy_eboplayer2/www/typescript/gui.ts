@@ -14,6 +14,7 @@ import {EboAlbumTracksView} from "./components/eboAlbumTracksView";
 import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
 import {EboBrowseView} from "./components/eboBrowseView";
+import {EboButton} from "./components/eboButton";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -34,6 +35,7 @@ document.addEventListener("DOMContentLoaded",function () {
             customElements.define(EboBigTrackView.tagName, EboBigTrackView);
             customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
             customElements.define(EboBrowseView.tagName, EboBrowseView);
+            customElements.define(EboButton.tagName, EboButton);
 
             setupStuff();
         });

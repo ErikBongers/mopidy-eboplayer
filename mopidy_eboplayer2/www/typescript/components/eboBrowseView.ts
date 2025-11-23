@@ -55,12 +55,12 @@ export class EboBrowseView extends EboComponent {
                     <input id="searchText" type="text" value="sdfsdf" autofocus>
                 </div>
                 <div id="filterButtons">
-                    <button><img src="images/icons/Album.svg" alt="" class="filterButton whiteIconFilter"></button>
-                    <button><img src="images/icons/Track.svg" alt="" class="filterButton whiteIconFilter"></button>
-                    <button><img src="images/icons/Radio.svg" alt="" class="filterButton whiteIconFilter"></button>
-                    <button><img src="images/icons/Artist.svg" alt="" class="filterButton whiteIconFilter"></button>
-                    <button><img src="images/icons/Playlist.svg" alt="" class="filterButton whiteIconFilter"></button>
-                    <button><img src="images/icons/Genre.svg" alt="" class="filterButton whiteIconFilter"></button>
+                    <ebo-button img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
+                    <ebo-button img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
                     <button> X </button>
                 </div>
             </div>        
@@ -106,16 +106,32 @@ export class EboBrowseView extends EboComponent {
         this.shadow.appendChild(fragment);
         //todo: put the above in EboComponent?
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
-            // returns "Files" and "Local media"
-            let roots = await getState().getController().getRootDirs();
-            console_yellow("Roots:");
-            console.log(roots);
-            let subDir1 = await getState().getController().browse(roots[1].uri);
-            console_yellow("subDir1:");
-            console.log(subDir1);
-            let artists = await getState().getController().getTracksforArtist();
-            console_yellow("artists:");
-            console.log(artists);
+            await testDataGrab();
         });
+        this.shadow.querySelectorAll("ebo-button")
+            .forEach(btn =>
+                btn.addEventListener("pressedChange", async (ev) => {
+                    console_yellow("PRRESSED");
+                })
+            );
     }
+}
+
+async function testDataGrab() {
+    // returns "Files" and "Local media"
+    let roots = await getState().getController().getRootDirs();
+    console_yellow("Roots:");
+    console.log(roots);
+    let subDir1 = await getState().getController().browse(roots[1].uri);
+    console_yellow("subDir1:");
+    console.log(subDir1);
+    let allTracks = await getState().getController().browse("local:directory?type=track");
+    console_yellow("allTracks:");
+    console.log(allTracks);
+    let allAlbums = await getState().getController().browse("local:directory?type=album");
+    console_yellow("allAlbums:");
+    console.log(allAlbums);
+    let artists = await getState().getController().getTracksforArtist();
+    console_yellow("artists:");
+    console.log(artists);
 }

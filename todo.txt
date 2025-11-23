@@ -1,7 +1,22 @@
+* Store browse filters.
+  > make buttons toggleable.
+  > in local storage.
+    > better choice, as it's user specific.
+  > or on server?
+
+
+
+* At startup (or at browse open), build a list of all Ref objects.
+  > that's just the name and the uri.
+  > that's purely based on mopidy-local !
+  > streams are nog local but just a uri in a playlist.
+  > what do we need for search?
+    > just the name and uri should do...
 
 Build indexedDb
 ===============
 * Tracks are the lowest level.
+  > contain link to the album uri, if any.
 * Albums contain tracks.
   > possibly of multiple artists.
 * Artists 'contain'

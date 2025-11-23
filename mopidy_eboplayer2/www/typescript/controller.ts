@@ -311,6 +311,7 @@ export class Controller extends Commands implements DataRequester{
     async browse(uri: string) {
         return await this.commands.core.library.browse(uri);
     }
+
     async getTracksforArtist() {
         let tracksforArtist = await this.commands.core.library.search({artist: ["Sting"]}, null);
         return tracksforArtist;
