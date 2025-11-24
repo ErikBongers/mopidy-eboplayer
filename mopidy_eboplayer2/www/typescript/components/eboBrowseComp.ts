@@ -4,7 +4,7 @@ import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BrowseFilter} from "../model";
 
-export class EboBrowseView extends EboComponent {
+export class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [];
@@ -67,7 +67,7 @@ export class EboBrowseView extends EboComponent {
         `;
 
     constructor() {
-        super(EboBrowseView.styleText, EboBrowseView.htmlText);
+        super(EboBrowseComp.styleText, EboBrowseComp.htmlText);
         this.render();
     }
 
@@ -104,7 +104,6 @@ export class EboBrowseView extends EboComponent {
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         this.shadow.appendChild(fragment);
-        //todo: put the above in EboComponent?
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             await testDataGrab();
         });
@@ -113,6 +112,13 @@ export class EboBrowseView extends EboComponent {
         this.shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
                 this.renderFilterButton(btn, browseFilters));
+        let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
+        inputElement.value = browseFilters.searchText;
+        inputElement.addEventListener("keydown", (ev: KeyboardEvent)=> {
+            let browseFilters = getState().getController().getBrowseFilters();
+            browseFilters.searchText = inputElement.value;
+            getState().getController().saveBrowseFilters(browseFilters);
+        });
     }
 
     private renderFilterButton(btn: Element, browseFilters: BrowseFilter) {

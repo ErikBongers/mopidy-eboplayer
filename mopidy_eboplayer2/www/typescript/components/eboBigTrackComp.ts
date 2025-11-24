@@ -1,8 +1,8 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
-import {EboAlbumTracksView} from "./eboAlbumTracksView";
+import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 
-export class EboBigTrackView extends EboComponent {
+export class EboBigTrackComp extends EboComponent {
     get activeTrackUri(): string | null {
         return this._activeTrackUri;
     }
@@ -25,7 +25,7 @@ export class EboBigTrackView extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
         "name", "stream_lines", "extra", "img", "disabled", "show_back",
-        ...EboBigTrackView.progressBarAttributes
+        ...EboBigTrackComp.progressBarAttributes
     ];
     private name: string = "";
     private stream_lines: string = "";
@@ -127,7 +127,7 @@ export class EboBigTrackView extends EboComponent {
         `;
 
     constructor() {
-        super(EboBigTrackView.styleText, EboBigTrackView.htmlText);
+        super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
         this.albumInfo = AlbumNone;
         this.render();
         this.albumClickEvent = new CustomEvent("albumClick", {
@@ -140,7 +140,7 @@ export class EboBigTrackView extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        if(EboBigTrackView.progressBarAttributes.includes(name)) {
+        if(EboBigTrackComp.progressBarAttributes.includes(name)) {
             this[name] = newValue;
             this.shadow.querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
@@ -174,7 +174,7 @@ export class EboBigTrackView extends EboComponent {
         });
         let progressBarElement = fragment.querySelector("ebo-progressbar") as HTMLElement;
         //todo: try casting to EboProgressBar class and set attributes directly? Without re-rendering?
-        EboBigTrackView.progressBarAttributes.forEach(attName => {
+        EboBigTrackComp.progressBarAttributes.forEach(attName => {
             progressBarElement.setAttribute(attName, this[attName]);//todo: check if each of these causes a re-rendering.
         });
         //todo: image.
@@ -191,7 +191,7 @@ export class EboBigTrackView extends EboComponent {
         this.shadow.getElementById("back").addEventListener("click", (ev) => {
             // this.dispatchEvent(this.albumClickEvent);
         });
-        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksView;
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.albumInfo = this.albumInfo;
         tracksComp.addEventListener("albumClick", (ev) => {
             // this.show_back = !this.show_back; //note that this may be out of sync with the compoment's attribute!
@@ -208,7 +208,7 @@ export class EboBigTrackView extends EboComponent {
     }
 
     private onActiveTrackChanged() {
-        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksView;
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.activeTrackUri = this.activeTrackUri;
     }
 }

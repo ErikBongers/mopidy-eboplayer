@@ -3,7 +3,7 @@ import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapt
 import {console_yellow} from "../gui";
 import getState from "../playerState";
 
-export class EboAlbumTracksView extends EboComponent {
+export class EboAlbumTracksComp extends EboComponent {
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
         this.onActiveTrackChanged();
@@ -30,7 +30,7 @@ export class EboAlbumTracksView extends EboComponent {
 
 
     constructor() {
-        super(EboAlbumTracksView.styleText, EboAlbumTracksView.htmlText);
+        super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 
         this.albumInfo = AlbumNone;
         this.render();

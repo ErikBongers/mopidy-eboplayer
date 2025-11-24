@@ -4,6 +4,7 @@ import TlTrack = models.TlTrack;
 export enum TrackType { None, File, Stream}
 
 export interface BrowseFilter {
+    searchText: string;
     album: boolean;
     track: boolean;
     radio: boolean;

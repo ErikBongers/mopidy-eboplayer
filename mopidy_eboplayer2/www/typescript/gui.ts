@@ -8,12 +8,12 @@ import {BigTrackViewAdapter} from "./views/bigTrackViewAdapter";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
-import {EboBigTrackView} from "./components/eboBigTrackView";
+import {EboBigTrackComp} from "./components/eboBigTrackComp";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
-import {EboAlbumTracksView} from "./components/eboAlbumTracksView";
+import {EboAlbumTracksComp} from "./components/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
-import {EboBrowseView} from "./components/eboBrowseView";
+import {EboBrowseComp} from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
 
 export function getWebSocketUrl() {
@@ -32,9 +32,9 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.setGlobalCss(texts);
 
             customElements.define(EboProgressBar.tagName, EboProgressBar);
-            customElements.define(EboBigTrackView.tagName, EboBigTrackView);
-            customElements.define(EboAlbumTracksView.tagName, EboAlbumTracksView);
-            customElements.define(EboBrowseView.tagName, EboBrowseView);
+            customElements.define(EboBigTrackComp.tagName, EboBigTrackComp);
+            customElements.define(EboAlbumTracksComp.tagName, EboAlbumTracksComp);
+            customElements.define(EboBrowseComp.tagName, EboBrowseComp);
             customElements.define(EboButton.tagName, EboButton);
 
             setupStuff();

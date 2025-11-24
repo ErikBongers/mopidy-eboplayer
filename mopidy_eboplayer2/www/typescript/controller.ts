@@ -327,6 +327,7 @@ export class Controller extends Commands implements DataRequester{
             return JSON.parse(browseFilters);
         }
         return {
+            searchText: "",
             album: false,
             track: false,
             radio: false,

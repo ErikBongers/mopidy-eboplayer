@@ -4,9 +4,9 @@ import {EboPlayerDataType} from "./view";
 import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
 import {numberedDictToArray} from "../controller";
 import {models} from "../../js/mopidy";
-import {EboBigTrackView} from "../components/eboBigTrackView";
+import {EboBigTrackComp} from "../components/eboBigTrackComp";
 import Track = models.Track;
-import {EboAlbumTracksView} from "../components/eboAlbumTracksView";
+import {EboAlbumTracksComp} from "../components/eboAlbumTracksComp";
 
 export enum AlbumDataType {
     None,
@@ -65,7 +65,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onActiveTrackChanged();
         });
-        let comp = document.getElementById(this.componentId) as EboBigTrackView;
+        let comp = document.getElementById(this.componentId) as EboBigTrackComp;
         comp.addEventListener("albumClick", async (e) => {
             let show_back = comp.getAttribute("show_back");
             comp.setAttribute("show_back",  show_back == "true" ? "false" : "true");
@@ -74,7 +74,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         });
     }
 
-    private async fetchAlbumData(comp: EboBigTrackView) {
+    private async fetchAlbumData(comp: EboBigTrackComp) {
         if (this.albumInfo.type == AlbumDataType.None) {
             switch (this.track.type) {
                 case TrackType.File:
@@ -119,7 +119,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                 this.track = track;
                 this.albumInfo = AlbumNone;
                 this.setComponentData();
-                let comp = document.getElementById(this.componentId) as EboBigTrackView;
+                let comp = document.getElementById(this.componentId) as EboBigTrackComp;
                 if(comp.getAttribute("show_back") == "true")
                     this.fetchAlbumData(comp).then(r => {});
             });
@@ -138,7 +138,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         if(linesObject?.uri == this.uri)
             this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
-        let comp = document.getElementById(this.componentId) as EboBigTrackView;
+        let comp = document.getElementById(this.componentId) as EboBigTrackComp;
         comp.activeTrackUri = getState().getModel().getCurrentTrack();
     }
 

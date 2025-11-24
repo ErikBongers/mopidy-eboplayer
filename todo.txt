@@ -1,3 +1,5 @@
+* Add filter text to browseFilter object.
+
 * At startup (or at browse open), build a list of all Ref objects.
   > that's just the name and the uri.
   > that's purely based on mopidy-local !
