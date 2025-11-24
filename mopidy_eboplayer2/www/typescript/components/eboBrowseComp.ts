@@ -5,9 +5,17 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BrowseFilter} from "../model";
 
 export class EboBrowseComp extends EboComponent {
+    set browseFilter(value: BrowseFilter) {
+        this._browseFilter = value;
+        this.update();
+    }
+    private _browseFilter: BrowseFilter;
     static readonly tagName=  "ebo-browse-view";
     // noinspection JSUnusedGlobalSymbols
+
     static observedAttributes = [];
+
+    private readonly browseFilterChangedEvent: CustomEvent<unknown>;
 
     static styleText= `
             <style>
@@ -68,6 +76,21 @@ export class EboBrowseComp extends EboComponent {
 
     constructor() {
         super(EboBrowseComp.styleText, EboBrowseComp.htmlText);
+        this.browseFilterChangedEvent = new CustomEvent("browseFilterChanged", {
+            bubbles: true,
+            cancelable: false,
+            composed: true, //needed to 'break' out of the shadow.
+            detail: "todo"
+        });
+        this._browseFilter = {
+            searchText: "",
+            track: false,
+            artist: false,
+            genre: false,
+            radio: false,
+            playlist: false,
+            album: false,
+        };
         this.render();
     }
 
@@ -107,36 +130,40 @@ export class EboBrowseComp extends EboComponent {
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             await testDataGrab();
         });
-
-        let browseFilters = getState().getController().getBrowseFilters();
+        let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
+        inputElement.addEventListener("keydown", (ev: KeyboardEvent)=> {
+            this._browseFilter.searchText = inputElement.value;
+            this.dispatchEvent(this.browseFilterChangedEvent);
+        });
         this.shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
-                this.renderFilterButton(btn, browseFilters));
-        let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
-        inputElement.value = browseFilters.searchText;
-        inputElement.addEventListener("keydown", (ev: KeyboardEvent)=> {
-            let browseFilters = getState().getController().getBrowseFilters();
-            browseFilters.searchText = inputElement.value;
-            getState().getController().saveBrowseFilters(browseFilters);
-        });
+                btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
+                    let btn: EboButton = ev.target as EboButton;
+                    let propName = btn.id.replace("filter", "");
+                    propName = propName.charAt(0).toLowerCase() + propName.slice(1);
+                    let browseFilters = getState().getController().getBrowseFilters();
+                    browseFilters[propName] = !browseFilters[propName];
+                    this.dispatchEvent(this.browseFilterChangedEvent);
+                })
+            );
+        this.update();
     }
 
-    private renderFilterButton(btn: Element, browseFilters: BrowseFilter) {
+    private update() {
+        this.shadow.querySelectorAll("ebo-button")
+            .forEach(btn =>
+                this.updateFilterButton(btn));
+        let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
+        inputElement.value = this._browseFilter.searchText;
+    }
+
+    private updateFilterButton(btn: Element) {
         if (btn.id.startsWith("filter")) {
             let propName = btn.id
                     .replace("filter", "").charAt(0).toLowerCase()
                 + btn.id.replace("filter", "").slice(1);
-            btn.setAttribute("pressed", browseFilters[propName].toString());
+            btn.setAttribute("pressed", this._browseFilter[propName].toString());
         }
-
-        btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
-            let btn: EboButton = ev.target as EboButton;
-            let propName = btn.id.replace("filter", "");
-            propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-            let browseFilters = getState().getController().getBrowseFilters();
-            browseFilters[propName] = !browseFilters[propName];
-            getState().getController().saveBrowseFilters(browseFilters); //todo: component should not query controller. Controller should set model and model should notify listeners.
-        });
     }
 }
 

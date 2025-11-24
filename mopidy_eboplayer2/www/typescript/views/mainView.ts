@@ -9,6 +9,10 @@ export class MainView extends View {
         document.getElementById("headerSearchBtn").addEventListener("click", () => {
             this.onSearchButtonClick();
         });
+        let browseComp = document.getElementById("browseView") as EboBrowseComp;
+        browseComp.addEventListener("browseFilterChanged", (ev) => {
+            console_yellow("BRROWS CHANGED");
+        });
     }
 
     private onSearchButtonClick() {
@@ -18,7 +22,9 @@ export class MainView extends View {
             browseBtn.title = "Now playing";
             layout.classList.add("browse");
             layout.classList.remove("bigTrack");
-            (document.getElementById("browseView") as EboBrowseComp).setFocusAndSelect();
+            let browseComp = document.getElementById("browseView") as EboBrowseComp;
+            browseComp.browseFilter = getState().getController().getBrowseFilters();
+            browseComp.setFocusAndSelect();
         } else {
             browseBtn.title = "Search";
             layout.classList.remove("browse");
