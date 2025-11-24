@@ -6,7 +6,7 @@ import getState from "../playerState";
 export class EboAlbumTracksComp extends EboComponent {
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
-        this.onActiveTrackChanged();
+        this.highLightActiveTrack();
     }
     get albumInfo(): AlbumData {
         return this._albumInfo;
@@ -166,15 +166,13 @@ export class EboAlbumTracksComp extends EboComponent {
                 });
                 break;
         }
-        this.onActiveTrackChanged();
+        this.highLightActiveTrack();
     }
 
-    private onActiveTrackChanged() {
-        let activeTrack = getState().getModel().getCurrentTrack();
-        if(!activeTrack)
+    private highLightActiveTrack() {
+        if(!this._activeTrackUri)
             return;
-        console_yellow(`Active track changed to ${activeTrack}.`);
-        let tr = this.shadow.querySelector(`tr[data-uri="${activeTrack}"]`) as HTMLTableRowElement;
+        let tr = this.shadow.querySelector(`tr[data-uri="${this._activeTrackUri}"]`) as HTMLTableRowElement;
         if(tr) {
             tr.classList.add("current", "textGlow");
         }
