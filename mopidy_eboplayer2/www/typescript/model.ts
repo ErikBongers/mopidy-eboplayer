@@ -44,6 +44,7 @@ export enum EboplayerEvents {
     activeStreamLinesChanged = "eboplayer.activeStreamLinesChanged",
     historyChanged = "eboplayer.historyChanged",
     trackListChanged = "eboplayer.trackListChanged",
+    browseFilterChanged = "eboplayer.browseFilterChanged",
 }
 
 export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -84,6 +85,7 @@ export interface ViewModel extends EventTarget {
     getActiveStreamLines: () => StreamTitles;
     getHistory: () => HistoryLine[];
     getTrackInfo(uri: string): LibraryItem;
+    getBrowseFilter: () => BrowseFilter;
 }
 
 export interface HistoryRef {
@@ -129,6 +131,15 @@ export class Model extends EventTarget implements ViewModel {
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, LibraryItem> = new Map();
+    private browseFilter: BrowseFilter = {
+        searchText: "",
+        album: true,
+        track: true,
+        radio: true,
+        artist: true,
+        playlist: true,
+        genre: true
+    };
 
     constructor() {
         super();
@@ -147,6 +158,12 @@ export class Model extends EventTarget implements ViewModel {
 
     getTrackInfo(uri: string): LibraryItem {
         return this.libraryCache.get(uri);
+    }
+
+    getBrowseFilter = () => this.browseFilter;
+    setBrowseFilter(filter: BrowseFilter) {
+        this.browseFilter = filter;
+        this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
     }
 
     getCurrentTrack(): string {

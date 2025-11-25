@@ -65,6 +65,8 @@ export class State {
         for (const dataType of requiredData) {
             await this.controller.getData(dataType);
         }
+
+        this.controller.loadBrowseFilters();
     }
 }
 

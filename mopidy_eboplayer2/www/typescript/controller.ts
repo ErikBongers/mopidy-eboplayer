@@ -321,23 +321,13 @@ export class Controller extends Commands implements DataRequester{
         localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(browseFilters));
     }
 
-    getBrowseFilters(): BrowseFilter {
+    loadBrowseFilters() {
         let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
-        let defaultFilter: BrowseFilter = {
-            searchText: "",
-            album: false,
-            track: false,
-            radio: false,
-            artist: false,
-            playlist: false,
-            genre: false
-        };
         if (browseFilters) {
-            return jsonParse(browseFilters, defaultFilter);
+            this.model.setBrowseFilter(jsonParse(browseFilters, this.model.getBrowseFilter()));
         }
-        return defaultFilter;
+        console.error("Could not load or parse browse filters from local storage. Using default filters.");
     }
-
 }
 
 export function quadratic100(x:number) { return (x*x)/100;}

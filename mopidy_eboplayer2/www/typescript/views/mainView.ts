@@ -23,7 +23,7 @@ export class MainView extends View {
             layout.classList.add("browse");
             layout.classList.remove("bigTrack");
             let browseComp = document.getElementById("browseView") as EboBrowseComp;
-            browseComp.browseFilter = getState().getController().getBrowseFilters();
+            browseComp.browseFilter = getState().getModel().getBrowseFilter();
             browseComp.setFocusAndSelect();
         } else {
             browseBtn.title = "Search";

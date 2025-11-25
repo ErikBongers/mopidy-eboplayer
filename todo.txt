@@ -1,5 +1,13 @@
+
+* controller function names are ambiguous.
+  >>> https://developer.chrome.com/docs/apps/app_frameworks#model
+  > in MVC, the model handles data retrieval, validation, etc.
+  > the controller handles
+    - user interaction
+    - translates view data to model data.
+    - manages the views.
+
 * In main view:
-  > persist the browse filter on change.
   > apply the browse filter.
     > in the model, create a filtered Ref list.
 
