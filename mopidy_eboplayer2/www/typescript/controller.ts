@@ -11,13 +11,15 @@ import {DataRequester} from "./views/dataRequester";
 import TlTrack = models.TlTrack;
 
 export class Controller extends Commands implements DataRequester{
-    private model: Model;
+    protected model: Model;
     private commands: Commands;
+    private mopidyProxy: MopidyProxy;
 
     constructor(model: Model, mopidy: Mopidy) {
         super(mopidy);
         this.model  = model;
         this.commands = new Commands(mopidy);
+        this.mopidyProxy = new MopidyProxy(this, model, this.commands);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -31,14 +33,14 @@ export class Controller extends Commands implements DataRequester{
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await getState().getRequiredData();
-            await this.fetchHistory();
+            await this.mopidyProxy.fetchHistory();
         });
 
         this.mopidy.on('state:offline', () => {
             this.model.setConnectionState(ConnectionState.Offline);
         });
 
-        this.mopidy.on('event:optionsChanged', this.fetchPlaybackOptions);
+        this.mopidy.on('event:optionsChanged', this.mopidyProxy.fetchPlaybackOptions);
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
@@ -82,8 +84,8 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:tracklistChanged', async () => {
-            await this.fetchTracklistAndDetails();
-            await this.fetchCurrentTrackAndDetails();
+            await this.mopidyProxy.fetchTracklistAndDetails();
+            await this.mopidyProxy.fetchCurrentTrackAndDetails();
         });
 
         this.mopidy.on('event:seeked', (data) => {
@@ -124,41 +126,14 @@ export class Controller extends Commands implements DataRequester{
 
     }
 
-    async fetchTracklistAndDetails() {
-        let tracks = await this.commands.core.tracklist.getTlTracks();
-        this.model.setTrackList(tracks);
-    }
-
-    async fetchCurrentTrackAndDetails() {
-        let currentTrack = await this.commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
-        await this.setCurrentTrackAndFetchDetails(currentTrack);
-    }
-
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
         this.model.setCurrentTrack(transformTlTrackDataToModel(data));
-        await this.fetchActiveStreamLines();
+        await this.mopidyProxy.fetchActiveStreamLines();
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // this.core.playback.getState().then(processPlaystate, console.error)
         // this.core.mixer.getVolume().then(processVolume, console.error)
         // this.core.mixer.getMute().then(processMute, console.error)
-    }
-
-    fetchPlaybackOptions () {
-        let promises = [
-            this.commands.core.tracklist.getRepeat(),
-            this.commands.core.tracklist.getRandom(),
-            this.commands.core.tracklist.getConsume(),
-            this.commands.core.tracklist.getSingle(),
-        ];
-        Promise.all(promises).then((results) => {
-            this.model.setPlaybackState({
-                repeat: results[0],
-                random: results[1],
-                consume: results[2],
-                single: results[3]
-            });
-        })
     }
 
     setVolume(volume: number) {
@@ -188,33 +163,14 @@ export class Controller extends Commands implements DataRequester{
                 this.setPlayState(state);
                 break;
             case  EboPlayerDataType.StreamLines:
-                await this.fetchActiveStreamLines();
+                await this.mopidyProxy.fetchActiveStreamLines();
                 break;
             case  EboPlayerDataType.TrackList:
-                await this.fetchTracklistAndDetails();
+                await this.mopidyProxy.fetchTracklistAndDetails();
                 break;
         }
     }
 
-    private async fetchActiveStreamLines() {
-        if(!this.model.currentTrack) {
-            this.model.setActiveStreamLinesHistory(undefined);
-            return;
-        }
-
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
-        url.searchParams.set("uri", this.model.currentTrack);
-        let res = await fetch(url);
-        let lines = await res.json();
-        this.model.setActiveStreamLinesHistory(lines);
-    }
-
-    async fetchAllStreamLines(uri: string) {
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
-        url.searchParams.set("uri", uri);
-        let res = await fetch(url);
-        return await res.json() as string[];
-    }
 
 
     async getTrackInfo(uri: string) {
@@ -223,43 +179,6 @@ export class Controller extends Commands implements DataRequester{
             await this.lookupCached(uri);
 
         return transformLibraryItem(track);
-    }
-
-    async fetchHistory()  {
-        let historyObject: Object = await this.commands.core.history.getHistory();
-        let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
-            return {
-                timestamp: line["0"],
-                ref: line["1"]
-            };
-        });
-
-
-        //Make sure a stream is only listed once.
-        let foundStreams = new Set<string>();
-        let filtered = historyLines.filter(line => {
-            if(!line.ref.uri.startsWith("http:"))
-                return true; //assume not a stream
-            if(foundStreams.has(line.ref.uri))
-                return false;
-            foundStreams.add(line.ref.uri);
-            return true;
-        });
-
-
-        let prev = {ref: {uri:""}};
-        let dedupLines = filtered.filter((line) => {
-            if(line.ref.uri == prev.ref.uri)
-                return false;
-            prev = line;
-            return true;
-        });
-
-        let unique = [...new Set(dedupLines)];
-        let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
-        this.model.addDictToLibraryCache(dict);
-
-        this.model.setHistory(dedupLines);
     }
 
     async lookupCached(uri: string) {
@@ -422,3 +341,98 @@ export function transformTrackDataToModel(track: (models.Track | undefined)): Tr
 
 const BROWSE_FILTERS_KEY = "browseFilters";
 
+class MopidyProxy {
+    private controller: Controller;
+    private model: Model;
+    private commands: Commands;
+
+    constructor(controller: Controller, model: Model, commands: Commands) {
+        this.controller = controller;
+        this.model = model;
+        this.commands = commands;
+    }
+
+    async fetchActiveStreamLines() {
+        if(!this.model.currentTrack) {
+            this.model.setActiveStreamLinesHistory(undefined);
+            return;
+        }
+
+        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
+        url.searchParams.set("uri", this.model.currentTrack);
+        let res = await fetch(url);
+        let lines = await res.json();
+        this.model.setActiveStreamLinesHistory(lines);
+    }
+
+    async fetchTracklistAndDetails() {
+        let tracks = await this.commands.core.tracklist.getTlTracks();
+        this.model.setTrackList(tracks);
+    }
+
+    async fetchAllStreamLines(uri: string) {
+        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
+        url.searchParams.set("uri", uri);
+        let res = await fetch(url);
+        return await res.json() as string[];
+    }
+
+    async fetchHistory()  {
+        let historyObject: Object = await this.commands.core.history.getHistory();
+        let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
+            return {
+                timestamp: line["0"],
+                ref: line["1"]
+            };
+        });
+
+
+        //Make sure a stream is only listed once.
+        let foundStreams = new Set<string>();
+        let filtered = historyLines.filter(line => {
+            if(!line.ref.uri.startsWith("http:"))
+                return true; //assume not a stream
+            if(foundStreams.has(line.ref.uri))
+                return false;
+            foundStreams.add(line.ref.uri);
+            return true;
+        });
+
+
+        let prev = {ref: {uri:""}};
+        let dedupLines = filtered.filter((line) => {
+            if(line.ref.uri == prev.ref.uri)
+                return false;
+            prev = line;
+            return true;
+        });
+
+        let unique = [...new Set(dedupLines)];
+        let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
+        this.model.addDictToLibraryCache(dict);
+
+        this.model.setHistory(dedupLines);
+    }
+
+    fetchPlaybackOptions () {
+        let promises = [
+            this.commands.core.tracklist.getRepeat(),
+            this.commands.core.tracklist.getRandom(),
+            this.commands.core.tracklist.getConsume(),
+            this.commands.core.tracklist.getSingle(),
+        ];
+        Promise.all(promises).then((results) => {
+            this.model.setPlaybackState({
+                repeat: results[0],
+                random: results[1],
+                consume: results[2],
+                single: results[3]
+            });
+        })
+    }
+
+    async fetchCurrentTrackAndDetails() {
+        let currentTrack = await this.commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
+        await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
+    }
+}

@@ -1,11 +1,15 @@
-
-* controller function names are ambiguous.
-  >>> https://developer.chrome.com/docs/apps/app_frameworks#model
-  > in MVC, the model handles data retrieval, validation, etc.
-  > the controller handles
-    - user interaction
-    - translates view data to model data.
-    - manages the views.
+* Separete model view controller.
+  > model:
+    - store data
+    - inform listeners
+    - provide defaults
+  > view: display data.
+  > controller:
+    - interact with model and view
+    - retrieve and persist data.
+    - TODO: no getXXX functions!
+      > ambiguous name!
+        > get where?
 
 * In main view:
   > apply the browse filter.
