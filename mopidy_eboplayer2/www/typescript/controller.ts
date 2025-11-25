@@ -1,5 +1,5 @@
 import getState from "./playerState";
-import {showLoading, validUri} from "./functionsvars";
+import {jsonParse, showLoading, validUri} from "./functionsvars";
 import {library} from "./library";
 // import * as controls from "./controls";
 import {transformTlTrackDataToModel} from "./process_ws";
@@ -323,10 +323,7 @@ export class Controller extends Commands implements DataRequester{
 
     getBrowseFilters(): BrowseFilter {
         let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
-        if (browseFilters) {
-            return JSON.parse(browseFilters);
-        }
-        return {
+        let defaultFilter: BrowseFilter = {
             searchText: "",
             album: false,
             track: false,
@@ -334,7 +331,11 @@ export class Controller extends Commands implements DataRequester{
             artist: false,
             playlist: false,
             genre: false
+        };
+        if (browseFilters) {
+            return jsonParse(browseFilters, defaultFilter);
         }
+        return defaultFilter;
     }
 
 }

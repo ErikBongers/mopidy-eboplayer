@@ -5,6 +5,9 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BrowseFilter} from "../model";
 
 export class EboBrowseComp extends EboComponent {
+    get browseFilter(): BrowseFilter {
+        return this._browseFilter;
+    }
     set browseFilter(value: BrowseFilter) {
         this._browseFilter = value;
         this.update();
@@ -141,8 +144,7 @@ export class EboBrowseComp extends EboComponent {
                     let btn: EboButton = ev.target as EboButton;
                     let propName = btn.id.replace("filter", "");
                     propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-                    let browseFilters = getState().getController().getBrowseFilters();
-                    browseFilters[propName] = !browseFilters[propName];
+                    this.browseFilter[propName] = !this.browseFilter[propName];
                     this.dispatchEvent(this.browseFilterChangedEvent);
                 })
             );

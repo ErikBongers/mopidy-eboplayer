@@ -11,7 +11,7 @@ export class MainView extends View {
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEventListener("browseFilterChanged", (ev) => {
-            console_yellow("BRROWS CHANGED");
+            getState().getController().saveBrowseFilters(browseComp.browseFilter);
         });
     }
 

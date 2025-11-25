@@ -1,4 +1,13 @@
-* Add filter text to browseFilter object.
+* In main view:
+  > persist the browse filter on change.
+  > apply the browse filter.
+    > in the model, create a filtered Ref list.
+
+* In the model:
+  > create a Ref object for every track, album, artist,...
+  > create a filtered Ref list.
+    > with listeners.
+
 
 * At startup (or at browse open), build a list of all Ref objects.
   > that's just the name and the uri.

@@ -1,5 +1,3 @@
-import * as images from "./images";
-import {processPlaylistItems} from "./process_ws";
 // import * as controls from "./controls";
 import getState from "./playerState";
 import {models} from "../js/mopidy";
@@ -627,4 +625,13 @@ export function switchContent(divid: string, uri: string = undefined) {
         hash += '?' + uri
     }
     location.hash = '#' + hash
+}
+
+export function jsonParse<T>(data: string, defaultValue: T) {
+    try {
+        return JSON.parse(data);
+    } catch (e) {
+        console.error(e);
+        return defaultValue;
+    }
 }
