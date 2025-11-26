@@ -3,7 +3,7 @@ import {SyncedProgressTimer} from "./synced_timer";
 import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
-import {Controller, getHostAndPort} from "./controller";
+import {Controller} from "./controller";
 import {BigTrackViewAdapter} from "./views/bigTrackViewAdapter";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
@@ -15,6 +15,7 @@ import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
 import {EboBrowseComp} from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
+import {getHostAndPort} from "./global";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;

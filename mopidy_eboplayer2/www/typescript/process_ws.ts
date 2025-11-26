@@ -4,8 +4,8 @@ import * as images from "./images";
 import {models} from "../js/mopidy";
 import getState from "./playerState";
 import {TrackModel} from "./model";
-import {transformTrackDataToModel} from "./controller";
 import TlTrack = models.TlTrack;
+import {transformTrackDataToModel} from "./global";
 
 export function transformTlTrackDataToModel(tlTrack: (TlTrack | null)): TrackModel {
     return transformTrackDataToModel(tlTrack?.track);

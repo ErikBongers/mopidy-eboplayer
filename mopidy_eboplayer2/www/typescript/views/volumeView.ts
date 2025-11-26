@@ -1,7 +1,8 @@
 import getState from "../playerState";
 import {EboplayerEvents} from "../model";
 import {EboPlayerDataType, View} from "./view";
-import {inverseQuadratic100} from "../controller";
+
+import {inverseQuadratic100} from "../global";
 
 export class VolumeView extends View {
     private readonly sliderId: string;
