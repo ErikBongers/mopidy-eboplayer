@@ -89,7 +89,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                     comp.albumInfo = this.albumInfo;
                     break;
                 case TrackType.Stream:
-                    let stream_lines = await getState().getController().fetchAllStreamLines(this.uri);
+                    let stream_lines = await getState().getController().mopidyProxy.fetchAllStreamLines(this.uri);
                     let groupLines = function (grouped: string[][], line: string){
                         if(line == "---") {
                             grouped.push([]);

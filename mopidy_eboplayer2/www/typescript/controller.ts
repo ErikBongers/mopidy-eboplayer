@@ -13,7 +13,7 @@ import TlTrack = models.TlTrack;
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
     private commands: Commands;
-    private mopidyProxy: MopidyProxy;
+    public mopidyProxy: MopidyProxy;
 
     constructor(model: Model, mopidy: Mopidy) {
         super(mopidy);

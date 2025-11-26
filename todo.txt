@@ -1,3 +1,10 @@
+* getTrackInfo returns a value.
+  - rename to fetchTrackInfo.
+  > but where should trackInfo be stored?
+    > add to model.libraryCache.
+    > BUT!: hhow to inform requester that data is available?
+      > promise or message?
+
 * Separete model view controller.
   > model:
     - store data
