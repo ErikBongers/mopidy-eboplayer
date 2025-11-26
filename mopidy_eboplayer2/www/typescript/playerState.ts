@@ -20,23 +20,12 @@ export class State {
     popupData = {};  // TODO: Refactor into one shared cache,
     songlength: number = 0;
 
-    artistsHtml: string = '';
-    artistsText: string = '';
-    albumHtml: string = '';
-    albumText: string = '';
     streamUris = {}; //TODO: EBO added this to make gui.ts compile.
-
-    songdata: (TlTrack | undefined) = undefined;
-
-    pageScrollPos = {};
-
-    uriSchemes = {};
 
     // array of cached playlists (not only user-playlists, also search, artist, album-playlists)
     playlists = {};  // TODO: Refactor into one shared cache,
     customTracklists =  [];  // TODO: Refactor into one shared cache,
 
-    browseStack =  [];
     private readonly model: ViewModel;
     private readonly controller: Controller;
 

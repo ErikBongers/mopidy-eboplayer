@@ -178,20 +178,6 @@ export class Controller extends Commands implements DataRequester{
         this.model.setSelectedTrack(uri);
     }
 
-    async sendVolume(value: number) {
-        await this.commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
-    }
-
-    async sendStop() {
-        return this.commands.core.playback.stop();
-    }
-    async sendPause() {
-        return this.commands.core.playback.pause();
-    }
-    async sendPlay() {
-        return this.commands.core.playback.play();
-    }
-
     async getCurrertTrackInfo() {
         let trackUri = this.model.getCurrentTrack();
         return await this.getTrackInfoCached(trackUri);
@@ -199,10 +185,6 @@ export class Controller extends Commands implements DataRequester{
 
     async getRootDirs() {
         return await this.commands.core.library.browse(null);
-    }
-
-    async browse(uri: string) {
-        return await this.commands.core.library.browse(uri);
     }
 
     async getTracksforArtist() {
@@ -325,6 +307,24 @@ class MopidyProxy {
         this.controller = controller;
         this.model = model;
         this.commands = commands;
+    }
+
+    async browse(uri: string) {
+        return await this.commands.core.library.browse(uri);
+    }
+
+    async sendVolume(value: number) {
+        await this.commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
+    }
+
+    async sendStop() {
+        return this.commands.core.playback.stop();
+    }
+    async sendPause() {
+        return this.commands.core.playback.pause();
+    }
+    async sendPlay() {
+        return this.commands.core.playback.play();
     }
 
     async fetchRequiredData(dataType: EboPlayerDataType) {

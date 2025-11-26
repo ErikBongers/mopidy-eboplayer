@@ -174,13 +174,13 @@ async function testDataGrab() {
     let roots = await getState().getController().getRootDirs();
     console_yellow("Roots:");
     console.log(roots);
-    let subDir1 = await getState().getController().browse(roots[1].uri);
+    let subDir1 = await getState().getController().mopidyProxy.browse(roots[1].uri);
     console_yellow("subDir1:");
     console.log(subDir1);
-    let allTracks = await getState().getController().browse("local:directory?type=track");
+    let allTracks = await getState().getController().mopidyProxy.browse("local:directory?type=track");
     console_yellow("allTracks:");
     console.log(allTracks);
-    let allAlbums = await getState().getController().browse("local:directory?type=album");
+    let allAlbums = await getState().getController().mopidyProxy.browse("local:directory?type=album");
     console_yellow("allAlbums:");
     console.log(allAlbums);
     let artists = await getState().getController().getTracksforArtist();

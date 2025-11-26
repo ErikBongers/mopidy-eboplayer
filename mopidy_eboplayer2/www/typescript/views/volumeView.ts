@@ -38,7 +38,7 @@ export class VolumeView extends View {
     }
 
     async sendVolume(value: number) {
-        await getState().getController().sendVolume(value);
+        await getState().getController().mopidyProxy.sendVolume(value);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {

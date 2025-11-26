@@ -1,4 +1,4 @@
-* Separete model view controller.
+* Separate model view controller.
   > model:
     - store data
     - inform listeners

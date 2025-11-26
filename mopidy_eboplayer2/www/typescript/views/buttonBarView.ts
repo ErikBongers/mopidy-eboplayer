@@ -77,13 +77,13 @@ export class ButtonBarView extends View {
         if (playState == PlayState.playing) {
             let currentTrack = await getState().getController().getCurrertTrackInfo();
             if(currentTrack.type == TrackType.Stream)
-                return getState().getController().sendStop();
+                return getState().getController().mopidyProxy.sendStop();
             else
-                return getState().getController().sendPause();
+                return getState().getController().mopidyProxy.sendPause();
         } else {
-                return getState().getController().sendPlay();
-            }
+                return getState().getController().mopidyProxy.sendPlay();
         }
+    }
 
     private setPlayButton(title: string, removeClasses: string[], addClass: string) {
         let btnPlayIcon = View.getSubId(this.containerId, 'btnPlay').querySelector('i');
