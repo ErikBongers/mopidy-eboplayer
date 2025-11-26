@@ -10,6 +10,11 @@
     - TODO: no getXXX functions!
       > ambiguous name!
         > get where?
+          > make proxies.
+      > never get data directly from backend.
+        > always get from model.
+        > convert get methods to fetch methods that DON'T return data directly.
+
 
 * In main view:
   > apply the browse filter.
