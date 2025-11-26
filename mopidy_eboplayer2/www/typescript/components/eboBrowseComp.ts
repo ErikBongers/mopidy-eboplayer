@@ -131,7 +131,7 @@ export class EboBrowseComp extends EboComponent {
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         this.shadow.appendChild(fragment);
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
-            await testDataGrab();
+            await onSearchClicked();
         });
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.addEventListener("keydown", (ev: KeyboardEvent)=> {
@@ -169,7 +169,7 @@ export class EboBrowseComp extends EboComponent {
     }
 }
 
-async function testDataGrab() {
+async function onSearchClicked() {
     // returns "Files" and "Local media"
     let roots = await getState().getController().mopidyProxy.fetchRootDirs();
     console_yellow("Roots:");

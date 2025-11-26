@@ -11,6 +11,7 @@ import {MopidyProxy} from "./mopidyProxy";
 import {LocalStorageProxy} from "./localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
+import {console_yellow} from "./gui";
 
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
@@ -46,12 +47,10 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
-            // controls.setPlayState(true);
         });
 
         this.mopidy.on('event:trackPlaybackResumed', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
-            // controls.setPlayState(true); //todo: pass this through the model and it's listeners.
         });
 
         this.mopidy.on('event:playlistsLoaded', ()  => {
@@ -60,15 +59,11 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:playlistChanged', (data) => {
-            (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'none';
-            (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block';
             delete getState().playlists[data.playlist.uri];
             library.getPlaylists();
         });
 
         this.mopidy.on('event:playlistDeleted', (data) => {
-            (document.getElementById('playlisttracksdiv') as HTMLElement).style.display = 'none';
-            (document.getElementById('playlistslistdiv') as HTMLElement).style.display = 'block';
             delete getState().playlists[data.uri];
             library.getPlaylists();
         });
@@ -78,7 +73,6 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:muteChanged', (_data) => {
-            // controls.setMute(data.mute);
         });
 
         this.mopidy.on('event:playbackStateChanged', (data) => {
@@ -186,4 +180,22 @@ export class Controller extends Commands implements DataRequester{
         return await this.getTrackInfoCached(trackUri);
     }
 
+    async fetchAllRefs() {
+        // returns "Files" and "Local media"
+        let roots = await getState().getController().mopidyProxy.fetchRootDirs();
+        console_yellow("Roots:");
+        console.log(roots);
+        let subDir1 = await getState().getController().mopidyProxy.browse(roots[1].uri);
+        console_yellow("subDir1:");
+        console.log(subDir1);
+        let allTracks = await getState().getController().mopidyProxy.browse("local:directory?type=track");
+        console_yellow("allTracks:");
+        console.log(allTracks);
+        let allAlbums = await getState().getController().mopidyProxy.browse("local:directory?type=album");
+        console_yellow("allAlbums:");
+        console.log(allAlbums);
+        let artists = await getState().getController().mopidyProxy.fetchTracksforArtist();
+        console_yellow("artists:");
+        console.log(artists);
+    }
 }

@@ -67,11 +67,6 @@ function setupStuff() {
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 
     mopidy.connect();
-
-    // document.getElementById("showBrowse").onclick = async () => {
-    // let browse = await getState().commands.core.library.browse(null);
-    // console.log({browse});
-    // };
 }
 
 export function console_yellow(msg: string) {

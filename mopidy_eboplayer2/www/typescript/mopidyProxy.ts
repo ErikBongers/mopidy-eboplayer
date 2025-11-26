@@ -4,6 +4,7 @@ import {models} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
 import {Controller} from "./controller";
 import {getHostAndPort, numberedDictToArray, quadratic100} from "./global";
+import TlTrack = models.TlTrack;
 
 export class MopidyProxy {
     private controller: Controller;

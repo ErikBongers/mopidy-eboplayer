@@ -1,7 +1,5 @@
 import getState from "../playerState";
-import {EboplayerEvents, MessageType} from "../model";
 import {EboPlayerDataType, View} from "./view";
-import {console_yellow} from "../gui";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 
 export class MainView extends View {
@@ -11,7 +9,7 @@ export class MainView extends View {
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEventListener("browseFilterChanged", (ev) => {
-            getState().getController().saveBrowseFilters(browseComp.browseFilter);
+            getState().getController().localStorageProxy.saveBrowseFilters(browseComp.browseFilter);
         });
     }
 
