@@ -244,6 +244,7 @@ export class Controller extends Commands implements DataRequester{
         let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
         if (browseFilters) {
             this.model.setBrowseFilter(jsonParse(browseFilters, this.model.getBrowseFilter()));
+            return;
         }
         console.error("Could not load or parse browse filters from local storage. Using default filters.");
     }
