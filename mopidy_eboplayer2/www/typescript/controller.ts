@@ -148,31 +148,6 @@ export class Controller extends Commands implements DataRequester{
         this.model.setTrackList(trackList);
     }
 
-    async getData(dataType: EboPlayerDataType) {
-        switch (dataType) {
-            case EboPlayerDataType.Volume:
-                let volume = await this.commands.core.mixer.getVolume() as number;
-                this.setVolume(volume);
-                break;
-            case  EboPlayerDataType.CurrentTrack:
-                let track = await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
-                await this.setCurrentTrackAndFetchDetails(track);
-                break;
-            case  EboPlayerDataType.PlayState:
-                let state = await this.commands.core.playback.getState() as string;
-                this.setPlayState(state);
-                break;
-            case  EboPlayerDataType.StreamLines:
-                await this.mopidyProxy.fetchActiveStreamLines();
-                break;
-            case  EboPlayerDataType.TrackList:
-                await this.mopidyProxy.fetchTracklistAndDetails();
-                break;
-        }
-    }
-
-
-
     async getTrackInfoCached(uri: string) {
         let track  = getState().getModel().getTrackInfo(uri);
         if(!track)
@@ -350,6 +325,29 @@ class MopidyProxy {
         this.controller = controller;
         this.model = model;
         this.commands = commands;
+    }
+
+    async fetchRequiredData(dataType: EboPlayerDataType) {
+        switch (dataType) {
+            case EboPlayerDataType.Volume:
+                let volume = await this.commands.core.mixer.getVolume() as number;
+                this.controller.setVolume(volume);
+                break;
+            case  EboPlayerDataType.CurrentTrack:
+                let track = await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
+                await this.controller.setCurrentTrackAndFetchDetails(track);
+                break;
+            case  EboPlayerDataType.PlayState:
+                let state = await this.commands.core.playback.getState() as string;
+                this.controller.setPlayState(state);
+                break;
+            case  EboPlayerDataType.StreamLines:
+                await this.fetchActiveStreamLines();
+                break;
+            case  EboPlayerDataType.TrackList:
+                await this.fetchTracklistAndDetails();
+                break;
+        }
     }
 
     async fetchTracks(uris: string | string[]) {

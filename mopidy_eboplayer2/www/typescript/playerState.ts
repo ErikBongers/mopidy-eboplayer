@@ -63,7 +63,7 @@ export class State {
         this.controller.getRequiredDataTypesRecursive().forEach((dataType => requiredData.add(dataType)));
 
         for (const dataType of requiredData) {
-            await this.controller.getData(dataType);
+            await this.controller.mopidyProxy.fetchRequiredData(dataType);
         }
 
         this.controller.loadBrowseFilters();

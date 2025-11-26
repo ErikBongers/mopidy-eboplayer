@@ -1,10 +1,3 @@
-* getTrackInfo returns a value.
-  - rename to fetchTrackInfo.
-  > but where should trackInfo be stored?
-    > add to model.libraryCache.
-    > BUT!: hhow to inform requester that data is available?
-      > promise or message?
-
 * Separete model view controller.
   > model:
     - store data
@@ -21,7 +14,7 @@
       > never get data directly from backend.
         > always get from model.
         > convert get methods to fetch methods that DON'T return data directly.
-
+      > except getXXXCached()
 
 * In main view:
   > apply the browse filter.
