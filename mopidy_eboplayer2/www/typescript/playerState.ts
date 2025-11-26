@@ -55,7 +55,7 @@ export class State {
             await this.controller.mopidyProxy.fetchRequiredData(dataType);
         }
 
-        this.controller.loadBrowseFilters();
+        this.controller.localStorageProxy.loadBrowseFilters();
     }
 }
 

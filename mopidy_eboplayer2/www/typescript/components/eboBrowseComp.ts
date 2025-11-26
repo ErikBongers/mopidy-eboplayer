@@ -171,7 +171,7 @@ export class EboBrowseComp extends EboComponent {
 
 async function testDataGrab() {
     // returns "Files" and "Local media"
-    let roots = await getState().getController().getRootDirs();
+    let roots = await getState().getController().mopidyProxy.fetchRootDirs();
     console_yellow("Roots:");
     console.log(roots);
     let subDir1 = await getState().getController().mopidyProxy.browse(roots[1].uri);
@@ -183,7 +183,7 @@ async function testDataGrab() {
     let allAlbums = await getState().getController().mopidyProxy.browse("local:directory?type=album");
     console_yellow("allAlbums:");
     console.log(allAlbums);
-    let artists = await getState().getController().getTracksforArtist();
+    let artists = await getState().getController().mopidyProxy.fetchTracksforArtist();
     console_yellow("artists:");
     console.log(artists);
 }

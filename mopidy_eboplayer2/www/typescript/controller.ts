@@ -14,12 +14,14 @@ export class Controller extends Commands implements DataRequester{
     protected model: Model;
     private commands: Commands;
     public mopidyProxy: MopidyProxy;
+    public localStorageProxy: LocalStorageProxy;
 
     constructor(model: Model, mopidy: Mopidy) {
         super(mopidy);
         this.model  = model;
         this.commands = new Commands(mopidy);
         this.mopidyProxy = new MopidyProxy(this, model, this.commands);
+        this.localStorageProxy = new LocalStorageProxy(model);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -75,7 +77,7 @@ export class Controller extends Commands implements DataRequester{
             this.model.setVolume(data.volume);
         });
 
-        this.mopidy.on('event:muteChanged', (data) => {
+        this.mopidy.on('event:muteChanged', (_data) => {
             // controls.setMute(data.mute);
         });
 
@@ -88,7 +90,7 @@ export class Controller extends Commands implements DataRequester{
             await this.mopidyProxy.fetchCurrentTrackAndDetails();
         });
 
-        this.mopidy.on('event:seeked', (data) => {
+        this.mopidy.on('event:seeked', () => {
             // controls.setPosition(data.time_position);
             if (getState().play) {
                 getState().syncedProgressTimer.start();
@@ -166,11 +168,12 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async playTrack(uri: string) {
-        await this.commands.core.tracklist.clear();
-        let tracks = await this.commands.core.tracklist.add(null, null, [uri]);
+        await this.mopidyProxy.clearTrackList();
+        let tracks = await this.mopidyProxy.addTrackToTracklist(uri);
         let trackList = numberedDictToArray(tracks) as models.TlTrack[];
         this.setTracklist(trackList);
-        this.commands.core.playback.play(null, trackList[0].tlid);
+        // noinspection ES6MissingAwait
+        this.mopidyProxy.playTracklistItem(trackList);
         await this.setCurrentTrackAndFetchDetails(trackList[0]);
     }
 
@@ -178,32 +181,15 @@ export class Controller extends Commands implements DataRequester{
         this.model.setSelectedTrack(uri);
     }
 
-    async getCurrertTrackInfo() {
+    async getCurrertTrackInfoCached() {
         let trackUri = this.model.getCurrentTrack();
         return await this.getTrackInfoCached(trackUri);
-    }
-
-    async getRootDirs() {
-        return await this.commands.core.library.browse(null);
-    }
-
-    async getTracksforArtist() {
-        let tracksforArtist = await this.commands.core.library.search({artist: ["Sting"]}, null);
-        return tracksforArtist;
     }
 
     saveBrowseFilters(browseFilters: BrowseFilter) {
         localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(browseFilters));
     }
 
-    loadBrowseFilters() {
-        let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
-        if (browseFilters) {
-            this.model.setBrowseFilter(jsonParse(browseFilters, this.model.getBrowseFilter()));
-            return;
-        }
-        console.error("Could not load or parse browse filters from local storage. Using default filters.");
-    }
 }
 
 export function quadratic100(x:number) { return (x*x)/100;}
@@ -298,6 +284,22 @@ export function transformTrackDataToModel(track: (models.Track | undefined)): Tr
 
 const BROWSE_FILTERS_KEY = "browseFilters";
 
+class LocalStorageProxy {
+    private model: Model;
+
+    constructor(model: Model) {
+        this.model = model;
+    }
+
+    loadBrowseFilters() {
+        let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
+        if (browseFilters) {
+            this.model.setBrowseFilter(jsonParse(browseFilters, this.model.getBrowseFilter()));
+            return;
+        }
+        console.error("Could not load or parse browse filters from local storage. Using default filters.");
+    }
+}
 class MopidyProxy {
     private controller: Controller;
     private model: Model;
@@ -307,6 +309,26 @@ class MopidyProxy {
         this.controller = controller;
         this.model = model;
         this.commands = commands;
+    }
+
+    async fetchRootDirs() {
+        return await this.commands.core.library.browse(null);
+    }
+
+    async fetchTracksforArtist() {
+        return await this.commands.core.library.search({artist: ["Sting"]}, null);
+    }
+
+    async playTracklistItem(trackList: models.TlTrack[], index?: number) {
+        await this.commands.core.playback.play(null, trackList[index ?? 0].tlid);
+    }
+
+    async addTrackToTracklist(uri: string) {
+        return await this.commands.core.tracklist.add(null, null, [uri]);
+    }
+
+    async clearTrackList() {
+        await this.commands.core.tracklist.clear();
     }
 
     async browse(uri: string) {
