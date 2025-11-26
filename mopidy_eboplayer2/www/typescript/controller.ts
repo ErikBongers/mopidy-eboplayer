@@ -173,7 +173,7 @@ export class Controller extends Commands implements DataRequester{
 
 
 
-    async getTrackInfo(uri: string) {
+    async getTrackInfoCached(uri: string) {
         let track  = getState().getModel().getTrackInfo(uri);
         if(!track)
             await this.lookupCached(uri);
@@ -185,8 +185,7 @@ export class Controller extends Commands implements DataRequester{
         let tracks = this.model.getTrackFromCache(uri);
         if(tracks)
             return tracks;
-
-        let dict: LibraryDict = await this.commands.core.library.lookup([uri]);
+        let dict = await this.mopidyProxy.fetchTracks(uri);
         this.model.addDictToLibraryCache(dict);
         return this.model.getTrackFromCache(uri);
     }
@@ -220,7 +219,7 @@ export class Controller extends Commands implements DataRequester{
 
     async getCurrertTrackInfo() {
         let trackUri = this.model.getCurrentTrack();
-        return await this.getTrackInfo(trackUri);
+        return await this.getTrackInfoCached(trackUri);
     }
 
     async getRootDirs() {
@@ -351,6 +350,13 @@ class MopidyProxy {
         this.controller = controller;
         this.model = model;
         this.commands = commands;
+    }
+
+    async fetchTracks(uris: string | string[]) {
+        if(typeof uris == "string")
+            uris = [uris];
+        let dict: LibraryDict = await this.commands.core.library.lookup(uris);
+        return dict;
     }
 
     async fetchActiveStreamLines() {

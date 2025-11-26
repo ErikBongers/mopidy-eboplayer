@@ -114,7 +114,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
 
     setUri(uri: string) {
         this.uri = uri;
-        getState().getController().getTrackInfo(this.uri)
+        getState().getController().getTrackInfoCached(this.uri)
             .then(track => {
                 this.track = track;
                 this.albumInfo = AlbumNone;
