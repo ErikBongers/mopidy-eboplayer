@@ -1,81 +1,7 @@
 import models from "../js/mopidy";
-import TlTrack = models.TlTrack;
 import {Refs} from "./refs";
-
-export enum TrackType { None, File, Stream}
-
-export interface BrowseFilter {
-    searchText: string;
-    album: boolean;
-    track: boolean;
-    radio: boolean;
-    artist: boolean;
-    playlist: boolean;
-    genre: boolean;
-}
-
-export interface FileTrackModel {
-    type: TrackType.File;
-    track: models.Track;
-    title: string,
-    composer?: string,
-    performer: string,
-    songlenght: number,
-    //...more properties?
-}
-
-export interface StreamTrackModel {
-    type: TrackType.Stream;
-    track: models.Track;
-    name: string,
-    infoLines: string[]
-}
-
-export interface NoneTrackModel {
-    type: TrackType.None;
-}
-
-export enum EboplayerEvents {
-    volumeChanged = "eboplayer.volumeChanged",
-    connectionChanged = "eboplayer.connectionChanged",
-    playStateChanged = "eboplayer.playbackStateChanged",
-    messageChanged = "eboplayer.messageChanged",
-    currentTrackChanged = "eboplayer.currentTrackChanged",
-    selectedTrackChanged = "eboplayer.selectedTrackChanged",
-    activeStreamLinesChanged = "eboplayer.activeStreamLinesChanged",
-    historyChanged = "eboplayer.historyChanged",
-    trackListChanged = "eboplayer.trackListChanged",
-    browseFilterChanged = "eboplayer.browseFilterChanged",
-    refsLoaded = "eboplayer.refsLoaded",
-}
-
-export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
-
-export type DeepReadonly<T> = T extends Function ? T :
-    T extends object ? { readonly [K in keyof T]: DeepReadonly<T[K]> } :
-        T;
-
-export enum ConnectionState {Offline, Online}
-
-export enum MessageType { None, Info, Warning, Error}
-
-interface Message {
-    type: MessageType,
-    message: string
-}
-
-interface PlaybackModesState {
-    repeat:  boolean,
-    random: boolean,
-    consume: boolean,
-    single: boolean
-}
-
-export enum PlayState  {
-    stopped  = "stopped",
-    playing  =  "playing",
-    paused = "paused"
-}
+import {BrowseFilter, ConnectionState, EboplayerEvents, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
+import TlTrack = models.TlTrack;
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
@@ -88,25 +14,6 @@ export interface ViewModel extends EventTarget {
     getHistory: () => HistoryLine[];
     getTrackInfo(uri: string): LibraryItem;
     getBrowseFilter: () => BrowseFilter;
-}
-
-export interface HistoryRef {
-    __model__: string,
-    name: string;
-    type: string;
-    uri: string;
-}
-export interface HistoryLine {
-    timestamp: number;
-    ref: HistoryRef;
-}
-
-export type LibraryItem = models.Track[];
-export type LibraryDict = { [index: string]: LibraryItem };
-
-export interface StreamTitles {
-    uri: string;
-    active_titles: string[]
 }
 
 export class Model extends EventTarget implements ViewModel {
@@ -156,8 +63,9 @@ export class Model extends EventTarget implements ViewModel {
 
     isRefsLoaded = () => this.refs != undefined;
 
-    filter() {
-
+    filterRefs(){
+        this.refs.filter(this.browseFilter);
+        this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
     }
     setConnectionState(state: ConnectionState) {
         this.connectionState  = state;

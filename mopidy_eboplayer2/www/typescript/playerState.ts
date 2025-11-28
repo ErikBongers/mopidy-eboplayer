@@ -1,9 +1,11 @@
 import models, {Mopidy} from "../js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
-import {DeepReadonly, ViewModel} from "./model";
+import {ViewModel} from "./model";
 import {EboPlayerDataType, View} from "./views/view";
 import {Controller} from "./controller";
 import TlTrack = models.TlTrack;
+
+import {DeepReadonly} from "./modelTypes";
 
 export class State {
     mopidy: Mopidy;

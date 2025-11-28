@@ -2,7 +2,8 @@ import {EboComponent} from "./EboComponent";
 import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
-import {BrowseFilter} from "../model";
+
+import {BrowseFilter} from "../modelTypes";
 
 export class EboBrowseComp extends EboComponent {
     get refsLoaded(): boolean {
@@ -148,7 +149,7 @@ export class EboBrowseComp extends EboComponent {
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         this.shadow.appendChild(fragment);
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
-            await onSearchClicked();
+            //todo: is this button even needed?
         });
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.addEventListener("keydown", (ev: KeyboardEvent)=> {
@@ -179,7 +180,7 @@ export class EboBrowseComp extends EboComponent {
             searchResults.innerHTML = "Loading data...";
             return;
         } else {
-            searchResults.innerHTML = "Search results...";
+            searchResults.innerHTML = "Filtering...";
         }
     }
 
@@ -191,23 +192,9 @@ export class EboBrowseComp extends EboComponent {
             btn.setAttribute("pressed", this._browseFilter[propName].toString());
         }
     }
-}
 
-async function onSearchClicked() {
-    // returns "Files" and "Local media"
-    let roots = await getState().getController().mopidyProxy.fetchRootDirs();
-    console_yellow("Roots:");
-    console.log(roots);
-    let subDir1 = await getState().getController().mopidyProxy.browse(roots[1].uri);
-    console_yellow("subDir1:");
-    console.log(subDir1);
-    let allTracks = await getState().getController().mopidyProxy.browse("local:directory?type=track");
-    console_yellow("allTracks:");
-    console.log(allTracks);
-    let allAlbums = await getState().getController().mopidyProxy.browse("local:directory?type=album");
-    console_yellow("allAlbums:");
-    console.log(allAlbums);
-    let artists = await getState().getController().mopidyProxy.fetchTracksforArtist();
-    console_yellow("artists:");
-    console.log(artists);
+    renderResults() {
+        let searchResults = this.shadow.getElementById("searchResults");
+        searchResults.innerHTML = "Results";
+    }
 }

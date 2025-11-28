@@ -2,7 +2,7 @@ import getState from "./playerState";
 import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import {transformTlTrackDataToModel} from "./process_ws";
-import {ConnectionState, Model, PlayState, StreamTitles} from "./model";
+import {Model} from "./model";
 import {Commands} from "./commands";
 import models, {Mopidy} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -13,6 +13,7 @@ import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
 import {Refs} from "./refs";
+import {BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
 
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
@@ -143,6 +144,12 @@ export class Controller extends Commands implements DataRequester{
 
     setTracklist(trackList: TlTrack[]) {
         this.model.setTrackList(trackList);
+    }
+
+    setSaveAndApplyFilter(filter: BrowseFilter) {
+        this.localStorageProxy.saveBrowseFilters(filter);
+        this.model.setBrowseFilter(filter);
+        this.model.filterRefs();
     }
 
     async getTrackInfoCached(uri: string) {

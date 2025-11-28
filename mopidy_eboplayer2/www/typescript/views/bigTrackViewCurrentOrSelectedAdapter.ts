@@ -1,8 +1,9 @@
 import getState from "../playerState";
-import {EboplayerEvents, Model, TrackModel, TrackType} from "../model";
+import {Model} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
 import { BigTrackViewUriAdapter } from "./bigTrackViewUriAdapter";
+import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends BigTrackViewUriAdapter {
     constructor(id: string) {

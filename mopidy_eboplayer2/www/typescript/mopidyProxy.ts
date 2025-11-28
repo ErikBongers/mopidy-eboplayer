@@ -1,4 +1,4 @@
-import {HistoryLine, LibraryDict, Model} from "./model";
+import {Model} from "./model";
 import {Commands} from "./commands";
 import models from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
@@ -6,6 +6,7 @@ import {Controller} from "./controller";
 import {getHostAndPort, numberedDictToArray, quadratic100} from "./global";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
+import {HistoryLine, LibraryDict} from "./modelTypes";
 
 export class MopidyProxy {
     private controller: Controller;

@@ -1,6 +1,7 @@
 import models from "../js/mopidy";
 import Ref = models.Ref;
-import {BrowseFilter} from "./model";
+
+import {BrowseFilter} from "./modelTypes";
 
 export interface SearchResult {
     ref: Ref;

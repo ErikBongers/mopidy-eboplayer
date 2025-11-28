@@ -1,6 +1,6 @@
-*  load all refs.
-  > takes some time.
-  > show message while loading. in browse view.
+* BrowseComponent:
+  > render results.
+
 
 * Separate model view controller.
   > model:

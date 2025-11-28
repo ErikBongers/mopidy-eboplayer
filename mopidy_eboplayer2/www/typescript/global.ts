@@ -1,7 +1,7 @@
 import models from "../js/mopidy";
-import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {validUri} from "./functionsvars";
 import getState from "./playerState";
+import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./modelTypes";
 
 export function quadratic100(x: number) {
     return (x * x) / 100;

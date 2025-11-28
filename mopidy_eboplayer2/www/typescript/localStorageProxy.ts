@@ -1,5 +1,6 @@
-import {BrowseFilter, Model} from "./model";
+import {Model} from "./model";
 import {jsonParse} from "./functionsvars";
+import {BrowseFilter} from "./modelTypes";
 
 const BROWSE_FILTERS_KEY = "browseFilters";
 

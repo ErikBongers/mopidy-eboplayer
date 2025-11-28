@@ -1,7 +1,7 @@
 import getState from "../playerState";
-import {EboplayerEvents, PlayState, TrackType} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {VolumeView} from "./volumeView";
+import {EboplayerEvents, PlayState, TrackType} from "../modelTypes";
 
 export class ButtonBarView extends View {
     private containerId: string;

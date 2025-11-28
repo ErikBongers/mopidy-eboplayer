@@ -1,5 +1,5 @@
 import getState from "../playerState";
-import {EboplayerEvents, Model, TrackModel, TrackType} from "../model";
+import {Model} from "../model";
 import {EboPlayerDataType} from "./view";
 import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
 import models from "../../js/mopidy";
@@ -7,6 +7,7 @@ import {EboBigTrackComp} from "../components/eboBigTrackComp";
 import Track = models.Track;
 import {EboAlbumTracksComp} from "../components/eboAlbumTracksComp";
 import {numberedDictToArray} from "../global";
+import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
 
 export enum AlbumDataType {
     None,
