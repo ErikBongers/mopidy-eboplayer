@@ -6,7 +6,7 @@ export interface HasName {
 
 export abstract class EboComponent extends HTMLElement implements HasName {
     static globalCss: CSSStyleSheet[];
-    protected shadow: ShadowRoot;
+    protected shadow: ShadowRoot; //todo: make private and expose only in renderPrepared and updateWhenConnected.
     protected styleTemplate: HTMLTemplateElement;
     protected divTemplate: HTMLTemplateElement;
     private connected = false;
@@ -47,9 +47,10 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         //todo: make this abstract.
     }
 
-    update() {
+    update() { //todo: aad TS option `noImplicitOverride` and set `override` modifier where needed.
         if (!this.connected)
             return;
+        console_yellow("EboCompoent: update");
         this.updateWhenConnected();
     }
 
