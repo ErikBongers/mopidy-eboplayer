@@ -178,6 +178,8 @@ export class EboBrowseComp extends EboComponent {
         if(!this.refsLoaded) {
             searchResults.innerHTML = "Loading data...";
             return;
+        } else {
+            searchResults.innerHTML = "Search results...";
         }
     }
 

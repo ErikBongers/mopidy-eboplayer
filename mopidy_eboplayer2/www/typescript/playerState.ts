@@ -56,6 +56,7 @@ export class State {
         }
 
         this.controller.localStorageProxy.loadBrowseFilters();
+        await this.controller.fetchAllRefs();
     }
 }
 

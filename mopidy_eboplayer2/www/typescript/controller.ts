@@ -12,6 +12,7 @@ import {LocalStorageProxy} from "./localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
+import {Refs} from "./refs";
 
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
@@ -187,5 +188,7 @@ export class Controller extends Commands implements DataRequester{
         let allAlbums = await this.mopidyProxy.browse("local:directory?type=album");
         let artists = await this.mopidyProxy.fetchTracksforArtist();
 
+        let refs = new Refs(roots, subDir1, allTracks, allAlbums, artists);
+        this.model.setRefs(refs);
     }
 }
