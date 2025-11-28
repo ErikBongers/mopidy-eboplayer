@@ -51,6 +51,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         if (!this.connected)
             return;
         console_yellow("EboCompoent: update");
+        //todo: batch updates.
         this.updateWhenConnected();
     }
 
