@@ -9,6 +9,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     protected shadow: ShadowRoot;
     protected styleTemplate: HTMLTemplateElement;
     protected divTemplate: HTMLTemplateElement;
+    private connected = false;
 
     protected constructor(styleText: string, htmlText: string) {
         super();
@@ -33,6 +34,27 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             css.replaceSync(text);
             return css;
         });
+    }
+
+    // noinspection JSUnusedGlobalSymbols
+    connectedCallback() {
+        console_yellow("EboCompoent: connectedCallback");
+        this.connected = true;
+        this.onConnected();
+    }
+
+    onConnected(){
+        //todo: make this abstract.
+    }
+
+    update() {
+        if (!this.connected)
+            return;
+        this.updateWhenConnected();
+    }
+
+    updateWhenConnected(): void {
+        //should be overridden by subclasses.
     }
 
     render() {

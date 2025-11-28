@@ -1,6 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {EboBrowseComp} from "../components/eboBrowseComp";
+import {EboplayerEvents} from "../model";
 
 export class MainView extends View {
     bind() {
@@ -11,6 +12,14 @@ export class MainView extends View {
         browseComp.addEventListener("browseFilterChanged", (ev) => {
             getState().getController().localStorageProxy.saveBrowseFilters(browseComp.browseFilter);
         });
+        getState().getModel().addEventListener(EboplayerEvents.refsLoaded, async () => {
+            this.onRefsLoaded();
+        })
+    }
+
+    private async onRefsLoaded() {
+        let browseComp = document.getElementById("browseView") as EboBrowseComp;
+
     }
 
     private onSearchButtonClick() {

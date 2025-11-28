@@ -1,5 +1,6 @@
-import {models} from "../js/mopidy";
+import models from "../js/mopidy";
 import TlTrack = models.TlTrack;
+import {Refs} from "./refs";
 
 export enum TrackType { None, File, Stream}
 
@@ -45,6 +46,7 @@ export enum EboplayerEvents {
     historyChanged = "eboplayer.historyChanged",
     trackListChanged = "eboplayer.trackListChanged",
     browseFilterChanged = "eboplayer.browseFilterChanged",
+    refsLoaded = "eboplayer.refsLoaded",
 }
 
 export type TrackModel  = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -141,10 +143,22 @@ export class Model extends EventTarget implements ViewModel {
         genre: true
     };
 
+    private refs: Refs;
+
     constructor() {
         super();
     }
 
+    setRefs(refs: Refs) {
+        this.refs = refs;
+        this.dispatchEvent(new Event(EboplayerEvents.refsLoaded));
+    }
+
+    isRefsLoaded = () => this.refs != undefined;
+
+    filter() {
+
+    }
     setConnectionState(state: ConnectionState) {
         this.connectionState  = state;
         if(this.connectionState == ConnectionState.Online)

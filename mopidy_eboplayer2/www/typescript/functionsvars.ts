@@ -1,6 +1,6 @@
 // import * as controls from "./controls";
 import getState from "./playerState";
-import {models} from "../js/mopidy";
+import models from "../js/mopidy";
 import TlTrack = models.TlTrack;
 
 // interface ArtistInfo {

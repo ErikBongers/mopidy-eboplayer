@@ -4,7 +4,7 @@ import {library} from "./library";
 import {transformTlTrackDataToModel} from "./process_ws";
 import {ConnectionState, Model, PlayState, StreamTitles} from "./model";
 import {Commands} from "./commands";
-import {models, Mopidy} from "../js/mopidy";
+import models, {Mopidy} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import {MopidyProxy} from "./mopidyProxy";
@@ -181,21 +181,11 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchAllRefs() {
-        // returns "Files" and "Local media"
-        let roots = await getState().getController().mopidyProxy.fetchRootDirs();
-        console_yellow("Roots:");
-        console.log(roots);
-        let subDir1 = await getState().getController().mopidyProxy.browse(roots[1].uri);
-        console_yellow("subDir1:");
-        console.log(subDir1);
-        let allTracks = await getState().getController().mopidyProxy.browse("local:directory?type=track");
-        console_yellow("allTracks:");
-        console.log(allTracks);
-        let allAlbums = await getState().getController().mopidyProxy.browse("local:directory?type=album");
-        console_yellow("allAlbums:");
-        console.log(allAlbums);
-        let artists = await getState().getController().mopidyProxy.fetchTracksforArtist();
-        console_yellow("artists:");
-        console.log(artists);
+        let roots = await this.mopidyProxy.fetchRootDirs();
+        let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
+        let allTracks = await this.mopidyProxy.browse("local:directory?type=track");
+        let allAlbums = await this.mopidyProxy.browse("local:directory?type=album");
+        let artists = await this.mopidyProxy.fetchTracksforArtist();
+
     }
 }

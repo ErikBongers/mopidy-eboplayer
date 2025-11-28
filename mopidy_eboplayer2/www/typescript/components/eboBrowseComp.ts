@@ -5,6 +5,14 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BrowseFilter} from "../model";
 
 export class EboBrowseComp extends EboComponent {
+    get refsLoaded(): boolean {
+        return this._refsLoaded;
+    }
+
+    set refsLoaded(value: boolean) {
+        this._refsLoaded = value;
+        this.update();
+    }
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
     }
@@ -12,6 +20,9 @@ export class EboBrowseComp extends EboComponent {
         this._browseFilter = value;
         this.update();
     }
+
+    private _refsLoaded: boolean = false;
+
     private _browseFilter: BrowseFilter;
     static readonly tagName=  "ebo-browse-view";
     // noinspection JSUnusedGlobalSymbols
@@ -74,6 +85,12 @@ export class EboBrowseComp extends EboComponent {
                     <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
                     <button> X </button>
                 </div>
+                
+                <div id="searchResults">
+                    TODO: show "loading data..." while refs have not been loaded and "searching..." while refiltering.
+                    Keep the old results while filtering to avoid flicker.
+                    BATCH the filter requests!!!                
+                </div>
             </div>        
         `;
 
@@ -116,8 +133,8 @@ export class EboBrowseComp extends EboComponent {
         this.render();
         }
 
-    // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
+    onConnected() {
+        console_yellow("EboBrowseComponent: onConnected");
     }
 
     setFocusAndSelect() {
@@ -151,12 +168,17 @@ export class EboBrowseComp extends EboComponent {
         this.update();
     }
 
-    private update() {
+    updateWhenConnected() {
         this.shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
                 this.updateFilterButton(btn));
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
+        let searchResults = this.shadow.getElementById("searchResults");
+        if(!this.refsLoaded) {
+            searchResults.innerHTML = "Loading data...";
+            return;
+        }
     }
 
     private updateFilterButton(btn: Element) {

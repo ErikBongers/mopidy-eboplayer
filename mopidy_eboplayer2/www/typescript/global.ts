@@ -1,4 +1,4 @@
-import {models} from "../js/mopidy";
+import models from "../js/mopidy";
 import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./model";
 import {validUri} from "./functionsvars";
 import getState from "./playerState";

@@ -2,7 +2,7 @@ import getState from "../playerState";
 import {EboplayerEvents, Model, TrackModel, TrackType} from "../model";
 import {EboPlayerDataType} from "./view";
 import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
-import {models} from "../../js/mopidy";
+import models from "../../js/mopidy";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
 import Track = models.Track;
 import {EboAlbumTracksComp} from "../components/eboAlbumTracksComp";

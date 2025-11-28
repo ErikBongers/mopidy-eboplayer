@@ -76,7 +76,7 @@ interface StrictEvents extends core.CoreListener {
     "websocket:outgoingMessage": any;
 }
 
-export namespace models {
+namespace models {
     type ModelType = "album" | "artist" | "directory" | "playlist" | "track";
 
     export class TlTrack {
@@ -137,7 +137,14 @@ export namespace models {
         readonly last_modified: number;
         readonly length: number;
     }
+
+    export class Ref {
+        readonly uri: URI;
+        readonly name: string;
+        readonly type: ModelType;
+    }
 }
+export default models
 
 export namespace core {
     export type PlaybackState = "playing" | "paused" | "stopped";

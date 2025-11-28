@@ -1,6 +1,6 @@
 import {HistoryLine, LibraryDict, Model} from "./model";
 import {Commands} from "./commands";
-import {models} from "../js/mopidy";
+import models from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
 import {Controller} from "./controller";
 import {getHostAndPort, numberedDictToArray, quadratic100} from "./global";
