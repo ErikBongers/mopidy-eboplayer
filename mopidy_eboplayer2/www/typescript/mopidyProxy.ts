@@ -5,6 +5,7 @@ import {EboPlayerDataType} from "./views/view";
 import {Controller} from "./controller";
 import {getHostAndPort, numberedDictToArray, quadratic100} from "./global";
 import TlTrack = models.TlTrack;
+import Ref = models.Ref;
 
 export class MopidyProxy {
     private controller: Controller;
@@ -18,7 +19,7 @@ export class MopidyProxy {
     }
 
     async fetchRootDirs() {
-        return await this.commands.core.library.browse(null);
+        return this.browse(null);
     }
 
     async fetchTracksforArtist() {
@@ -38,7 +39,7 @@ export class MopidyProxy {
     }
 
     async browse(uri: string) {
-        return await this.commands.core.library.browse(uri);
+        return await this.commands.core.library.browse(uri) as Ref[];
     }
 
     async sendVolume(value: number) {
