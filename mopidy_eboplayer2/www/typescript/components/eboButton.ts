@@ -78,7 +78,7 @@ export class EboButton extends EboComponent {
         this.shadow.appendChild(fragment);
         let imgTag = this.shadow.getElementById("img") as HTMLImageElement;
         this.setClassFromBoolAttribute("pressed", imgTag);
-        imgTag.src = this.img;
+        imgTag.src = this.img ?? "";
         let button = this.shadow.querySelector("button");
         button.addEventListener("mousedown", (ev) => {
             this.startLongPress(ev, () => {
