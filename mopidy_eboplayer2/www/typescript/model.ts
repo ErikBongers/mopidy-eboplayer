@@ -16,6 +16,7 @@ export interface ViewModel extends EventTarget {
     getTrackInfo(uri: string): LibraryItem;
     getBrowseFilter: () => BrowseFilter;
     getSearchResults(): SearchResult[];
+    getTrackList(): TlTrack[];
 }
 
 export class Model extends EventTarget implements ViewModel {

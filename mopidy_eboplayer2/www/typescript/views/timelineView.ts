@@ -9,7 +9,10 @@ export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
     bind() {
         getState().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
-            this.onHistoryChangegd().then(r => {});
+            this.rebuildTimeline().then(r => {});
+        });
+        getState().getModel().addEventListener(EboplayerEvents.trackListChanged, () => {
+            this.rebuildTimeline().then(r => {});
         });
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onCurrentTrackChanged();
@@ -20,15 +23,22 @@ export class TimelineView extends View {
     }
 
 
-    private async onHistoryChangegd() {
-        let history = getState().getModel().getHistory();
+    private async rebuildTimeline() {
+        let history = getState().getModel().getHistory() ?? [];
+        let trackList = getState().getModel().getTrackList() ?? [];
+
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
         let body = timelineTable.tBodies[0];
         body.innerHTML = "";
 
         let allLookups: Promise<void>[] = [];
-        for(let line of history) {
-            allLookups.push(this.insertTrackLine(line, body));
+        //reverse order as we want the most recent tracks to at the bottom.
+        for(let i = history.length - 1; i >= 0; i-- ) {
+            allLookups.push(this.insertHistoryLine(history[i], body));
+        }
+
+        for(let track of trackList) {
+            allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body)); //todo: actually we already have the track info. No need for lookup.
         }
 
         Promise.all(allLookups).then(()=> {
@@ -92,16 +102,19 @@ export class TimelineView extends View {
         tr.classList.add("current", "textGlow");
     }
 
-    private insertTrackLine(line: HistoryLine, body: HTMLTableSectionElement) {
+    private async insertHistoryLine(line: HistoryLine, body: HTMLTableSectionElement) {
         let slices = line.ref.name.split(" - ");
         let title = slices.pop();
+        await this.insertTrackLine(title, line.ref.uri, body);
+    }
 
+    private async insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement) {
         let tr = document.createElement("tr");
-        body.insertAdjacentElement('afterbegin', tr);
+        body.appendChild(tr);
         tr.classList.add("trackLine");
-        tr.dataset.uri = line.ref.uri;
+        tr.dataset.uri = uri;
         this.setTrackLineContent(tr, title);
-        body.insertAdjacentHTML('afterbegin', `
+        body.insertAdjacentHTML('beforeend', `
 <tr>
     <td colspan="2">
         <div class="progressBar"></div>
@@ -110,9 +123,8 @@ export class TimelineView extends View {
             `);
 
         //delayed update of track info.
-        return getState().getController().lookupCached(line.ref.uri).then(tracks => {
-            this.updateTrackLineFromLookup(tr, tracks, title);
-        });
+        const tracks = await getState().getController().lookupCached(uri);
+        this.updateTrackLineFromLookup(tr, tracks, title);
     }
 
     private updateTrackLineFromLookup(tr: HTMLTableRowElement, tracks: models.Track[], title: string) {
