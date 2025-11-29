@@ -1,5 +1,9 @@
-* BrowseComponent:
-  > render results.
+* Browse:
+  > the initial results are the filtered results.
+  > but when clicking, the details no longer match the filter.
+    > show with breadcrumps?
+      > show as tree structure on mobile?
+        > use mini arrow as separator.
 
 
 * Separate model view controller.

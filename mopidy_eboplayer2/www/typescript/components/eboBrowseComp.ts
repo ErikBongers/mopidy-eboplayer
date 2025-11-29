@@ -41,6 +41,7 @@ export class EboBrowseComp extends EboComponent {
                     display: flex;
                     flex-direction: column;
                     width: 100%;
+                    height: 100%;
                 }
                 #filterButtons {
                     margin-top: .3em;
@@ -67,32 +68,57 @@ export class EboBrowseComp extends EboComponent {
                     object-fit: contain;
                     margin-right: .5em;
                 }
+                #searchResultsTable {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                #tableWrapper {
+                    height: 100%;
+                    overflow: scroll;
+                    scrollbar-width: none;
+                }
+                #searchResults {
+                    height: 100%;
+                    display: flex;                
+                }
+
             </style>
         `;
 
     // noinspection HtmlUnknownTarget
     static htmlText = `
-            <div id="wrapper">
-                <div id="searchBox">
-                    <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
-                    <input id="searchText" type="text" value="sdfsdf" autofocus>
-                </div>
-                <div id="filterButtons">
-                    <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
-                    <button> X </button>
-                </div>
-                
-                <div id="searchResults">
-                    TODO: show "loading data..." while refs have not been loaded and "searching..." while refiltering.
-                    Keep the old results while filtering to avoid flicker.
-                    BATCH the filter requests!!!                
-                </div>
-            </div>        
+<div id="wrapper">
+    <div id="searchBox">
+        <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
+        <input id="searchText" type="text" value="sdfsdf" autofocus>
+    </div>
+    <div id="filterButtons">
+        <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <button> X </button>
+    </div>
+    
+    <div id="searchResults">
+        <div id="searchInfo">
+            TODO: show "loading data..." while refs have not been loaded and "searching..." while refiltering.
+            Keep the old results while filtering to avoid flicker.
+            BATCH the filter requests!!!
+        </div>  
+      <div id="tableWrapper" class="">
+            <table id="searchResultsTable">
+                <colgroup>
+                    <col span="1" style="width: auto;">
+                    <col span="1" style="width: 1em;">
+                </colgroup>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>        
         `;
 
     constructor() {
@@ -175,12 +201,11 @@ export class EboBrowseComp extends EboComponent {
                 this.updateFilterButton(btn));
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
-        let searchResults = this.shadow.getElementById("searchResults");
         if(!this.refsLoaded) {
-            searchResults.innerHTML = "Loading data...";
+            this.setSearchInfo("Loading data...");
             return;
         } else {
-            searchResults.innerHTML = "Filtering...";
+            this.setSearchInfo("Filtering...");
         }
     }
 
@@ -193,13 +218,27 @@ export class EboBrowseComp extends EboComponent {
         }
     }
 
+    setSearchInfo(text: string) {
+        let searchInfo = this.shadow.getElementById("searchInfo");
+        searchInfo.innerHTML = text;
+    }
+
     renderResults() {
-        let searchResults = this.shadow.getElementById("searchResults");
+        this.setSearchInfo("");
+
+        let table = this.shadow.getElementById("searchResultsTable") as HTMLTableElement;
+        let body = table.tBodies[0];
+        body.innerHTML = "";
+
         let resultsHtml = getState().getModel().getSearchResults() //todo: direct reference to model in component. Make searchResults a property.
             .map(result => {
-                return result.ref.name;
+                return `
+<tr data-uri="${result.ref.uri}">
+<td>${result.ref.name}</td>
+<td>...</td>
+</tr>`;
             })
-            .join("<br/>");
-        searchResults.innerHTML = resultsHtml;
+            .join("\n");
+        body.innerHTML = resultsHtml;
     }
 }
