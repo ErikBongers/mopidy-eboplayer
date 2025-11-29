@@ -1,7 +1,8 @@
 import models from "../js/mopidy";
-import {Refs} from "./refs";
+import {Refs, SearchResult} from "./refs";
 import {BrowseFilter, ConnectionState, EboplayerEvents, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
 import TlTrack = models.TlTrack;
+import Ref = models.Ref;
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
@@ -14,6 +15,7 @@ export interface ViewModel extends EventTarget {
     getHistory: () => HistoryLine[];
     getTrackInfo(uri: string): LibraryItem;
     getBrowseFilter: () => BrowseFilter;
+    getSearchResults(): SearchResult[];
 }
 
 export class Model extends EventTarget implements ViewModel {
@@ -59,6 +61,10 @@ export class Model extends EventTarget implements ViewModel {
     setRefs(refs: Refs) {
         this.refs = refs;
         this.dispatchEvent(new Event(EboplayerEvents.refsLoaded));
+    }
+
+    getSearchResults(): SearchResult[] {
+        return this.refs.searchResults;
     }
 
     isRefsLoaded = () => this.refs != undefined;

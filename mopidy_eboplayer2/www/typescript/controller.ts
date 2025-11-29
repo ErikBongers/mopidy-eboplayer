@@ -193,9 +193,12 @@ export class Controller extends Commands implements DataRequester{
         let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
         let allTracks = await this.mopidyProxy.browse("local:directory?type=track");
         let allAlbums = await this.mopidyProxy.browse("local:directory?type=album");
-        let artists = await this.mopidyProxy.fetchTracksforArtist();
+        let allArtists = await this.mopidyProxy.browse("local:directory?type=artist");
+        let allGenres = await this.mopidyProxy.browse("local:directory?type=genre");
+        //todo: playlists.
+        //todo: radios are tracks in playlists, that are not in the file system.
 
-        let refs = new Refs(roots, subDir1, allTracks, allAlbums, artists);
+        let refs = new Refs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
         this.model.setRefs(refs);
     }
 }

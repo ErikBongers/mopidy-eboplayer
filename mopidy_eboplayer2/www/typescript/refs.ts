@@ -14,15 +14,17 @@ export class Refs {
     tracks: Ref[];
     albums: Ref[];
     artists: Ref[];
+    genres: Ref[];
     searchResults: SearchResult[];
     lastFilter: BrowseFilter | undefined;
 
-    constructor( roots: Ref[], sub: Ref[], tracks: Ref[], albums: Ref[], artists: Ref[]) {
+    constructor( roots: Ref[], sub: Ref[], tracks: Ref[], albums: Ref[], artists: Ref[], genres: Ref[]) {
         this.roots = roots;
         this.sub = sub;
         this.tracks = tracks;
         this.albums = albums;
         this.artists = artists;
+        this.genres = genres;
         this.searchResults = [];
     }
 
@@ -53,6 +55,7 @@ export class Refs {
             this.searchResults.push(...this.artists.map(artist => ({ref: artist, weight: 0})));
         if(this.lastFilter.track)
             this.searchResults.push(...this.tracks.map(track => ({ref: track, weight: 0})));
-        //todo: genres.
+        if(this.lastFilter.genre)
+            this.searchResults.push(...this.genres.map(track => ({ref: track, weight: 0})));
     }
 }

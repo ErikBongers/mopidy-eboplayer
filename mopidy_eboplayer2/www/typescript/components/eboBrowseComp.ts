@@ -195,6 +195,11 @@ export class EboBrowseComp extends EboComponent {
 
     renderResults() {
         let searchResults = this.shadow.getElementById("searchResults");
-        searchResults.innerHTML = "Results";
+        let resultsHtml = getState().getModel().getSearchResults() //todo: direct reference to model in component. Make searchResults a property.
+            .map(result => {
+                return result.ref.name;
+            })
+            .join("<br/>");
+        searchResults.innerHTML = resultsHtml;
     }
 }

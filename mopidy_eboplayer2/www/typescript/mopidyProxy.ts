@@ -23,6 +23,7 @@ export class MopidyProxy {
         return this.browse(null);
     }
 
+    //todo: this is a test function.
     async fetchTracksforArtist() {
         return await this.commands.core.library.search({artist: ["Sting"]}, null);
     }
