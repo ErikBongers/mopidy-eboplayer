@@ -149,7 +149,7 @@ export class Controller extends Commands implements DataRequester{
     setSaveAndApplyFilter(filter: BrowseFilter) {
         this.localStorageProxy.saveBrowseFilters(filter);
         this.model.setBrowseFilter(filter);
-        this.model.filterRefs();
+        this.filterBrowseResults();
     }
 
     async getTrackInfoCached(uri: string) {
@@ -200,5 +200,9 @@ export class Controller extends Commands implements DataRequester{
 
         let refs = new Refs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
         this.model.setRefs(refs);
+    }
+
+    filterBrowseResults() {
+        this.model.filterRefs();
     }
 }

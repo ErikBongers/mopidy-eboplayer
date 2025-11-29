@@ -627,7 +627,7 @@ export function switchContent(divid: string, uri: string = undefined) {
     location.hash = '#' + hash
 }
 
-export function jsonParse<T>(data: string, defaultValue: T) {
+export function jsonParse<T>(data: string, defaultValue: T): T {
     try {
         return JSON.parse(data);
     } catch (e) {

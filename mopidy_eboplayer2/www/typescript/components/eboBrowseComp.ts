@@ -12,14 +12,14 @@ export class EboBrowseComp extends EboComponent {
 
     set refsLoaded(value: boolean) {
         this._refsLoaded = value;
-        this.update();
+        this.render();
     }
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
     }
     set browseFilter(value: BrowseFilter) {
         this._browseFilter = value;
-        this.update();
+        this.render();
     }
 
     private _refsLoaded: boolean = false;
@@ -80,7 +80,8 @@ export class EboBrowseComp extends EboComponent {
                 }
                 #searchResults {
                     height: 100%;
-                    display: flex;                
+                    display: flex;
+                    flex-direction: column;
                 }
 
             </style>
@@ -105,11 +106,8 @@ export class EboBrowseComp extends EboComponent {
     
     <div id="searchResults">
         <div id="searchInfo">
-            TODO: show "loading data..." while refs have not been loaded and "searching..." while refiltering.
-            Keep the old results while filtering to avoid flicker.
-            BATCH the filter requests!!!
         </div>  
-      <div id="tableWrapper" class="">
+        <div id="tableWrapper" class="">
             <table id="searchResultsTable">
                 <colgroup>
                     <col span="1" style="width: auto;">
@@ -130,15 +128,7 @@ export class EboBrowseComp extends EboComponent {
             composed: true, //needed to 'break' out of the shadow.
             detail: "todo"
         });
-        this._browseFilter = {
-            searchText: "",
-            track: false,
-            artist: false,
-            genre: false,
-            radio: false,
-            playlist: false,
-            album: false,
-        };
+        this._browseFilter = new BrowseFilter();
         this.render();
     }
 
@@ -162,7 +152,6 @@ export class EboBrowseComp extends EboComponent {
         }
 
     onConnected() {
-        console_yellow("EboBrowseComponent: onConnected");
     }
 
     setFocusAndSelect() {
@@ -192,6 +181,7 @@ export class EboBrowseComp extends EboComponent {
                     this.onFilterButtonLongPress(ev);
                 });
             });
+        this.renderResults();
         this.update();
     }
 
@@ -248,13 +238,15 @@ export class EboBrowseComp extends EboComponent {
     }
 
     renderResults() {
-        let results = getState().getModel().getSearchResults(); //todo: direct reference to model in component. Make searchResults a property.
-        if(results.length == 0)
         this.setSearchInfo("");
 
         let table = this.shadow.getElementById("searchResultsTable") as HTMLTableElement;
         let body = table.tBodies[0];
         body.innerHTML = "";
+
+        let results = getState()?.getModel()?.getSearchResults() ?? []; //todo: direct reference to model in component. Make searchResults a property.
+        if(results?.length == 0)
+            return;
 
         let resultsHtml = results
             .map(result => {

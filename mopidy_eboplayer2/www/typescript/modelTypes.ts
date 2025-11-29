@@ -2,7 +2,7 @@ import models from "../js/mopidy";
 
 export enum TrackType { None, File, Stream}
 
-export interface BrowseFilter {
+export class BrowseFilter {
     searchText: string;
     album: boolean;
     track: boolean;
@@ -10,6 +10,20 @@ export interface BrowseFilter {
     artist: boolean;
     playlist: boolean;
     genre: boolean;
+
+    constructor() {
+        this.searchText = "";
+        this.track = false;
+        this.artist = false;
+        this.genre = false;
+        this.radio = false;
+        this.playlist = false;
+        this.album = false;
+    }
+
+    isNoTypeSelected(): boolean {
+        return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
+    }
 }
 
 export interface FileTrackModel {

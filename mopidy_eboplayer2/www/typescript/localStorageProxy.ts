@@ -14,14 +14,19 @@ export class LocalStorageProxy {
     loadBrowseFilters() {
         let browseFilters = localStorage.getItem(BROWSE_FILTERS_KEY);
         if (browseFilters) {
-            this.model.setBrowseFilter(jsonParse(browseFilters, this.model.getBrowseFilter()));
+            let browseFilterObject = jsonParse(browseFilters, this.model.getBrowseFilter());
+            let browseFilter = new BrowseFilter();
+            Object.assign(browseFilter, browseFilterObject);
+            this.model.setBrowseFilter(browseFilter);
             return;
         }
         console.error("Could not load or parse browse filters from local storage. Using default filters.");
     }
 
     saveBrowseFilters(browseFilters: BrowseFilter) {
-        localStorage.setItem(BROWSE_FILTERS_KEY, JSON.stringify(browseFilters));
+        let obj = JSON.stringify(browseFilters);
+        console.log(obj);
+        localStorage.setItem(BROWSE_FILTERS_KEY, obj);
     }
 
 }

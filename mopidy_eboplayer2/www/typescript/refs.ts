@@ -54,13 +54,13 @@ export class Refs {
     }
 
     private prefillWithTypes() {
-        if(this.lastFilter.album)
+        if(this.lastFilter.album || this.lastFilter.isNoTypeSelected())
             this.searchResults.push(...this.albums.map(album => ({ref: album, weight: 0})));
-        if(this.lastFilter.artist)
+        if(this.lastFilter.artist || this.lastFilter.isNoTypeSelected())
             this.searchResults.push(...this.artists.map(artist => ({ref: artist, weight: 0})));
-        if(this.lastFilter.track)
+        if(this.lastFilter.track || this.lastFilter.isNoTypeSelected())
             this.searchResults.push(...this.tracks.map(track => ({ref: track, weight: 0})));
-        if(this.lastFilter.genre)
+        if(this.lastFilter.genre || this.lastFilter.isNoTypeSelected())
             this.searchResults.push(...this.genres.map(track => ({ref: track, weight: 0})));
     }
 }

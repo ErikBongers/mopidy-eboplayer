@@ -42,15 +42,7 @@ export class Model extends EventTarget implements ViewModel {
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, LibraryItem> = new Map();
-    private browseFilter: BrowseFilter = {
-        searchText: "",
-        album: true,
-        track: true,
-        radio: true,
-        artist: true,
-        playlist: true,
-        genre: true
-    };
+    private browseFilter= new BrowseFilter();
 
     private refs: Refs;
 
