@@ -74,6 +74,7 @@ export class EboBrowseComp extends EboComponent {
                 }
                 #tableWrapper {
                     height: 100%;
+                    width: 100%;
                     overflow: scroll;
                     scrollbar-width: none;
                 }
@@ -247,13 +248,15 @@ export class EboBrowseComp extends EboComponent {
     }
 
     renderResults() {
+        let results = getState().getModel().getSearchResults(); //todo: direct reference to model in component. Make searchResults a property.
+        if(results.length == 0)
         this.setSearchInfo("");
 
         let table = this.shadow.getElementById("searchResultsTable") as HTMLTableElement;
         let body = table.tBodies[0];
         body.innerHTML = "";
 
-        let resultsHtml = getState().getModel().getSearchResults() //todo: direct reference to model in component. Make searchResults a property.
+        let resultsHtml = results
             .map(result => {
                 return `
 <tr data-uri="${result.ref.uri}">
