@@ -77,6 +77,10 @@ export class EboBrowseComp extends EboComponent {
                     width: 100%;
                     overflow: scroll;
                     scrollbar-width: none;
+                    td {
+                        padding-top: .2em;
+                        padding-bottom: .2em;
+                    }
                 }
                 #searchResults {
                     height: 100%;
@@ -258,5 +262,23 @@ export class EboBrowseComp extends EboComponent {
             })
             .join("\n");
         body.innerHTML = resultsHtml;
+        body.querySelectorAll("tr").forEach(tr => {
+            tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev)});
+            tr.addEventListener("click", ev => {this.onRowClicked(ev)});
+        });
+
     }
+
+    private onRowClicked(ev: MouseEvent) {
+        let row = ev.currentTarget as HTMLTableRowElement;
+        //dive
+
+    }
+
+    private async onRowDoubleClicked(ev: MouseEvent) {
+        let row = ev.currentTarget as HTMLTableRowElement;
+        await getState().getController().play(row.dataset.uri);
+    }
+
+
 }

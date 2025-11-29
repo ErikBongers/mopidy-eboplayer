@@ -1,3 +1,5 @@
+* Show tracklist in timeline.
+
 * Browse:
   > the initial results are the filtered results.
   > but when clicking, the details no longer match the filter.

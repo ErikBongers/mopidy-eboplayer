@@ -169,13 +169,13 @@ export class Controller extends Commands implements DataRequester{
         return this.model.getTrackFromCache(uri);
     }
 
-    async playTrack(uri: string) {
+    async play(uri: string) {
         await this.mopidyProxy.clearTrackList();
         let tracks = await this.mopidyProxy.addTrackToTracklist(uri);
         let trackList = numberedDictToArray(tracks) as models.TlTrack[];
         this.setTracklist(trackList);
         // noinspection ES6MissingAwait
-        this.mopidyProxy.playTracklistItem(trackList);
+        this.mopidyProxy.playTracklistItem(trackList, 0);
         await this.setCurrentTrackAndFetchDetails(trackList[0]);
     }
 

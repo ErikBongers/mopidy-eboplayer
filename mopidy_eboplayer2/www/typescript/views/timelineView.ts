@@ -50,7 +50,7 @@ export class TimelineView extends View {
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         this.clickedRow = ev.currentTarget as HTMLTableRowElement;
-        await getState().getController().playTrack(this.clickedRow.dataset.uri);
+        await getState().getController().play(this.clickedRow.dataset.uri);
     }
 
     private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {
