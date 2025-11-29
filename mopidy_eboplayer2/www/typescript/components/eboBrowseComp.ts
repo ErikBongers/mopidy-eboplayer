@@ -3,7 +3,7 @@ import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {BrowseFilter} from "../modelTypes";
+import {BrowseFilter, EboplayerEvents} from "../modelTypes";
 
 export class EboBrowseComp extends EboComponent {
     get refsLoaded(): boolean {
@@ -183,16 +183,42 @@ export class EboBrowseComp extends EboComponent {
             this.dispatchEvent(this.browseFilterChangedEvent);
         });
         this.shadow.querySelectorAll("ebo-button")
-            .forEach(btn =>
+            .forEach(btn => {
                 btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
-                    let btn: EboButton = ev.target as EboButton;
-                    let propName = btn.id.replace("filter", "");
-                    propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-                    this.browseFilter[propName] = !this.browseFilter[propName];
-                    this.dispatchEvent(this.browseFilterChangedEvent);
-                })
-            );
+                    this.onFilterButtonPress(ev);
+                });
+                btn.addEventListener(EboplayerEvents.longPress, (ev) => {
+                    this.onFilterButtonLongPress(ev);
+                });
+            });
         this.update();
+    }
+
+    private onFilterButtonLongPress(ev: Event) {
+        this.clearFilterButtons();
+        this.toggleFilterButton(ev.target as EboButton);
+        this.update();
+    }
+
+    private clearFilterButtons() {
+        this.browseFilter.genre = false;
+        this.browseFilter.radio = false;
+        this.browseFilter.playlist = false;
+        this.browseFilter.album = false;
+        this.browseFilter.track = false;
+        this.browseFilter.artist = false;
+    }
+
+    private onFilterButtonPress(ev: PressedChangeEvent) {
+        let btn: EboButton = ev.target as EboButton;
+        this.toggleFilterButton(btn);
+    }
+
+    private toggleFilterButton(btn: EboButton) {
+        let propName = btn.id.replace("filter", "");
+        propName = propName.charAt(0).toLowerCase() + propName.slice(1);
+        this.browseFilter[propName] = !this.browseFilter[propName];
+        this.dispatchEvent(this.browseFilterChangedEvent);
     }
 
     updateWhenConnected() {
@@ -203,9 +229,6 @@ export class EboBrowseComp extends EboComponent {
         inputElement.value = this._browseFilter.searchText;
         if(!this.refsLoaded) {
             this.setSearchInfo("Loading data...");
-            return;
-        } else {
-            this.setSearchInfo("Filtering...");
         }
     }
 

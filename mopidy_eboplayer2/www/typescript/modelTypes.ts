@@ -46,6 +46,7 @@ export enum EboplayerEvents {
     browseFilterChanged = "eboplayer.browseFilterChanged",
     refsLoaded = "eboplayer.refsLoaded",
     refsFiltered = "eboplayer.refsFiltered",
+    longPress = "eboplayer.longPress",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

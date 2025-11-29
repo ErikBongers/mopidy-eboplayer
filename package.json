@@ -12,8 +12,6 @@
   },
   "//": "install rolldown globally or add it to devDependencies",
   "devDependencies": {
-    "@rolldown/plugin-node-polyfills": "^1.0.0",
-    "@types/node": "^24.6.2",
     "rolldown": "^1.0.0-beta.41"
   }
 }
