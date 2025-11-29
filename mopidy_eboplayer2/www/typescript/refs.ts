@@ -38,7 +38,12 @@ export class Refs {
                 this.calculateWeight(result);
             });
         }
-        this.searchResults.sort((a, b) => b.weight - a.weight);
+        this.searchResults.sort((a, b) => {
+            if (b.weight === a.weight) {
+                return a.ref.name.localeCompare(b.ref.name);
+            }
+            return b.weight - a.weight
+        });
     }
 
     private calculateWeight(result: SearchResult) {
