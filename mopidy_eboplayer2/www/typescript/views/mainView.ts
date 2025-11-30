@@ -14,7 +14,7 @@ export class MainView extends View {
         browseComp.addEventListener("browseFilterChanged", (ev) => {
             getState().getController().setSaveAndApplyBrowseFilter(browseComp.browseFilter);
         });
-        getState().getModel().addEventListener(EboplayerEvents.refsLoaded, () => {
+        getState().getModel().addEventListener(EboplayerEvents.allRefsLoaded, () => {
             this.onRefsLoaded();
         });
         getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {

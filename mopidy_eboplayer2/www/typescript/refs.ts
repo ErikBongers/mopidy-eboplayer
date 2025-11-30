@@ -8,7 +8,22 @@ export interface SearchResult {
     weight: number;
 }
 
-export class Refs {
+export abstract class Refs {
+
+    abstract filter(browseFilter: BrowseFilter): void;
+    abstract getSearchResults(): SearchResult[];
+
+    protected calculateWeight(result: SearchResult, browseFilter: BrowseFilter) {
+        if (result.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
+            result.weight += 100;
+        if (result.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
+            result.weight += 100;
+        if (!browseFilter.searchText)
+            result.weight += 1; //No search text? Give every result a weight of 1, so that they are always shown.
+    }
+}
+
+export class AllRefs extends Refs {
     roots: Ref[];
     sub: Ref[];
     tracks: Ref[];
@@ -16,9 +31,9 @@ export class Refs {
     artists: Ref[];
     genres: Ref[];
     searchResults: SearchResult[];
-    lastFilter: BrowseFilter | undefined;
 
     constructor( roots: Ref[], sub: Ref[], tracks: Ref[], albums: Ref[], artists: Ref[], genres: Ref[]) {
+        super();
         this.roots = roots;
         this.sub = sub;
         this.tracks = tracks;
@@ -29,12 +44,10 @@ export class Refs {
     }
 
     filter(browseFilter: BrowseFilter) {
-        //todo: perhaps do an incremental filter?
-        this.lastFilter = browseFilter;
         this.searchResults = [];
-        this.prefillWithTypes();
+        this.prefillWithTypes(browseFilter);
         this.searchResults.forEach(result => {
-            this.calculateWeight(result);
+            this.calculateWeight(result, browseFilter);
         });
         this.searchResults = this.searchResults
             .filter(result => result.weight > 0)
@@ -46,23 +59,18 @@ export class Refs {
         });
     }
 
-    private calculateWeight(result: SearchResult) {
-        if(result.ref.name.toLowerCase().startsWith(this.lastFilter.searchText.toLowerCase()))
-            result.weight+= 100;
-        if (result.ref.name.toLowerCase().includes(this.lastFilter.searchText.toLowerCase()))
-            result.weight+= 100;
-        if(!this.lastFilter.searchText)
-            result.weight+= 1; //No search text? Give every result a weight of 1, so that they are always shown.
+    getSearchResults(): SearchResult[] {
+        return this.searchResults;
     }
 
-    private prefillWithTypes() {
-        if(this.lastFilter.album || this.lastFilter.isNoTypeSelected())
+    private prefillWithTypes(browseFilter: BrowseFilter) {
+        if(browseFilter.album || browseFilter.isNoTypeSelected())
             this.searchResults.push(...this.albums.map(album => ({ref: album, weight: 0})));
-        if(this.lastFilter.artist || this.lastFilter.isNoTypeSelected())
+        if(browseFilter.artist || browseFilter.isNoTypeSelected())
             this.searchResults.push(...this.artists.map(artist => ({ref: artist, weight: 0})));
-        if(this.lastFilter.track || this.lastFilter.isNoTypeSelected())
+        if(browseFilter.track || browseFilter.isNoTypeSelected())
             this.searchResults.push(...this.tracks.map(track => ({ref: track, weight: 0})));
-        if(this.lastFilter.genre || this.lastFilter.isNoTypeSelected())
+        if(browseFilter.genre || browseFilter.isNoTypeSelected())
             this.searchResults.push(...this.genres.map(track => ({ref: track, weight: 0})));
     }
 }

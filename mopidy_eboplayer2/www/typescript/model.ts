@@ -1,5 +1,5 @@
 import models from "../js/mopidy";
-import {Refs, SearchResult} from "./refs";
+import {AllRefs, Refs, SearchResult} from "./refs";
 import {BrowseFilter, ConnectionState, EboplayerEvents, FilterBreadCrumbType, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
@@ -16,7 +16,7 @@ export interface ViewModel extends EventTarget {
     getHistory: () => HistoryLine[];
     getTrackInfo(uri: string): LibraryItem;
     getCurrentBrowseFilter: () => BrowseFilter;
-    getSearchResults(): SearchResult[];
+    getCurrentSearchResults(): SearchResult[];
     getTrackList(): TlTrack[];
     getBreadCrumbs(): BrowseFilterBreadCrumbs;
 }
@@ -50,7 +50,8 @@ export class Model extends EventTarget implements ViewModel {
     private currentBrowseFilter= new BrowseFilter();
     private filterBreadCrumbStack: BreadCrumbStack<FilterBreadCrumbType> = new BreadCrumbStack<FilterBreadCrumbType>();
 
-    private refs: Refs;
+    private allRefs: Refs;
+    private currentRefs: Refs;
 
     constructor() {
         super();
@@ -76,19 +77,19 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
-    setRefs(refs: Refs) {
-        this.refs = refs;
-        this.dispatchEvent(new Event(EboplayerEvents.refsLoaded));
+    setAllRefs(refs: Refs) {
+        this.allRefs = refs;
+        this.dispatchEvent(new Event(EboplayerEvents.allRefsLoaded));
     }
 
-    getSearchResults(): SearchResult[] {
-        return this.refs.searchResults;
+    getCurrentSearchResults(): SearchResult[] {
+        return this.currentRefs?.getSearchResults() ?? [] as SearchResult[];
     }
 
-    isRefsLoaded = () => this.refs != undefined;
+    isAllRefsLoaded = () => this.allRefs != undefined;
 
-    filterRefs(){
-        this.refs.filter(this.currentBrowseFilter);
+    filterCurrentRefs(){
+        this.currentRefs.filter(this.currentBrowseFilter);
         this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
     }
     setConnectionState(state: ConnectionState) {
@@ -224,5 +225,10 @@ export class Model extends EventTarget implements ViewModel {
 
     getTrackFromCache(uri: string) {
         return this.libraryCache.get(uri);
+    }
+
+    setCurrentRefs(refs: Refs) {
+        this.currentRefs = refs;
+        this.dispatchEvent(new Event(EboplayerEvents.currentRefsLoaded));
     }
 }

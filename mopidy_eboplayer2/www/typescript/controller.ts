@@ -1,4 +1,4 @@
-import getState from "./playerState";
+import getState, {setState} from "./playerState";
 import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import {transformTlTrackDataToModel} from "./process_ws";
@@ -12,8 +12,8 @@ import {LocalStorageProxy} from "./localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
-import {Refs} from "./refs";
-import {BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
+import {AllRefs, Refs} from "./refs";
+import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
 
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
@@ -152,7 +152,22 @@ export class Controller extends Commands implements DataRequester{
         this.filterBrowseResults();
     }
 
-    setSaveAndApplyBreadCrumbs() {
+    diveIntoBrowseResult(label: string, uri: string, type: string) {
+        let browseFilter = this.model.getCurrentBrowseFilter();
+        let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
+        this.model.getBreadCrumbs().push(breadCrumb1);
+        let newBrowseFilter = new BrowseFilter();
+        //for each type, we dive into the next level of type. E.g. artist -> album -> track.
+        switch (type) {
+            case "artist": newBrowseFilter.album = true; break;
+            case "album": newBrowseFilter.track = true; break;
+            case "genre": newBrowseFilter.album = true; break;
+            //todo: playlist.
+            //todo: case "track": play the darn track!
+        }
+        this.setSaveAndApplyBrowseFilter(newBrowseFilter);
+        let breadCrumb2 = new BreadCrumbUri(label, newBrowseFilter, uri);
+        this.model.getBreadCrumbs().push(breadCrumb2);
         this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
     }
 
@@ -202,11 +217,12 @@ export class Controller extends Commands implements DataRequester{
         //todo: playlists.
         //todo: radios are tracks in playlists, that are not in the file system.
 
-        let refs = new Refs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
-        this.model.setRefs(refs);
+        let refs = new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
+        this.model.setAllRefs(refs);
+        this.model.setCurrentRefs(refs);
     }
 
     filterBrowseResults() {
-        this.model.filterRefs();
+        this.model.filterCurrentRefs();
     }
 }

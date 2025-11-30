@@ -266,17 +266,20 @@ export class EboBrowseComp extends EboComponent {
         let body = table.tBodies[0];
         body.innerHTML = "";
 
-        let results = getState()?.getModel()?.getSearchResults() ?? []; //todo: direct reference to model in component. Make searchResults a property.
+        let results = getState()?.getModel()?.getCurrentSearchResults() ?? []; //todo: direct reference to model in component. Make searchResults a property.
         if(results?.length == 0)
             return;
 
+
         let resultsHtml = results
             .map(result => {
+                let hackedType = result.ref.uri.split(":")[1]; //todo: replace result with track data fron cached lookup.
+
                 return `
-<tr data-uri="${result.ref.uri}">
-<td>${result.ref.name}</td>
-<td>...</td>
-</tr>`;
+                    <tr data-uri="${result.ref.uri}" data-type="${hackedType}">
+                    <td>${result.ref.name}</td>
+                    <td>...</td>
+                    </tr>`;
             })
             .join("\n");
         body.innerHTML = resultsHtml;
@@ -289,8 +292,7 @@ export class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        //dive
-
+        getState().getController().diveIntoBrowseResult(row.cells[0].innerText, row.dataset.uri, row.dataset.type);
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
