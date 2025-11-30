@@ -1,8 +1,9 @@
 import models from "../js/mopidy";
 import {Refs, SearchResult} from "./refs";
-import {BrowseFilter, ConnectionState, EboplayerEvents, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
+import {BrowseFilter, ConnectionState, EboplayerEvents, FilterBreadCrumbType, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
+import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
@@ -14,10 +15,13 @@ export interface ViewModel extends EventTarget {
     getActiveStreamLines: () => StreamTitles;
     getHistory: () => HistoryLine[];
     getTrackInfo(uri: string): LibraryItem;
-    getBrowseFilter: () => BrowseFilter;
+    getCurrentBrowseFilter: () => BrowseFilter;
     getSearchResults(): SearchResult[];
     getTrackList(): TlTrack[];
+    getBreadCrumbs(): BrowseFilterBreadCrumbs;
 }
+
+export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
 
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
@@ -43,12 +47,33 @@ export class Model extends EventTarget implements ViewModel {
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, LibraryItem> = new Map();
-    private browseFilter= new BrowseFilter();
+    private currentBrowseFilter= new BrowseFilter();
+    private filterBreadCrumbStack: BreadCrumbStack<FilterBreadCrumbType> = new BreadCrumbStack<FilterBreadCrumbType>();
 
     private refs: Refs;
 
     constructor() {
         super();
+    }
+
+    pushBreadCrumb(crumb: BreadCrumb<any>) {
+        this.filterBreadCrumbStack.push(crumb);
+        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+    }
+    popBreadCrumb() {
+        this.filterBreadCrumbStack.pop();
+        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+    }
+    getBreadCrumbs = () => this.filterBreadCrumbStack;
+
+    resetBreadCrumbsTo(breadCrumb: BreadCrumb<any>) {
+        this.filterBreadCrumbStack.resetTo(breadCrumb);
+        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+    }
+
+    clearBreadCrumbs() {
+        this.filterBreadCrumbStack.clear();
+        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
     setRefs(refs: Refs) {
@@ -63,7 +88,7 @@ export class Model extends EventTarget implements ViewModel {
     isRefsLoaded = () => this.refs != undefined;
 
     filterRefs(){
-        this.refs.filter(this.browseFilter);
+        this.refs.filter(this.currentBrowseFilter);
         this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
     }
     setConnectionState(state: ConnectionState) {
@@ -81,10 +106,15 @@ export class Model extends EventTarget implements ViewModel {
         return this.libraryCache.get(uri);
     }
 
-    getBrowseFilter = () => this.browseFilter;
-    setBrowseFilter(filter: BrowseFilter) {
-        this.browseFilter = filter;
+    getCurrentBrowseFilter = () => this.currentBrowseFilter;
+    setCurrentBrowseFilter(browseFilter: BrowseFilter) {
+        this.currentBrowseFilter = browseFilter;
         this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
+    }
+
+    setBrowseFilterBreadCrumbs(breadCrumbStack: BreadCrumbStack<FilterBreadCrumbType>) {
+        this.filterBreadCrumbStack = breadCrumbStack;
+        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
     getCurrentTrack(): string {

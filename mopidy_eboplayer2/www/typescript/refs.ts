@@ -33,12 +33,12 @@ export class Refs {
         this.lastFilter = browseFilter;
         this.searchResults = [];
         this.prefillWithTypes();
-        if(this.lastFilter.searchText) {
-            this.searchResults.forEach(result => {
-                this.calculateWeight(result);
-            });
-        }
-        this.searchResults.sort((a, b) => {
+        this.searchResults.forEach(result => {
+            this.calculateWeight(result);
+        });
+        this.searchResults = this.searchResults
+            .filter(result => result.weight > 0)
+            .sort((a, b) => {
             if (b.weight === a.weight) {
                 return a.ref.name.localeCompare(b.ref.name);
             }
@@ -51,6 +51,8 @@ export class Refs {
             result.weight+= 100;
         if (result.ref.name.toLowerCase().includes(this.lastFilter.searchText.toLowerCase()))
             result.weight+= 100;
+        if(!this.lastFilter.searchText)
+            result.weight+= 1; //No search text? Give every result a weight of 1, so that they are always shown.
     }
 
     private prefillWithTypes() {

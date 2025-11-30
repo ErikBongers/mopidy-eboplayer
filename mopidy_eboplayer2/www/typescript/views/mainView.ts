@@ -12,7 +12,7 @@ export class MainView extends View {
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEventListener("browseFilterChanged", (ev) => {
-            getState().getController().setSaveAndApplyFilter(browseComp.browseFilter);
+            getState().getController().setSaveAndApplyBrowseFilter(browseComp.browseFilter);
         });
         getState().getModel().addEventListener(EboplayerEvents.refsLoaded, () => {
             this.onRefsLoaded();
@@ -20,6 +20,10 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
             this.onRefsFiltered();
         });
+        getState().getModel().addEventListener(EboplayerEvents.breadCrumbsChanged, () => {
+            this.onBreadCrumbsChanged();
+        });
+
     }
 
     private onRefsLoaded() {
@@ -32,6 +36,11 @@ export class MainView extends View {
         browseComp.renderResults();
     }
 
+    private onBreadCrumbsChanged() {
+        let browseComp = document.getElementById("browseView") as EboBrowseComp;
+        browseComp.renderBreadCrumbs();
+    }
+
     private onSearchButtonClick() {
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
@@ -40,7 +49,7 @@ export class MainView extends View {
             layout.classList.add("browse");
             layout.classList.remove("bigTrack");
             let browseComp = document.getElementById("browseView") as EboBrowseComp;
-            browseComp.browseFilter = getState().getModel().getBrowseFilter();
+            browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
             browseComp.setFocusAndSelect();
         } else {
             browseBtn.title = "Search";

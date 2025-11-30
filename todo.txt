@@ -1,12 +1,44 @@
+* BreadCrumbs:
+  > when starting, there are no breadcrumbs.
+  > where do we store the current filter?
+  > or is the last breadCrumb not displayed?
+  > or do we have an active filter that is NOT part of the breadcrumbs?
+    > when does it become a breadcrumb?
+      > when the user drills down.
+
+
+* show an info button next to filter buttons.
+  > show info block with a "remove info button" button. When pressing, inform user this can be changed in settings.
+
+* click on search line: drill down:
+  > e.g artist > album.
+  - save current filter to breadcrumb stack.
+  - set filter to
+
 * Show tracklist in timeline.
 
-* Browse:
-  > the initial results are the filtered results.
-  > but when clicking, the details no longer match the filter.
-    > show with breadcrumps?
-      > show as tree structure on mobile?
-        > use mini arrow as separator.
+* Browse scenario:
+  - search artist.
+  - click artist.
+    > save filter as breadcrumb: "sdf" > Artist_name
+      > clicking breadcrumb "sdf" resets the filter.
+      > clicking the Artist_name...self evident.
+    > change filter to show only albums of this artist.
+    > user filters for "sdfsdf" (and sets some other toggles perhaps).
+      > set breadcrumb to "sdf" > Artist_name > "sdfsdf"
+    - click album.
+      > set breadcrumb to
+          "sdf" > Artist_name >  --> don't show the '>' if splitting over multiple lines.
+          "sdfsdf" > Album_name
+        > if the text filter is empty, show "all".
+      > change filter to show only tracks of this album.
 
+* Browse hiararchy and thus, default toggles:
+  - artists > albums
+  - albums > tracks
+  - playlists > tracks
+  - genres > albums
+    > albums likely have one genre.
 
 * Separate model view controller.
   > model:

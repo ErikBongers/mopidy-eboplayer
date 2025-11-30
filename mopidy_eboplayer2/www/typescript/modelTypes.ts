@@ -1,6 +1,22 @@
 import models from "../js/mopidy";
+import {BreadCrumb} from "./breadCrumb";
 
 export enum TrackType { None, File, Stream}
+
+export type Uri = string;
+export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
+    constructor(label: string, filter: BrowseFilter) {
+        super(label, filter);
+    }
+}
+export class BreadCrumbUri extends BreadCrumbBrowseFilter {
+    uri: Uri;
+    constructor(label: string, filter: BrowseFilter, uri: Uri) {
+        super(label, filter);
+        this.uri = uri;
+    }
+}
+export type FilterBreadCrumbType = BreadCrumbUri | BreadCrumbBrowseFilter;
 
 export class BrowseFilter {
     searchText: string;
@@ -61,6 +77,7 @@ export enum EboplayerEvents {
     refsLoaded = "eboplayer.refsLoaded",
     refsFiltered = "eboplayer.refsFiltered",
     longPress = "eboplayer.longPress",
+    breadCrumbsChanged = "eboplayer.breadCrumbsChanged",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

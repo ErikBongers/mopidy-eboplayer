@@ -3,7 +3,8 @@ import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {BrowseFilter, EboplayerEvents} from "../modelTypes";
+import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, EboplayerEvents, FilterBreadCrumbType, Uri} from "../modelTypes";
+import {BreadCrumb} from "../breadCrumb";
 
 export class EboBrowseComp extends EboComponent {
     get refsLoaded(): boolean {
@@ -106,8 +107,9 @@ export class EboBrowseComp extends EboComponent {
         <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
         <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
         <button> X </button>
+        <button> i </button>
     </div>
-    
+    <div id="breacCrumbs"></div>
     <div id="searchResults">
         <div id="searchInfo">
         </div>  
@@ -172,7 +174,7 @@ export class EboBrowseComp extends EboComponent {
             //todo: is this button even needed?
         });
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
-        inputElement.addEventListener("keydown", (ev: KeyboardEvent)=> {
+        inputElement.addEventListener("keyup", (ev: KeyboardEvent)=> {
             this._browseFilter.searchText = inputElement.value;
             this.dispatchEvent(this.browseFilterChangedEvent);
         });
@@ -185,6 +187,7 @@ export class EboBrowseComp extends EboComponent {
                     this.onFilterButtonLongPress(ev);
                 });
             });
+        this.renderBreadCrumbs();
         this.renderResults();
         this.update();
     }
@@ -241,6 +244,21 @@ export class EboBrowseComp extends EboComponent {
         searchInfo.innerHTML = text;
     }
 
+    renderBreadCrumbs() {
+        let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
+        breadCrumbsDiv.innerHTML = (getState()?.getModel()?.getBreadCrumbs()?.list() ?? [])
+            .map(crumb => this.renderBreadcrumb(crumb))
+            .join(" > ");
+    }
+
+    private renderBreadcrumb(crumb: FilterBreadCrumbType) {
+        if(crumb instanceof BreadCrumbUri)
+            return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
+        else if(crumb instanceof BreadCrumbBrowseFilter)
+            return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
+        //todo: click event.
+    }
+
     renderResults() {
         this.setSearchInfo("");
 
@@ -263,7 +281,7 @@ export class EboBrowseComp extends EboComponent {
             .join("\n");
         body.innerHTML = resultsHtml;
         body.querySelectorAll("tr").forEach(tr => {
-            tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev)});
+            tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
             tr.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
 

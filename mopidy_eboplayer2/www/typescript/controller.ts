@@ -146,10 +146,14 @@ export class Controller extends Commands implements DataRequester{
         this.model.setTrackList(trackList);
     }
 
-    setSaveAndApplyFilter(filter: BrowseFilter) {
-        this.localStorageProxy.saveBrowseFilters(filter);
-        this.model.setBrowseFilter(filter);
+    setSaveAndApplyBrowseFilter(filter: BrowseFilter) {
+        this.localStorageProxy.saveCurrentBrowseFilter(filter);
+        this.model.setCurrentBrowseFilter(filter);
         this.filterBrowseResults();
+    }
+
+    setSaveAndApplyBreadCrumbs() {
+        this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
     }
 
     async getTrackInfoCached(uri: string) {
