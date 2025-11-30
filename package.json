@@ -5,7 +5,7 @@
   "main": "gui.js",
   "type": "module",
   "scripts": {
-    "build": "rolldown -c",
+    "build": "tsgo && rolldown -c",
     "tsc": "tsc",
     "tsgo": "tsgo"
   },
