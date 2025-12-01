@@ -9,11 +9,9 @@ export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
         super(label, filter);
     }
 }
-export class BreadCrumbUri extends BreadCrumbBrowseFilter {
-    uri: Uri;
-    constructor(label: string, filter: BrowseFilter, uri: Uri) {
-        super(label, filter);
-        this.uri = uri;
+export class BreadCrumbUri extends BreadCrumb<Uri> {
+    constructor(label: string, uri: Uri) {
+        super(label, uri);
     }
 }
 export type FilterBreadCrumbType = BreadCrumbUri | BreadCrumbBrowseFilter;

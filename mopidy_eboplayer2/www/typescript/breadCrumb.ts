@@ -37,7 +37,9 @@ export class BreadCrumbStack<T extends BreadCrumb<any>> { //todo: use extends Ar
         this.breadCrumbStack = [];
     }
 
-    getLast() {
+    getLast(): T | undefined {
+        if(this.breadCrumbStack.length == 0)
+            return undefined;
         return this.breadCrumbStack[this.breadCrumbStack.length-1];
     }
 

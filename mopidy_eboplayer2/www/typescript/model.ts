@@ -50,7 +50,7 @@ export class Model extends EventTarget implements ViewModel {
     private currentBrowseFilter= new BrowseFilter();
     private filterBreadCrumbStack: BreadCrumbStack<FilterBreadCrumbType> = new BreadCrumbStack<FilterBreadCrumbType>();
 
-    private allRefs: Refs;
+    private allRefs?: Refs;
     private currentRefs: Refs;
 
     constructor() {
@@ -86,10 +86,11 @@ export class Model extends EventTarget implements ViewModel {
         return this.currentRefs?.getSearchResults() ?? [] as SearchResult[];
     }
 
-    isAllRefsLoaded = () => this.allRefs != undefined;
+    getAllRefs = () => this.allRefs;
 
     filterCurrentRefs(){
-        this.currentRefs.filter(this.currentBrowseFilter);
+        this.currentRefs.browseFilter = this.currentBrowseFilter;
+        this.currentRefs.filter();
         this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
     }
     setConnectionState(state: ConnectionState) {

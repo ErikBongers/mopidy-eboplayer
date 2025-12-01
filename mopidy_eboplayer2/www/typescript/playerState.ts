@@ -58,8 +58,10 @@ export class State {
         }
 
         this.controller.localStorageProxy.loadCurrentBrowseFilter();
-        await this.controller.fetchAllRefs();
-        this.controller.filterBrowseResults();
+        this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
+        this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
+            this.controller.filterBrowseResults();
+        });
     }
 }
 

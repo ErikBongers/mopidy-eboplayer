@@ -12,7 +12,7 @@ import {LocalStorageProxy} from "./localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
-import {AllRefs, Refs} from "./refs";
+import {AllRefs, Refs, SomeRefs} from "./refs";
 import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
 
 export class Controller extends Commands implements DataRequester{
@@ -146,16 +146,24 @@ export class Controller extends Commands implements DataRequester{
         this.model.setTrackList(trackList);
     }
 
-    setSaveAndApplyBrowseFilter(filter: BrowseFilter) {
+    setAndSaveBrowseFilter(filter: BrowseFilter) {
         this.localStorageProxy.saveCurrentBrowseFilter(filter);
         this.model.setCurrentBrowseFilter(filter);
         this.filterBrowseResults();
     }
 
     diveIntoBrowseResult(label: string, uri: string, type: string) {
+        // set 2 new breadCrumbs and a new browseFilter.
+        // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
         let browseFilter = this.model.getCurrentBrowseFilter();
         let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-        this.model.getBreadCrumbs().push(breadCrumb1);
+        this.model.pushBreadCrumb(breadCrumb1);
+
+        let breadCrumb2 = new BreadCrumbUri(label, uri);
+        this.model.pushBreadCrumb(breadCrumb2);
+
+        this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
+
         let newBrowseFilter = new BrowseFilter();
         //for each type, we dive into the next level of type. E.g. artist -> album -> track.
         switch (type) {
@@ -165,10 +173,10 @@ export class Controller extends Commands implements DataRequester{
             //todo: playlist.
             //todo: case "track": play the darn track!
         }
-        this.setSaveAndApplyBrowseFilter(newBrowseFilter);
-        let breadCrumb2 = new BreadCrumbUri(label, newBrowseFilter, uri);
-        this.model.getBreadCrumbs().push(breadCrumb2);
-        this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
+        this.setAndSaveBrowseFilter(newBrowseFilter);
+        this.fetchRefsForCurrentBreadCrumbs().then(() => {
+            this.filterBrowseResults();
+        });
     }
 
     async getTrackInfoCached(uri: string) {
@@ -217,12 +225,36 @@ export class Controller extends Commands implements DataRequester{
         //todo: playlists.
         //todo: radios are tracks in playlists, that are not in the file system.
 
-        let refs = new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
-        this.model.setAllRefs(refs);
-        this.model.setCurrentRefs(refs);
+        return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
     }
 
     filterBrowseResults() {
         this.model.filterCurrentRefs();
+    }
+
+    async fetchRefsForCurrentBreadCrumbs() {
+        let breadCrumbs = this.model.getBreadCrumbs();
+        let lastCrumb = breadCrumbs.getLast();
+        if(!lastCrumb) {
+            await this.setAllRefsAsCurrent();
+            return;
+        }
+        if(lastCrumb instanceof BreadCrumbBrowseFilter) {
+            await this.setAllRefsAsCurrent();
+            return;
+        }
+        if(lastCrumb instanceof BreadCrumbUri) {
+            let refs = await this.mopidyProxy.browse(lastCrumb.data);
+            this.model.setCurrentRefs(new SomeRefs(refs));
+            return;
+        }
+    }
+
+    private async setAllRefsAsCurrent() {
+        if (!this.model.getAllRefs()) {
+            let allRefs = await this.fetchAllRefs();
+            this.model.setAllRefs(allRefs);
+        }
+        this.model.setCurrentRefs(this.model.getAllRefs());
     }
 }

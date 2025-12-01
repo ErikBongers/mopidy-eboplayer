@@ -12,7 +12,7 @@ export class MainView extends View {
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEventListener("browseFilterChanged", (ev) => {
-            getState().getController().setSaveAndApplyBrowseFilter(browseComp.browseFilter);
+            getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
         });
         getState().getModel().addEventListener(EboplayerEvents.allRefsLoaded, () => {
             this.onRefsLoaded();
