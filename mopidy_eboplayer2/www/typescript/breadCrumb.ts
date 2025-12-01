@@ -4,13 +4,15 @@ export class BreadCrumb<T> {
     id: number;
     label: string;
     data: T;
+    type: string
 
     private static nextId = 1;
 
-    constructor(label: string, value: T) {
+    constructor(label: string, value: T, type: string) {
         this.label = label;
         this.data = value;
         this.id = BreadCrumb.nextId++;
+        this.type = type;
     }
 }
 

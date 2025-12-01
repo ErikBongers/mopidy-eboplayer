@@ -14,9 +14,6 @@ export class MainView extends View {
         browseComp.addEventListener("browseFilterChanged", (ev) => {
             getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
         });
-        getState().getModel().addEventListener(EboplayerEvents.allRefsLoaded, () => {
-            this.onRefsLoaded();
-        });
         getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
             this.onRefsFiltered();
         });
@@ -24,11 +21,6 @@ export class MainView extends View {
             this.onBreadCrumbsChanged();
         });
 
-    }
-
-    private onRefsLoaded() {
-        let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        browseComp.refsLoaded = true;
     }
 
     private onRefsFiltered() {

@@ -7,14 +7,6 @@ import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, EboplayerEvents, Fi
 import {BreadCrumb} from "../breadCrumb";
 
 export class EboBrowseComp extends EboComponent {
-    get refsLoaded(): boolean {
-        return this._refsLoaded;
-    }
-
-    set refsLoaded(value: boolean) {
-        this._refsLoaded = value;
-        this.render();
-    }
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
     }
@@ -22,8 +14,6 @@ export class EboBrowseComp extends EboComponent {
         this._browseFilter = value;
         this.render();
     }
-
-    private _refsLoaded: boolean = false;
 
     private _browseFilter: BrowseFilter;
     static readonly tagName=  "ebo-browse-view";
@@ -97,7 +87,7 @@ export class EboBrowseComp extends EboComponent {
 <div id="wrapper">
     <div id="searchBox">
         <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
-        <input id="searchText" type="text" value="sdfsdf" autofocus>
+        <input id="searchText" type="text" autofocus>
     </div>
     <div id="filterButtons">
         <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
@@ -106,8 +96,8 @@ export class EboBrowseComp extends EboComponent {
         <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
         <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
         <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <button> X </button>
-        <button> i </button>
+        <button> ALL </button>
+        <button> &nbsp;&nbsp;(i) </button>
     </div>
     <div id="breacCrumbs"></div>
     <div id="searchResults">
@@ -225,9 +215,6 @@ export class EboBrowseComp extends EboComponent {
                 this.updateFilterButton(btn));
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
-        if(!this.refsLoaded) {
-            this.setSearchInfo("Loading data...");
-        }
     }
 
     private updateFilterButton(btn: Element) {
@@ -246,7 +233,7 @@ export class EboBrowseComp extends EboComponent {
 
     renderBreadCrumbs() {
         let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
-        breadCrumbsDiv.innerHTML = (getState()?.getModel()?.getBreadCrumbs()?.list() ?? [])
+        breadCrumbsDiv.innerHTML = "Ĥ > " + (getState()?.getModel()?.getBreadCrumbs()?.list() ?? [])
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" > ");
     }

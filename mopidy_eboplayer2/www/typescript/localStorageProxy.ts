@@ -1,7 +1,7 @@
 import {BrowseFilterBreadCrumbs, Model} from "./model";
 import {jsonParse} from "./functionsvars";
-import {BrowseFilter, FilterBreadCrumbType} from "./modelTypes";
-import {BreadCrumbStack} from "./breadCrumb";
+import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, FilterBreadCrumbType} from "./modelTypes";
+import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 
 const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
 const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
@@ -22,7 +22,7 @@ export class LocalStorageProxy {
             this.model.setCurrentBrowseFilter(browseFilter);
             return;
         }
-        console.error("Could not load or parse browse filters from local storage. Using default filters.");
+        console.error("Could not load or parse browse filter bread crumbs from local storage. Using default bread crumbs.");
     }
 
     loadBrowseFiltersBreadCrumbs() {
@@ -30,7 +30,19 @@ export class LocalStorageProxy {
         if (breadCrumbsString) {
             let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs().list());
             let breadCrumbs = new BreadCrumbStack<FilterBreadCrumbType>();
-            breadCrumbs.setArray(breadCrumbsArray);
+            breadCrumbsArray
+                .map(crumb => {
+                    switch (crumb.type) {
+                        case "browseFilter": //todo: make this a const in BreadCrumbBrowseFilter
+                            let browseFilter = new BrowseFilter();
+                            Object.assign(browseFilter, crumb.data);
+                            return new BreadCrumbBrowseFilter(crumb.label, browseFilter);
+                        case "uri":
+                            return new BreadCrumbUri(crumb.label, crumb.data as string);
+                    }
+                })
+                .forEach(crumb =>
+                    breadCrumbs.push(crumb));
             this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
             return;
         }

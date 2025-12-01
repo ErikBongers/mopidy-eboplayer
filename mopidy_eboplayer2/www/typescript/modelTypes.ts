@@ -6,12 +6,12 @@ export enum TrackType { None, File, Stream}
 export type Uri = string;
 export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
     constructor(label: string, filter: BrowseFilter) {
-        super(label, filter);
+        super(label, filter, "browseFilter");
     }
 }
 export class BreadCrumbUri extends BreadCrumb<Uri> {
     constructor(label: string, uri: Uri) {
-        super(label, uri);
+        super(label, uri, "uri");
     }
 }
 export type FilterBreadCrumbType = BreadCrumbUri | BreadCrumbBrowseFilter;
@@ -72,7 +72,6 @@ export enum EboplayerEvents {
     historyChanged = "eboplayer.historyChanged",
     trackListChanged = "eboplayer.trackListChanged",
     browseFilterChanged = "eboplayer.browseFilterChanged",
-    allRefsLoaded = "eboplayer.allRefsLoaded",
     currentRefsLoaded = "eboplayer.currentRefsLoaded",
     refsFiltered = "eboplayer.refsFiltered",
     longPress = "eboplayer.longPress",
