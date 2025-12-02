@@ -13,7 +13,7 @@ import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentO
 import {EboAlbumTracksComp} from "./components/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
-import {EboBrowseComp} from "./components/eboBrowseComp";
+import EboBrowseComp from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
 import {getHostAndPort} from "./global";
 

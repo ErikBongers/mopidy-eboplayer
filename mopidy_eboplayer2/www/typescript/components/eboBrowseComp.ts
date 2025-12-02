@@ -6,11 +6,13 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, EboplayerEvents, FilterBreadCrumbType, Uri} from "../modelTypes";
 import {BreadCrumb} from "../breadCrumb";
 
-export class EboBrowseComp extends EboComponent {
+class EboBrowseComp extends EboComponent {
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
     }
     set browseFilter(value: BrowseFilter) {
+        if(JSON.stringify(this._browseFilter) == JSON.stringify(value))
+            return;
         this._browseFilter = value;
         this.render();
     }
@@ -163,8 +165,15 @@ export class EboBrowseComp extends EboComponent {
         this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             //todo: is this button even needed?
         });
+        this.renderBrowseFilter();
+        this.renderBreadCrumbs();
+        this.renderResults();
+        this.update();
+    }
+
+    private renderBrowseFilter() {
         let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
-        inputElement.addEventListener("keyup", (ev: KeyboardEvent)=> {
+        inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
             this._browseFilter.searchText = inputElement.value;
             this.dispatchEvent(this.browseFilterChangedEvent);
         });
@@ -177,9 +186,6 @@ export class EboBrowseComp extends EboComponent {
                     this.onFilterButtonLongPress(ev);
                 });
             });
-        this.renderBreadCrumbs();
-        this.renderResults();
-        this.update();
     }
 
     private onFilterButtonLongPress(ev: Event) {
@@ -236,6 +242,12 @@ export class EboBrowseComp extends EboComponent {
         breadCrumbsDiv.innerHTML = "Ĥ > " + (getState()?.getModel()?.getBreadCrumbs()?.list() ?? [])
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" > ");
+
+        breadCrumbsDiv.querySelectorAll("button").forEach(btn => {
+            btn.addEventListener("click", (ev)  => {
+                this.onBreadCrumbClicked(ev);
+            });
+        })
     }
 
     private renderBreadcrumb(crumb: FilterBreadCrumbType) {
@@ -288,4 +300,11 @@ export class EboBrowseComp extends EboComponent {
     }
 
 
+    private onBreadCrumbClicked(ev: MouseEvent) {
+        let btn = ev.currentTarget as HTMLButtonElement;
+        console_yellow(btn.dataset.id);
+        getState().getController().resetToBreadCrumb(parseInt(btn.dataset.id)); //todo rename to breadCrumbId.
+    }
 }
+
+export default EboBrowseComp

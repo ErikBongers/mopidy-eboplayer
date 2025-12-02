@@ -24,13 +24,13 @@ export class BreadCrumbStack<T extends BreadCrumb<any>> { //todo: use extends Ar
     }
 
     pop() {
-        this.breadCrumbStack.pop();
+        return this.breadCrumbStack.pop();
     }
     list = () => this.breadCrumbStack;
 
-    resetTo(breadCrumb: BreadCrumb<T>) {
-        let index = this.breadCrumbStack.findIndex((value, index, obj) => {
-            return value.id == breadCrumb.id;
+    resetTo(id: number) {
+        let index = this.breadCrumbStack.findIndex((breadCrumb, index, obj) => {
+            return breadCrumb.id == id;
         });
         this.breadCrumbStack = this.breadCrumbStack.slice(0, index+1);
     }
@@ -43,6 +43,10 @@ export class BreadCrumbStack<T extends BreadCrumb<any>> { //todo: use extends Ar
         if(this.breadCrumbStack.length == 0)
             return undefined;
         return this.breadCrumbStack[this.breadCrumbStack.length-1];
+    }
+
+    get(id: number): T | undefined {
+        return this.breadCrumbStack.find(crumb => crumb.id == id);
     }
 
     setArray(breadCrumbsArray: T[]) {

@@ -179,6 +179,23 @@ export class Controller extends Commands implements DataRequester{
         });
     }
 
+    resetToBreadCrumb(id: number) {
+        let breadCrumb = getState().getModel().getBreadCrumbs().get(id);
+        let breadCrumbs = getState().getModel().getBreadCrumbs();
+
+        //if the breadCrumb is a browseFilter, reset to the previous breadCrumb and set the current browseFilter to the one in the breadCrumb.
+        if(breadCrumb instanceof BreadCrumbBrowseFilter) {
+            this.model.resetBreadCrumbsTo(id);
+            let browseFilter = this.model.popBreadCrumb().data as BrowseFilter;
+            this.setAndSaveBrowseFilter(browseFilter);
+            this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
+            this.fetchRefsForCurrentBreadCrumbs().then(() => {
+                this.filterBrowseResults();
+            });
+        }
+        //todo: if the breadCrumb is a uri, reset to the CURRENT breadCrumb and clear the current browseFilter.
+    }
+
     async getTrackInfoCached(uri: string) {
         let track  = getState().getModel().getTrackInfo(uri);
         if(!track)

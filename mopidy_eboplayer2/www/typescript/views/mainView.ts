@@ -1,6 +1,6 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {EboBrowseComp} from "../components/eboBrowseComp";
+import EboBrowseComp from "../components/eboBrowseComp";
 import {console_yellow} from "../gui";
 
 import {EboplayerEvents} from "../modelTypes";
@@ -20,6 +20,9 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.breadCrumbsChanged, () => {
             this.onBreadCrumbsChanged();
         });
+        getState().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
+            this.onBrowseFilterChanged();
+        });
 
     }
 
@@ -31,6 +34,11 @@ export class MainView extends View {
     private onBreadCrumbsChanged() {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.renderBreadCrumbs();
+    }
+
+    private onBrowseFilterChanged() {
+        let browseComp = document.getElementById("browseView") as EboBrowseComp;
+        browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
     }
 
     private onSearchButtonClick() {

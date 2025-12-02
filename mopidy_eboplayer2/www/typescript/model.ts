@@ -62,13 +62,15 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
     popBreadCrumb() {
-        this.filterBreadCrumbStack.pop();
+        let crumb = this.filterBreadCrumbStack.pop();
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+        return crumb;
     }
+
     getBreadCrumbs = () => this.filterBreadCrumbStack;
 
-    resetBreadCrumbsTo(breadCrumb: BreadCrumb<any>) {
-        this.filterBreadCrumbStack.resetTo(breadCrumb);
+    resetBreadCrumbsTo(id: number) {
+        this.filterBreadCrumbStack.resetTo(id);
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
