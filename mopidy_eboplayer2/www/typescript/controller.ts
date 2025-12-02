@@ -173,8 +173,17 @@ export class Controller extends Commands implements DataRequester{
             case "artist": newBrowseFilter.album = true; break;
             case "album": newBrowseFilter.track = true; break;
             case "genre": newBrowseFilter.album = true; break;
-            //todo: playlist.
-            //todo: case "track": play the darn track!
+            case "playlist":
+                newBrowseFilter.radio = true;
+                newBrowseFilter.playlist = true;
+                newBrowseFilter.artist = true;
+                newBrowseFilter.album = true;
+                newBrowseFilter.track = true;
+                break;
+            case "track":
+            case "radio":
+                //todo: play it again Sam.
+                break;
         }
         this.setAndSaveBrowseFilter(newBrowseFilter);
         this.fetchRefsForCurrentBreadCrumbs().then(() => {
@@ -242,10 +251,15 @@ export class Controller extends Commands implements DataRequester{
         let allAlbums = await this.mopidyProxy.browse("local:directory?type=album");
         let allArtists = await this.mopidyProxy.browse("local:directory?type=artist");
         let allGenres = await this.mopidyProxy.browse("local:directory?type=genre");
-        //todo: playlists.
-        //todo: radios are tracks in playlists, that are not in the file system.
+        let playLists = await this.mopidyProxy.fetchPlayLists();
+        let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
+        let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
+        let radioStreams: models.Ref[];
+        if(radioStreamsPlayList) {
+            radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
+        }
 
-        return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres);
+        return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
     }
 
     filterBrowseResults() {

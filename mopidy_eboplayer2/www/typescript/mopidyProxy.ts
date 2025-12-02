@@ -173,4 +173,12 @@ export class MopidyProxy {
         let currentTrack = await this.commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
         await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
     }
+
+    async fetchPlayLists() {
+        return await this.commands.core.playlists.asList() as Ref[];
+    }
+
+    async fetchPlaylistItems(uri: string) {
+        return await this.commands.core.playlists.getItems(uri) as Ref[];
+    }
 }

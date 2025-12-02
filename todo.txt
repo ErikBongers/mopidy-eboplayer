@@ -1,3 +1,8 @@
+* Browse: click on a track: play it.
+
+* Browse: click on album:
+  > goto album? Is there a need to drill down further?
+  > deepest dive thus is: playlist > album > track? Or do playlists not contain albums?
 
 * show an info button next to filter buttons.
   > show info block with a "remove info button" button. When pressing, inform user this can be changed in settings.

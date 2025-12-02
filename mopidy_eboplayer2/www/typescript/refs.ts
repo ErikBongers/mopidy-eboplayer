@@ -65,8 +65,10 @@ export class AllRefs extends Refs {
     albums: Ref[];
     artists: Ref[];
     genres: Ref[];
+    radioStreams: Ref[];
+    playlists: Ref[];
 
-    constructor( roots: Ref[], sub: Ref[], tracks: Ref[], albums: Ref[], artists: Ref[], genres: Ref[]) {
+    constructor( roots: Ref[], sub: Ref[], tracks: Ref[], albums: Ref[], artists: Ref[], genres: Ref[], radioStreams: Ref[], playlists: Ref[]) {
         super();
         this.roots = roots;
         this.sub = sub;
@@ -74,6 +76,8 @@ export class AllRefs extends Refs {
         this.albums = albums;
         this.artists = artists;
         this.genres = genres;
+        this.radioStreams = radioStreams;
+        this.playlists = playlists;
     }
 
     filter() {
@@ -91,6 +95,10 @@ export class AllRefs extends Refs {
             this.searchResults.push(...this.tracks.map(track => ({ref: track, weight: 0})));
         if(browseFilter.genre || browseFilter.isNoTypeSelected())
             this.searchResults.push(...this.genres.map(track => ({ref: track, weight: 0})));
+        if(browseFilter.radio || browseFilter.isNoTypeSelected())
+            this.searchResults.push(...this.radioStreams.map(track => ({ref: track, weight: 0})));
+        if(browseFilter.playlist || browseFilter.isNoTypeSelected())
+            this.searchResults.push(...this.playlists.map(track => ({ref: track, weight: 0})));
     }
 }
 
