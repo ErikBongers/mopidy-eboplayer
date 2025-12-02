@@ -15,6 +15,9 @@ import {console_yellow} from "./gui";
 import {AllRefs, Refs, SomeRefs} from "./refs";
 import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
 
+//The controller updates the model and has functions called by the views.
+//The controller does not update the views directly.
+//The controller should not listen to model events, to avoid circular updates (dead loops).
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
     public mopidyProxy: MopidyProxy;

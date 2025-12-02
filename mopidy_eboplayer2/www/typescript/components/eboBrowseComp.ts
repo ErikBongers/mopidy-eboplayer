@@ -3,8 +3,7 @@ import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, EboplayerEvents, FilterBreadCrumbType, Uri} from "../modelTypes";
-import {BreadCrumb} from "../breadCrumb";
+import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
 
 class EboBrowseComp extends EboComponent {
     get browseFilter(): BrowseFilter {
@@ -19,8 +18,8 @@ class EboBrowseComp extends EboComponent {
 
     private _browseFilter: BrowseFilter;
     static readonly tagName=  "ebo-browse-view";
-    // noinspection JSUnusedGlobalSymbols
 
+    // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [];
 
     private readonly browseFilterChangedEvent: CustomEvent<unknown>;

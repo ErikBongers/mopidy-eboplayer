@@ -23,6 +23,8 @@ export interface ViewModel extends EventTarget {
 
 export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
 
+// Model contains the data to be viewed and informs the view of changes through events.
+// Views should not update the model directly. See ViewModel for that.
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
     currentTrack: string;
