@@ -1,5 +1,6 @@
 import models from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
+import Ref = models.Ref;
 
 export enum TrackType { None, File, Stream}
 
@@ -9,12 +10,12 @@ export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
         super(label, filter, "browseFilter");
     }
 }
-export class BreadCrumbUri extends BreadCrumb<Uri> {
-    constructor(label: string, uri: Uri) {
-        super(label, uri, "uri");
+export class BreadCrumbRef extends BreadCrumb<Ref> {
+    constructor(label: string, ref: Ref) {
+        super(label, ref, "ref");
     }
 }
-export type FilterBreadCrumbType = BreadCrumbUri | BreadCrumbBrowseFilter;
+export type FilterBreadCrumbType = BreadCrumbRef | BreadCrumbBrowseFilter;
 
 export class BrowseFilter {
     searchText: string;

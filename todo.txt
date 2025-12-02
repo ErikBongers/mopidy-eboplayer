@@ -1,3 +1,6 @@
+* Browse: dive deeper into ref type "directory"
+  > except if uri contains "genre".
+
 * Browse: click on a track: play it.
 
 * Browse: click on album:

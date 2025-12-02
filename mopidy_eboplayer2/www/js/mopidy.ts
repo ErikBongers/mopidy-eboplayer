@@ -77,7 +77,7 @@ interface StrictEvents extends core.CoreListener {
 }
 
 namespace models {
-    type ModelType = "album" | "artist" | "directory" | "playlist" | "track";
+    export type ModelType = "album" | "artist" | "directory" | "playlist" | "track";
 
     export class TlTrack {
         readonly tlid: number;
@@ -140,7 +140,7 @@ namespace models {
 
     export class Ref {
         readonly uri: URI;
-        readonly name: string;
+        name?: string;
         readonly type: ModelType;
     }
 }

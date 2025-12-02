@@ -1,7 +1,9 @@
 import {BrowseFilterBreadCrumbs, Model} from "./model";
 import {jsonParse} from "./functionsvars";
-import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, FilterBreadCrumbType} from "./modelTypes";
+import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
+import models from "../js/mopidy";
+import Ref = models.Ref;
 
 const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
 const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
@@ -37,8 +39,8 @@ export class LocalStorageProxy {
                             let browseFilter = new BrowseFilter();
                             Object.assign(browseFilter, crumb.data);
                             return new BreadCrumbBrowseFilter(crumb.label, browseFilter);
-                        case "uri":
-                            return new BreadCrumbUri(crumb.label, crumb.data as string);
+                        case "ref":
+                            return new BreadCrumbRef(crumb.label, crumb.data as Ref);
                     }
                 })
                 .forEach(crumb =>

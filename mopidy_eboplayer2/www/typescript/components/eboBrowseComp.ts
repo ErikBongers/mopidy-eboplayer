@@ -3,7 +3,7 @@ import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
+import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
 
 class EboBrowseComp extends EboComponent {
     get browseFilter(): BrowseFilter {
@@ -250,7 +250,7 @@ class EboBrowseComp extends EboComponent {
     }
 
     private renderBreadcrumb(crumb: FilterBreadCrumbType) {
-        if(crumb instanceof BreadCrumbUri)
+        if(crumb instanceof BreadCrumbRef)
             return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
         else if(crumb instanceof BreadCrumbBrowseFilter)
             return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
@@ -271,10 +271,13 @@ class EboBrowseComp extends EboComponent {
 
         let resultsHtml = results
             .map(result => {
-                let hackedType = result.ref.uri.split(":")[1]; //todo: replace result with track data fron cached lookup.
-
+                let refType = result.ref.type as string;
+                if(refType == "directory") {
+                    if(result.ref.uri.includes("local:directory?genre="))
+                        refType = "genre";
+                }
                 return `
-                    <tr data-uri="${result.ref.uri}" data-type="${hackedType}">
+                    <tr data-uri="${result.ref.uri}" data-type="${refType}">
                     <td>${result.ref.name}</td>
                     <td>...</td>
                     </tr>`;

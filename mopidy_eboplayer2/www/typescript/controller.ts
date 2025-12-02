@@ -13,7 +13,8 @@ import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
 import {AllRefs, Refs, SomeRefs} from "./refs";
-import {BreadCrumbBrowseFilter, BreadCrumbUri, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
+import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
+import Ref = models.Ref;
 
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
@@ -162,7 +163,8 @@ export class Controller extends Commands implements DataRequester{
         let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
         this.model.pushBreadCrumb(breadCrumb1);
 
-        let breadCrumb2 = new BreadCrumbUri(label, uri);
+        let ref: Ref = {type: type as models.ModelType, name: label, uri};
+        let breadCrumb2 = new BreadCrumbRef(label, ref);
         this.model.pushBreadCrumb(breadCrumb2);
 
         this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
@@ -172,9 +174,15 @@ export class Controller extends Commands implements DataRequester{
         switch (type) {
             case "artist": newBrowseFilter.album = true; break;
             case "album": newBrowseFilter.track = true; break;
-            case "genre": newBrowseFilter.album = true; break;
-            case "playlist":
+            case "genre":
                 newBrowseFilter.radio = true;
+                newBrowseFilter.playlist = true;
+                newBrowseFilter.artist = true;
+                newBrowseFilter.album = true;
+                newBrowseFilter.track = true;
+                newBrowseFilter.genre = true;
+                break;
+            case "playlist":
                 newBrowseFilter.playlist = true;
                 newBrowseFilter.artist = true;
                 newBrowseFilter.album = true;
@@ -277,8 +285,21 @@ export class Controller extends Commands implements DataRequester{
             await this.setAllRefsAsCurrent();
             return;
         }
-        if(lastCrumb instanceof BreadCrumbUri) {
-            let refs = await this.mopidyProxy.browse(lastCrumb.data);
+        if(lastCrumb instanceof BreadCrumbRef) {
+            if(lastCrumb.data.type == "playlist") {
+                let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
+                playlistItems.forEach(ref => {
+                    //"local:track:Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma"
+                    ref.name = ref.uri
+                        .replace("local:track:", "")
+                        .replaceAll("%20", " ");
+                    //remove the last part of the uri, which is the file extension.
+                    ref.name = ref.name.split(".").slice(0,-1).join(".");
+                });
+                this.model.setCurrentRefs(new SomeRefs(playlistItems));
+                return;
+            }
+            let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
             this.model.setCurrentRefs(new SomeRefs(refs));
             return;
         }
