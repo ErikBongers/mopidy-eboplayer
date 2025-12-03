@@ -40,6 +40,8 @@ export class ButtonBarView extends View {
                 break;
             case PlayState.playing:
                 let track = await getState().getController().getCurrertTrackInfoCached();
+                if(!track)
+                    return;
                 if(track.type == TrackType.Stream)
                     this.setPlayButton('Pause', ['fa-play'], 'fa-stop');
                 else
@@ -76,6 +78,8 @@ export class ButtonBarView extends View {
         let playState = getState().getModel().getPlayState();
         if (playState == PlayState.playing) {
             let currentTrack = await getState().getController().getCurrertTrackInfoCached();
+            if(!currentTrack)
+                return;
             if(currentTrack.type == TrackType.Stream)
                 return getState().getController().mopidyProxy.sendStop();
             else

@@ -53,6 +53,7 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
+            this.setPlayState("playing");
         });
 
         this.mopidy.on('event:trackPlaybackResumed', async (data) => {
@@ -157,6 +158,11 @@ export class Controller extends Commands implements DataRequester{
     }
 
     diveIntoBrowseResult(label: string, uri: string, type: string) {
+        if(type == "track"  ||  type  == "radio") {
+            this.play(uri).then(() => {});
+            return; //don't dive.
+        }
+
         // set 2 new breadCrumbs and a new browseFilter.
         // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
         let browseFilter = this.model.getCurrentBrowseFilter();
@@ -187,10 +193,6 @@ export class Controller extends Commands implements DataRequester{
                 newBrowseFilter.artist = true;
                 newBrowseFilter.album = true;
                 newBrowseFilter.track = true;
-                break;
-            case "track":
-            case "radio":
-                //todo: play it again Sam.
                 break;
         }
         this.setAndSaveBrowseFilter(newBrowseFilter);
@@ -240,7 +242,7 @@ export class Controller extends Commands implements DataRequester{
         this.setTracklist(trackList);
         // noinspection ES6MissingAwait
         this.mopidyProxy.playTracklistItem(trackList, 0);
-        await this.setCurrentTrackAndFetchDetails(trackList[0]);
+        // await this.setCurrentTrackAndFetchDetails(trackList[0]);
     }
 
     setSelectedTrack(uri: string) {
@@ -249,6 +251,8 @@ export class Controller extends Commands implements DataRequester{
 
     async getCurrertTrackInfoCached() {
         let trackUri = this.model.getCurrentTrack();
+        if(!trackUri)
+            return undefined;
         return await this.getTrackInfoCached(trackUri);
     }
 

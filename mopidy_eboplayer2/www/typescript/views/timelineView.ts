@@ -94,6 +94,8 @@ export class TimelineView extends View {
     private async setCurrentTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
         let currentTrack = await getState().getController().getCurrertTrackInfoCached();
+        if(!currentTrack)
+            return;
         if (currentTrack.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let currentUri = currentTrack.track.uri;
