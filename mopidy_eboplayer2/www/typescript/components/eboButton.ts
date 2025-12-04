@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboplayerEvents} from "../modelTypes";
 import {console_yellow} from "../gui";
+import {MouseTimer} from "../MouseTimer";
 
 export class PressedChangeEvent extends Event {
     private _pressed: boolean;
@@ -23,6 +24,7 @@ export class EboButton extends EboComponent {
     private img: string;
     private imgPressed: string;
     private opacityOff: number = 0.5;
+    private pressTimer: MouseTimer<EboButton>;
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -45,12 +47,16 @@ export class EboButton extends EboComponent {
             <img id="img" src="images/default_cover.png" alt="Button image">
         </button>
         `;
-    private stillPressing: boolean;
-    private timer: number;
 
     constructor() {
         super(EboButton.styleText, EboButton.htmlText);
         this.render();
+        this.pressTimer = new MouseTimer<EboButton>(
+            this,
+            (source) => this.onClick(source),
+            (source, clickCount) => this.onMultiClick(source, clickCount),
+            (source) => this.onTimeOut(source)
+        );
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -81,21 +87,18 @@ export class EboButton extends EboComponent {
         imgTag.src = this.img ?? "";
         let button = this.shadow.querySelector("button");
         button.addEventListener("mousedown", (ev) => {
-            this.startLongPress(ev, () => {
-                this.onLongPress();
-            });
+            this.pressTimer.onMouseDown(ev);
         });
-        button.addEventListener("mouseup", () => {
-            if(this.stillPressing)
-                this.onClick(button);
-            this.cancelLongPress();
+        button.addEventListener("mouseup", (ev) => {
+            this.pressTimer.onMouseUp(ev);
         });
-        button.addEventListener("mouseleave", () => {
-            this.cancelLongPress();
+        button.addEventListener("mouseleave", (ev) => {
+            this.pressTimer.onMouseLeave(ev);
         });
     }
 
-    private onClick(button: HTMLButtonElement) {
+    private onClick(eboButton: EboButton) {
+        let button = this.shadow.querySelector("button");
         this.pressed = !this.pressed;
         this.setClassFromBoolAttribute("pressed", button);
         this.setAttribute("pressed", this.pressed.toString());
@@ -103,15 +106,7 @@ export class EboButton extends EboComponent {
         this.dispatchEvent(event);
     }
 
-    private cancelLongPress() {
-        this.stillPressing = false;
-        if(this.timer)
-            clearTimeout(this.timer);
-        this.timer = undefined;
-    }
-
-    onLongPress() {
-        this.cancelLongPress();
+    onTimeOut(source: EboButton) {
         console_yellow("onLongPress");
         this.dispatchEvent(new Event(EboplayerEvents.longPress, {bubbles: true, composed: true}));
     }
@@ -123,12 +118,7 @@ export class EboButton extends EboComponent {
             el.classList.remove(attName);
     }
 
-    private startLongPress(ev: MouseEvent, onLongPressedCallback: (ev: MouseEvent) => void) {
-        this.stillPressing = true;
-        this.timer = setTimeout(() => {
-            if(this.stillPressing)
-                onLongPressedCallback(ev);
-            this.cancelLongPress();
-        }, 600);
+    private onMultiClick(eboButton: EboButton, clickCount: number) {
+        this.dispatchEvent(new Event("dblclick", {bubbles: true, composed: true}));
     }
 }

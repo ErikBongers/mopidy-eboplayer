@@ -184,10 +184,21 @@ class EboBrowseComp extends EboComponent {
                 btn.addEventListener(EboplayerEvents.longPress, (ev) => {
                     this.onFilterButtonLongPress(ev);
                 });
+                btn.addEventListener("dblclick", (ev) => {
+                    this.onFilterButtonDoubleClick(ev);
+                })
             });
     }
 
     private onFilterButtonLongPress(ev: Event) {
+        this.setSingleButton(ev);
+    }
+
+    private onFilterButtonDoubleClick(ev: Event) {
+        this.setSingleButton(ev);
+    }
+
+    private setSingleButton(ev: Event) {
         this.clearFilterButtons();
         this.toggleFilterButton(ev.target as EboButton);
         this.update();
@@ -307,6 +318,7 @@ class EboBrowseComp extends EboComponent {
         console_yellow(btn.dataset.id);
         getState().getController().resetToBreadCrumb(parseInt(btn.dataset.id)); //todo rename to breadCrumbId.
     }
+
 }
 
 export default EboBrowseComp
