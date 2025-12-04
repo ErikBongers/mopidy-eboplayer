@@ -1,11 +1,13 @@
+const TIME_OUT_TIME = 500;
+
 export class MouseTimer<Source> {
-    private stillPressing: boolean;
-    private timer: number;
+    private activeTimer: number;
     private source: Source;
+    private mouseUpCount = 0;
 
     private readonly onClick: (source: Source) => void = undefined;
     private readonly onTimeOut: (source: Source) => void = undefined;
-    private onMultiClick: (source: Source, clickCount: number) => void = undefined;
+    private readonly onMultiClick: (source: Source, clickCount: number) => void = undefined;
 
     constructor(source: Source,
                 onClick: (source: Source) => void = undefined,
@@ -19,14 +21,22 @@ export class MouseTimer<Source> {
     }
 
     onMouseDown = (ev: MouseEvent) => {
+        if(this.activeTimer)
+            return;
         this.startPressTimer(ev, () => {
             this.doTimeOut();
         });
     };
 
     onMouseUp = (ev: MouseEvent) => {
-        if(this.stillPressing)
-            this.onClick?.(this.source);
+        if(!this.activeTimer)
+            return;
+        this.mouseUpCount++;
+        if(this.mouseUpCount > 1) {
+            this.onMultiClick?.(this.source, this.mouseUpCount);
+            return;
+        }
+        this.onClick?.(this.source);
     };
 
     onMouseLeave = (ev: MouseEvent) => {
@@ -39,19 +49,18 @@ export class MouseTimer<Source> {
     }
 
     private cancelPressTimer() {
-        this.stillPressing = false;
-        if(this.timer)
-            clearTimeout(this.timer);
-        this.timer = undefined;
+        if(this.activeTimer)
+            clearTimeout(this.activeTimer);
+        this.activeTimer = undefined;
     }
 
-    private startPressTimer(ev: MouseEvent, onLongPressedCallback: (ev: MouseEvent) => void) {
-        this.stillPressing = true;
-        this.timer = setTimeout(() => {
-            if(this.stillPressing)
-                onLongPressedCallback(ev);
+    private startPressTimer(ev: MouseEvent, onTimeOutCallback: (ev: MouseEvent) => void) {
+        this.mouseUpCount = 0;
+        this.activeTimer = setTimeout(() => {
+            if(this.activeTimer)
+                onTimeOutCallback(ev);
             this.cancelPressTimer();
-        }, 500);
+        }, TIME_OUT_TIME);
     }
 
 }

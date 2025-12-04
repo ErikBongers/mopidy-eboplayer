@@ -55,7 +55,7 @@ export class EboButton extends EboComponent {
             this,
             (source) => this.onClick(source),
             (source, clickCount) => this.onMultiClick(source, clickCount),
-            (source) => this.onTimeOut(source)
+            (source) => this.onFilterButtonTimeOut(source)
         );
     }
 
@@ -106,7 +106,7 @@ export class EboButton extends EboComponent {
         this.dispatchEvent(event);
     }
 
-    onTimeOut(source: EboButton) {
+    onFilterButtonTimeOut(source: EboButton) {
         console_yellow("onLongPress");
         this.dispatchEvent(new Event(EboplayerEvents.longPress, {bubbles: true, composed: true}));
     }

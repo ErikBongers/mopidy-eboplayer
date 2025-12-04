@@ -1,22 +1,3 @@
-* Button timer
-  > waits for a timeout.
-  > has a handler for timeout
-  > has a handler for a click within the timeout.
-  > has a source.
-    > if source changes,, restart timer
-  > we need 2 timers:
-    > one for long clicks
-      > handle mouseup within timeout.
-    > one for double clicks
-      > counts the clicks within the timeout.
-    > a 2nd click resets/stops the long-click timer.
-  > the timers take in the mouse events.
-
-
-* Browse: dive deeper into ref type "directory"
-  > except if uri contains "genre".
-    > actually...also if uri contains "genre"?
-
 * Browse: click on a track: play it.
 
 * Browse: click on album:
