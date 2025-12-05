@@ -976,7 +976,7 @@ export class Mopidy extends EventEmitter {
     this.on("websocket:error", this._handleWebSocketError);
     this.on("websocket:incomingMessage", this._handleMessage);
     this.on("websocket:open", this._resetBackoffDelay);
-    this.on("websocket:open", this._getApiSpec);
+    this.on("websocket:open", this._onWebsocketOpen);
     this.on("state:offline", this._reconnect);
   }
 
@@ -1158,65 +1158,7 @@ export class Mopidy extends EventEmitter {
     this.emit(eventName, data);
   }
 
-  _getApiSpec() {
-    return this.send({ method: "core.describe" })
-      .then(this._createApi.bind(this))
-      .catch(this._handleWebSocketError.bind(this));
-  }
-
-  _createApi(methods) {
-    const caller = (method) => (...args) => {
-      let message = { method,
-      };
-      if (args.length === 0) {
-        return this.send(message);
-      }
-      if (args.length > 1) {
-        return Promise.reject(
-          new Error(
-            "Expected zero arguments, a single array, or a single object."
-          )
-        );
-      }
-      if (!Array.isArray(args[0]) && args[0] !== Object(args[0])) {
-        return Promise.reject(new TypeError("Expected an array or an object."));
-      }
-      let message2 = {
-          method,
-          params: args
-      };
-      return this.send(message2);
-    };
-
-    const getPath = (fullName) => {
-      let path = fullName.split(".");
-      if (path.length >= 1 && path[0] === "core") {
-        path = path.slice(1);
-      }
-      return path;
-    };
-
-    const createObjects = (objPath) => {
-      let parentObj = this;
-      objPath.forEach((objName) => {
-        const camelObjName = snakeToCamel(objName);
-        parentObj[camelObjName] = parentObj[camelObjName] || {};
-        parentObj = parentObj[camelObjName];
-      });
-      return parentObj;
-    };
-
-    const createMethod = (fullMethodName) => {
-      const methodPath = getPath(fullMethodName);
-      const methodName = snakeToCamel(methodPath.slice(-1)[0]);
-      const object = createObjects(methodPath.slice(0, -1));
-      object[methodName] = caller(fullMethodName);
-      object[methodName].description = methods[fullMethodName].description;
-      object[methodName].params = methods[fullMethodName].params;
-    };
-
-    Object.keys(methods).forEach(createMethod);
-
+  _onWebsocketOpen() {
     this.emit("state", "state:online");
     this.emit("state:online");
   }

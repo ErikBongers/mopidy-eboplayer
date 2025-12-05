@@ -1,7 +1,20 @@
-* Browse: click on a track: play it.
+* Big view of current track:
+  > show album title on top of track name.
+  > clicking art shows...
+    > tabs!
+      - tracks
+      - info
+        > artists, composersyear, etc...
+        > info text found online?
+      - meta
+        > genre
+        > file location?
+        > uri
+        > ...
+
 
 * Browse: click on album:
-  > goto album? Is there a need to drill down further?
+  > goto album
   > deepest dive thus is: playlist > album > track? Or do playlists not contain albums?
 
 * show an info button next to filter buttons.
@@ -9,89 +22,6 @@
 
 * Show tracklist in timeline.
 
-* Separate model view controller.
-  > model:
-    - store data
-    - inform listeners
-      > ideally, the listeners should only update the view, not the model (via the controller).
-        > if extra data needs to be loaded, don't do it in response to a listener on the model.
-        > I think this will prevent dead loops of data updates.
-    - provide defaults
-  > view: display data.
-  > controller:
-    - interact with model and view
-    - retrieve and persist data.
-    - TODO: no getXXX functions!
-      > ambiguous name!
-        > get where?
-          > make proxies.
-      > never get data directly from backend.
-        > always get from model.
-        > convert get methods to fetch methods that DON'T return data directly.
-      > except getXXXCached()
-
-* In main view:
-  > apply the browse filter.
-    > in the model, create a filtered Ref list.
-
-* In the model:
-  > create a Ref object for every track, album, artist,...
-  > create a filtered Ref list.
-    > with listeners.
-
-
-* At startup (or at browse open), build a list of all Ref objects.
-  > that's just the name and the uri.
-  > that's purely based on mopidy-local !
-  > streams are nog local but just a uri in a playlist.
-  > what do we need for search?
-    > just the name and uri should do...
-
-Build indexedDb
-===============
-* Tracks are the lowest level.
-  > contain link to the album uri, if any.
-* Albums contain tracks.
-  > possibly of multiple artists.
-* Artists 'contain'
-  - albums
-  - tracks
-  - genres?
-* Genres contain
-  - albums
-  - tracks
-
-* data sources:
-  - local files : //local:
-  - files : //file:
-  - urls for streams. : //http, etc...
-
-* commands for database:
-  - browse
-    > find directory structure
-    > for every backend root
-  - search
-    > where `field` contains...
-      > e.g. `artist` = ['ikke', 'gij']
-      > special field `any` to search all fields.
-  - distinct: DO NOT USE
-  > Iris uses this url to get all artists:
-    : local:directory?type=artist&role=albumartist
-      > after removing the role, all the artists are shown.
-
-
-* Prepare list of items to browse.
-  > From what sources?
-    > Mopidy has:
-      - history
-      - library: backends
-      - playlists
-      -
-    > Local files: this is a http protocol?
-      > any source or protocol!
-    > Other extensions?
-      > Url protocols?
-        > unlikely: too technical. Perhaps configure in settings.
 
 Browse
 ======
