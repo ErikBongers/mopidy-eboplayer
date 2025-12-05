@@ -134,13 +134,11 @@ function snakeToCamel(name: string) {
   );
 }
 
-export class Mopidy extends EventEmitter {
+export class Mopidy {
     _options: Options;
     private _backoffDelay: number;
-    private _pendingRequests: {}; //this initialization gets stripped by rolldown!
-    private _webSocket: WebSocket;
+    private rpcController: JsonRpcController;
     constructor(options: Options) {
-        super();
         const defaultOptions = {
             backoffDelayMin: 1000,
                 backoffDelayMax: 64000,
@@ -149,12 +147,19 @@ export class Mopidy extends EventEmitter {
         };
         this._options = this._configure({...defaultOptions, ...options});
         this._backoffDelay = this._options.backoffDelayMin;
-        this._pendingRequests = {};
-        this._webSocket = null;
+        this.rpcController = new JsonRpcController(this._options.webSocketUrl);
         this._delegateEvents();
         if (this._options.autoConnect) {
             this.connect();
         }
+    }
+
+    connect() {
+        this.rpcController.connect();
+    }
+
+    on(name: string | Function, callback?: any) {
+        this.rpcController?.on(name, callback);
     }
 
     private _configure(options: Options) {
@@ -173,67 +178,27 @@ export class Mopidy extends EventEmitter {
     }
 
   _delegateEvents() {
-    // Remove existing event handlers
-    this.removeAllListeners("websocket:close");
-    this.removeAllListeners("websocket:error");
-    this.removeAllListeners("websocket:incomingMessage");
-    this.removeAllListeners("websocket:open");
-    this.removeAllListeners("state:offline");
-    // Register basic set of event handlers
-    this.on("websocket:close", this._cleanup);
-    this.on("websocket:error", this._handleWebSocketError);
-    this.on("websocket:incomingMessage", this._handleMessage);
-    this.on("websocket:open", this._resetBackoffDelay);
-    this.on("websocket:open", this._onWebsocketOpen);
-    this.on("state:offline", this._reconnect);
+    this.rpcController.on("websocket:close", (closeEvent: any) => this._cleanup(closeEvent));
+    this.rpcController.on("websocket:open", () => this._resetBackoffDelay());
+    this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
+    this.rpcController.on("state:offline", () => this._reconnect());
   }
 
   eventOff(eventName?: string, callback?: any) {
     if (!eventName) {
-      this.removeAllListeners();
+      this.rpcController.removeAllListeners();
       return;
     }
     if (!callback) {
-        this.removeAllListeners(eventName);
+        this.rpcController.removeAllListeners(eventName);
         return;
     }
-  this.removeListener(eventName, callback);
-  }
-
-  connect() {
-    if (this._webSocket) {
-      if (this._webSocket.readyState === WebSocket.OPEN) {
-        return;
-      }
-      this._webSocket.close();
-    }
-
-    this._webSocket = new WebSocket(this._options.webSocketUrl);
-
-    this._webSocket.onclose = (close) => {
-      this.emit("websocket:close", close);
-    };
-    this._webSocket.onerror = (error) => {
-      this.emit("websocket:error", error);
-    };
-    this._webSocket.onopen = () => {
-      this.emit("websocket:open");
-    };
-    this._webSocket.onmessage = (message) => {
-      this.emit("websocket:incomingMessage", message);
-    };
+  this.rpcController.removeListener(eventName, callback);
   }
 
   _cleanup(closeEvent) {
-    Object.keys(this._pendingRequests).forEach((requestId) => {
-      const { reject } = this._pendingRequests[requestId];
-      delete this._pendingRequests[requestId];
-      const error = new ConnectionError("WebSocket closed");
-      error.closeEvent = closeEvent;
-      reject(error);
-    });
-    this.emit("state", "state:offline");
-    this.emit("state:offline");
+    this.rpcController.emit("state", "state:offline");
+    this.rpcController.emit("state:offline");
   }
 
   _reconnect() {
@@ -242,17 +207,17 @@ export class Mopidy extends EventEmitter {
     // "state:offline" event, which would lead to emitting the events to
     // listeners in the wrong order.
     setTimeout(() => {
-      this.emit("state", [
+      this.rpcController.emit("state", [
           "reconnectionPending",
           { timeToAttempt: this._backoffDelay}
       ]);
-      this.emit("reconnectionPending", {
+      this.rpcController.emit("reconnectionPending", {
         timeToAttempt: this._backoffDelay,
       });
       setTimeout(() => {
-        this.emit("state", "reconnecting");
-        this.emit("reconnecting");
-        this.connect();
+        this.rpcController.emit("state", "reconnecting");
+        this.rpcController.emit("reconnecting");
+        this.rpcController.connect();
       }, this._backoffDelay);
       this._backoffDelay *= 2;
       if (this._backoffDelay > this._options.backoffDelayMax) {
@@ -267,116 +232,21 @@ export class Mopidy extends EventEmitter {
 
   close() {
     this.eventOff("state:offline", this._reconnect);
-    if (this._webSocket) {
-      this._webSocket.close();
+    if (this.rpcController) {
+      this.rpcController.close();
     }
-  }
-
-  _handleWebSocketError(error) {
-    console.warn("WebSocket error:", error.stack || error);
   }
 
   send(message: Object) {
-    switch (this._webSocket.readyState) {
-      case WebSocket.CONNECTING:
-        return Promise.reject(
-          new ConnectionError("WebSocket is still connecting")
-        );
-      case WebSocket.CLOSING:
-        return Promise.reject(
-          new ConnectionError("WebSocket is closing")
-        );
-      case WebSocket.CLOSED:
-        return Promise.reject(
-          new ConnectionError("WebSocket is closed")
-        );
-      default:
-        return new Promise((resolve, reject) => {
-          const jsonRpcMessage = {
-            ...message,
-            jsonrpc: "2.0",
-            id: this._nextRequestId(),
-          };
-          this._pendingRequests[jsonRpcMessage.id] = { resolve, reject };
-          this._webSocket.send(JSON.stringify(jsonRpcMessage));
-          this.emit("websocket:outgoingMessage", jsonRpcMessage);
-        });
-    }
-  }
-
-  _handleMessage(message) {
-    try {
-      const data = JSON.parse(message.data);
-      if (Object.hasOwnProperty.call(data, "id")) {
-        this._handleRpcResponse(data);
-      } else if (Object.hasOwnProperty.call(data, "event")) {
-        this._handleEvent(data);
-      } else {
-        console.warn(
-          `Unknown message type received. Message was: ${message.data}`
-        );
-      }
-    } catch (error) {
-      if (error instanceof SyntaxError) {
-        console.warn(
-          `WebSocket message parsing failed. Message was: ${message.data}`
-        );
-      } else {
-        throw error;
-      }
-    }
-  }
-
-  _handleRpcResponse(responseMessage) {
-    if (
-      !Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)
-    ) {
-      console.warn(
-        "Unexpected response received. Message was:",
-        responseMessage
-      );
-      return;
-    }
-    const { resolve, reject } = this._pendingRequests[responseMessage.id];
-    delete this._pendingRequests[responseMessage.id];
-    if (Object.hasOwnProperty.call(responseMessage, "result")) {
-      resolve(responseMessage.result);
-    } else if (Object.hasOwnProperty.call(responseMessage, "error")) {
-      const error = new ServerError(responseMessage.error.message);
-      error.code = responseMessage.error.code;
-      error.data = responseMessage.error.data;
-      reject(error);
-      console.warn("Server returned error:", responseMessage.error);
-    } else {
-      const error = new OtherError("Response without 'result' or 'error' received");
-      error.data = { response: responseMessage };
-      reject(error);
-      console.warn(
-        "Response without 'result' or 'error' received. Message was:",
-        responseMessage
-      );
-    }
-  }
-
-  _handleEvent(eventMessage) {
-    const data = { ...eventMessage };
-    delete data.event;
-    const eventName = `event:${snakeToCamel(eventMessage.event)}`;
-    this.emit("event", [eventName, data]);
-    this.emit(eventName, data);
+      return this.rpcController?.send(message);
   }
 
   _onWebsocketOpen() {
-    this.emit("state", "state:online");
-    this.emit("state:online");
+    this.rpcController.emit("state", "state:online");
+    this.rpcController.emit("state:online");
   }
-
-    static idCounter = -1;
-    _nextRequestId () {
-        return ++Mopidy.idCounter;
-    }
-
 }
+
 export class JsonRpcController extends EventEmitter {
     private _backoffDelay: number;
     private _pendingRequests: {}; //this initialization gets stripped by rolldown!
@@ -533,7 +403,7 @@ export class JsonRpcController extends EventEmitter {
 
     static idCounter = -1;
     _nextRequestId () {
-        return ++Mopidy.idCounter;
+        return ++JsonRpcController.idCounter;
     }
 }
 
