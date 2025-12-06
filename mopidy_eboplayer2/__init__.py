@@ -1,5 +1,4 @@
 import pathlib
-
 import pkg_resources
 
 from mopidy import config, ext
@@ -46,11 +45,13 @@ class Extension(ext.Extension):
         from tornado.web import RedirectHandler
         from .web import IndexHandler, StaticHandler
         from .streamlineshandler import ActiveStreamLinesHandler
+        from .webSocketHandler import WebsocketHandler
 
         path = pathlib.Path(__file__).parent / "www"
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
             (r"/stream/(active|all)Lines", ActiveStreamLinesHandler, {"config": config, "path": path}),
+            (r"/ws/?", WebsocketHandler, {"config": config}),  #Why this pattern??? I know it's in mopidy http somewhere, but still...
             (r"/(.*)", StaticHandler, {"path": path}),
         ]

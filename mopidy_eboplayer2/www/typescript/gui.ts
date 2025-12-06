@@ -16,6 +16,7 @@ import {MainView} from "./views/mainView";
 import EboBrowseComp from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
 import {getHostAndPort} from "./global";
+import {JsonRpcController} from "./jsonRpcController";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -49,10 +50,12 @@ function setupStuff() {
         autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
     };
     let mopidy = new Mopidy(connectOptions);
+    let wsUrl = "ws://192.168.1.111:6680/eboplayer2/ws/"; //iris socket: ws://192.168.1.111:6680/iris/ws/
+    let eboWebSocketCtrl = new JsonRpcController(wsUrl);
     let timer = new SyncedProgressTimer(8, mopidy);
     let model = new Model();
 
-    let controller = new Controller(model, mopidy);
+    let controller = new Controller(model, mopidy, eboWebSocketCtrl);
 
     controller.initSocketevents();
 
@@ -67,6 +70,13 @@ function setupStuff() {
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 
     mopidy.connect();
+    eboWebSocketCtrl.connect();
+    setTimeout(() => {
+        eboWebSocketCtrl.send({blah: "brol en zever!!!"});
+    }, 2000);
+    setTimeout(() => {
+        eboWebSocketCtrl.send({blah: "Kust men gat"});
+    }, 4000);
 }
 
 export function console_yellow(msg: string) {

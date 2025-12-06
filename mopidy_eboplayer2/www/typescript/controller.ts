@@ -15,6 +15,7 @@ import {console_yellow} from "./gui";
 import {AllRefs, Refs, SomeRefs} from "./refs";
 import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
 import Ref = models.Ref;
+import {JsonRpcController} from "./jsonRpcController";
 
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
@@ -23,12 +24,14 @@ export class Controller extends Commands implements DataRequester{
     protected model: Model;
     public mopidyProxy: MopidyProxy;
     public localStorageProxy: LocalStorageProxy;
+    private eboWebSocketCtrl: JsonRpcController;
 
-    constructor(model: Model, mopidy: Mopidy) {
+    constructor(model: Model, mopidy: Mopidy, eboWebSocketCtrl: JsonRpcController) {
         super(mopidy);
         this.model  = model;
         this.mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
         this.localStorageProxy = new LocalStorageProxy(model);
+        this.eboWebSocketCtrl = eboWebSocketCtrl;
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -126,7 +129,10 @@ export class Controller extends Commands implements DataRequester{
             }
             console.log(data);
         });
-
+        this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data) => {
+            let streamTitles: StreamTitles = data.data;
+            this.model.setActiveStreamLinesHistory(streamTitles);
+        });
     }
 
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
