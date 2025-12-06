@@ -1,8 +1,24 @@
-* Add album title to big view.
+* Navigating Browse/Now playing/Album
+  > Now playing shows title of track and playlist.
+  > Browse shows filters + album view.
+  > Album view shows...well, the album (same view as in browse)
+  * Navigation:
+    - Image next to play bar:
+      > goto Now Playing
+    - Right corner magnifier:
+      > goto Browse
+      > you can go back because the maginfier changes into album.
+      > you can also go back via play bar
+    - Click on album in in Now Playing:
+      > goto Album
 
-* Album view (big view)
-  > in case of a single track, album view shows the parent album, with the tracks title under it.
-  > in case of an albu,, just show the album title
+
+* Brows: click on album:
+  > show album view UNDER search fields!!!
+  > show tracks under album image.
+  > add tabs to switch between tracks/info/meta
+    > show album image a bit smaller to indicate that this is not the "now playing" view.
+      > this means, don't use big view compoonent or split it up!!!
 
 
 * Big view of current track:

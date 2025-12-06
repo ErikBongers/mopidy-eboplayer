@@ -111,13 +111,13 @@ export class TimelineView extends View {
     private async insertHistoryLine(line: HistoryLine, body: HTMLTableSectionElement) {
         let slices = line.ref.name.split(" - ");
         let title = slices.pop();
-        await this.insertTrackLine(title, line.ref.uri, body);
+        await this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
     }
 
-    private async insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement) {
+    private async insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = []) {
         let tr = document.createElement("tr");
         body.appendChild(tr);
-        tr.classList.add("trackLine");
+        tr.classList.add("trackLine", ...classes);
         tr.dataset.uri = uri;
         this.setTrackLineContent(tr, title);
         body.insertAdjacentHTML('beforeend', `

@@ -410,3 +410,14 @@ ebo-big-track-view {
     }
 }
 
+.historyLine {
+    td:first-child {
+        opacity: .6;
+    }
+}
+
+.trackLine.current {
+    td:first-child {
+        opacity: 1;
+    }
+}
