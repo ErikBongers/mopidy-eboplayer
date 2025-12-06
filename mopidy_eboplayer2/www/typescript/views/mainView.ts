@@ -8,7 +8,7 @@ import {EboplayerEvents} from "../modelTypes";
 export class MainView extends View {
     bind() {
         document.getElementById("headerSearchBtn").addEventListener("click", () => {
-            this.onSearchButtonClick();
+            this.onBrowseButtonClick();
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEventListener("browseFilterChanged", (ev) => {
@@ -41,25 +41,45 @@ export class MainView extends View {
         browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
     }
 
-    private onSearchButtonClick() {
+    private onBrowseButtonClick() {
+        let browseBtn = document.getElementById("headerSearchBtn");
+        if(browseBtn.dataset.view == Views.Browse) {
+            this.showView(Views.NowPlaying);
+        } else {
+            this.showView(Views.Browse);
+        }
+    }
+
+    showView(view: Views) {
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
-        if (browseBtn.title == "Search") {
-            browseBtn.title = "Now playing";
-            layout.classList.add("browse");
-            layout.classList.remove("bigTrack");
-            let browseComp = document.getElementById("browseView") as EboBrowseComp;
-            browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
-            browseComp.setFocusAndSelect();
-        } else {
-            browseBtn.title = "Search";
-            layout.classList.remove("browse");
-            layout.classList.add("bigTrack");
+        switch (view) {
+            case Views.Browse:
+                browseBtn.dataset.view = Views.Browse;
+                browseBtn.title = "Now playing";
+                layout.classList.add("browse");
+                layout.classList.remove("bigTrack");
+                location.hash = Views.Browse;
+                let browseComp = document.getElementById("browseView") as EboBrowseComp;
+                browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
+                browseComp.setFocusAndSelect();
+                break;
+            case Views.NowPlaying:
+                browseBtn.dataset.view = Views.NowPlaying;
+                browseBtn.title = "Search";
+                layout.classList.remove("browse");
+                layout.classList.add("bigTrack");
+                location.hash = ""; //default = now playing
+                break;
         }
-        // > move other views in here.
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [];
     }
+}
+
+export enum Views {
+    NowPlaying = "#NowPlaying",
+    Browse = "#Browse"
 }

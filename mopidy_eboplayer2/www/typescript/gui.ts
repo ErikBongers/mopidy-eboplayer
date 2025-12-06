@@ -12,7 +12,7 @@ import {EboBigTrackComp} from "./components/eboBigTrackComp";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
 import {EboAlbumTracksComp} from "./components/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
-import {MainView} from "./views/mainView";
+import {MainView, Views} from "./views/mainView";
 import EboBrowseComp from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
 import {getHostAndPort} from "./global";
@@ -68,6 +68,9 @@ function setupStuff() {
     let buttonBarView = new ButtonBarView("buttonBar");
     let historyView = new TimelineView();
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
+
+    if(location.hash == Views.Browse)
+        mainView.showView(Views.Browse);
 
     mopidy.connect();
     eboWebSocketCtrl.connect();
