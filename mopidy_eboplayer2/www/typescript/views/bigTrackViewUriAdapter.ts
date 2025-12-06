@@ -70,8 +70,6 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         comp.addEventListener("albumClick", async (e) => {
             let show_back = comp.getAttribute("show_back");
             comp.setAttribute("show_back",  show_back == "true" ? "false" : "true");
-            console.log(e);
-            await this.fetchAlbumData(comp);
         });
     }
 
@@ -121,8 +119,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                 this.albumInfo = AlbumNone;
                 this.setComponentData();
                 let comp = document.getElementById(this.componentId) as EboBigTrackComp;
-                if(comp.getAttribute("show_back") == "true")
-                    this.fetchAlbumData(comp).then(r => {});
+                this.fetchAlbumData(comp).then(r => {});
             });
     }
 

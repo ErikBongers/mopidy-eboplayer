@@ -127,13 +127,13 @@ export class EboAlbumTracksComp extends EboComponent {
         this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
         let img = this.shadow.getElementById("img") as HTMLImageElement;
         img.src = this.img;
-        let title = this.shadow.getElementById("albumTitle") as HTMLElement;
+        let albumTitle = this.shadow.getElementById("albumTitle") as HTMLElement;
         switch (this.albumInfo.type) {
             case AlbumDataType.Loaded:
-                title.innerText = this.albumInfo.albumTrack.album.name;
+                albumTitle.innerText = this.albumInfo.albumTrack.album.name;
                 break;
             case AlbumDataType.StreamLinesLoaded:
-                title.innerText = this.albumInfo.albumTrack.name;
+                albumTitle.innerText = this.albumInfo.albumTrack.name;
                 break;
         }
         img.addEventListener("click", (ev) => {

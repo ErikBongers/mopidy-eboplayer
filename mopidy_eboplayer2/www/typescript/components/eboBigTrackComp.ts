@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumNone} from "../views/bigTrackViewUriAdapter";
+import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 
 export class EboBigTrackComp extends EboComponent {
@@ -113,6 +113,7 @@ export class EboBigTrackComp extends EboComponent {
                     </div>
         
                     <div id="info">
+                        <h3 id="albumTitle" class="selectable"></h3>
                         <h3 id="name" class="selectable"></h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
@@ -164,6 +165,7 @@ export class EboBigTrackComp extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
+        super.connectedCallback();
     }
 
     renderPrepared() {
@@ -196,6 +198,13 @@ export class EboBigTrackComp extends EboComponent {
         tracksComp.addEventListener("albumClick", (ev) => {
             // this.show_back = !this.show_back; //note that this may be out of sync with the compoment's attribute!
         });
+        this.update();
+    }
+
+    override updateWhenConnected() {
+        if(this.albumInfo.type == AlbumDataType.Loaded) {
+            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
+        }
     }
 
     private switchFrontBackNoRender() {

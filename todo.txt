@@ -1,3 +1,10 @@
+* Add album title to big view.
+
+* Album view (big view)
+  > in case of a single track, album view shows the parent album, with the tracks title under it.
+  > in case of an albu,, just show the album title
+
+
 * Big view of current track:
   > show album title on top of track name.
   > clicking art shows...
