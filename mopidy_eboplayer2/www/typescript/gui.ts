@@ -71,12 +71,6 @@ function setupStuff() {
 
     mopidy.connect();
     eboWebSocketCtrl.connect();
-    setTimeout(() => {
-        eboWebSocketCtrl.send({blah: "brol en zever!!!"});
-    }, 2000);
-    setTimeout(() => {
-        eboWebSocketCtrl.send({blah: "Kust men gat"});
-    }, 4000);
 }
 
 export function console_yellow(msg: string) {
