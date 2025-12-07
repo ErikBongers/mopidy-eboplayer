@@ -10,6 +10,8 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     protected styleTemplate: HTMLTemplateElement;
     protected divTemplate: HTMLTemplateElement;
     private connected = false;
+    private static readonly NO_TAG_NAME: string = "todo: override in subclass";
+    static tagName: string = EboComponent.NO_TAG_NAME;
 
     protected constructor(styleText: string, htmlText: string) {
         super();
@@ -79,4 +81,13 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             el.classList.remove(attName);
     }
 
+    static define(comp: new (...args: any[]) => EboComponent) {
+        // @ts-ignore
+        if((comp as typeof EboComponent).tagName == EboComponent.NO_TAG_NAME)
+            throw "Component class should have tagName defined.";
+        // @ts-ignore
+        customElements.define(comp.tagName, comp);
+    }
+
 }
+

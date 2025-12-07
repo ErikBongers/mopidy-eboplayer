@@ -17,6 +17,7 @@ import EboBrowseComp from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
 import {getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
+import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -33,11 +34,12 @@ document.addEventListener("DOMContentLoaded",function () {
         .then(texts => {
             EboComponent.setGlobalCss(texts);
 
-            customElements.define(EboProgressBar.tagName, EboProgressBar);
-            customElements.define(EboBigTrackComp.tagName, EboBigTrackComp);
-            customElements.define(EboAlbumTracksComp.tagName, EboAlbumTracksComp);
-            customElements.define(EboBrowseComp.tagName, EboBrowseComp);
-            customElements.define(EboButton.tagName, EboButton);
+            EboComponent.define(EboProgressBar);
+            EboComponent.define(EboBigTrackComp);
+            EboComponent.define(EboAlbumTracksComp);
+            EboComponent.define(EboBrowseComp);
+            EboComponent.define(EboButton);
+            EboComponent.define(EboBigAlbumComp);
 
             setupStuff();
         });
