@@ -65,9 +65,23 @@ button, input[type="submit"], input[type="reset"] {
          ebo-big-track-view {
              display: none;
          }
+        ebo-big-album-view {
+            display: none;
+        }
     }
     .bigTrack &{
         ebo-browse-view {
+            display: none;
+        }
+        ebo-big-album-view {
+            display: none;
+        }
+    }
+    .bigAlbum &{
+        ebo-browse-view {
+            display: none;
+        }
+        ebo-big-track-view {
             display: none;
         }
     }

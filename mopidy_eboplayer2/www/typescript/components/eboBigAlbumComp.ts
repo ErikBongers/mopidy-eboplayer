@@ -2,7 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 
-export class EboBigTrackComp extends EboComponent {
+export class EboBigAlbumComp extends EboComponent {
     get activeTrackUri(): string | null {
         return this._activeTrackUri;
     }
@@ -20,25 +20,14 @@ export class EboBigTrackComp extends EboComponent {
     }
 
     private _activeTrackUri: string | null = null;
-    static readonly tagName=  "ebo-big-track-view";
+    static readonly tagName=  "ebo-big-album-view";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "show_back",
-        ...EboBigTrackComp.progressBarAttributes
+        "name", "extra", "img", "disabled"
     ];
     private name: string = "";
-    private stream_lines: string = "";
     private extra: string = "";
-    private enabled: boolean = false;
-    private show_back: boolean = false;
-    //for progressBar
-    private position: string = "40";
-    private min: string = "0";
-    private max: string = "100";
-    private button: string = "false";
-    private active: string = "true";
-
     private img: string  = "images/default_cover.png";
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: AlbumData;
@@ -76,14 +65,26 @@ export class EboBigTrackComp extends EboComponent {
                         flex-direction: column;
                         width: 100%;
                     }
+                    #back {
+                        width: 100%;
+                    }
                 }
                 #wrapper.front {
                     #back {
                         display: none;
                     }                
                 }
+                #wrapper.back {
+                    #front {
+                        position: absolute;
+                        display: none;
+                    }                
+                }
                 .info {
                     font-size: .7em;
+                }
+                #albumTableWrapper {
+                    height: 100%;
                 }
                 ebo-album-tracks-view {
                     height: 100%;
@@ -94,10 +95,9 @@ export class EboBigTrackComp extends EboComponent {
     // noinspection HtmlUnknownTarget
     static htmlText = `
             <div id="wrapper" class="front">
-                <div id="front">
+                <div id="top">
                     <div class="albumCoverContainer">
                         <img id="img" src="images/default_cover.png" alt="Album cover"/>
-                        <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
                     <div id="info">
@@ -107,11 +107,16 @@ export class EboBigTrackComp extends EboComponent {
                         <div id="extra" class="selectable info"></div>
                     </div>
                 </div>
+                <div id="bottom">
+                    <div id="albumTableWrapper">
+                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
+                    </div>
+                </div>
             </div>        
         `;
 
     constructor() {
-        super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
+        super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
         this.albumInfo = AlbumNone;
         this.render();
         this.albumClickEvent = new CustomEvent("albumClick", {
@@ -124,53 +129,30 @@ export class EboBigTrackComp extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        if(EboBigTrackComp.progressBarAttributes.includes(name)) {
+        if(EboBigAlbumComp.progressBarAttributes.includes(name)) {
             this[name] = newValue;
-            this.shadow.querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
         }
         switch (name) {
             case "name":
-            case "stream_lines":
             case "extra":
             case "img":
                 this[name] = newValue;
-                break;
-            case "enabled":
-                if (!["true", "false"].includes(newValue))
-                    throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-                this[name] = newValue == "true";
                 break;
         }
         this.render();
         }
 
-    // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
-        super.connectedCallback();
-    }
-
     renderPrepared() {
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
-        ["name", "stream_lines", "extra"].forEach(attName => {
+        ["name", "extra"].forEach(attName => {
             fragment.getElementById(attName).innerHTML = this[attName];
-        });
-        let progressBarElement = fragment.querySelector("ebo-progressbar") as HTMLElement;
-        //todo: try casting to EboProgressBar class and set attributes directly? Without re-rendering?
-        EboBigTrackComp.progressBarAttributes.forEach(attName => {
-            progressBarElement.setAttribute(attName, this[attName]);//todo: check if each of these causes a re-rendering.
         });
         //todo: image.
         this.shadow.appendChild(fragment);
-        // let img = this.shadow.getElementById("img");
-        // img.addEventListener("click", (ev) => {
-        //     console_yellow('CKICK');
-        //     this.dispatchEvent(this.albumClickEvent);
-        // });
-        this.shadow.getElementById("img").addEventListener("click", (ev) => {
-            this.dispatchEvent(this.albumClickEvent);
-        });
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
+        tracksComp.albumInfo = this.albumInfo;
         this.update();
     }
 
@@ -181,6 +163,7 @@ export class EboBigTrackComp extends EboComponent {
     }
 
     private onActiveTrackChanged() {
-
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
+        tracksComp.activeTrackUri = this.activeTrackUri;
     }
 }

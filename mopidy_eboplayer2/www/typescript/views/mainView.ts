@@ -23,6 +23,10 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
             this.onBrowseFilterChanged();
         });
+        let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
+        currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
+            this.onAlbumClick();
+        });
 
     }
 
@@ -53,33 +57,42 @@ export class MainView extends View {
     showView(view: Views) {
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
+        layout.classList.remove("browse", "bigAlbum", "bigTrack");
         switch (view) {
             case Views.Browse:
                 browseBtn.dataset.view = Views.Browse;
-                browseBtn.title = "Now playing";
                 layout.classList.add("browse");
-                layout.classList.remove("bigTrack");
                 location.hash = Views.Browse;
+                browseBtn.title = "Now playing";
                 let browseComp = document.getElementById("browseView") as EboBrowseComp;
-                browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
+                browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
                 browseComp.setFocusAndSelect();
                 break;
             case Views.NowPlaying:
                 browseBtn.dataset.view = Views.NowPlaying;
-                browseBtn.title = "Search";
-                layout.classList.remove("browse");
                 layout.classList.add("bigTrack");
                 location.hash = ""; //default = now playing
+                browseBtn.title = "Search";
                 break;
+                case Views.Album:
+                    browseBtn.dataset.view = Views.Album;
+                    layout.classList.add("bigAlbum");
+                    location.hash = Views.Album;
+                    browseBtn.title = "Search";
         }
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [];
     }
+
+    private onAlbumClick() {
+        this.showView(Views.Album);
+    }
 }
 
 export enum Views {
     NowPlaying = "#NowPlaying",
-    Browse = "#Browse"
+    Browse = "#Browse",
+    Album = "#Album"
 }

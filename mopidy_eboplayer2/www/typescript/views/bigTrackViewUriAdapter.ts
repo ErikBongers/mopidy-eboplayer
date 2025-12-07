@@ -68,8 +68,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         });
         let comp = document.getElementById(this.componentId) as EboBigTrackComp;
         comp.addEventListener("albumClick", async (e) => {
-            let show_back = comp.getAttribute("show_back");
-            comp.setAttribute("show_back",  show_back == "true" ? "false" : "true");
+            this.onAlbumClick();
         });
     }
 
@@ -177,4 +176,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines, ...super.getRequiredDataTypes()];
     }
 
+    private onAlbumClick() {
+        //todo: remove if handled by mainView. (bubbled up)
+    }
 }

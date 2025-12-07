@@ -1,3 +1,19 @@
+* Create a BigAlbumComp
+  > copy of big Track view
+    > remove track list from bigTrack View.
+      > put track listin BigAlbum View.
+      
+* Urgent changes:
+  - Album view with buttons
+    - Play
+    (- Add to playlist)
+  - Trackline with popup menu:
+    - Add to playlist
+    > individual play is just double click.
+    > popup triggerd by
+      - dbl click
+      - ellips button.
+
 * Navigating Browse/Now playing/Album
   > Now playing shows title of track and playlist.
   > Browse shows filters + album view.
