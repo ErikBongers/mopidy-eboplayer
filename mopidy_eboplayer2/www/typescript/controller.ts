@@ -322,4 +322,8 @@ export class Controller extends Commands implements DataRequester{
         }
         this.model.setCurrentRefs(this.model.getAllRefs());
     }
+
+    playAlbum(albumUri: string) {
+        this.play(albumUri);
+    }
 }

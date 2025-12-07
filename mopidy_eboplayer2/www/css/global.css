@@ -40,3 +40,9 @@ button {
     100%{text-shadow: 0 0 0px #ffff0000;}
 }
 
+.roundBorder {
+    border-style: solid;
+    border-width: 1px;
+    border-radius: 05rem;
+    padding: .2rem 1rem;
+}
