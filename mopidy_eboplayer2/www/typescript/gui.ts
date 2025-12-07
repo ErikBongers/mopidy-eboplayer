@@ -65,7 +65,7 @@ function setupStuff() {
     let mainView = new MainView();
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
-    let buttonBarView = new ButtonBarView("buttonBar");
+    let buttonBarView = new ButtonBarView("buttonBar", mainView);
     let historyView = new TimelineView();
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 

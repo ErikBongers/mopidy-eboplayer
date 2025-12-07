@@ -2,13 +2,16 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {VolumeView} from "./volumeView";
 import {EboplayerEvents, PlayState, TrackType} from "../modelTypes";
+import {MainView, Views} from "./mainView";
 
 export class ButtonBarView extends View {
     private containerId: string;
     private volumeView: VolumeView;
+    private parent: MainView;
 
-    constructor(containerId: string) {
+    constructor(containerId: string, parent: MainView) {
         super();
+        this.parent = parent;
         this.containerId = containerId;
         this.volumeView = new VolumeView(`${this.containerId}.volumeslider`);
         this.addChildren(this.volumeView);
@@ -28,6 +31,9 @@ export class ButtonBarView extends View {
         document.getElementById(`${this.containerId}.btnPlay`).onclick = () => {
             this.playOrStopOrPause().then(r => {});
         };
+        document.getElementById("buttonBarImg").onclick = () => {
+            this.onButtonBarImgClicked();
+        }
     }
 
     private async onPlaybackStateChangegd() {
@@ -98,6 +104,11 @@ export class ButtonBarView extends View {
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.PlayState];
+    }
+
+    private onButtonBarImgClicked() {
+        getState().getController().setSelectedTrack(getState().getModel().getCurrentTrack());
+        this.parent.showView(Views.NowPlaying); //todo: this call of function in parent is ugly.
     }
 }
 
