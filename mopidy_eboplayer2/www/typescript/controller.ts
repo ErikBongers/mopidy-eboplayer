@@ -243,12 +243,16 @@ export class Controller extends Commands implements DataRequester{
 
     async play(uri: string) {
         await this.mopidyProxy.clearTrackList();
+        let trackList = await this.addToPlaylist(uri);
+        // noinspection ES6MissingAwait
+        this.mopidyProxy.playTracklistItem(trackList, 0);
+    }
+
+    private async addToPlaylist(uri: string) {
         let tracks = await this.mopidyProxy.addTrackToTracklist(uri);
         let trackList = numberedDictToArray(tracks) as models.TlTrack[];
         this.setTracklist(trackList);
-        // noinspection ES6MissingAwait
-        this.mopidyProxy.playTracklistItem(trackList, 0);
-        // await this.setCurrentTrackAndFetchDetails(trackList[0]);
+        return trackList;
     }
 
     setSelectedTrack(uri: string) {
@@ -325,5 +329,9 @@ export class Controller extends Commands implements DataRequester{
 
     playAlbum(albumUri: string) {
         this.play(albumUri);
+    }
+
+    addAlbum(albumUri: string) {
+        this.addToPlaylist(albumUri);
     }
 }

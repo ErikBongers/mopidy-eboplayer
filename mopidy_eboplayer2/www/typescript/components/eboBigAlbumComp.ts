@@ -107,7 +107,10 @@ export class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <button id="btnPlay" class="roundBorder">Play</button>
+                    <div>
+                        <button id="btnPlay" class="roundBorder">Play</button>
+                        <button id="btnAdd" class="roundBorder">Add</button>
+                    </div>                
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
@@ -155,12 +158,29 @@ export class EboBigAlbumComp extends EboComponent {
         this.shadow.appendChild(fragment);
         let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.albumInfo = this.albumInfo;
-        this.shadow.getElementById("btnPlay").addEventListener("click", (ev) => {
-            if(this.albumInfo.type != AlbumDataType.Loaded)
-                return;
-            getState().getController().playAlbum(this.albumInfo.albumTrack.album.uri); //todo: add album uri DIRECTLY to albumInfo.
+        this.addShadowEventListener("btnPlay", "click", (ev) => {
+            this.onBtnPlayClick();
+        });
+        this.addShadowEventListener("btnAdd", "click", (ev) => {
+            this.onBtnAddClick();
         });
         this.update();
+    }
+
+    private onBtnPlayClick() {
+        if (this.albumInfo.type != AlbumDataType.Loaded)
+            return;
+        getState().getController().playAlbum(this.albumInfo.albumTrack.album.uri); //todo: add album uri DIRECTLY to albumInfo.
+    }
+
+    private onBtnAddClick() {
+        if (this.albumInfo.type != AlbumDataType.Loaded)
+            return;
+        getState().getController().addAlbum(this.albumInfo.albumTrack.album.uri); //todo: add album uri DIRECTLY to albumInfo.
+    }
+
+    addShadowEventListener(id: string, type: string, listener: (this:HTMLElement, ev: MouseEvent) => any){
+        this.shadow.getElementById(id).addEventListener(type, listener);
     }
 
     override updateWhenConnected() {
