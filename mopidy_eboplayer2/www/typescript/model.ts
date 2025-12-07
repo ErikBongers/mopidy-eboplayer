@@ -229,7 +229,7 @@ export class Model extends EventTarget implements ViewModel {
         }
     }
 
-    getTrackFromCache(uri: string) {
+    getTrackFromCache(uri: string): LibraryItem | undefined {
         return this.libraryCache.get(uri);
     }
 

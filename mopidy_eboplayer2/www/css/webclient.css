@@ -92,7 +92,9 @@ button, input[type="submit"], input[type="reset"] {
     flex-flow: column;
     height: 100%;
 
-    &.browse {
+    &.browse,
+    &.bigAlbum
+    {
         #stickyTop {
             height: 100vh;
         }

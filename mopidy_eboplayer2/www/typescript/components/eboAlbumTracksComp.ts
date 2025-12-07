@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {console_yellow} from "../gui";
 import getState from "../playerState";
+import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
 
 export class EboAlbumTracksComp extends EboComponent {
     set activeTrackUri(value: string | null) {

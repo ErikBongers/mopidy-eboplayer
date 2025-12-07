@@ -4,45 +4,9 @@ import {EboPlayerDataType} from "./view";
 import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
 import models from "../../js/mopidy";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
-import Track = models.Track;
-import {EboAlbumTracksComp} from "../components/eboAlbumTracksComp";
 import {numberedDictToArray} from "../global";
-import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
-
-export enum AlbumDataType {
-    None,
-    Loading,
-    Loaded,
-    StreamLinesLoaded
-}
-
-interface AlbumDataNone {
-    type: AlbumDataType.None;
-}
-interface AlbumDataLoading {
-    type: AlbumDataType.Loading;
-}
-interface AlbumDataLoaded {
-    type: AlbumDataType.Loaded;
-    tracks: Track[];
-    albumTrack: models.Track;
-}
-
-interface AlbumStreamLinesLoaded {
-    type: AlbumDataType.StreamLinesLoaded;
-    lines: string[][];
-    albumTrack: models.Track;
-}
-
-export const AlbumNone: AlbumDataNone = {
-    type: AlbumDataType.None
-}
-
-const AlbumLoading: AlbumDataLoading = {
-    type: AlbumDataType.Loading
-}
-
-export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
+import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
+import Track = models.Track;
 
 export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     private streamLines: string;

@@ -1,6 +1,7 @@
 import models from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
+import Track = models.Track;
 
 export enum TrackType { None, File, Stream}
 
@@ -125,3 +126,38 @@ export interface StreamTitles {
     uri: string;
     active_titles: string[]
 }
+
+export enum AlbumDataType {
+    None,
+    Loading,
+    Loaded,
+    StreamLinesLoaded
+}
+
+interface AlbumDataNone {
+    type: AlbumDataType.None;
+}
+
+interface AlbumDataLoading {
+    type: AlbumDataType.Loading;
+}
+
+export interface AlbumDataLoaded {
+    type: AlbumDataType.Loaded;
+    tracks: Track[];
+    albumTrack: models.Track;
+}
+
+export interface AlbumStreamLinesLoaded {
+    type: AlbumDataType.StreamLinesLoaded;
+    lines: string[][];
+    albumTrack: models.Track;
+}
+
+export const AlbumNone: AlbumDataNone = {
+    type: AlbumDataType.None
+}
+const AlbumLoading: AlbumDataLoading = {
+    type: AlbumDataType.Loading
+}
+export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;

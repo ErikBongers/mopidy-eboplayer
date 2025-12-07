@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumDataType, AlbumNone} from "../views/bigTrackViewUriAdapter";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
+import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
 
 export class EboBigTrackComp extends EboComponent {
     get activeTrackUri(): string | null {

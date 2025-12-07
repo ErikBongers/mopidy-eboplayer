@@ -3,7 +3,11 @@ import {EboPlayerDataType, View} from "./view";
 import EboBrowseComp from "../components/eboBrowseComp";
 import {console_yellow} from "../gui";
 
-import {EboplayerEvents} from "../modelTypes";
+import {AlbumDataLoaded, AlbumDataType, EboplayerEvents} from "../modelTypes";
+import {numberedDictToArray} from "../global";
+import models from "../../js/mopidy";
+import Track = models.Track;
+import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 
 export class MainView extends View {
     bind() {
@@ -22,6 +26,9 @@ export class MainView extends View {
         });
         getState().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
             this.onBrowseFilterChanged();
+        });
+        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+            this.onSelectedTrackChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
@@ -74,11 +81,11 @@ export class MainView extends View {
                 location.hash = ""; //default = now playing
                 browseBtn.title = "Search";
                 break;
-                case Views.Album:
-                    browseBtn.dataset.view = Views.Album;
-                    layout.classList.add("bigAlbum");
-                    location.hash = Views.Album;
-                    browseBtn.title = "Search";
+            case Views.Album:
+                browseBtn.dataset.view = Views.Album;
+                layout.classList.add("bigAlbum");
+                location.hash = Views.Album;
+                browseBtn.title = "Search";
         }
     }
 
@@ -88,6 +95,32 @@ export class MainView extends View {
 
     private onAlbumClick() {
         this.showView(Views.Album);
+    }
+
+    private async onSelectedTrackChanged() {
+        let trackUrl = getState().getModel().getSelectedTrack();
+        if(!trackUrl)
+            return;
+        let track = await getState().getController().lookupCached(trackUrl);
+        if(!track)
+            return;
+        if(track.length == 0)
+            return;
+        let trackInfo = track[0];
+        let albumUri = trackInfo.album?.uri;
+        if(!albumUri)
+            return;
+        let album = await getState().getController().lookupCached(albumUri);
+        if(!album)
+            return;
+        let albumTracks = numberedDictToArray<Track>(album);
+        let albumInfo = <AlbumDataLoaded>{
+            type: AlbumDataType.Loaded,
+            tracks: albumTracks,
+            albumTrack: trackInfo
+        };
+        let comp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+        comp.albumInfo = albumInfo;
     }
 }
 
