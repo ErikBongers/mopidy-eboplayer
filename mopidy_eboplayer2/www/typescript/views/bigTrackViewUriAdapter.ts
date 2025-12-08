@@ -36,42 +36,6 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
         });
     }
 
-    private async fetchAlbumData() {
-        if (this.albumInfo.type == AlbumDataType.None) {
-            switch (this.track.type) {
-                case TrackType.File:
-                    console.log(this.track.track.album.uri);
-                    let album = await getState().getController().lookupCached(this.track.track.album.uri);
-                    let albumTracks = numberedDictToArray<Track>(album);
-                    this.albumInfo = <AlbumDataLoaded>{
-                        type: AlbumDataType.Loaded,
-                        tracks: albumTracks,
-                        albumTrack: this.track.track
-                    };
-                    return this.albumInfo;
-                case TrackType.Stream:
-                    let stream_lines = await getState().getController().mopidyProxy.fetchAllStreamLines(this.uri);
-                    let groupLines = function (grouped: string[][], line: string){
-                        if(line == "---") {
-                            grouped.push([]);
-                            return grouped;
-                        }
-                        grouped[grouped.length-1].push(line);
-                        return grouped;
-                    }
-                    let grouped = stream_lines
-                        .reduce<string[][]>(groupLines, new Array([]))
-                        .filter(lineGroup => lineGroup.length);
-                    this.albumInfo = <AlbumStreamLinesLoaded>{
-                        type: AlbumDataType.StreamLinesLoaded,
-                        lines: grouped,
-                        albumTrack: this.track.track
-                    };
-                    return this.albumInfo;
-            }
-        }
-    }
-
     setUri(uri: string) {
         this.uri = uri;
         getState().getController().getTrackInfoCached(this.uri)
@@ -80,7 +44,8 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
                 this.albumInfo = AlbumNone;
                 this.setComponentData();
                 let comp = document.getElementById(this.componentId) as EboBigTrackComp;
-                comp.albumInfo = await this.fetchAlbumData();
+                this.albumInfo = await getState().getController().fetchAlbumDataForTrack(track);
+                comp.albumInfo = this.albumInfo;
             });
     }
 

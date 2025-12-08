@@ -1,3 +1,5 @@
+* click on track in active playlist
+  > start the track with that tl_id and don't clear the tracklist.
 * fetchAllStreamLines et all...
   > put in WebProxy
 
