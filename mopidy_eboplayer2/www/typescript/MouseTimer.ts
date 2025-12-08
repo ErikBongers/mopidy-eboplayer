@@ -4,6 +4,7 @@ export class MouseTimer<Source> {
     private activeTimer: number;
     private source: Source;
     private mouseUpCount = 0;
+    private isMouseDown = false;
 
     private readonly onClick: (source: Source) => void = undefined;
     private readonly onTimeOut: (source: Source) => void = undefined;
@@ -21,6 +22,7 @@ export class MouseTimer<Source> {
     }
 
     onMouseDown = (ev: MouseEvent) => {
+        this.isMouseDown = true;
         if(this.activeTimer)
             return;
         this.startPressTimer(ev, () => {
@@ -29,6 +31,7 @@ export class MouseTimer<Source> {
     };
 
     onMouseUp = (ev: MouseEvent) => {
+        this.isMouseDown = false;
         if(!this.activeTimer)
             return;
         this.mouseUpCount++;
@@ -45,6 +48,8 @@ export class MouseTimer<Source> {
 
     doTimeOut() {
         this.cancelPressTimer();
+        if(!this.isMouseDown)
+            return;
         this.onTimeOut?.(this.source);
     }
 
