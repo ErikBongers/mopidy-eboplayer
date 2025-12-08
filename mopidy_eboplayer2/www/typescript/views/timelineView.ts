@@ -102,9 +102,10 @@ export class TimelineView extends View {
         if (currentTrack.type == TrackType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let currentUri = currentTrack.track.uri;
-        let tr = timelineTable.querySelector(`tr[data-uri="${currentUri}"]`);
-        if(!tr)
+        let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
+        if(trs.length == 0)
             return;
+        let tr = trs[trs.length - 1];
         if(this.clickedRow?.dataset?.uri != currentTrack.track.uri)
             tr.scrollIntoView( { block: "nearest" });
         timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("current", "textGlow"));
