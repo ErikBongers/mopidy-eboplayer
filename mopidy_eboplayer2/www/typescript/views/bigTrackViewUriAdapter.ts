@@ -2,11 +2,8 @@ import getState from "../playerState";
 import {Model} from "../model";
 import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
-import models from "../../js/mopidy";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
-import {numberedDictToArray} from "../global";
-import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
-import Track = models.Track;
+import {AlbumData, AlbumNone, EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
 
 export class BigTrackViewUriAdapter extends ComponentViewAdapter {
     private streamLines: string;
@@ -29,10 +26,6 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
         });
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
             this.onActiveTrackChanged();
-        });
-        let comp = document.getElementById(this.componentId) as EboBigTrackComp;
-        comp.addEventListener("albumClick", async (e) => {
-            this.onAlbumClick();
         });
     }
 
@@ -58,9 +51,9 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
     }
 
     protected onActiveTrackChanged() {
-        let linesObject = getState().getModel().getActiveStreamLines();
-        if(linesObject?.uri == this.uri)
-            this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
+        let streamTitles = getState().getModel().getActiveStreamLines();
+        if(streamTitles?.uri == this.uri)
+            this.streamLines = streamTitles.active_titles?.join("<br/>") ?? "";
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
         let comp = document.getElementById(this.componentId) as EboBigTrackComp;
         comp.activeTrackUri = getState().getModel().getCurrentTrack();
@@ -101,9 +94,5 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines, ...super.getRequiredDataTypes()];
-    }
-
-    private onAlbumClick() {
-        //todo: remove if handled by mainView. (bubbled up)
     }
 }
