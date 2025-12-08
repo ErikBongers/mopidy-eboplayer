@@ -1,8 +1,3 @@
-* Create a BigAlbumComp
-  > copy of big Track view
-    > remove track list from bigTrack View.
-      > put track listin BigAlbum View.
-      
 * Urgent changes:
   - Album view with buttons
     - Play

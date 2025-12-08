@@ -47,10 +47,11 @@ export class EboBigAlbumComp extends EboComponent {
                     flex-direction: column;
                     align-content: center;
                     overflow: hidden;
+                    flex-wrap: wrap;
                 }
                 img {
-                    width: 100%;
-                    height: 100%;
+                    width: 70%;
+                    height: 70%;
                     object-fit: contain;
                 }
                 ebo-progressbar {
@@ -61,13 +62,13 @@ export class EboBigAlbumComp extends EboComponent {
                     flex-direction: column;
                     height: 100%;
                     width: 100%;
-                    #front {
-                        display: flex;
-                        flex-direction: column;
-                        width: 100%;
+                    #bottom {
+                        overflow: hidden;
                     }
-                    #back {
-                        width: 100%;
+                    #buttons {
+                        display: flex;
+                        flex-direction: row;
+                        margin-bottom: .5em;
                     }
                 }
                 #wrapper.front {
@@ -107,7 +108,7 @@ export class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <div>
+                    <div id="buttons">
                         <button id="btnPlay" class="roundBorder">Play</button>
                         <button id="btnAdd" class="roundBorder">Add</button>
                     </div>                
