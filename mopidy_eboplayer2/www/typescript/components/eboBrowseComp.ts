@@ -309,7 +309,7 @@ class EboBrowseComp extends EboComponent {
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        await getState().getController().play(row.dataset.uri);
+        await getState().getController().clearListAndPlay(row.dataset.uri);
     }
 
 

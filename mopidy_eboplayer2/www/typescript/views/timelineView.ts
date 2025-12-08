@@ -42,7 +42,7 @@ export class TimelineView extends View {
         if(history[0]?.ref.uri == trackList[0].track.uri)
             sliceStart = 1;
         for(let track of trackList.slice(sliceStart)) {
-            allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body)); //todo: actually we already have the track info. No need for lookup.
+            allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid)); //todo: actually we already have the track info. No need for lookup.
         }
 
         Promise.all(allLookups).then(()=> {
@@ -64,7 +64,10 @@ export class TimelineView extends View {
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         this.clickedRow = ev.currentTarget as HTMLTableRowElement;
-        await getState().getController().play(this.clickedRow.dataset.uri);
+        if(this.clickedRow.dataset.tlid)
+            await getState().getController().play(parseInt(this.clickedRow.dataset.tlid));
+        else
+            await getState().getController().clearListAndPlay(this.clickedRow.dataset.uri);
     }
 
     private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {
@@ -114,11 +117,13 @@ export class TimelineView extends View {
         await this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
     }
 
-    private async insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = []) {
+    private async insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = [], tlid?: number) {
         let tr = document.createElement("tr");
         body.appendChild(tr);
         tr.classList.add("trackLine", ...classes);
         tr.dataset.uri = uri;
+        if(tlid)
+            tr.dataset.tlid = tlid.toString();
         this.setTrackLineContent(tr, title);
         body.insertAdjacentHTML('beforeend', `
 <tr>

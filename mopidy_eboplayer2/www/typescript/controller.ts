@@ -168,7 +168,7 @@ export class Controller extends Commands implements DataRequester{
 
     diveIntoBrowseResult(label: string, uri: string, type: string) {
         if(type == "track"  ||  type  == "radio") {
-            this.play(uri).then(() => {});
+            this.clearListAndPlay(uri).then(() => {});
             return; //don't dive.
         }
 
@@ -244,11 +244,16 @@ export class Controller extends Commands implements DataRequester{
         return this.model.getTrackFromCache(uri);
     }
 
-    async play(uri: string) {
+    async clearListAndPlay(uri: string) {
         await this.mopidyProxy.clearTrackList();
         let trackList = await this.addToPlaylist(uri);
         // noinspection ES6MissingAwait
-        this.mopidyProxy.playTracklistItem(trackList, 0);
+        this.play(trackList[0].tlid);
+    }
+
+    async play(tlid: number) {
+        // noinspection ES6MissingAwait
+        this.mopidyProxy.playTracklistItem(tlid);
     }
 
     private async addToPlaylist(uri: string) {
@@ -331,7 +336,7 @@ export class Controller extends Commands implements DataRequester{
     }
 
     playAlbum(albumUri: string) {
-        this.play(albumUri);
+        this.clearListAndPlay(albumUri);
     }
 
     addAlbum(albumUri: string) {

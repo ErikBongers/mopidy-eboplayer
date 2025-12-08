@@ -28,8 +28,8 @@ export class MopidyProxy {
         return await this.commands.core.library.search({artist: ["Sting"]}, null);
     }
 
-    async playTracklistItem(trackList: models.TlTrack[], index: number) {
-        await this.commands.core.playback.play(null, trackList[index].tlid);
+    async playTracklistItem(tlid: number) {
+        await this.commands.core.playback.play(null, tlid);
     }
 
     async addTrackToTracklist(uri: string) {
