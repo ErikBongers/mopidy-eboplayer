@@ -1,14 +1,14 @@
 import getState from "../playerState";
 import {Model} from "../model";
 import {EboPlayerDataType} from "./view";
-import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
+import {ComponentViewAdapter} from "./componentViewAdapter";
 import models from "../../js/mopidy";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
 import {numberedDictToArray} from "../global";
 import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
 import Track = models.Track;
 
-export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
+export class BigTrackViewUriAdapter extends ComponentViewAdapter {
     private streamLines: string;
     private track: TrackModel;
     private uri: string;
@@ -36,7 +36,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
         });
     }
 
-    private async fetchAlbumData(comp: EboBigTrackComp) {
+    private async fetchAlbumData() {
         if (this.albumInfo.type == AlbumDataType.None) {
             switch (this.track.type) {
                 case TrackType.File:
@@ -48,8 +48,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                         tracks: albumTracks,
                         albumTrack: this.track.track
                     };
-                    comp.albumInfo = this.albumInfo;
-                    break;
+                    return this.albumInfo;
                 case TrackType.Stream:
                     let stream_lines = await getState().getController().mopidyProxy.fetchAllStreamLines(this.uri);
                     let groupLines = function (grouped: string[][], line: string){
@@ -68,8 +67,7 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
                         lines: grouped,
                         albumTrack: this.track.track
                     };
-                    comp.albumInfo = this.albumInfo;
-                    break;
+                    return this.albumInfo;
             }
         }
     }
@@ -77,12 +75,12 @@ export class BigTrackViewUriAdapter extends BigTrackViewAdapter {
     setUri(uri: string) {
         this.uri = uri;
         getState().getController().getTrackInfoCached(this.uri)
-            .then(track => {
+            .then(async track => {
                 this.track = track;
                 this.albumInfo = AlbumNone;
                 this.setComponentData();
                 let comp = document.getElementById(this.componentId) as EboBigTrackComp;
-                this.fetchAlbumData(comp).then(r => {});
+                comp.albumInfo = await this.fetchAlbumData();
             });
     }
 

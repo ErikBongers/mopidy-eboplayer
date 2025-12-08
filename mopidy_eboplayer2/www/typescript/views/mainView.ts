@@ -8,6 +8,7 @@ import {numberedDictToArray} from "../global";
 import models from "../../js/mopidy";
 import Track = models.Track;
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
+import {EboBigTrackComp} from "../components/eboBigTrackComp";
 
 export class MainView extends View {
     bind() {
@@ -90,7 +91,7 @@ export class MainView extends View {
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
-        return [];
+        return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines];
     }
 
     private onAlbumClick() {
@@ -98,29 +99,15 @@ export class MainView extends View {
     }
 
     private async onSelectedTrackChanged() {
-        let trackUrl = getState().getModel().getSelectedTrack();
-        if(!trackUrl)
-            return;
-        let track = await getState().getController().lookupCached(trackUrl);
-        if(!track)
-            return;
-        if(track.length == 0)
-            return;
-        let trackInfo = track[0];
-        let albumUri = trackInfo.album?.uri;
-        if(!albumUri)
-            return;
-        let album = await getState().getController().lookupCached(albumUri);
-        if(!album)
-            return;
-        let albumTracks = numberedDictToArray<Track>(album);
-        let albumInfo = <AlbumDataLoaded>{
-            type: AlbumDataType.Loaded,
-            tracks: albumTracks,
-            albumTrack: trackInfo
-        };
-        let comp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        comp.albumInfo = albumInfo;
+        let uri = getState().getModel().getSelectedTrack();
+        getState().getController().getTrackInfoCached(uri)
+            .then(async track => {
+                let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+                // let trackComp = document.getElementById("currentTrackBigView") as EboBigTrackComp;
+                let albumInfo = await getState().getController().fetchAlbumDataForTrack(track);
+                albumComp.albumInfo = albumInfo;
+                // trackComp.albumInfo = albumInfo;
+            });
     }
 }
 

@@ -1,3 +1,8 @@
+* fetchAllStreamLines et all...
+  > put in WebProxy
+
+* Radio:
+  > show stream history in
 * Urgent changes:
   - Album view with buttons
     - Play

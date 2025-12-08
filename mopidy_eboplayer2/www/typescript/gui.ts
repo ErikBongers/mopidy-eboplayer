@@ -4,7 +4,7 @@ import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
 import {Controller} from "./controller";
-import {BigTrackViewAdapter} from "./views/bigTrackViewAdapter";
+import {ComponentViewAdapter} from "./views/componentViewAdapter";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";

@@ -1,6 +1,6 @@
 import {EboPlayerDataType, View} from "./view";
 
-export class BigTrackViewAdapter extends View {
+export class ComponentViewAdapter extends View {
     protected componentId: string;
 
     constructor(id: string) {

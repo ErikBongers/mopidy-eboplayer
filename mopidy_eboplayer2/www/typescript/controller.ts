@@ -13,9 +13,11 @@ import {numberedDictToArray, transformLibraryItem} from "./global";
 import TlTrack = models.TlTrack;
 import {console_yellow} from "./gui";
 import {AllRefs, Refs, SomeRefs} from "./refs";
-import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles} from "./modelTypes";
+import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
 import Ref = models.Ref;
 import {JsonRpcController} from "./jsonRpcController";
+import {EboBigTrackComp} from "./components/eboBigTrackComp";
+import Track = models.Track;
 
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
@@ -333,5 +335,42 @@ export class Controller extends Commands implements DataRequester{
 
     addAlbum(albumUri: string) {
         this.addToPlaylist(albumUri);
+    }
+
+    async fetchAlbumDataForTrack(track: TrackModel) {
+        if (!track)
+            return AlbumNone;
+        let albumInfo: AlbumData = AlbumNone;
+        switch (track.type) {
+            case TrackType.File:
+                console.log(track.track.album.uri);
+                let album = await this.lookupCached(track.track.album.uri);
+                let albumTracks = numberedDictToArray<Track>(album);
+                albumInfo = <AlbumDataLoaded>{
+                    type: AlbumDataType.Loaded,
+                    tracks: albumTracks,
+                    albumTrack: track.track
+                };
+                return albumInfo;
+            case TrackType.Stream:
+                let stream_lines = await this.mopidyProxy.fetchAllStreamLines(track.track.uri);
+                let groupLines = function (grouped: string[][], line: string){
+                    if(line == "---") {
+                        grouped.push([]);
+                        return grouped;
+                    }
+                    grouped[grouped.length-1].push(line);
+                    return grouped;
+                }
+                let grouped = stream_lines
+                    .reduce<string[][]>(groupLines, new Array([]))
+                    .filter(lineGroup => lineGroup.length);
+                albumInfo = <AlbumStreamLinesLoaded>{
+                    type: AlbumDataType.StreamLinesLoaded,
+                    lines: grouped,
+                    albumTrack: track.track
+                };
+                return albumInfo;
+        }
     }
 }

@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {Model} from "../model";
 import {EboPlayerDataType, View} from "./view";
-import {BigTrackViewAdapter} from "./bigTrackViewAdapter";
+import {ComponentViewAdapter} from "./componentViewAdapter";
 import { BigTrackViewUriAdapter } from "./bigTrackViewUriAdapter";
 import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
 
