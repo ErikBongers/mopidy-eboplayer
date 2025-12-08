@@ -1,4 +1,4 @@
-import getState, {setState} from "./playerState";
+import getState from "./playerState";
 import {showLoading} from "./functionsvars";
 import {library} from "./library";
 import {transformTlTrackDataToModel} from "./process_ws";
@@ -7,16 +7,15 @@ import {Commands} from "./commands";
 import models, {Mopidy} from "../js/mopidy";
 import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
-import {MopidyProxy} from "./mopidyProxy";
-import {LocalStorageProxy} from "./localStorageProxy";
+import {MopidyProxy} from "./proxies/mopidyProxy";
+import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
-import TlTrack = models.TlTrack;
-import {console_yellow} from "./gui";
-import {AllRefs, Refs, SomeRefs} from "./refs";
+import {AllRefs, SomeRefs} from "./refs";
 import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
-import Ref = models.Ref;
 import {JsonRpcController} from "./jsonRpcController";
-import {EboBigTrackComp} from "./components/eboBigTrackComp";
+import {WebProxy} from "./proxies/webProxy";
+import TlTrack = models.TlTrack;
+import Ref = models.Ref;
 import Track = models.Track;
 
 //The controller updates the model and has functions called by the views.
@@ -25,6 +24,7 @@ import Track = models.Track;
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
     public mopidyProxy: MopidyProxy;
+    public webProxy: WebProxy;
     public localStorageProxy: LocalStorageProxy;
     private eboWebSocketCtrl: JsonRpcController;
 
@@ -32,6 +32,7 @@ export class Controller extends Commands implements DataRequester{
         super(mopidy);
         this.model  = model;
         this.mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+        this.webProxy = new WebProxy(model);
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWebSocketCtrl = eboWebSocketCtrl;
     }
@@ -139,7 +140,7 @@ export class Controller extends Commands implements DataRequester{
 
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
         this.model.setCurrentTrack(transformTlTrackDataToModel(data));
-        await this.mopidyProxy.fetchActiveStreamLines();
+        await this.webProxy.fetchActiveStreamLines();
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // this.core.playback.getState().then(processPlaystate, console.error)
@@ -353,7 +354,7 @@ export class Controller extends Commands implements DataRequester{
                 };
                 return albumInfo;
             case TrackType.Stream:
-                let stream_lines = await this.mopidyProxy.fetchAllStreamLines(track.track.uri);
+                let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
                 let groupLines = function (grouped: string[][], line: string){
                     if(line == "---") {
                         grouped.push([]);

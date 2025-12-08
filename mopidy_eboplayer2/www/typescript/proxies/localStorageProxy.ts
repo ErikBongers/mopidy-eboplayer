@@ -1,8 +1,8 @@
-import {BrowseFilterBreadCrumbs, Model} from "./model";
-import {jsonParse} from "./functionsvars";
-import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "./modelTypes";
-import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
-import models from "../js/mopidy";
+import {BrowseFilterBreadCrumbs, Model} from "../model";
+import {jsonParse} from "../functionsvars";
+import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "../modelTypes";
+import {BreadCrumb, BreadCrumbStack} from "../breadCrumb";
+import models from "../../js/mopidy";
 import Ref = models.Ref;
 
 const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";

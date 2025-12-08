@@ -3,7 +3,6 @@ import {SyncedProgressTimer} from "./synced_timer";
 import {ViewModel} from "./model";
 import {EboPlayerDataType, View} from "./views/view";
 import {Controller} from "./controller";
-import TlTrack = models.TlTrack;
 
 import {DeepReadonly} from "./modelTypes";
 
@@ -55,6 +54,7 @@ export class State {
 
         for (const dataType of requiredData) {
             await this.controller.mopidyProxy.fetchRequiredData(dataType);
+            await this.controller.webProxy.fetchRequiredData(dataType);
         }
 
         this.controller.localStorageProxy.loadCurrentBrowseFilter();

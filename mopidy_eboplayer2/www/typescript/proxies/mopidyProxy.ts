@@ -1,12 +1,12 @@
-import {Model} from "./model";
-import {Commands} from "./commands";
-import models from "../js/mopidy";
-import {EboPlayerDataType} from "./views/view";
-import {Controller} from "./controller";
-import {getHostAndPort, numberedDictToArray, quadratic100} from "./global";
+import {Model} from "../model";
+import {Commands} from "../commands";
+import models from "../../js/mopidy";
+import {EboPlayerDataType} from "../views/view";
+import {Controller} from "../controller";
+import {numberedDictToArray, quadratic100} from "../global";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
-import {HistoryLine, LibraryDict} from "./modelTypes";
+import {HistoryLine, LibraryDict} from "../modelTypes";
 
 export class MopidyProxy {
     private controller: Controller;
@@ -74,9 +74,6 @@ export class MopidyProxy {
                 let state = await this.commands.core.playback.getState() as string;
                 this.controller.setPlayState(state);
                 break;
-            case  EboPlayerDataType.StreamLines:
-                await this.fetchActiveStreamLines();
-                break;
             case  EboPlayerDataType.TrackList:
                 await this.fetchTracklistAndDetails();
                 break;
@@ -90,29 +87,9 @@ export class MopidyProxy {
         return dict;
     }
 
-    async fetchActiveStreamLines() {
-        if (!this.model.currentTrack) {
-            this.model.setActiveStreamLinesHistory(undefined);
-            return;
-        }
-
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
-        url.searchParams.set("uri", this.model.currentTrack);
-        let res = await fetch(url);
-        let lines = await res.json();
-        this.model.setActiveStreamLinesHistory(lines);
-    }
-
     async fetchTracklistAndDetails() {
         let tracks = await this.commands.core.tracklist.getTlTracks();
         this.model.setTrackList(tracks);
-    }
-
-    async fetchAllStreamLines(uri: string) {
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
-        url.searchParams.set("uri", uri);
-        let res = await fetch(url);
-        return await res.json() as string[];
     }
 
     async fetchHistory() {

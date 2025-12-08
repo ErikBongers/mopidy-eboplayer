@@ -1,14 +1,10 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import EboBrowseComp from "../components/eboBrowseComp";
-import {console_yellow} from "../gui";
 
-import {AlbumDataLoaded, AlbumDataType, EboplayerEvents} from "../modelTypes";
-import {numberedDictToArray} from "../global";
+import {EboplayerEvents} from "../modelTypes";
 import models from "../../js/mopidy";
-import Track = models.Track;
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
-import {EboBigTrackComp} from "../components/eboBigTrackComp";
 
 export class MainView extends View {
     bind() {
@@ -103,10 +99,7 @@ export class MainView extends View {
         getState().getController().getTrackInfoCached(uri)
             .then(async track => {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                // let trackComp = document.getElementById("currentTrackBigView") as EboBigTrackComp;
-                let albumInfo = await getState().getController().fetchAlbumDataForTrack(track);
-                albumComp.albumInfo = albumInfo;
-                // trackComp.albumInfo = albumInfo;
+                albumComp.albumInfo = await getState().getController().fetchAlbumDataForTrack(track);
             });
     }
 }
