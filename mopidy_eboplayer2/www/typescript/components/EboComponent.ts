@@ -89,5 +89,8 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         customElements.define(comp.tagName, comp);
     }
 
+    addShadowEventListener(id: string, type: string, listener: (this: HTMLElement, ev: MouseEvent) => any) {
+        this.shadow.getElementById(id).addEventListener(type, listener);
+    }
 }
 

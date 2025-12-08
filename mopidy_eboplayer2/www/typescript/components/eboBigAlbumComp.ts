@@ -179,10 +179,6 @@ export class EboBigAlbumComp extends EboComponent {
         getState().getController().addAlbum(this.albumInfo.albumTrack.album.uri); //todo: add album uri DIRECTLY to albumInfo.
     }
 
-    addShadowEventListener(id: string, type: string, listener: (this:HTMLElement, ev: MouseEvent) => any){
-        this.shadow.getElementById(id).addEventListener(type, listener);
-    }
-
     override updateWhenConnected() {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
             this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
