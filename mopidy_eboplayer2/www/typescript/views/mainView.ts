@@ -51,10 +51,16 @@ export class MainView extends View {
 
     private onBrowseButtonClick() {
         let browseBtn = document.getElementById("headerSearchBtn");
-        if(browseBtn.dataset.view == Views.Browse) {
-            this.showView(Views.NowPlaying);
-        } else {
-            this.showView(Views.Browse);
+        switch (browseBtn.dataset.goto) {
+            case Views.Browse:
+                this.showView(Views.Browse);
+                break;
+            case Views.NowPlaying:
+                this.showView(Views.NowPlaying);
+                break;
+            case Views.Album:
+                this.showView(Views.Album);
+                break;
         }
     }
 
@@ -64,25 +70,25 @@ export class MainView extends View {
         layout.classList.remove("browse", "bigAlbum", "bigTrack");
         switch (view) {
             case Views.Browse:
-                browseBtn.dataset.view = Views.Browse;
                 layout.classList.add("browse");
                 location.hash = Views.Browse;
+                browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
                 let browseComp = document.getElementById("browseView") as EboBrowseComp;
                 browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
                 browseComp.setFocusAndSelect();
                 break;
             case Views.NowPlaying:
-                browseBtn.dataset.view = Views.NowPlaying;
                 layout.classList.add("bigTrack");
                 location.hash = ""; //default = now playing
+                browseBtn.dataset.goto = Views.Browse;
                 browseBtn.title = "Search";
                 break;
             case Views.Album:
-                browseBtn.dataset.view = Views.Album;
                 layout.classList.add("bigAlbum");
                 location.hash = Views.Album;
-                browseBtn.title = "Search";
+                browseBtn.dataset.goto = Views.NowPlaying;
+                browseBtn.title = "Now playing";
         }
     }
 
