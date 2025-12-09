@@ -1,18 +1,20 @@
-* click on track in active playlist
-  > start the track with that tl_id and don't clear the tracklist.
-* fetchAllStreamLines et all...
-  > put in WebProxy
+* On windows, have a local copy of the repo.
+  > a way to immediately sync?
+    > or sync on build?
+      > Use RealTimeSync?
+      > Use push/pull?
+      > other?
 
-* Urgent changes:
-  - Album view with buttons
-    - Play
-    (- Add to playlist)
-  - Trackline with popup menu:
-    - Add to playlist
-    > individual play is just double click.
-    > popup triggerd by
-      - dbl click
-      - ellips button.
+* Browse: dbllick on radio starts it and goes to Now Playing.
+  > Animated visual feedback of dblclick:
+    > Fade in and out the active bkg color of play bar.
+
+* Play bar: show image of track in all other cases than when the track is in big view.
+  > Also show a mini title
+    > track name only?
+    > widden the bar?
+
+* Set active track in page title.
 
 * Navigating Browse/Now playing/Album
   > Now playing shows title of track and playlist.
