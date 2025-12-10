@@ -1,5 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {TrackModel, TrackType} from "../modelTypes";
+import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
+import {inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
     private _track: TrackModel;
@@ -12,11 +13,13 @@ export class EboButtonBar extends EboComponent {
     }
     static readonly tagName=  "ebo-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["playing", "img", "track_title", "show_info"];
+    static observedAttributes = ["playing", "img", "track_title", "show_info", "volume"];
     private playing: boolean = false;
     private show_info: boolean = false;
     private track_title: string = "";
     private img: string;
+    private isVolumeSliding: boolean = false;
+    private volume: number = 0;
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -29,6 +32,50 @@ export class EboButtonBar extends EboComponent {
         
             .playing {
                 background-color: rgba(184, 134, 11, 0.53);
+            }
+            #buttonBar  {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: center;
+            
+                & button {
+                    padding-left: .5ch;
+                    padding-right: .5ch;
+                }
+            }
+            #wrapper {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+                padding-top: .5em;
+                padding-bottom: .5em;
+            }
+            #volumeSlider {
+                width: 100px;
+            }
+            input[type='range'] {
+                & {
+                    margin: 10px 5px;
+                    height: 2px;
+                    background-color: gray;
+                    -webkit-appearance: none;
+                }
+            
+                &::-webkit-slider-thumb {
+                    padding: 0;
+            
+                    width: 7px;
+                    appearance: none;
+                    height: 7px;
+                    background: white;
+                    color: white;
+                    border-color: white;
+                    border-style: solid;
+                    border-width:7px;
+                    border-radius: 7px;
+                }
             }
         </style>
     `;
@@ -43,7 +90,7 @@ export class EboButtonBar extends EboComponent {
                 <button id="btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
                 <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                 <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
-                <input id="volumeslider" data-highlight="true" name="volumeslider" data-mini="true" type="range" min="0" value="0" max="100"/>
+                <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
                 <button id="btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
             </div>
         </div>
@@ -61,6 +108,9 @@ export class EboButtonBar extends EboComponent {
             case "track_title":
                 this[name] = newValue;
                 break;
+            case "volume":
+                this.volume = parseInt(newValue);
+                break;
             case "playing":
             case "show_info":
                 if (!["true", "false"].includes(newValue))
@@ -68,17 +118,31 @@ export class EboButtonBar extends EboComponent {
                 this[name] = newValue == "true";
                 break;
         }
-        this.render();
+        this.update();
         }
-
-    // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
-    }
 
     renderPrepared() {
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         this.shadow.appendChild(fragment);
+        let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
+        slider.oninput = (ev) => {
+            this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {bubbles: true, composed: true, detail: {volume: quadratic100(parseInt(slider.value))}}));
+        };
+        slider.onmousedown = slider.ontouchstart = () => { this.isVolumeSliding = true;};
+        slider.onmouseup = slider.ontouchend = () => { this.isVolumeSliding = false;};
+
+        let btnPlay = this.shadow.getElementById('btnPlay');
+        btnPlay.addEventListener("click", (ev) => {
+            let title = btnPlay.querySelector('i').title;
+            let eventName: EboplayerEvents;
+            switch (title) {
+                case "Play": eventName = EboplayerEvents.playPressed; break;
+                case "Pause": eventName = EboplayerEvents.pausePressed; break;
+                case "Stop": eventName = EboplayerEvents.stopPressed; break;
+            }
+            this.dispatchEvent(new CustomEvent(eventName, {bubbles: true, composed: true}));
+        })
     }
 
     updateWhenConnected() {
@@ -86,23 +150,30 @@ export class EboButtonBar extends EboComponent {
             if(!this.track)
                 return;
             if(this.track.type == TrackType.Stream)
-                this.setPlayButton('Pause', ['fa-play'], 'fa-stop');
+                this.setPlayButton('Stop', 'fa-stop');
             else
-                this.setPlayButton('Pause', ['fa-play'], 'fa-pause');
+                this.setPlayButton('Pause', 'fa-pause');
 
         } else {
-                this.setPlayButton('Play', ['fa-pause', 'fa-stop'], 'fa-play');
+                this.setPlayButton('Play', 'fa-play');
         }
         let opacity = this.track.type == TrackType.File ? "1" : "0.5";
         this.shadow.getElementById("btnNext").style.opacity = opacity;
         this.shadow.getElementById("btnPrev").style.opacity = opacity;
         let img = this.shadow.querySelector("img") as HTMLElement;
         img.style.visibility = this.show_info ? "visible" : "hidden";
+        if(!this.isVolumeSliding) {
+            let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
+            let visualVolume = inverseQuadratic100(this.volume);
+            slider.value = Math.floor(visualVolume).toString();
+        }
+        let wrapper = this.shadow.getElementById("wrapper");
+        wrapper.classList.toggle("playing", this.playing);
     }
 
-    private setPlayButton(title: string, removeClasses: string[], addClass: string) {
+    private setPlayButton(title: string, addClass: string) {
         let btnPlayIcon = this.shadow.getElementById('btnPlay').querySelector('i');
-        btnPlayIcon.classList.remove(...removeClasses);
+        btnPlayIcon.classList.remove("fa-play", "fa-pause", "fa-stop" );
         btnPlayIcon.classList.add(addClass);
         btnPlayIcon.setAttribute('title', title);
     }

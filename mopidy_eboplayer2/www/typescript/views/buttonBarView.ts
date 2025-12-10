@@ -1,7 +1,6 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {VolumeView} from "./volumeView";
-import {EboplayerEvents, PlayState, TrackType} from "../modelTypes";
+import {EboplayerEvents, PlayState} from "../modelTypes";
 import {MainView, Views} from "./mainView";
 import {EboButtonBar} from "../components/eboButtonBarComp";
 
@@ -41,6 +40,21 @@ export class ButtonBarView extends View {
         comp.addEventListener(EboplayerEvents.pausePressed, () => {
             this.playOrStopOrPause(EboplayerEvents.pausePressed).then(r => {});
         });
+        getState().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
+            this.onVolumeChanged();
+        });
+        comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
+            let value = parseInt((ev as CustomEvent).detail.volume);
+            await getState().getController().mopidyProxy.sendVolume(value);
+
+        })
+    }
+
+    private onVolumeChanged() {
+        let volume = getState().getModel().getVolume();
+        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        comp.setAttribute("volume", volume.toString());
+
     }
 
     private onPlaybackStateChangegd() {
@@ -89,7 +103,7 @@ export class ButtonBarView extends View {
 
 
     getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.PlayState];
+        return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];
     }
 
     private onButtonBarImgClicked() {

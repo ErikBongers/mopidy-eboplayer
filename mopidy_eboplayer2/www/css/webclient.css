@@ -236,41 +236,6 @@ input[type='range'].minimal {
 }
 
 
-input[type='range'] {
-    & {
-        margin: 10px 5px;
-        height: 2px;
-        background-color: gray;
-        -webkit-appearance: none;
-    }
-
-    &::-webkit-slider-thumb {
-        padding: 0;
-
-        width: 7px;
-        appearance: none;
-        height: 7px;
-        background: white;
-        color: white;
-        border-color: white;
-        border-style: solid;
-        border-width:7px;
-        border-radius: 7px;
-    }
-}
-
-#buttonBar  {
-    display: flex;
-    justify-content: center;
-    flex-wrap: wrap;
-    align-items: center;
-    align-content: center;
-
-    & button {
-        padding-left: .5ch;
-        padding-right: .5ch;
-    }
-}
 
 #buttonBarWrapper {
     display: flex;
@@ -278,9 +243,6 @@ input[type='range'] {
     align-items: center;
     align-content: center;
     flex-wrap: wrap;
-    padding-top: .5em;
-    padding-bottom: .5em;
-    background-color: darkslategray;
 
     & img {
         width: 2em;
@@ -288,9 +250,10 @@ input[type='range'] {
         margin-right: 1em;
     }
 
-    &.playing {
-        background-color: rgba(184, 134, 11, 0.53);
-    }
+}
+
+ebo-button-bar {
+    width: 100%;
 }
 
 

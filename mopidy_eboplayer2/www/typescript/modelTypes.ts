@@ -81,6 +81,7 @@ export enum EboplayerEvents {
     playPressed = "eboplayer.playPressed",
     pausePressed = "eboplayer.pausePressed",
     stopPressed = "eboplayer.stopPressed",
+    changingVolume = "eboplayer.changingVolume",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;
