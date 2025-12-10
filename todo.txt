@@ -1,10 +1,3 @@
-* On windows, have a local copy of the repo.
-  > a way to immediately sync?
-    > or sync on build?
-      > Use RealTimeSync?
-      > Use push/pull?
-      > other?
-
 * Browse: dbllick on radio starts it and goes to Now Playing.
   > Animated visual feedback of dblclick:
     > Fade in and out the active bkg color of play bar.

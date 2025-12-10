@@ -3,18 +3,16 @@ import {EboPlayerDataType, View} from "./view";
 import {VolumeView} from "./volumeView";
 import {EboplayerEvents, PlayState, TrackType} from "../modelTypes";
 import {MainView, Views} from "./mainView";
+import {EboButtonBar} from "../components/eboButtonBarComp";
 
 export class ButtonBarView extends View {
-    private containerId: string;
-    private volumeView: VolumeView;
+    private componentId: string;
     private parent: MainView;
 
     constructor(containerId: string, parent: MainView) {
         super();
         this.parent = parent;
-        this.containerId = containerId;
-        this.volumeView = new VolumeView(`${this.containerId}.volumeslider`);
-        this.addChildren(this.volumeView);
+        this.componentId = containerId;
     }
 
     bind() {
@@ -28,41 +26,35 @@ export class ButtonBarView extends View {
             this.onSelectedTrackChanged();
         });
 
-        document.getElementById(`${this.containerId}.btnPlay`).onclick = () => {
-            this.playOrStopOrPause().then(r => {});
-        };
-        document.getElementById("buttonBarImg").onclick = () => {
+        //todo: capture img click in comp.
+        // document.getElementById(`${this.componentId}.btnPlay`).onclick = () => {
+        //     this.playOrStopOrPause().then(r => {});
+        // };
+        document.getElementById("buttonBarImg").onclick = () => { //todo: comp must send event when img pressed.
             this.onButtonBarImgClicked();
         }
+        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        comp.addEventListener(EboplayerEvents.playPressed, () => {
+            this.playOrStopOrPause(EboplayerEvents.playPressed).then(r => {});
+        });
+        comp.addEventListener(EboplayerEvents.stopPressed, () => {
+            this.playOrStopOrPause(EboplayerEvents.stopPressed).then(r => {});
+        });
+        comp.addEventListener(EboplayerEvents.pausePressed, () => {
+            this.playOrStopOrPause(EboplayerEvents.pausePressed).then(r => {});
+        });
     }
 
-    private async onPlaybackStateChangegd() {
-        let state = getState().getModel().getPlayState();
-        switch (state) {
-            case PlayState.paused:
-            case PlayState.stopped:
-                this.setPlayButton('Play', ['fa-pause', 'fa-stop'], 'fa-play');
-                document.getElementById(this.containerId).parentElement.classList.remove("playing");
-                break;
-            case PlayState.playing:
-                let track = await getState().getController().getCurrertTrackInfoCached();
-                if(!track)
-                    return;
-                if(track.type == TrackType.Stream)
-                    this.setPlayButton('Pause', ['fa-play'], 'fa-stop');
-                else
-                    this.setPlayButton('Pause', ['fa-play'], 'fa-pause');
-                document.getElementById(this.containerId).parentElement.classList.add("playing");
-                break;
-        }
+    private onPlaybackStateChangegd() {
+        let playState = getState().getModel().getPlayState();
+        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        comp.setAttribute("playing", (playState == PlayState.playing).toString());
     }
 
     private async onCurrentTrackChanged() {
         let currentTrack = await getState().getController().getCurrertTrackInfoCached();
-        if(currentTrack.type == TrackType.Stream) {
-            View.getSubId(this.containerId, "btnNext").style.opacity = "0.5";
-            View.getSubId(this.containerId, "btnPrev").style.opacity = "0.5";
-        }
+        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        comp.track = currentTrack;
         this.showHideSelectedImage();
     }
 
@@ -73,34 +65,30 @@ export class ButtonBarView extends View {
     private showHideSelectedImage() {
         let currentTrack = getState().getModel().getCurrentTrack();
         let selectedTrack = getState().getModel().getSelectedTrack();
-        let img = document.querySelector("#buttonBarWrapper img") as HTMLElement;
-        if (currentTrack == selectedTrack || !selectedTrack)
-            img.style.visibility = "hidden";
-        else
-            img.style.visibility = "visible";
+        let currentView = location.hash as Views;
+        let show_info = false;
+        if(currentTrack != selectedTrack)
+            show_info = true;
+        if(currentView != Views.NowPlaying)
+            show_info = true;
+        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        comp.setAttribute("show_info", show_info.toString());
     }
 
-    private async playOrStopOrPause() {
-        let playState = getState().getModel().getPlayState();
-        if (playState == PlayState.playing) {
-            let currentTrack = await getState().getController().getCurrertTrackInfoCached();
-            if(!currentTrack)
-                return;
-            if(currentTrack.type == TrackType.Stream)
-                return getState().getController().mopidyProxy.sendStop();
-            else
-                return getState().getController().mopidyProxy.sendPause();
-        } else {
-                return getState().getController().mopidyProxy.sendPlay();
+    private async playOrStopOrPause(event: EboplayerEvents) {
+        switch(event) {
+            case EboplayerEvents.playPressed:
+                await getState().getController().mopidyProxy.sendPlay();
+                break;
+            case EboplayerEvents.stopPressed:
+                await getState().getController().mopidyProxy.sendStop();
+                break;
+            case EboplayerEvents.pausePressed:
+                await getState().getController().mopidyProxy.sendPause();
+                break;
         }
     }
 
-    private setPlayButton(title: string, removeClasses: string[], addClass: string) {
-        let btnPlayIcon = View.getSubId(this.containerId, 'btnPlay').querySelector('i');
-        btnPlayIcon.classList.remove(...removeClasses);
-        btnPlayIcon.classList.add(addClass);
-        btnPlayIcon.setAttribute('title', title);
-    }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.PlayState];
@@ -111,7 +99,3 @@ export class ButtonBarView extends View {
         this.parent.showView(Views.NowPlaying); //todo: this call of function in parent is ugly.
     }
 }
-
-function toggleButton(enabled: boolean) {
-    View.getSubId(this.containerId, "btnPrev").style.opacity =  enabled ? "1" : "0.3";
- }

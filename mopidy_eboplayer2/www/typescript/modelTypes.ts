@@ -78,6 +78,9 @@ export enum EboplayerEvents {
     refsFiltered = "eboplayer.refsFiltered",
     longPress = "eboplayer.longPress",
     breadCrumbsChanged = "eboplayer.breadCrumbsChanged",
+    playPressed = "eboplayer.playPressed",
+    pausePressed = "eboplayer.pausePressed",
+    stopPressed = "eboplayer.stopPressed",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;
