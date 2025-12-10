@@ -2,8 +2,7 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import EboBrowseComp from "../components/eboBrowseComp";
 
-import {EboplayerEvents} from "../modelTypes";
-import models from "../../js/mopidy";
+import {EboplayerEvents, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 
 export class MainView extends View {
@@ -65,6 +64,7 @@ export class MainView extends View {
     }
 
     showView(view: Views) {
+        getState().getController().setView(view);
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
         layout.classList.remove("browse", "bigAlbum", "bigTrack");
@@ -110,8 +110,3 @@ export class MainView extends View {
     }
 }
 
-export enum Views {
-    NowPlaying = "#NowPlaying",
-    Browse = "#Browse",
-    Album = "#Album"
-}

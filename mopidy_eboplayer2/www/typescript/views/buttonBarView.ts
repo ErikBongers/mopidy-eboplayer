@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {EboplayerEvents, PlayState} from "../modelTypes";
-import {MainView, Views} from "./mainView";
+import {EboplayerEvents, PlayState, Views} from "../modelTypes";
+import {MainView} from "./mainView";
 import {EboButtonBar} from "../components/eboButtonBarComp";
 
 export class ButtonBarView extends View {
@@ -47,7 +47,10 @@ export class ButtonBarView extends View {
             let value = parseInt((ev as CustomEvent).detail.volume);
             await getState().getController().mopidyProxy.sendVolume(value);
 
-        })
+        });
+        getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+            this.showHideInfo();
+        });
     }
 
     private onVolumeChanged() {
@@ -67,19 +70,19 @@ export class ButtonBarView extends View {
         let currentTrack = await getState().getController().getCurrertTrackInfoCached();
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         comp.track = currentTrack;
-        this.showHideSelectedImage();
+        this.showHideInfo();
     }
 
     private async onSelectedTrackChanged() {
-        this.showHideSelectedImage();
+        this.showHideInfo();
     }
 
-    private showHideSelectedImage() {
+    private showHideInfo() {
         let currentTrack = getState().getModel().getCurrentTrack();
         let selectedTrack = getState().getModel().getSelectedTrack();
-        let currentView = location.hash as Views;
+        let currentView = getState().getModel().getView();
         let show_info = false;
-        if(currentTrack != selectedTrack)
+        if(selectedTrack && currentTrack != selectedTrack)
             show_info = true;
         if(currentView != Views.NowPlaying)
             show_info = true;

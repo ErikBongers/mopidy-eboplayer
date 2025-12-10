@@ -12,13 +12,14 @@ import {EboBigTrackComp} from "./components/eboBigTrackComp";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
 import {EboAlbumTracksComp} from "./components/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
-import {MainView, Views} from "./views/mainView";
+import {MainView} from "./views/mainView";
 import EboBrowseComp from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
 import {getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
 import {EboButtonBar} from "./components/eboButtonBarComp";
+import {Views} from "./modelTypes";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -75,6 +76,8 @@ function setupStuff() {
 
     if(location.hash == Views.Browse)
         mainView.showView(Views.Browse);
+    else
+        mainView.showView(Views.NowPlaying);
 
     mopidy.connect();
     eboWebSocketCtrl.connect();

@@ -82,6 +82,7 @@ export enum EboplayerEvents {
     pausePressed = "eboplayer.pausePressed",
     stopPressed = "eboplayer.stopPressed",
     changingVolume = "eboplayer.changingVolume",
+    viewChanged = "eboplayer.viewChanged",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -165,3 +166,9 @@ const AlbumLoading: AlbumDataLoading = {
     type: AlbumDataType.Loading
 }
 export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
+
+export enum Views {
+    NowPlaying = "#NowPlaying",
+    Browse = "#Browse",
+    Album = "#Album"
+}

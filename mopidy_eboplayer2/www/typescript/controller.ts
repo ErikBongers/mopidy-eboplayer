@@ -11,7 +11,7 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
+import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
@@ -378,5 +378,9 @@ export class Controller extends Commands implements DataRequester{
                 };
                 return albumInfo;
         }
+    }
+
+    setView(view: Views) {
+        this.model.setView(view);
     }
 }

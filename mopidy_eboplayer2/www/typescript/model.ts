@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, Refs, SearchResult} from "./refs";
-import {BrowseFilter, ConnectionState, EboplayerEvents, FilterBreadCrumbType, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType} from "./modelTypes";
+import {BrowseFilter, ConnectionState, EboplayerEvents, FilterBreadCrumbType, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType, Views} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
@@ -19,6 +19,7 @@ export interface ViewModel extends EventTarget {
     getCurrentSearchResults(): SearchResult[];
     getTrackList(): TlTrack[];
     getBreadCrumbs(): BrowseFilterBreadCrumbs;
+    getView (): Views;
 }
 
 export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
@@ -54,6 +55,7 @@ export class Model extends EventTarget implements ViewModel {
 
     private allRefs?: Refs;
     private currentRefs?: Refs;
+    private view: Views;
 
     constructor() {
         super();
@@ -237,4 +239,10 @@ export class Model extends EventTarget implements ViewModel {
         this.currentRefs = refs;
         this.dispatchEvent(new Event(EboplayerEvents.currentRefsLoaded));
     }
+
+    setView(view: Views) {
+        this.view = view;
+        this.dispatchEvent(new Event(EboplayerEvents.viewChanged));
+    }
+    getView = () => this.view;
 }

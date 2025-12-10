@@ -159,9 +159,9 @@ export class EboButtonBar extends EboComponent {
     }
 
     updateWhenConnected() {
+        if(!this.track)
+            return;
         if(this.playing) {
-            if(!this.track)
-                return;
             if(this.track.type == TrackType.Stream)
                 this.setPlayButton('Stop', 'fa-stop');
             else
@@ -184,13 +184,15 @@ export class EboButtonBar extends EboComponent {
         wrapper.classList.toggle("playing", this.playing);
         let titleEl = this.shadow.getElementById("title");
         titleEl.textContent = "";
-        let title: string;
-        if(this.track)  {
-            if(this.track.type == TrackType.Stream)
-                title = this.track.name;
-            else if(this.track.type == TrackType.File)
-                title = this.track.title;
-            titleEl.textContent = title;
+        if(this.show_info) {
+            let title: string;
+            if (this.track) {
+                if (this.track.type == TrackType.Stream)
+                    title = this.track.name;
+                else if (this.track.type == TrackType.File)
+                    title = this.track.title;
+                titleEl.textContent = title;
+            }
         }
     }
 
