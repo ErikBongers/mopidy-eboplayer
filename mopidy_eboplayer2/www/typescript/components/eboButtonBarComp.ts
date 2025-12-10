@@ -13,10 +13,9 @@ export class EboButtonBar extends EboComponent {
     }
     static readonly tagName=  "ebo-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["playing", "img", "track_title", "show_info", "volume"];
+    static observedAttributes = ["playing", "img", "show_info", "volume"];
     private playing: boolean = false;
     private show_info: boolean = false;
-    private track_title: string = "";
     private img: string;
     private isVolumeSliding: boolean = false;
     private volume: number = 0;
@@ -45,12 +44,10 @@ export class EboButtonBar extends EboComponent {
                     padding-right: .5ch;
                 }
             }
-            #wrapper {
+            #buttonBar {
                 display: flex;
                 justify-content: center;
                 align-items: center;
-                padding-top: .5em;
-                padding-bottom: .5em;
             }
             #volumeSlider {
                 width: 100px;
@@ -77,6 +74,18 @@ export class EboButtonBar extends EboComponent {
                     border-radius: 7px;
                 }
             }
+            #wrapper {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding-top: .5em;
+                padding-bottom: .5em;
+            }
+            #title {
+                font-size: .7em;
+            }
         </style>
     `;
     //todo: make a html (or style) template literal function to inject opacity and such.
@@ -85,13 +94,18 @@ export class EboButtonBar extends EboComponent {
 
     static htmlText = `
         <div id="wrapper">
-            <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
+            <div id="info">
+                <span id="title">sdfsdf sdfsdf </span>
+            </div>
             <div id="buttonBar">
-                <button id="btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
-                <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
-                <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
-                <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
-                <button id="btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+                <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
+                <div id="buttonBar">
+                    <button id="btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
+                    <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
+                    <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
+                    <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
+                    <button id="btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+                </div>
             </div>
         </div>
         `;
@@ -105,7 +119,6 @@ export class EboButtonBar extends EboComponent {
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "img":
-            case "track_title":
                 this[name] = newValue;
                 break;
             case "volume":
@@ -169,6 +182,16 @@ export class EboButtonBar extends EboComponent {
         }
         let wrapper = this.shadow.getElementById("wrapper");
         wrapper.classList.toggle("playing", this.playing);
+        let titleEl = this.shadow.getElementById("title");
+        titleEl.textContent = "";
+        let title: string;
+        if(this.track)  {
+            if(this.track.type == TrackType.Stream)
+                title = this.track.name;
+            else if(this.track.type == TrackType.File)
+                title = this.track.title;
+            titleEl.textContent = title;
+        }
     }
 
     private setPlayButton(title: string, addClass: string) {
