@@ -1,0 +1,3621 @@
+//#region mopidy_eboplayer2/www/typescript/eventEmitter.ts
+var EventEmitter = class {
+	listeners = [];
+	supervisors = [];
+	emit(eventName, ...data) {
+		this.listeners.filter(({ name }) => name === eventName).forEach(({ callback }) => {
+			setTimeout(() => callback.call(this, ...data), 0);
+		});
+		this.supervisors.forEach((callback) => {
+			setTimeout(() => callback.call(this, ...data), 0);
+		});
+	}
+	on(name, callback) {
+		if (typeof name === "string" && typeof callback === "function") {
+			this.listeners.push({
+				name,
+				callback
+			});
+			return;
+		}
+		if (typeof name === "function") this.supervisors.push(name);
+	}
+	off(eventName, callback) {
+		this.removeListener(eventName, callback);
+	}
+	destroy() {
+		this.listeners.length = 0;
+	}
+	removeAllListeners(eventName) {
+		if (!eventName) {
+			this.listeners.length = 0;
+			return;
+		}
+		this.listeners = this.listeners.filter((listener) => !(listener.name === eventName));
+	}
+	removeListener(eventName, callback) {
+		this.listeners = this.listeners.filter((listener) => !(listener.name === eventName && listener.callback === callback));
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/jsonRpcController.ts
+function snakeToCamel(name) {
+	return name.replace(/(_[a-z])/g, (match) => match.toUpperCase().replace("_", ""));
+}
+var JsonRpcController = class JsonRpcController extends EventEmitter {
+	_pendingRequests;
+	_webSocket;
+	webSocketUrl;
+	constructor(webSocketUrl) {
+		super();
+		this.webSocketUrl = webSocketUrl;
+		this._pendingRequests = {};
+		this._webSocket = null;
+		this.hookUpEvents();
+	}
+	hookUpEvents() {
+		this.on("websocket:close", this.cleanup);
+		this.on("websocket:error", this.handleWebSocketError);
+		this.on("websocket:incomingMessage", this.handleMessage);
+	}
+	connect() {
+		if (this._webSocket) {
+			if (this._webSocket.readyState === WebSocket.OPEN) return;
+			this._webSocket.close();
+		}
+		this._webSocket = new WebSocket(this.webSocketUrl);
+		this._webSocket.onclose = (close) => {
+			this.emit("websocket:close", close);
+		};
+		this._webSocket.onerror = (error) => {
+			this.emit("websocket:error", error);
+		};
+		this._webSocket.onopen = () => {
+			this.emit("websocket:open");
+		};
+		this._webSocket.onmessage = (message) => {
+			this.emit("websocket:incomingMessage", message);
+		};
+	}
+	cleanup(closeEvent) {
+		Object.keys(this._pendingRequests).forEach((requestId) => {
+			const { reject } = this._pendingRequests[requestId];
+			delete this._pendingRequests[requestId];
+			const error = new ConnectionError("WebSocket closed");
+			error.closeEvent = closeEvent;
+			reject(error);
+		});
+	}
+	close() {
+		if (this._webSocket) this._webSocket.close();
+	}
+	handleWebSocketError(error) {
+		console.warn("WebSocket error:", error.stack || error);
+	}
+	send(message) {
+		switch (this._webSocket.readyState) {
+			case WebSocket.CONNECTING: return Promise.reject(new ConnectionError("WebSocket is still connecting"));
+			case WebSocket.CLOSING: return Promise.reject(new ConnectionError("WebSocket is closing"));
+			case WebSocket.CLOSED: return Promise.reject(new ConnectionError("WebSocket is closed"));
+			default: return new Promise((resolve, reject) => {
+				const jsonRpcMessage = {
+					...message,
+					jsonrpc: "2.0",
+					id: this._nextRequestId()
+				};
+				this._pendingRequests[jsonRpcMessage.id] = {
+					resolve,
+					reject
+				};
+				this._webSocket.send(JSON.stringify(jsonRpcMessage));
+				this.emit("websocket:outgoingMessage", jsonRpcMessage);
+			});
+		}
+	}
+	handleMessage(message) {
+		try {
+			const data = JSON.parse(message.data);
+			if (Object.hasOwnProperty.call(data, "id")) this.handleRpcResponse(data);
+			else if (Object.hasOwnProperty.call(data, "event")) this.handleEvent(data);
+			else console.warn(`Unknown message type received. Message was: ${message.data}`);
+		} catch (error) {
+			if (error instanceof SyntaxError) console.warn(`WebSocket message parsing failed. Message was: ${message.data}`);
+			else throw error;
+		}
+	}
+	handleRpcResponse(responseMessage) {
+		if (!Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)) {
+			console.warn("Unexpected response received. Message was:", responseMessage);
+			return;
+		}
+		const { resolve, reject } = this._pendingRequests[responseMessage.id];
+		delete this._pendingRequests[responseMessage.id];
+		if (Object.hasOwnProperty.call(responseMessage, "result")) resolve(responseMessage.result);
+		else if (Object.hasOwnProperty.call(responseMessage, "error")) {
+			const error = new ServerError(responseMessage.error.message);
+			error.code = responseMessage.error.code;
+			error.data = responseMessage.error.data;
+			reject(error);
+			console.warn("Server returned error:", responseMessage.error);
+		} else {
+			const error = new OtherError("Response without 'result' or 'error' received");
+			error.data = { response: responseMessage };
+			reject(error);
+			console.warn("Response without 'result' or 'error' received. Message was:", responseMessage);
+		}
+	}
+	handleEvent(eventMessage) {
+		const data = { ...eventMessage };
+		delete data.event;
+		const eventName = `event:${snakeToCamel(eventMessage.event)}`;
+		this.emit("event", [eventName, data]);
+		this.emit(eventName, data);
+	}
+	static idCounter = -1;
+	_nextRequestId() {
+		return ++JsonRpcController.idCounter;
+	}
+};
+var ConnectionError = class extends Error {
+	closeEvent;
+	constructor(message) {
+		super(message);
+		this.name = "ConnectionError";
+	}
+};
+var ServerError = class extends Error {
+	code;
+	data;
+	constructor(message) {
+		super(message);
+		this.name = "ServerError";
+	}
+};
+var OtherError = class extends Error {
+	data;
+	constructor(message) {
+		super(message);
+		this.name = "OtherError";
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/js/mopidy.ts
+let models;
+(function(_models) {
+	class TlTrack {
+		tlid;
+		track;
+	}
+	_models.TlTrack = TlTrack;
+	class Track {
+		uri;
+		name;
+		artists;
+		album;
+		composers;
+		performers;
+		genre;
+		track_no;
+		disc_no;
+		date;
+		length;
+		bitrate;
+		comment;
+		musicbrainz_id;
+		last_modified;
+	}
+	_models.Track = Track;
+	class Playlist {
+		uri;
+		name;
+		tracks;
+		last_modified;
+		length;
+	}
+	_models.Playlist = Playlist;
+	class Ref {
+		uri;
+		name;
+		type;
+	}
+	_models.Ref = Ref;
+})(models || (models = {}));
+var Mopidy = class {
+	_options;
+	_backoffDelay;
+	rpcController;
+	constructor(options) {
+		this._options = this._configure({
+			backoffDelayMin: 1e3,
+			backoffDelayMax: 64e3,
+			autoConnect: true,
+			webSocketUrl: "",
+			...options
+		});
+		this._backoffDelay = this._options.backoffDelayMin;
+		this.rpcController = new JsonRpcController(this._options.webSocketUrl);
+		this._delegateEvents();
+		if (this._options.autoConnect) this.connect();
+	}
+	connect() {
+		this.rpcController.connect();
+	}
+	on(name, callback) {
+		this.rpcController?.on(name, callback);
+	}
+	_configure(options) {
+		if (options.webSocketUrl) return options;
+		let protocol = typeof document !== "undefined" && document.location.protocol === "https:" ? "wss://" : "ws://";
+		let currentHost = typeof document !== "undefined" && document.location.host || "localhost";
+		options.webSocketUrl = `${protocol}${currentHost}/mopidy/ws`;
+		return options;
+	}
+	_delegateEvents() {
+		this.rpcController.on("websocket:close", (closeEvent) => this._cleanup(closeEvent));
+		this.rpcController.on("websocket:open", () => this._resetBackoffDelay());
+		this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
+		this.rpcController.on("state:offline", () => this._reconnect());
+	}
+	eventOff(eventName, callback) {
+		if (!eventName) {
+			this.rpcController.removeAllListeners();
+			return;
+		}
+		if (!callback) {
+			this.rpcController.removeAllListeners(eventName);
+			return;
+		}
+		this.rpcController.removeListener(eventName, callback);
+	}
+	_cleanup(closeEvent) {
+		this.rpcController.emit("state", "state:offline");
+		this.rpcController.emit("state:offline");
+	}
+	_reconnect() {
+		setTimeout(() => {
+			this.rpcController.emit("state", ["reconnectionPending", { timeToAttempt: this._backoffDelay }]);
+			this.rpcController.emit("reconnectionPending", { timeToAttempt: this._backoffDelay });
+			setTimeout(() => {
+				this.rpcController.emit("state", "reconnecting");
+				this.rpcController.emit("reconnecting");
+				this.rpcController.connect();
+			}, this._backoffDelay);
+			this._backoffDelay *= 2;
+			if (this._backoffDelay > this._options.backoffDelayMax) this._backoffDelay = this._options.backoffDelayMax;
+		}, 0);
+	}
+	_resetBackoffDelay() {
+		this._backoffDelay = this._options.backoffDelayMin;
+	}
+	close() {
+		this.eventOff("state:offline", this._reconnect);
+		if (this.rpcController) this.rpcController.close();
+	}
+	send(message) {
+		return this.rpcController?.send(message);
+	}
+	_onWebsocketOpen() {
+		this.rpcController.emit("state", "state:online");
+		this.rpcController.emit("state:online");
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/timer.ts
+let now = function() {
+	return (/* @__PURE__ */ new Date()).getTime();
+};
+var ProgressTimer = class {
+	callback;
+	fallbackTargetFrameRate = 30;
+	disableRequestAnimationFrame = false;
+	_updateId = null;
+	_state = null;
+	_schedule;
+	_cancel;
+	constructor(options) {
+		if (typeof options === "function") this.callback = options;
+		else {
+			this.callback = options.callback;
+			this.fallbackTargetFrameRate = options.fallbackTargetFrameRate;
+			this.disableRequestAnimationFrame = options.disableRequestAnimationFrame;
+		}
+		this._updateId = null;
+		this._state = null;
+		let frameDuration = 1e3 / this.fallbackTargetFrameRate;
+		let useFallback = typeof window.requestAnimationFrame === "undefined" || typeof window.cancelAnimationFrame === "undefined" || options["disableRequestAnimationFrame"] || false;
+		let update = this._update.bind(this);
+		if (useFallback) {
+			this._schedule = function(timestamp) {
+				let timeout = Math.max(timestamp + frameDuration - now(), 0);
+				return window.setTimeout(update, Math.floor(timeout));
+			};
+			this._cancel = window.clearTimeout.bind(window);
+		} else {
+			this._schedule = window.requestAnimationFrame.bind(window, update);
+			this._cancel = window.cancelAnimationFrame.bind(window);
+		}
+		this.reset();
+	}
+	set(position, duration = void 0) {
+		if (!duration) duration = this._state.duration;
+		duration = Math.floor(Math.max(duration === null ? Infinity : duration || Infinity, 0));
+		position = Math.floor(Math.min(Math.max(position || 0, 0), duration));
+		this._state = {
+			initialTimestamp: null,
+			initialPosition: position,
+			position,
+			duration
+		};
+		if (this._updateId === null) this.callback(position, duration);
+		return this;
+	}
+	start() {
+		if (this._updateId === null) this._updateId = this._schedule(0);
+		return this;
+	}
+	stop() {
+		if (this._updateId !== null) {
+			this._cancel(this._updateId);
+			this.set(this._state.position, this._state.duration);
+			this._updateId = null;
+		}
+		return this;
+	}
+	reset() {
+		return this.stop().set(0, Infinity);
+	}
+	_update(timestamp) {
+		let state$1 = this._state;
+		timestamp = timestamp || now();
+		state$1.initialTimestamp = state$1.initialTimestamp || timestamp;
+		state$1.position = state$1.initialPosition + timestamp - state$1.initialTimestamp;
+		let userPosisition = Math.min(Math.floor(state$1.position), state$1.duration);
+		this.callback(userPosisition, state$1.duration);
+		this._updateId = this._schedule(timestamp);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/synced_timer.ts
+var SYNC_STATE = /* @__PURE__ */ function(SYNC_STATE$1) {
+	SYNC_STATE$1[SYNC_STATE$1["NOT_SYNCED"] = 0] = "NOT_SYNCED";
+	SYNC_STATE$1[SYNC_STATE$1["SYNCING"] = 1] = "SYNCING";
+	SYNC_STATE$1[SYNC_STATE$1["SYNCED"] = 2] = "SYNCED";
+	return SYNC_STATE$1;
+}(SYNC_STATE || {});
+var SyncedProgressTimer = class SyncedProgressTimer {
+	_maxAttempts;
+	_mopidy;
+	syncState = SYNC_STATE.NOT_SYNCED;
+	_isSyncScheduled = false;
+	_scheduleID = null;
+	_syncAttemptsRemaining;
+	_previousSyncPosition = null;
+	_duration = null;
+	_isConnected = false;
+	positionNode;
+	durationNode;
+	_progressTimer;
+	constructor(maxAttempts, mopidy) {
+		this._maxAttempts = maxAttempts;
+		this._mopidy = mopidy;
+		this._syncAttemptsRemaining = this._maxAttempts;
+		this.positionNode = document.createTextNode("");
+		this.durationNode = document.createTextNode("");
+		this._progressTimer = new ProgressTimer((position, duration) => {
+			this.timerCallback(position, duration);
+		});
+	}
+	static format(milliseconds) {
+		if (milliseconds === Infinity) return "";
+		else if (milliseconds === 0) return "0:00";
+		let seconds = Math.floor(milliseconds / 1e3);
+		const minutes = Math.floor(seconds / 60);
+		seconds = seconds % 60;
+		let secondString = seconds < 10 ? "0" + seconds : seconds.toString();
+		return minutes + ":" + secondString;
+	}
+	timerCallback(position, duration) {
+		this._update(position);
+		if (this._isSyncScheduled && this._isConnected) this._doSync(position, duration);
+	}
+	_update(position) {
+		switch (this.syncState) {
+			case SYNC_STATE.NOT_SYNCED:
+				this.positionNode.nodeValue = "(wait)";
+				break;
+			case SYNC_STATE.SYNCING:
+				this.positionNode.nodeValue = "(sync)";
+				break;
+			case SYNC_STATE.SYNCED:
+				this._previousSyncPosition = position;
+				this.positionNode.nodeValue = SyncedProgressTimer.format(position);
+				break;
+		}
+	}
+	_scheduleSync(milliseconds) {
+		clearTimeout(this._scheduleID);
+		this._isSyncScheduled = false;
+		if (milliseconds >= 0) this._scheduleID = setTimeout(() => {
+			this._isSyncScheduled = true;
+		}, milliseconds);
+	}
+	_doSync(position, duration) {}
+	set(position, duration = void 0) {
+		this.syncState = SYNC_STATE.NOT_SYNCED;
+		this._syncAttemptsRemaining = this._maxAttempts;
+		if (this._duration && this._duration < position) position = this._duration - 1;
+		if (arguments.length === 1) this._progressTimer.set(position);
+		else {
+			this._duration = duration;
+			this._progressTimer.set(position, duration);
+			this.durationNode.nodeValue = SyncedProgressTimer.format(duration);
+		}
+		this.updatePosition(position);
+		return this;
+	}
+	start() {
+		this.syncState = SYNC_STATE.NOT_SYNCED;
+		this._scheduleSync(0);
+		this._progressTimer.start();
+		return this;
+	}
+	stop() {
+		this._progressTimer.stop();
+		this._scheduleSync(-1);
+		if (this.syncState !== SYNC_STATE.SYNCED && this._previousSyncPosition) this.positionNode.nodeValue = SyncedProgressTimer.format(this._previousSyncPosition);
+		return this;
+	}
+	reset() {
+		this.stop();
+		this.set(0, Infinity);
+		return this;
+	}
+	updatePosition(position) {
+		if (!(this._duration === Infinity && position === 0)) this.positionNode.nodeValue = SyncedProgressTimer.format(position);
+		else this.positionNode.nodeValue = "";
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/playerState.ts
+var State = class {
+	mopidy;
+	syncedProgressTimer;
+	play = false;
+	random = false;
+	repeat = false;
+	consume = false;
+	single = false;
+	mute = false;
+	positionChanging = false;
+	popupData = {};
+	songlength = 0;
+	streamUris = {};
+	playlists = {};
+	customTracklists = [];
+	model;
+	controller;
+	constructor(mopidy, syncedProgressTimer, model, controller) {
+		this.mopidy = mopidy;
+		this.syncedProgressTimer = syncedProgressTimer;
+		this.model = model;
+		this.controller = controller;
+	}
+	views = [];
+	getModel = () => this.model;
+	getController = () => this.controller;
+	addViews(...views) {
+		this.views.push(...views);
+		views.forEach((v) => v.bindRecursive());
+	}
+	async getRequiredData() {
+		let requiredData = /* @__PURE__ */ new Set();
+		this.views.forEach((v) => {
+			v.getRequiredDataTypesRecursive().forEach((dataType) => requiredData.add(dataType));
+		});
+		this.controller.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
+		for (const dataType of requiredData) {
+			await this.controller.mopidyProxy.fetchRequiredData(dataType);
+			await this.controller.webProxy.fetchRequiredData(dataType);
+		}
+		this.controller.localStorageProxy.loadCurrentBrowseFilter();
+		this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
+		this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
+			this.controller.filterBrowseResults();
+		});
+	}
+};
+let state = void 0;
+function setState(newState) {
+	state = newState;
+}
+const getState = () => state;
+var playerState_default = getState;
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/breadCrumb.ts
+var BreadCrumb = class BreadCrumb {
+	id;
+	label;
+	data;
+	type;
+	static nextId = 1;
+	constructor(label, value, type) {
+		this.label = label;
+		this.data = value;
+		this.id = BreadCrumb.nextId++;
+		this.type = type;
+	}
+};
+var BreadCrumbStack = class {
+	breadCrumbStack = [];
+	push(crumb) {
+		this.breadCrumbStack.push(crumb);
+	}
+	pop() {
+		return this.breadCrumbStack.pop();
+	}
+	list = () => this.breadCrumbStack;
+	resetTo(id) {
+		let index = this.breadCrumbStack.findIndex((breadCrumb, index$1, obj) => {
+			return breadCrumb.id == id;
+		});
+		this.breadCrumbStack = this.breadCrumbStack.slice(0, index + 1);
+	}
+	clear() {
+		this.breadCrumbStack = [];
+	}
+	getLast() {
+		if (this.breadCrumbStack.length == 0) return void 0;
+		return this.breadCrumbStack[this.breadCrumbStack.length - 1];
+	}
+	get(id) {
+		return this.breadCrumbStack.find((crumb) => crumb.id == id);
+	}
+	setArray(breadCrumbsArray) {
+		this.breadCrumbStack = breadCrumbsArray;
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/modelTypes.ts
+let TrackType = /* @__PURE__ */ function(TrackType$1) {
+	TrackType$1[TrackType$1["None"] = 0] = "None";
+	TrackType$1[TrackType$1["File"] = 1] = "File";
+	TrackType$1[TrackType$1["Stream"] = 2] = "Stream";
+	return TrackType$1;
+}({});
+var BreadCrumbBrowseFilter = class extends BreadCrumb {
+	constructor(label, filter) {
+		super(label, filter, "browseFilter");
+	}
+};
+var BreadCrumbRef = class extends BreadCrumb {
+	constructor(label, ref) {
+		super(label, ref, "ref");
+	}
+};
+var BrowseFilter = class {
+	searchText;
+	album;
+	track;
+	radio;
+	artist;
+	playlist;
+	genre;
+	constructor() {
+		this.searchText = "";
+		this.track = false;
+		this.artist = false;
+		this.genre = false;
+		this.radio = false;
+		this.playlist = false;
+		this.album = false;
+	}
+	isNoTypeSelected() {
+		return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
+	}
+};
+let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
+	EboplayerEvents$1["volumeChanged"] = "eboplayer.volumeChanged";
+	EboplayerEvents$1["connectionChanged"] = "eboplayer.connectionChanged";
+	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
+	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
+	EboplayerEvents$1["currentTrackChanged"] = "eboplayer.currentTrackChanged";
+	EboplayerEvents$1["selectedTrackChanged"] = "eboplayer.selectedTrackChanged";
+	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
+	EboplayerEvents$1["historyChanged"] = "eboplayer.historyChanged";
+	EboplayerEvents$1["trackListChanged"] = "eboplayer.trackListChanged";
+	EboplayerEvents$1["browseFilterChanged"] = "eboplayer.browseFilterChanged";
+	EboplayerEvents$1["currentRefsLoaded"] = "eboplayer.currentRefsLoaded";
+	EboplayerEvents$1["refsFiltered"] = "eboplayer.refsFiltered";
+	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
+	EboplayerEvents$1["breadCrumbsChanged"] = "eboplayer.breadCrumbsChanged";
+	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
+	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
+	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
+	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
+	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
+	return EboplayerEvents$1;
+}({});
+let ConnectionState = /* @__PURE__ */ function(ConnectionState$1) {
+	ConnectionState$1[ConnectionState$1["Offline"] = 0] = "Offline";
+	ConnectionState$1[ConnectionState$1["Online"] = 1] = "Online";
+	return ConnectionState$1;
+}({});
+let MessageType = /* @__PURE__ */ function(MessageType$1) {
+	MessageType$1[MessageType$1["None"] = 0] = "None";
+	MessageType$1[MessageType$1["Info"] = 1] = "Info";
+	MessageType$1[MessageType$1["Warning"] = 2] = "Warning";
+	MessageType$1[MessageType$1["Error"] = 3] = "Error";
+	return MessageType$1;
+}({});
+let PlayState = /* @__PURE__ */ function(PlayState$1) {
+	PlayState$1["stopped"] = "stopped";
+	PlayState$1["playing"] = "playing";
+	PlayState$1["paused"] = "paused";
+	return PlayState$1;
+}({});
+let AlbumDataType = /* @__PURE__ */ function(AlbumDataType$1) {
+	AlbumDataType$1[AlbumDataType$1["None"] = 0] = "None";
+	AlbumDataType$1[AlbumDataType$1["Loading"] = 1] = "Loading";
+	AlbumDataType$1[AlbumDataType$1["Loaded"] = 2] = "Loaded";
+	AlbumDataType$1[AlbumDataType$1["StreamLinesLoaded"] = 3] = "StreamLinesLoaded";
+	return AlbumDataType$1;
+}({});
+const AlbumNone = { type: AlbumDataType.None };
+AlbumDataType.Loading;
+let Views = /* @__PURE__ */ function(Views$1) {
+	Views$1["NowPlaying"] = "#NowPlaying";
+	Views$1["Browse"] = "#Browse";
+	Views$1["Album"] = "#Album";
+	return Views$1;
+}({});
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/model.ts
+var Model = class extends EventTarget {
+	static NoTrack = { type: TrackType.None };
+	currentTrack;
+	selectedTrack;
+	volume;
+	connectionState = ConnectionState.Offline;
+	currentMessage = {
+		type: MessageType.None,
+		message: ""
+	};
+	playbackModesState = {
+		repeat: false,
+		random: false,
+		consume: false,
+		single: false
+	};
+	playState;
+	activeStreamLines;
+	history;
+	trackList = [];
+	libraryCache = /* @__PURE__ */ new Map();
+	currentBrowseFilter = new BrowseFilter();
+	filterBreadCrumbStack = new BreadCrumbStack();
+	allRefs;
+	currentRefs;
+	view;
+	constructor() {
+		super();
+	}
+	pushBreadCrumb(crumb) {
+		this.filterBreadCrumbStack.push(crumb);
+		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+	}
+	popBreadCrumb() {
+		let crumb = this.filterBreadCrumbStack.pop();
+		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+		return crumb;
+	}
+	getBreadCrumbs = () => this.filterBreadCrumbStack;
+	resetBreadCrumbsTo(id) {
+		this.filterBreadCrumbStack.resetTo(id);
+		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+	}
+	clearBreadCrumbs() {
+		this.filterBreadCrumbStack.clear();
+		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+	}
+	setAllRefs(refs) {
+		this.allRefs = refs;
+	}
+	getCurrentSearchResults() {
+		return this.currentRefs?.getSearchResults() ?? [];
+	}
+	getAllRefs = () => this.allRefs;
+	filterCurrentRefs() {
+		if (!this.currentRefs) return;
+		this.currentRefs.browseFilter = this.currentBrowseFilter;
+		this.currentRefs.filter();
+		this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
+	}
+	setConnectionState(state$1) {
+		this.connectionState = state$1;
+		if (this.connectionState == ConnectionState.Online) this.clearMessage();
+		else this.setErrorMessage("Offline");
+		this.dispatchEvent(new Event(EboplayerEvents.connectionChanged));
+	}
+	getConnectionState = () => this.connectionState;
+	getTrackInfo(uri) {
+		return this.libraryCache.get(uri);
+	}
+	getCurrentBrowseFilter = () => this.currentBrowseFilter;
+	setCurrentBrowseFilter(browseFilter) {
+		this.currentBrowseFilter = browseFilter;
+		this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
+	}
+	setBrowseFilterBreadCrumbs(breadCrumbStack) {
+		this.filterBreadCrumbStack = breadCrumbStack;
+		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+	}
+	getCurrentTrack() {
+		return this.currentTrack;
+	}
+	setCurrentTrack(track) {
+		if (track.type == TrackType.None) {
+			this.currentTrack = void 0;
+			return;
+		}
+		this.currentTrack = track.track.uri;
+		this.addToLibraryCache(this.currentTrack, [track.track]);
+		this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
+	}
+	getSelectedTrack = () => this.selectedTrack;
+	setSelectedTrack(uri) {
+		if (uri == "") this.selectedTrack = void 0;
+		else this.selectedTrack = uri;
+		this.dispatchEvent(new Event(EboplayerEvents.selectedTrackChanged));
+	}
+	setVolume(volume) {
+		this.volume = volume;
+		this.dispatchEvent(new Event(EboplayerEvents.volumeChanged));
+	}
+	setMessage(message) {
+		this.currentMessage = message;
+		this.dispatchEvent(new Event(EboplayerEvents.messageChanged));
+	}
+	getCurrentMessage = () => this.currentMessage;
+	clearMessage() {
+		this.setMessage({
+			type: MessageType.None,
+			message: ""
+		});
+	}
+	setInfoMessage(message) {
+		this.setMessage({
+			type: MessageType.Info,
+			message
+		});
+	}
+	setWarningMessage(message) {
+		this.setMessage({
+			type: MessageType.Warning,
+			message
+		});
+	}
+	setErrorMessage(message) {
+		this.setMessage({
+			type: MessageType.Error,
+			message
+		});
+	}
+	setPlaybackState(state$1) {
+		this.playbackModesState = { ...state$1 };
+		this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
+	}
+	getVolume = () => this.volume;
+	getPlayState() {
+		return this.playState;
+	}
+	setPlayState(state$1) {
+		this.playState = state$1;
+		this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
+	}
+	setActiveStreamLinesHistory(streamTitles) {
+		if (!streamTitles) return;
+		streamTitles.active_titles = Object.values(streamTitles.active_titles);
+		this.activeStreamLines = streamTitles;
+		this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
+	}
+	getActiveStreamLines = () => this.activeStreamLines;
+	setHistory(history) {
+		this.history = history;
+		this.dispatchEvent(new Event(EboplayerEvents.historyChanged));
+	}
+	getHistory = () => this.history;
+	setTrackList(trackList) {
+		this.trackList = trackList;
+		this.dispatchEvent(new Event(EboplayerEvents.trackListChanged));
+	}
+	getTrackList = () => this.trackList;
+	addToLibraryCache(uri, item) {
+		if (!this.libraryCache.has(uri)) this.libraryCache.set(uri, item);
+	}
+	updateLibraryCache(uri, item) {
+		this.libraryCache.set(uri, item);
+	}
+	addDictToLibraryCache(dict) {
+		for (let key in dict) this.updateLibraryCache(key, dict[key]);
+	}
+	getTrackFromCache(uri) {
+		return this.libraryCache.get(uri);
+	}
+	setCurrentRefs(refs) {
+		this.currentRefs = refs;
+		this.dispatchEvent(new Event(EboplayerEvents.currentRefsLoaded));
+	}
+	setView(view) {
+		this.view = view;
+		this.dispatchEvent(new Event(EboplayerEvents.viewChanged));
+	}
+	getView = () => this.view;
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/dataRequester.ts
+var NestedDataRequester = class {
+	_children = [];
+	getRequiredDataTypesRecursive() {
+		return [...this.getRequiredDataTypes(), ...this._children.map((child) => child.getRequiredDataTypesRecursive()).flat()];
+	}
+	addChildren(...children) {
+		this._children.push(...children);
+	}
+	get children() {
+		return this._children;
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/view.ts
+let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
+	EboPlayerDataType$1[EboPlayerDataType$1["Volume"] = 0] = "Volume";
+	EboPlayerDataType$1[EboPlayerDataType$1["CurrentTrack"] = 1] = "CurrentTrack";
+	EboPlayerDataType$1[EboPlayerDataType$1["PlayState"] = 2] = "PlayState";
+	EboPlayerDataType$1[EboPlayerDataType$1["StreamLines"] = 3] = "StreamLines";
+	EboPlayerDataType$1[EboPlayerDataType$1["TrackList"] = 4] = "TrackList";
+	return EboPlayerDataType$1;
+}({});
+var View = class extends NestedDataRequester {
+	static getSubId(parentId, subId) {
+		return document.getElementById(`${parentId}.${subId}`);
+	}
+	bindRecursive() {
+		this.children.forEach((child) => child.bindRecursive());
+		this.bind();
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/headerView.ts
+var HeaderView = class extends View {
+	bind() {
+		playerState_default().getModel().addEventListener(EboplayerEvents.messageChanged, () => {
+			this.onMessageChanged();
+		});
+	}
+	onMessageChanged() {
+		let msg = playerState_default().getModel().getCurrentMessage();
+		let headerSpan = document.getElementById("contentHeadline");
+		headerSpan.innerText = msg.message;
+		switch (msg.type) {
+			case MessageType.Error:
+				headerSpan.classList.add("warning");
+				break;
+			default:
+				headerSpan.classList.remove("warning", "error");
+				break;
+		}
+	}
+	getRequiredDataTypes() {
+		return [];
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/functionsvars.ts
+const HOSTNAME = document.body.dataset.hostname;
+/** ****************
+* Modal dialogs  *
+******************/
+function showLoading(on) {}
+function validUri(uri) {
+	return /^(http|https|mms|rtmp|rtmps|rtsp):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(uri);
+}
+function jsonParse(data, defaultValue) {
+	try {
+		return JSON.parse(data);
+	} catch (e) {
+		console.error(e);
+		return defaultValue;
+	}
+}
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/library.ts
+let library = {
+	searchPressed: function(key) {
+		return true;
+	},
+	initSearch: function() {},
+	processSearchResults: function(resultArr) {},
+	getPlaylists: function() {},
+	getBrowseDir: function(rootdir) {},
+	togglePlaylists: function() {
+		return true;
+	},
+	showTracklist: function(uri) {
+		return false;
+	},
+	showArtist: function(nwuri, mopidy) {
+		return false;
+	},
+	showAlbum: function(uri, mopidy) {},
+	getSearchSchemes: function(searchBlacklist, mopidy) {}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/global.ts
+function quadratic100(x) {
+	return x * x / 100;
+}
+function inverseQuadratic100(y) {
+	return Math.floor(Math.sqrt(y * 100));
+}
+function numberedDictToArray(dict, converter) {
+	let length = dict["length"];
+	let array = [];
+	for (let index = 0; index < length; index++) {
+		let line = dict[index.toString()];
+		array.push(line);
+	}
+	if (!converter) return array;
+	return array.map(converter);
+}
+function getHostAndPort() {
+	let hostName = document.body.dataset.hostname;
+	if (!hostName.startsWith("{{")) return hostName;
+	hostName = localStorage.getItem("eboplayer.hostName");
+	if (hostName) return hostName;
+	return document.location.host;
+}
+function isStream(track) {
+	return track?.track_no == void 0;
+}
+function transformTrackDataToModel(track) {
+	if (!track) return { type: TrackType.None };
+	if (isStream(track)) return {
+		type: TrackType.Stream,
+		track,
+		name: track.name,
+		infoLines: []
+	};
+	let model = {
+		type: TrackType.File,
+		composer: "",
+		track,
+		title: track.name,
+		performer: "",
+		songlenght: 0
+	};
+	if (!track.name || track.name === "") {
+		let parts = track.uri.split("/");
+		model.title = decodeURI(parts[parts.length - 1]);
+	}
+	if (validUri(track.name)) for (let key in playerState_default().streamUris) {
+		let rs = playerState_default().streamUris[key];
+		if (rs && rs[1] === track.name) model.title = rs[0] || rs[1];
+	}
+	if (!track.length || track.length === 0) model.songlenght = playerState_default().songlength = Infinity;
+	else model.songlenght = playerState_default().songlength = track.length;
+	return model;
+}
+function transformLibraryItem(item) {
+	if (item.length == 1) return transformTrackDataToModel(item[0]);
+}
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/process_ws.ts
+function transformTlTrackDataToModel(tlTrack) {
+	return transformTrackDataToModel(tlTrack?.track);
+}
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/commands.ts
+var Commands = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+		this.core.commands = this;
+		this.core.history.commands = this;
+		this.core.library.commands = this;
+		this.core.mixer.commands = this;
+		this.core.playback.commands = this;
+		this.core.playlists.commands = this;
+		this.core.tracklist.commands = this;
+	}
+	send(method, params) {
+		if (params) return this.mopidy.send({
+			method,
+			params
+		});
+		else return this.mopidy.send({ method });
+	}
+	core = {
+		commands: void 0,
+		getUriSchemes() {
+			return this.commands.send("core.get_uri_schemes");
+		},
+		getVersion() {
+			return this.commands.send("core.get_version");
+		},
+		history: {
+			commands: void 0,
+			getHistory() {
+				return this.commands.send("core.history.get_history");
+			},
+			getLength() {
+				return this.commands.send("core.history.get_length");
+			}
+		},
+		library: {
+			commands: void 0,
+			browse(uri) {
+				return this.commands.send("core.library.browse", { uri });
+			},
+			getDistinct(field, query) {
+				return this.commands.send("core.library.get_distinct", {
+					field,
+					query
+				});
+			},
+			getImages(uris) {
+				return this.commands.send("core.library.get_images", { uris });
+			},
+			lookup(uris) {
+				return this.commands.send("core.library.lookup", { uris });
+			},
+			refresh(uri) {
+				return this.commands.send("core.library.refresh", { uri });
+			},
+			search(query, uris, exact = false) {
+				return this.commands.send("core.library.search", {
+					query,
+					uris,
+					exact
+				});
+			}
+		},
+		mixer: {
+			commands: void 0,
+			getMute() {
+				return this.commands.send("core.mixer.get_mute");
+			},
+			getVolume() {
+				return this.commands.send("core.mixer.get_volume");
+			},
+			setMute(mute) {
+				return this.commands.send("core.mixer.set_mute", { mute });
+			},
+			setVolume(volume) {
+				return this.commands.send("core.mixer.set_volume", { volume });
+			}
+		},
+		playback: {
+			commands: void 0,
+			getCurrentTlTrack() {
+				return this.commands.send("core.playback.get_current_tl_track");
+			},
+			getCurrentTlid() {
+				return this.commands.send("core.playback.get_current_tlid");
+			},
+			getCurrentTrack() {
+				return this.commands.send("core.playback.get_current_track");
+			},
+			getState() {
+				return this.commands.send("core.playback.get_state");
+			},
+			getStreamTitle() {
+				return this.commands.send("core.playback.get_stream_title");
+			},
+			getTimePosition() {
+				return this.commands.send("core.playback.get_time_position");
+			},
+			next() {
+				return this.commands.send("core.playback.next");
+			},
+			pause() {
+				return this.commands.send("core.playback.pause");
+			},
+			play(tl_track, tlid) {
+				return this.commands.send("core.playback.play", {
+					tl_track,
+					tlid
+				});
+			},
+			previous() {
+				return this.commands.send("core.playback.previous");
+			},
+			resume() {
+				return this.commands.send("core.playback.resume");
+			},
+			seek(time_position) {
+				return this.commands.send("core.playback.seek", { time_position });
+			},
+			setState(new_state) {
+				return this.commands.send("core.playback.set_state", { new_state });
+			},
+			stop() {
+				return this.commands.send("core.playback.stop");
+			}
+		},
+		playlists: {
+			commands: void 0,
+			asList() {
+				return this.commands.send("core.playlists.as_list");
+			},
+			create(name, uri_scheme) {
+				return this.commands.send("core.playlists.create", {
+					name,
+					uri_scheme
+				});
+			},
+			delete(uri) {
+				return this.commands.send("core.playlists.delete", { uri });
+			},
+			getItems(uri) {
+				return this.commands.send("core.playlists.get_items", { uri });
+			},
+			getUriSchemes() {
+				return this.commands.send("core.playlists.get_uri_schemes");
+			},
+			lookup(uri) {
+				return this.commands.send("core.playlists.lookup", { uri });
+			},
+			refresh(uri_scheme) {
+				return this.commands.send("core.playlists.refresh", { uri_scheme });
+			},
+			save(playlist) {
+				return this.commands.send("core.playlists.save", { playlist });
+			}
+		},
+		tracklist: {
+			commands: void 0,
+			add(tracks, at_position, uris) {
+				return this.commands.send("core.tracklist.add", {
+					tracks,
+					at_position,
+					uris
+				});
+			},
+			clear() {
+				return this.commands.send("core.tracklist.clear");
+			},
+			eotTrack(tl_track) {
+				return this.commands.send("core.tracklist.eot_track", { tl_track });
+			},
+			filter(criteria) {
+				return this.commands.send("core.tracklist.filter", { criteria });
+			},
+			getConsume() {
+				return this.commands.send("core.tracklist.get_consume");
+			},
+			getEotTlid() {
+				return this.commands.send("core.tracklist.get_eot_tlid");
+			},
+			getLength() {
+				return this.commands.send("core.tracklist.get_length");
+			},
+			getNextTlid() {
+				return this.commands.send("core.tracklist.get_next_tlid");
+			},
+			getPreviousTlid() {
+				return this.commands.send("core.tracklist.get_previous_tlid");
+			},
+			getRandom() {
+				return this.commands.send("core.tracklist.get_random");
+			},
+			getRepeat() {
+				return this.commands.send("core.tracklist.get_repeat");
+			},
+			getSingle() {
+				return this.commands.send("core.tracklist.get_single");
+			},
+			getTlTracks() {
+				return this.commands.send("core.tracklist.get_tl_tracks");
+			},
+			getTracks() {
+				return this.commands.send("core.tracklist.get_tracks");
+			},
+			getVersion() {
+				return this.commands.send("core.tracklist.get_version");
+			},
+			index(tl_track, tlid) {
+				return this.commands.send("core.tracklist.index", {
+					tl_track,
+					tlid
+				});
+			},
+			move(start, end, to_position) {
+				return this.commands.send("core.tracklist.move", {
+					start,
+					end,
+					to_position
+				});
+			},
+			nextTrack(tl_track) {
+				return this.commands.send("core.tracklist.next_track", { tl_track });
+			},
+			previousTrack(tl_track) {
+				return this.commands.send("core.tracklist.previous_track", { tl_track });
+			},
+			remove(criteria) {
+				return this.commands.send("core.tracklist.remove", { criteria });
+			},
+			setConsume(value) {
+				return this.commands.send("core.tracklist.set_consume", { value });
+			},
+			setRandom(value) {
+				return this.commands.send("core.tracklist.set_random", { value });
+			},
+			setRepeat(value) {
+				return this.commands.send("core.tracklist.set_repeat", { value });
+			},
+			setSingle(value) {
+				return this.commands.send("core.tracklist.set_single", { value });
+			},
+			shuffle(start, end) {
+				return this.commands.send("core.tracklist.shuffle", {
+					start,
+					end
+				});
+			},
+			slice(start, end) {
+				return this.commands.send("core.tracklist.slice", {
+					start,
+					end
+				});
+			}
+		}
+	};
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
+var MopidyProxy = class {
+	controller;
+	model;
+	commands;
+	constructor(controller, model, commands) {
+		this.controller = controller;
+		this.model = model;
+		this.commands = commands;
+	}
+	async fetchRootDirs() {
+		return this.browse(null);
+	}
+	async fetchTracksforArtist() {
+		return await this.commands.core.library.search({ artist: ["Sting"] }, null);
+	}
+	async playTracklistItem(tlid) {
+		await this.commands.core.playback.play(null, tlid);
+	}
+	async addTrackToTracklist(uri) {
+		return await this.commands.core.tracklist.add(null, null, [uri]);
+	}
+	async clearTrackList() {
+		await this.commands.core.tracklist.clear();
+	}
+	async browse(uri) {
+		return await this.commands.core.library.browse(uri);
+	}
+	async sendVolume(value) {
+		await this.commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
+	}
+	async sendStop() {
+		return this.commands.core.playback.stop();
+	}
+	async sendPause() {
+		return this.commands.core.playback.pause();
+	}
+	async sendPlay() {
+		return this.commands.core.playback.play();
+	}
+	async fetchRequiredData(dataType) {
+		switch (dataType) {
+			case EboPlayerDataType.Volume:
+				let volume = await this.commands.core.mixer.getVolume();
+				this.controller.setVolume(volume);
+				break;
+			case EboPlayerDataType.CurrentTrack:
+				let track = await this.commands.core.playback.getCurrentTlTrack();
+				await this.controller.setCurrentTrackAndFetchDetails(track);
+				break;
+			case EboPlayerDataType.PlayState:
+				let state$1 = await this.commands.core.playback.getState();
+				this.controller.setPlayState(state$1);
+				break;
+			case EboPlayerDataType.TrackList:
+				await this.fetchTracklistAndDetails();
+				break;
+		}
+	}
+	async fetchTracks(uris) {
+		if (typeof uris == "string") uris = [uris];
+		return await this.commands.core.library.lookup(uris);
+	}
+	async fetchTracklistAndDetails() {
+		let tracks = await this.commands.core.tracklist.getTlTracks();
+		this.model.setTrackList(tracks);
+	}
+	async fetchHistory() {
+		let historyObject = await this.commands.core.history.getHistory();
+		let historyLines = numberedDictToArray(historyObject, (line) => {
+			return {
+				timestamp: line["0"],
+				ref: line["1"]
+			};
+		});
+		let foundStreams = /* @__PURE__ */ new Set();
+		let filtered = historyLines.filter((line) => {
+			if (!line.ref.uri.startsWith("http:")) return true;
+			if (foundStreams.has(line.ref.uri)) return false;
+			foundStreams.add(line.ref.uri);
+			return true;
+		});
+		let prev = { ref: { uri: "" } };
+		let dedupLines = filtered.filter((line) => {
+			if (line.ref.uri == prev.ref.uri) return false;
+			prev = line;
+			return true;
+		});
+		let unique = [...new Set(dedupLines)];
+		let dict = await this.commands.core.library.lookup(unique.map((l) => l.ref.uri));
+		this.model.addDictToLibraryCache(dict);
+		this.model.setHistory(dedupLines);
+	}
+	fetchPlaybackOptions() {
+		let promises = [
+			this.commands.core.tracklist.getRepeat(),
+			this.commands.core.tracklist.getRandom(),
+			this.commands.core.tracklist.getConsume(),
+			this.commands.core.tracklist.getSingle()
+		];
+		Promise.all(promises).then((results) => {
+			this.model.setPlaybackState({
+				repeat: results[0],
+				random: results[1],
+				consume: results[2],
+				single: results[3]
+			});
+		});
+	}
+	async fetchCurrentTrackAndDetails() {
+		let currentTrack = await this.commands.core.playback.getCurrentTlTrack();
+		await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
+	}
+	async fetchPlayLists() {
+		return await this.commands.core.playlists.asList();
+	}
+	async fetchPlaylistItems(uri) {
+		return await this.commands.core.playlists.getItems(uri);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/proxies/localStorageProxy.ts
+const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
+const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
+var LocalStorageProxy = class {
+	model;
+	constructor(model) {
+		this.model = model;
+	}
+	loadCurrentBrowseFilter() {
+		let browseFilterString = localStorage.getItem(CURRENT_BROWSE_FILTERS__KEY);
+		if (browseFilterString) {
+			let browseFilterObject = jsonParse(browseFilterString, this.model.getCurrentBrowseFilter());
+			let browseFilter = new BrowseFilter();
+			Object.assign(browseFilter, browseFilterObject);
+			this.model.setCurrentBrowseFilter(browseFilter);
+			return;
+		}
+		console.error("Could not load or parse browse filter bread crumbs from local storage. Using default bread crumbs.");
+	}
+	loadBrowseFiltersBreadCrumbs() {
+		let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
+		if (breadCrumbsString) {
+			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs().list());
+			let breadCrumbs = new BreadCrumbStack();
+			breadCrumbsArray.map((crumb) => {
+				switch (crumb.type) {
+					case "browseFilter":
+						let browseFilter = new BrowseFilter();
+						Object.assign(browseFilter, crumb.data);
+						return new BreadCrumbBrowseFilter(crumb.label, browseFilter);
+					case "ref": return new BreadCrumbRef(crumb.label, crumb.data);
+				}
+			}).forEach((crumb) => breadCrumbs.push(crumb));
+			this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
+			return;
+		}
+		console.error("Could not load or parse browse filters from local storage. Using default filters.");
+	}
+	saveCurrentBrowseFilter(browseFilter) {
+		let obj = JSON.stringify(browseFilter);
+		console.log(obj);
+		localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
+	}
+	saveBrowseFilterBreadCrumbs(breadCrumbs) {
+		let obj = JSON.stringify(breadCrumbs.list());
+		console.log(obj);
+		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/refs.ts
+var Refs = class {
+	searchResults;
+	get browseFilter() {
+		return this._browseFilter;
+	}
+	constructor() {
+		this.searchResults = [];
+	}
+	set browseFilter(value) {
+		this._browseFilter = value;
+	}
+	_browseFilter;
+	calculateWeight(result, browseFilter) {
+		if (result.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (!browseFilter.searchText) result.weight += 1;
+	}
+	setFilter(browseFilter) {
+		this._browseFilter = browseFilter;
+	}
+	applyFilter(searchResults) {
+		searchResults.forEach((result) => {
+			this.calculateWeight(result, this.browseFilter);
+		});
+		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
+			if (b.weight === a.weight) return a.ref.name.localeCompare(b.ref.name);
+			return b.weight - a.weight;
+		});
+	}
+	getSearchResults() {
+		return this.searchResults;
+	}
+};
+var AllRefs = class extends Refs {
+	roots;
+	sub;
+	tracks;
+	albums;
+	artists;
+	genres;
+	radioStreams;
+	playlists;
+	constructor(roots, sub, tracks, albums, artists, genres, radioStreams, playlists) {
+		super();
+		this.roots = roots;
+		this.sub = sub;
+		this.tracks = tracks;
+		this.albums = albums;
+		this.artists = artists;
+		this.genres = genres;
+		this.radioStreams = radioStreams;
+		this.playlists = playlists;
+	}
+	filter() {
+		this.prefillWithTypes(this.browseFilter);
+		this.searchResults = this.applyFilter(this.searchResults);
+	}
+	prefillWithTypes(browseFilter) {
+		this.searchResults = [];
+		if (browseFilter.album || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.albums.map((album) => ({
+			ref: album,
+			weight: 0
+		})));
+		if (browseFilter.artist || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.artists.map((artist) => ({
+			ref: artist,
+			weight: 0
+		})));
+		if (browseFilter.track || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.tracks.map((track) => ({
+			ref: track,
+			weight: 0
+		})));
+		if (browseFilter.genre || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.genres.map((track) => ({
+			ref: track,
+			weight: 0
+		})));
+		if (browseFilter.radio || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.radioStreams.map((track) => ({
+			ref: track,
+			weight: 0
+		})));
+		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.playlists.map((track) => ({
+			ref: track,
+			weight: 0
+		})));
+	}
+};
+var SomeRefs = class extends Refs {
+	refs;
+	constructor(refs) {
+		super();
+		this.refs = refs;
+	}
+	filter() {
+		this.searchResults = this.refs.map((ref) => ({
+			ref,
+			weight: 0
+		}));
+		this.searchResults = this.applyFilter(this.searchResults);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
+var WebProxy = class {
+	model;
+	constructor(model) {
+		this.model = model;
+	}
+	async fetchRequiredData(dataType) {
+		switch (dataType) {
+			case EboPlayerDataType.StreamLines:
+				await this.fetchActiveStreamLines();
+				break;
+		}
+	}
+	async fetchActiveStreamLines() {
+		if (!this.model.currentTrack) {
+			this.model.setActiveStreamLinesHistory(void 0);
+			return;
+		}
+		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
+		url.searchParams.set("uri", this.model.currentTrack);
+		let lines = await (await fetch(url)).json();
+		this.model.setActiveStreamLinesHistory(lines);
+	}
+	async fetchAllStreamLines(uri) {
+		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
+		url.searchParams.set("uri", uri);
+		return await (await fetch(url)).json();
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/controller.ts
+var Controller = class extends Commands {
+	model;
+	mopidyProxy;
+	webProxy;
+	localStorageProxy;
+	eboWebSocketCtrl;
+	constructor(model, mopidy, eboWebSocketCtrl) {
+		super(mopidy);
+		this.model = model;
+		this.mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+		this.webProxy = new WebProxy(model);
+		this.localStorageProxy = new LocalStorageProxy(model);
+		this.eboWebSocketCtrl = eboWebSocketCtrl;
+	}
+	getRequiredDataTypes() {
+		return [EboPlayerDataType.CurrentTrack];
+	}
+	getRequiredDataTypesRecursive() {
+		return this.getRequiredDataTypes();
+	}
+	initSocketevents() {
+		this.mopidy.on("state:online", async () => {
+			this.model.setConnectionState(ConnectionState.Online);
+			await playerState_default().getRequiredData();
+			await this.mopidyProxy.fetchHistory();
+		});
+		this.mopidy.on("state:offline", () => {
+			this.model.setConnectionState(ConnectionState.Offline);
+		});
+		this.mopidy.on("event:optionsChanged", this.mopidyProxy.fetchPlaybackOptions);
+		this.mopidy.on("event:trackPlaybackStarted", async (data) => {
+			await this.setCurrentTrackAndFetchDetails(data.tl_track);
+			this.setPlayState("playing");
+		});
+		this.mopidy.on("event:trackPlaybackResumed", async (data) => {
+			await this.setCurrentTrackAndFetchDetails(data.tl_track);
+		});
+		this.mopidy.on("event:playlistsLoaded", () => {
+			/* @__PURE__ */ showLoading(true);
+			library.getPlaylists();
+		});
+		this.mopidy.on("event:playlistChanged", (data) => {
+			delete playerState_default().playlists[data.playlist.uri];
+			library.getPlaylists();
+		});
+		this.mopidy.on("event:playlistDeleted", (data) => {
+			delete playerState_default().playlists[data.uri];
+			library.getPlaylists();
+		});
+		this.mopidy.on("event:volumeChanged", (data) => {
+			this.model.setVolume(data.volume);
+		});
+		this.mopidy.on("event:muteChanged", (_data) => {});
+		this.mopidy.on("event:playbackStateChanged", (data) => {
+			playerState_default().getController().setPlayState(data.new_state);
+		});
+		this.mopidy.on("event:tracklistChanged", async () => {
+			await this.mopidyProxy.fetchTracklistAndDetails();
+			await this.mopidyProxy.fetchCurrentTrackAndDetails();
+		});
+		this.mopidy.on("event:seeked", () => {
+			if (playerState_default().play) playerState_default().syncedProgressTimer.start();
+		});
+		this.mopidy.on("event:streamHistoryChanged", (data) => {});
+		this.mopidy.on("event:streamHistoryChanged2", (data) => {
+			let streamTitles = data.data;
+			this.model.setActiveStreamLinesHistory(streamTitles);
+		});
+		this.mopidy.on((data) => {
+			if (data instanceof MessageEvent) try {
+				if ((JSON.parse(data.data).event ?? "") == "stream_title_changed") return;
+			} catch (e) {}
+			if (typeof data == "object") {
+				if ((data.title && Object.keys(data).length) == 1) return;
+			}
+			if (data instanceof Array) {
+				if (data.length && data[0] == "event:streamTitleChanged") return;
+			}
+			console.log(data);
+		});
+		this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data) => {
+			let streamTitles = data.data;
+			this.model.setActiveStreamLinesHistory(streamTitles);
+		});
+	}
+	async setCurrentTrackAndFetchDetails(data) {
+		this.model.setCurrentTrack(transformTlTrackDataToModel(data));
+		await this.webProxy.fetchActiveStreamLines();
+	}
+	setVolume(volume) {
+		this.model.setVolume(volume);
+	}
+	setPlayState(state$1) {
+		this.model.setPlayState(state$1);
+	}
+	setTracklist(trackList) {
+		this.model.setTrackList(trackList);
+	}
+	setAndSaveBrowseFilter(filter) {
+		this.localStorageProxy.saveCurrentBrowseFilter(filter);
+		this.model.setCurrentBrowseFilter(filter);
+		this.filterBrowseResults();
+	}
+	diveIntoBrowseResult(label, uri, type) {
+		if (type == "track" || type == "radio") {
+			this.clearListAndPlay(uri).then(() => {});
+			return;
+		}
+		let browseFilter = this.model.getCurrentBrowseFilter();
+		let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
+		this.model.pushBreadCrumb(breadCrumb1);
+		let breadCrumb2 = new BreadCrumbRef(label, {
+			type,
+			name: label,
+			uri
+		});
+		this.model.pushBreadCrumb(breadCrumb2);
+		this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
+		let newBrowseFilter = new BrowseFilter();
+		switch (type) {
+			case "artist":
+				newBrowseFilter.album = true;
+				break;
+			case "album":
+				newBrowseFilter.track = true;
+				break;
+			case "genre":
+				newBrowseFilter.radio = true;
+				newBrowseFilter.playlist = true;
+				newBrowseFilter.artist = true;
+				newBrowseFilter.album = true;
+				newBrowseFilter.track = true;
+				newBrowseFilter.genre = true;
+				break;
+			case "playlist":
+				newBrowseFilter.playlist = true;
+				newBrowseFilter.artist = true;
+				newBrowseFilter.album = true;
+				newBrowseFilter.track = true;
+				break;
+		}
+		this.setAndSaveBrowseFilter(newBrowseFilter);
+		this.fetchRefsForCurrentBreadCrumbs().then(() => {
+			this.filterBrowseResults();
+		});
+	}
+	resetToBreadCrumb(id) {
+		let breadCrumb = playerState_default().getModel().getBreadCrumbs().get(id);
+		let breadCrumbs = playerState_default().getModel().getBreadCrumbs();
+		if (breadCrumb instanceof BreadCrumbBrowseFilter) {
+			this.model.resetBreadCrumbsTo(id);
+			let browseFilter = this.model.popBreadCrumb().data;
+			this.setAndSaveBrowseFilter(browseFilter);
+			this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
+			this.fetchRefsForCurrentBreadCrumbs().then(() => {
+				this.filterBrowseResults();
+			});
+		}
+	}
+	async getTrackInfoCached(uri) {
+		let track = playerState_default().getModel().getTrackInfo(uri);
+		if (!track) await this.lookupCached(uri);
+		return transformLibraryItem(track);
+	}
+	async lookupCached(uri) {
+		let tracks = this.model.getTrackFromCache(uri);
+		if (tracks) return tracks;
+		let dict = await this.mopidyProxy.fetchTracks(uri);
+		this.model.addDictToLibraryCache(dict);
+		return this.model.getTrackFromCache(uri);
+	}
+	async clearListAndPlay(uri) {
+		await this.mopidyProxy.clearTrackList();
+		let trackList = await this.addToPlaylist(uri);
+		this.play(trackList[0].tlid);
+	}
+	async play(tlid) {
+		this.mopidyProxy.playTracklistItem(tlid);
+	}
+	async addToPlaylist(uri) {
+		let tracks = await this.mopidyProxy.addTrackToTracklist(uri);
+		let trackList = numberedDictToArray(tracks);
+		this.setTracklist(trackList);
+		return trackList;
+	}
+	setSelectedTrack(uri) {
+		this.model.setSelectedTrack(uri);
+	}
+	async getCurrertTrackInfoCached() {
+		let trackUri = this.model.getCurrentTrack();
+		if (!trackUri) return void 0;
+		return await this.getTrackInfoCached(trackUri);
+	}
+	async fetchAllRefs() {
+		let roots = await this.mopidyProxy.fetchRootDirs();
+		let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
+		let allTracks = await this.mopidyProxy.browse("local:directory?type=track");
+		let allAlbums = await this.mopidyProxy.browse("local:directory?type=album");
+		let allArtists = await this.mopidyProxy.browse("local:directory?type=artist");
+		let allGenres = await this.mopidyProxy.browse("local:directory?type=genre");
+		let playLists = await this.mopidyProxy.fetchPlayLists();
+		let radioStreamsPlayList = playLists.find((playlist) => playlist.name == "[Radio Streams]");
+		let playlists = playLists.filter((playlist) => playlist.name != "[Radio Streams]");
+		let radioStreams;
+		if (radioStreamsPlayList) radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
+		return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
+	}
+	filterBrowseResults() {
+		this.model.filterCurrentRefs();
+	}
+	async fetchRefsForCurrentBreadCrumbs() {
+		let lastCrumb = this.model.getBreadCrumbs().getLast();
+		if (!lastCrumb) {
+			await this.setAllRefsAsCurrent();
+			return;
+		}
+		if (lastCrumb instanceof BreadCrumbBrowseFilter) {
+			await this.setAllRefsAsCurrent();
+			return;
+		}
+		if (lastCrumb instanceof BreadCrumbRef) {
+			if (lastCrumb.data.type == "playlist") {
+				let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
+				playlistItems.forEach((ref) => {
+					ref.name = ref.uri.replace("local:track:", "").replaceAll("%20", " ");
+					ref.name = ref.name.split(".").slice(0, -1).join(".");
+				});
+				this.model.setCurrentRefs(new SomeRefs(playlistItems));
+				return;
+			}
+			let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
+			this.model.setCurrentRefs(new SomeRefs(refs));
+			return;
+		}
+	}
+	async setAllRefsAsCurrent() {
+		if (!this.model.getAllRefs()) {
+			let allRefs = await this.fetchAllRefs();
+			this.model.setAllRefs(allRefs);
+		}
+		this.model.setCurrentRefs(this.model.getAllRefs());
+	}
+	playAlbum(albumUri) {
+		this.clearListAndPlay(albumUri);
+	}
+	addAlbum(albumUri) {
+		this.addToPlaylist(albumUri);
+	}
+	async fetchAlbumDataForTrack(track) {
+		if (!track) return AlbumNone;
+		let albumInfo = AlbumNone;
+		switch (track.type) {
+			case TrackType.File:
+				console.log(track.track.album.uri);
+				let album = await this.lookupCached(track.track.album.uri);
+				let albumTracks = numberedDictToArray(album);
+				albumInfo = {
+					type: AlbumDataType.Loaded,
+					tracks: albumTracks,
+					albumTrack: track.track
+				};
+				return albumInfo;
+			case TrackType.Stream:
+				let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
+				let groupLines = function(grouped$1, line) {
+					if (line == "---") {
+						grouped$1.push([]);
+						return grouped$1;
+					}
+					grouped$1[grouped$1.length - 1].push(line);
+					return grouped$1;
+				};
+				let grouped = stream_lines.reduce(groupLines, new Array([])).filter((lineGroup) => lineGroup.length);
+				albumInfo = {
+					type: AlbumDataType.StreamLinesLoaded,
+					lines: grouped,
+					albumTrack: track.track
+				};
+				return albumInfo;
+		}
+	}
+	setView(view) {
+		this.model.setView(view);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/buttonBarView.ts
+var ButtonBarView = class extends View {
+	componentId;
+	parent;
+	constructor(containerId, parent) {
+		super();
+		this.parent = parent;
+		this.componentId = containerId;
+	}
+	bind() {
+		playerState_default().getModel().addEventListener(EboplayerEvents.playStateChanged, () => {
+			this.onPlaybackStateChangegd();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+			this.onCurrentTrackChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+			this.onSelectedTrackChanged();
+		});
+		let comp = document.getElementById(this.componentId);
+		comp.addEventListener(EboplayerEvents.playPressed, () => {
+			this.playOrStopOrPause(EboplayerEvents.playPressed).then((r) => {});
+		});
+		comp.addEventListener(EboplayerEvents.stopPressed, () => {
+			this.playOrStopOrPause(EboplayerEvents.stopPressed).then((r) => {});
+		});
+		comp.addEventListener(EboplayerEvents.pausePressed, () => {
+			this.playOrStopOrPause(EboplayerEvents.pausePressed).then((r) => {});
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
+			this.onVolumeChanged();
+		});
+		comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
+			let value = parseInt(ev.detail.volume);
+			await playerState_default().getController().mopidyProxy.sendVolume(value);
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+			this.showHideInfo();
+		});
+	}
+	onVolumeChanged() {
+		let volume = playerState_default().getModel().getVolume();
+		document.getElementById(this.componentId).setAttribute("volume", volume.toString());
+	}
+	onPlaybackStateChangegd() {
+		let playState = playerState_default().getModel().getPlayState();
+		document.getElementById(this.componentId).setAttribute("playing", (playState == PlayState.playing).toString());
+	}
+	async onCurrentTrackChanged() {
+		let currentTrack = await playerState_default().getController().getCurrertTrackInfoCached();
+		let comp = document.getElementById(this.componentId);
+		comp.track = currentTrack;
+		this.showHideInfo();
+	}
+	async onSelectedTrackChanged() {
+		this.showHideInfo();
+	}
+	showHideInfo() {
+		let currentTrack = playerState_default().getModel().getCurrentTrack();
+		let selectedTrack = playerState_default().getModel().getSelectedTrack();
+		let currentView = playerState_default().getModel().getView();
+		let show_info = false;
+		if (selectedTrack && currentTrack != selectedTrack) show_info = true;
+		if (currentView != Views.NowPlaying) show_info = true;
+		document.getElementById(this.componentId).setAttribute("show_info", show_info.toString());
+	}
+	async playOrStopOrPause(event) {
+		switch (event) {
+			case EboplayerEvents.playPressed:
+				await playerState_default().getController().mopidyProxy.sendPlay();
+				break;
+			case EboplayerEvents.stopPressed:
+				await playerState_default().getController().mopidyProxy.sendStop();
+				break;
+			case EboplayerEvents.pausePressed:
+				await playerState_default().getController().mopidyProxy.sendPause();
+				break;
+		}
+	}
+	getRequiredDataTypes() {
+		return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];
+	}
+	onButtonBarImgClicked() {
+		playerState_default().getController().setSelectedTrack(playerState_default().getModel().getCurrentTrack());
+		this.parent.showView(Views.NowPlaying);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/EboComponent.ts
+var EboComponent = class EboComponent extends HTMLElement {
+	static globalCss;
+	shadow;
+	styleTemplate;
+	divTemplate;
+	connected = false;
+	static NO_TAG_NAME = "todo: override in subclass";
+	static tagName = EboComponent.NO_TAG_NAME;
+	constructor(styleText, htmlText) {
+		super();
+		this.shadow = this.attachShadow({ mode: "open" });
+		this.styleTemplate = document.createElement("template");
+		this.divTemplate = document.createElement("template");
+		this.styleTemplate.innerHTML = styleText;
+		this.divTemplate.innerHTML = htmlText;
+	}
+	attributeChangedCallback(name, oldValue, newValue) {
+		if (oldValue === newValue) return;
+		this.attributeReallyChangedCallback(name, oldValue, newValue);
+	}
+	static setGlobalCss(text) {
+		this.globalCss = text.map((text$1) => {
+			let css = new CSSStyleSheet();
+			css.replaceSync(text$1);
+			return css;
+		});
+	}
+	connectedCallback() {
+		console_yellow("EboCompoent: connectedCallback");
+		this.connected = true;
+		this.onConnected();
+	}
+	onConnected() {}
+	update() {
+		if (!this.connected) return;
+		console_yellow("EboCompoent: update");
+		this.updateWhenConnected();
+	}
+	updateWhenConnected() {}
+	render() {
+		if (!this.shadow) return;
+		this.shadow.innerHTML = "";
+		if (EboComponent.globalCss) this.shadow.adoptedStyleSheets = EboComponent.globalCss;
+		this.renderPrepared();
+	}
+	setClassFromBoolAttribute(attName, el) {
+		if (this[attName] == true) el.classList.add(attName);
+		else el.classList.remove(attName);
+	}
+	static define(comp) {
+		if (comp.tagName == EboComponent.NO_TAG_NAME) throw "Component class should have tagName defined.";
+		customElements.define(comp.tagName, comp);
+	}
+	addShadowEventListener(id, type, listener) {
+		this.shadow.getElementById(id).addEventListener(type, listener);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboProgressBar.ts
+var EboProgressBar = class EboProgressBar extends EboComponent {
+	static tagName = "ebo-progressbar";
+	static observedAttributes = [
+		"position",
+		"min",
+		"max",
+		"button",
+		"active"
+	];
+	position = 51;
+	min = 0;
+	max = 100;
+	active = false;
+	button = true;
+	static styleText = `
+        <style>
+        .movingGradient {
+            background-color: #555;
+        }
+        .active .movingGradient {
+            --darkGradient: #555;
+            background: linear-gradient(to right, var(--darkGradient),
+            #2a84a5, var(--darkGradient), #ffffff,
+                var(--darkGradient), #ca497c, var(--darkGradient), #9e9c2d, var(--darkGradient), #ee7752, var(--darkGradient),
+                #2a84a5
+            );
+            background-size: 1100% 1100%;  /*Must be a multiple of the number of colors above for a smooth transistion and the last color must be the first*/
+            animation: gradient 15s forwards infinite linear;
+            animation-timing-function: linear;
+            animation-direction: normal;
+        }
+        .button #button {
+                background-color: white;
+                width: 3px; 
+                display: inline-block;
+                box-shadow: 0 0 5px white, 0 0 5px white,  0 0 5px white, 0 0 5px white, 0 0 15px white;
+        }
+        @keyframes gradient {
+            0% {
+                background-position: 0% 50%;
+            }
+            100% {
+                background-position: 100% 50%;
+            }
+        }
+        </style>
+    `;
+	static htmlText = `
+        <div style="
+            background-color: #444; 
+            height: 1px; 
+            display: flex; 
+            ">
+            <div class="movingGradient" style="
+                height: 1px;
+                display: inline-block;">
+            </div>
+            <div id="button"></div>
+        </div>
+        `;
+	constructor() {
+		super(EboProgressBar.styleText, EboProgressBar.htmlText);
+		this.render();
+	}
+	attributeReallyChangedCallback(name, oldValue, newValue) {
+		switch (name) {
+			case "position":
+			case "min":
+			case "max":
+				let test = parseInt(newValue);
+				if (isNaN(test)) throw `"${name}" attribute should be a number. Current value: "${newValue}"`;
+				this[name] = test;
+				break;
+			case "active":
+			case "button":
+				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+				this[name] = newValue == "true";
+				break;
+		}
+		if (!(this.min <= this.position && this.position <= this.max)) throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
+		this.render();
+	}
+	connectedCallback() {}
+	renderPrepared() {
+		let percent = (this.position - this.min) / (this.max - this.min) * 100;
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		let styleElement = this.shadow.appendChild(document.createElement("style"));
+		styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;
+		let fragment = this.divTemplate.content.cloneNode(true);
+		this.setClassFromBoolAttribute("button", fragment.firstElementChild);
+		this.setClassFromBoolAttribute("active", fragment.firstElementChild);
+		this.shadow.appendChild(fragment);
+	}
+	setClassFromBoolAttribute(attName, el) {
+		if (this[attName] == true) el.classList.add(attName);
+		else el.classList.remove(attName);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/timelineView.ts
+var TimelineView = class extends View {
+	clickedRow;
+	bind() {
+		playerState_default().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
+			this.rebuildTimeline().then((r) => {});
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.trackListChanged, () => {
+			this.rebuildTimeline().then((r) => {});
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+			this.onCurrentTrackChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+			this.onSelectedTrackChanged();
+		});
+	}
+	async rebuildTimeline() {
+		let history = playerState_default().getModel().getHistory() ?? [];
+		let trackList = playerState_default().getModel().getTrackList() ?? [];
+		let body = document.getElementById("timelineTable").tBodies[0];
+		body.innerHTML = "";
+		let allLookups = [];
+		for (let i = history.length - 1; i >= 0; i--) allLookups.push(this.insertHistoryLine(history[i], body));
+		let sliceStart = 0;
+		if (history[0]?.ref.uri == trackList[0].track.uri) sliceStart = 1;
+		for (let track of trackList.slice(sliceStart)) allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid));
+		Promise.all(allLookups).then(() => {
+			this.setCurrentTrack();
+		});
+		body.querySelectorAll("tr").forEach((tr) => {
+			tr.addEventListener("dblclick", (ev) => {
+				this.onRowDoubleClicked(ev);
+			});
+			tr.addEventListener("click", (ev) => {
+				this.onRowClicked(ev);
+			});
+		});
+	}
+	onRowClicked(ev) {
+		let row = ev.currentTarget;
+		this.setRowsClass(row, ["clicked"]);
+		playerState_default().getController().setSelectedTrack(row.dataset.uri);
+	}
+	async onRowDoubleClicked(ev) {
+		this.clickedRow = ev.currentTarget;
+		if (this.clickedRow.dataset.tlid) await playerState_default().getController().play(parseInt(this.clickedRow.dataset.tlid));
+		else await playerState_default().getController().clearListAndPlay(this.clickedRow.dataset.uri);
+	}
+	setRowsClass(rowOrSelector, classes) {
+		document.getElementById("timelineTable").querySelectorAll(`tr`).forEach((tr) => tr.classList.remove(...classes));
+		if (rowOrSelector instanceof HTMLTableRowElement) rowOrSelector.classList.add(...classes);
+		else document.getElementById("timelineTable").querySelectorAll(rowOrSelector).forEach((tr) => tr.classList.add(...classes));
+	}
+	setSelectedTrack() {
+		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
+		this.setRowsClass(`tr[data-uri="${selectedTrackUri}"]`, ["selected"]);
+	}
+	async setCurrentTrack() {
+		let timelineTable = document.getElementById("timelineTable");
+		let currentTrack = await playerState_default().getController().getCurrertTrackInfoCached();
+		if (!currentTrack) return;
+		if (currentTrack.type == TrackType.None) return;
+		let currentUri = currentTrack.track.uri;
+		let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
+		if (trs.length == 0) return;
+		let tr = trs[trs.length - 1];
+		if (this.clickedRow?.dataset?.uri != currentTrack.track.uri) tr.scrollIntoView({ block: "nearest" });
+		timelineTable.querySelectorAll("tr").forEach((tr$1) => tr$1.classList.remove("current", "textGlow"));
+		tr.classList.add("current", "textGlow");
+	}
+	async insertHistoryLine(line, body) {
+		let title = line.ref.name.split(" - ").pop();
+		await this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
+	}
+	async insertTrackLine(title, uri, body, classes = [], tlid) {
+		let tr = document.createElement("tr");
+		body.appendChild(tr);
+		tr.classList.add("trackLine", ...classes);
+		tr.dataset.uri = uri;
+		if (tlid) tr.dataset.tlid = tlid.toString();
+		this.setTrackLineContent(tr, title);
+		body.insertAdjacentHTML("beforeend", `
+<tr>
+    <td colspan="2">
+        <div class="progressBar"></div>
+    </td>
+</tr>
+            `);
+		const tracks = await playerState_default().getController().lookupCached(uri);
+		this.updateTrackLineFromLookup(tr, tracks, title);
+	}
+	updateTrackLineFromLookup(tr, tracks, title) {
+		let track = transformTrackDataToModel(tracks[0]);
+		let artist = "⚬⚬⚬";
+		let album = "⚬⚬⚬";
+		switch (track.type) {
+			case TrackType.File:
+				title = track.title;
+				artist = track.track.artists[0].name;
+				album = track.track.album.name;
+				break;
+			case TrackType.Stream:
+				title = track.name;
+				break;
+		}
+		this.setTrackLineContent(tr, title, artist, album);
+	}
+	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
+		tr.innerHTML = `
+    <td>
+        <h1>${title}</h1>
+        <small>${artist} • ${album}</small>
+    </td>
+    <td>
+        <button><i class="fa fa fa-ellipsis-v"></i></button>
+    </td>
+            `;
+	}
+	getRequiredDataTypes() {
+		return [EboPlayerDataType.TrackList];
+	}
+	onCurrentTrackChanged() {
+		this.setCurrentTrack();
+	}
+	onSelectedTrackChanged() {
+		this.setSelectedTrack();
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboBigTrackComp.ts
+var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
+	get activeTrackUri() {
+		return this._activeTrackUri;
+	}
+	set activeTrackUri(value) {
+		this._activeTrackUri = value;
+		this.onActiveTrackChanged();
+	}
+	get albumInfo() {
+		return this._albumInfo;
+	}
+	set albumInfo(value) {
+		this._albumInfo = value;
+		this.render();
+	}
+	_activeTrackUri = null;
+	static tagName = "ebo-big-track-view";
+	static progressBarAttributes = [
+		"position",
+		"min",
+		"max",
+		"button",
+		"active"
+	];
+	static observedAttributes = [
+		"name",
+		"stream_lines",
+		"extra",
+		"img",
+		"disabled",
+		"show_back",
+		...EboBigTrackComp.progressBarAttributes
+	];
+	name = "";
+	stream_lines = "";
+	extra = "";
+	enabled = false;
+	show_back = false;
+	position = "40";
+	min = "0";
+	max = "100";
+	button = "false";
+	active = "true";
+	img = "images/default_cover.png";
+	albumClickEvent;
+	_albumInfo;
+	static styleText = `
+            <style>
+                :host { 
+                    display: flex;
+                } 
+                h3 {
+                    margin-block-start: .5em;
+                    margin-block-end: .5em;
+                }
+                .albumCoverContainer {
+                    display: flex;
+                    flex-direction: column;
+                    align-content: center;
+                    overflow: hidden;
+                }
+                img {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                }
+                ebo-progressbar {
+                    margin-top: .5em;
+                }
+                #wrapper {
+                    display: flex;
+                    flex-direction: row;
+                    height: 100%;
+                    width: 100%;
+                    #front {
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
+                    }
+                }
+                #wrapper.front {
+                    #back {
+                        display: none;
+                    }                
+                }
+                .info {
+                    font-size: .7em;
+                }
+                ebo-album-tracks-view {
+                    height: 100%;
+                }
+            </style>
+        `;
+	static htmlText = `
+            <div id="wrapper" class="front">
+                <div id="front">
+                    <div class="albumCoverContainer">
+                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                        <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
+                    </div>
+        
+                    <div id="info">
+                        <h3 id="albumTitle" class="selectable"></h3>
+                        <h3 id="name" class="selectable"></h3>
+                        <div id="stream_lines" class="selectable info"></div>
+                        <div id="extra" class="selectable info"></div>
+                    </div>
+                </div>
+            </div>        
+        `;
+	constructor() {
+		super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
+		this.albumInfo = AlbumNone;
+		this.render();
+		this.albumClickEvent = new CustomEvent("albumClick", {
+			bubbles: true,
+			cancelable: false,
+			composed: true,
+			detail: "todo: tadaaa!"
+		});
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		if (EboBigTrackComp.progressBarAttributes.includes(name)) {
+			this[name] = newValue;
+			this.shadow.querySelector("ebo-progressbar")?.setAttribute(name, newValue);
+			return;
+		}
+		switch (name) {
+			case "name":
+			case "stream_lines":
+			case "extra":
+			case "img":
+				this[name] = newValue;
+				break;
+			case "enabled":
+				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+				this[name] = newValue == "true";
+				break;
+		}
+		this.render();
+	}
+	connectedCallback() {
+		super.connectedCallback();
+	}
+	renderPrepared() {
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		let fragment = this.divTemplate.content.cloneNode(true);
+		[
+			"name",
+			"stream_lines",
+			"extra"
+		].forEach((attName) => {
+			fragment.getElementById(attName).innerHTML = this[attName];
+		});
+		let progressBarElement = fragment.querySelector("ebo-progressbar");
+		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
+			progressBarElement.setAttribute(attName, this[attName]);
+		});
+		this.shadow.appendChild(fragment);
+		this.addShadowEventListener("img", "click", (ev) => {
+			this.dispatchEvent(this.albumClickEvent);
+		});
+		this.update();
+	}
+	updateWhenConnected() {
+		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
+	}
+	onActiveTrackChanged() {}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/componentViewAdapter.ts
+var ComponentViewAdapter = class extends View {
+	componentId;
+	constructor(id) {
+		super();
+		this.componentId = id;
+	}
+	bind() {}
+	getRequiredDataTypes() {
+		return [];
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/bigTrackViewUriAdapter.ts
+var BigTrackViewUriAdapter = class extends ComponentViewAdapter {
+	streamLines;
+	track;
+	uri;
+	albumInfo;
+	constructor(id) {
+		super(id);
+		this.streamLines = "";
+		this.track = Model.NoTrack;
+		this.uri = "";
+		this.albumInfo = AlbumNone;
+	}
+	bind() {
+		super.bind();
+		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+			this.onStreamLinesChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+			this.onActiveTrackChanged();
+		});
+	}
+	setUri(uri) {
+		this.uri = uri;
+		playerState_default().getController().getTrackInfoCached(this.uri).then(async (track) => {
+			this.track = track;
+			this.albumInfo = AlbumNone;
+			this.setComponentData();
+			let comp = document.getElementById(this.componentId);
+			this.albumInfo = await playerState_default().getController().fetchAlbumDataForTrack(track);
+			comp.albumInfo = this.albumInfo;
+		});
+	}
+	onStreamLinesChanged() {
+		this.streamLines = "";
+		let linesObject = playerState_default().getModel().getActiveStreamLines();
+		if (linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
+		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
+	}
+	onActiveTrackChanged() {
+		let streamTitles = playerState_default().getModel().getActiveStreamLines();
+		if (streamTitles?.uri == this.uri) this.streamLines = streamTitles.active_titles?.join("<br/>") ?? "";
+		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
+		let comp = document.getElementById(this.componentId);
+		comp.activeTrackUri = playerState_default().getModel().getCurrentTrack();
+	}
+	setComponentData() {
+		if (this.track.type == TrackType.None) return;
+		let name = "no current track";
+		let info = "";
+		let position;
+		let button;
+		switch (this.track.type) {
+			case TrackType.Stream:
+				name = this.track.name;
+				position = "100";
+				button = "false";
+				break;
+			case TrackType.File:
+				name = this.track.title;
+				info = this.track.track.album.name;
+				position = "60";
+				button = "true";
+				let artists = this.track.track.artists.map((a) => a.name).join(", ");
+				let composers = this.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
+				if (artists) info += "<br>" + artists;
+				if (composers) info += "<br>" + composers;
+				break;
+		}
+		document.getElementById(this.componentId).setAttribute("name", name);
+		document.getElementById(this.componentId).setAttribute("info", info);
+		document.getElementById(this.componentId).setAttribute("position", position);
+		document.getElementById(this.componentId).setAttribute("button", button);
+		this.onStreamLinesChanged();
+	}
+	getRequiredDataTypes() {
+		return [
+			EboPlayerDataType.TrackList,
+			EboPlayerDataType.StreamLines,
+			...super.getRequiredDataTypes()
+		];
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
+var BigTrackViewCurrentOrSelectedAdapter = class extends BigTrackViewUriAdapter {
+	constructor(id) {
+		super(id);
+	}
+	bind() {
+		super.bind();
+		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
+			this.onCurrentOrSelectedChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+			this.onCurrentOrSelectedChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+			this.onStreamLinesChanged();
+		});
+	}
+	onCurrentOrSelectedChanged() {
+		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
+		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
+		this.setUri(selectedTrackUri ?? currentTrackUri);
+	}
+	getRequiredDataTypes() {
+		return [
+			EboPlayerDataType.CurrentTrack,
+			EboPlayerDataType.TrackList,
+			...super.getRequiredDataTypes()
+		];
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboAlbumTracksComp.ts
+var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
+	set activeTrackUri(value) {
+		this._activeTrackUri = value;
+		this.highLightActiveTrack();
+	}
+	get albumInfo() {
+		return this._albumInfo;
+	}
+	set albumInfo(value) {
+		this._albumInfo = value;
+		this.render();
+	}
+	_activeTrackUri = null;
+	static tagName = "ebo-album-tracks-view";
+	static observedAttributes = ["img"];
+	_albumInfo;
+	constructor() {
+		super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
+		this.albumInfo = AlbumNone;
+		this.render();
+	}
+	static styleText = `
+            <style>
+                :host { 
+                    display: flex;
+                    text-align: start;
+                } 
+                #wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    width: 100%;
+                }
+                .info {
+                    font-size: .7em;
+                }
+                #tableScroller {
+                    overflow: scroll;
+                    scrollbar-width: none;
+                    height: 100%;    
+                }
+                #tracksTable {
+                    margin-left: 1em;
+                    border-collapse: collapse;
+                    tr {
+                        border-bottom: 1px solid #ffffff80;
+                    }
+                }
+            </style>
+        `;
+	static htmlText = `
+            <div id="wrapper">
+                <div id="tableScroller">
+                    <table id="tracksTable">
+                        <tbody>
+                        </tbody>                
+                    </table>
+                </div>          
+            </div>        
+        `;
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.render();
+	}
+	renderPrepared() {
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
+		this.renderTrackList();
+	}
+	renderTrackList() {
+		let tbody = this.shadow.getElementById("tracksTable").tBodies[0];
+		tbody.innerHTML = "";
+		switch (this.albumInfo?.type) {
+			case AlbumDataType.Loaded:
+				this.albumInfo.tracks.forEach((track) => {
+					let tr = tbody.appendChild(document.createElement("tr"));
+					let td = tr.appendChild(document.createElement("td"));
+					tr.dataset.uri = track.uri;
+					td.innerText = track.name;
+				});
+				break;
+			case AlbumDataType.StreamLinesLoaded:
+				this.albumInfo.lines.forEach((lineGroup) => {
+					let td = tbody.appendChild(document.createElement("tr")).appendChild(document.createElement("td"));
+					td.innerHTML = lineGroup.join("<br>");
+					td.classList.add("selectable");
+				});
+				break;
+		}
+		this.highLightActiveTrack();
+	}
+	highLightActiveTrack() {
+		if (!this._activeTrackUri) return;
+		let tr = this.shadow.querySelector(`tr[data-uri="${this._activeTrackUri}"]`);
+		if (tr) tr.classList.add("current", "textGlow");
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/mainView.ts
+var MainView = class extends View {
+	bind() {
+		document.getElementById("headerSearchBtn").addEventListener("click", () => {
+			this.onBrowseButtonClick();
+		});
+		let browseComp = document.getElementById("browseView");
+		browseComp.addEventListener("browseFilterChanged", (ev) => {
+			playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
+			this.onRefsFiltered();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.breadCrumbsChanged, () => {
+			this.onBreadCrumbsChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
+			this.onBrowseFilterChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+			this.onSelectedTrackChanged();
+		});
+		document.getElementById("currentTrackBigView").addEventListener("albumClick", async (e) => {
+			this.onAlbumClick();
+		});
+	}
+	onRefsFiltered() {
+		document.getElementById("browseView").renderResults();
+	}
+	onBreadCrumbsChanged() {
+		document.getElementById("browseView").renderBreadCrumbs();
+	}
+	onBrowseFilterChanged() {
+		let browseComp = document.getElementById("browseView");
+		browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+	}
+	onBrowseButtonClick() {
+		switch (document.getElementById("headerSearchBtn").dataset.goto) {
+			case Views.Browse:
+				this.showView(Views.Browse);
+				break;
+			case Views.NowPlaying:
+				this.showView(Views.NowPlaying);
+				break;
+			case Views.Album:
+				this.showView(Views.Album);
+				break;
+		}
+	}
+	showView(view) {
+		playerState_default().getController().setView(view);
+		let browseBtn = document.getElementById("headerSearchBtn");
+		let layout = document.getElementById("layout");
+		layout.classList.remove("browse", "bigAlbum", "bigTrack");
+		switch (view) {
+			case Views.Browse:
+				layout.classList.add("browse");
+				location.hash = Views.Browse;
+				browseBtn.dataset.goto = Views.NowPlaying;
+				browseBtn.title = "Now playing";
+				let browseComp = document.getElementById("browseView");
+				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+				browseComp.setFocusAndSelect();
+				break;
+			case Views.NowPlaying:
+				layout.classList.add("bigTrack");
+				location.hash = "";
+				browseBtn.dataset.goto = Views.Browse;
+				browseBtn.title = "Search";
+				break;
+			case Views.Album:
+				layout.classList.add("bigAlbum");
+				location.hash = Views.Album;
+				browseBtn.dataset.goto = Views.NowPlaying;
+				browseBtn.title = "Now playing";
+		}
+	}
+	getRequiredDataTypes() {
+		return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines];
+	}
+	onAlbumClick() {
+		this.showView(Views.Album);
+	}
+	async onSelectedTrackChanged() {
+		let uri = playerState_default().getModel().getSelectedTrack();
+		playerState_default().getController().getTrackInfoCached(uri).then(async (track) => {
+			let albumComp = document.getElementById("bigAlbumView");
+			albumComp.albumInfo = await playerState_default().getController().fetchAlbumDataForTrack(track);
+		});
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
+var EboBrowseComp = class EboBrowseComp extends EboComponent {
+	get browseFilter() {
+		return this._browseFilter;
+	}
+	set browseFilter(value) {
+		if (JSON.stringify(this._browseFilter) == JSON.stringify(value)) return;
+		this._browseFilter = value;
+		this.render();
+	}
+	_browseFilter;
+	static tagName = "ebo-browse-view";
+	static observedAttributes = [];
+	browseFilterChangedEvent;
+	static styleText = `
+            <style>
+                :host { 
+                    display: flex;
+                } 
+                #wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    width: 100%;
+                    height: 100%;
+                }
+                #filterButtons {
+                    margin-top: .3em;
+                    display: flex;
+                    flex-direction: row;
+                }
+                #searchBox {
+                    display: flex;
+                    flex-direction: row;
+                    border-bottom: 1px solid #ffffff80;
+                    & input {
+                        flex-grow: 1;
+                        background-color: transparent;
+                        color: white;
+                        border: none;
+                        &:focus {
+                            outline: none;
+                        }
+                    }
+                }
+                .filterButton {
+                    width: 2em;
+                    height: 2em;
+                    object-fit: contain;
+                    margin-right: .5em;
+                }
+                #searchResultsTable {
+                    width: 100%;
+                    border-collapse: collapse;
+                }
+                #tableWrapper {
+                    height: 100%;
+                    width: 100%;
+                    overflow: scroll;
+                    scrollbar-width: none;
+                    td {
+                        padding-top: .2em;
+                        padding-bottom: .2em;
+                    }
+                }
+                #searchResults {
+                    height: 100%;
+                    display: flex;
+                    flex-direction: column;
+                }
+
+            </style>
+        `;
+	static htmlText = `
+<div id="wrapper">
+    <div id="searchBox">
+        <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
+        <input id="searchText" type="text" autofocus>
+    </div>
+    <div id="filterButtons">
+        <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
+        <button> ALL </button>
+        <button> &nbsp;&nbsp;(i) </button>
+    </div>
+    <div id="breacCrumbs"></div>
+    <div id="searchResults">
+        <div id="searchInfo">
+        </div>  
+        <div id="tableWrapper" class="">
+            <table id="searchResultsTable">
+                <colgroup>
+                    <col span="1" style="width: auto;">
+                    <col span="1" style="width: 1em;">
+                </colgroup>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
+</div>        
+        `;
+	constructor() {
+		super(EboBrowseComp.styleText, EboBrowseComp.htmlText);
+		this.browseFilterChangedEvent = new CustomEvent("browseFilterChanged", {
+			bubbles: true,
+			cancelable: false,
+			composed: true,
+			detail: "todo"
+		});
+		this._browseFilter = new BrowseFilter();
+		this.render();
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "name":
+			case "stream_lines":
+			case "extra":
+			case "img":
+				this[name] = newValue;
+				break;
+			case "enabled":
+			case "show_back":
+				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+				this[name] = newValue == "true";
+				break;
+		}
+		this.render();
+	}
+	onConnected() {}
+	setFocusAndSelect() {
+		let searchText = this.shadow.getElementById("searchText");
+		searchText.focus();
+		searchText.select();
+	}
+	renderPrepared() {
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		let fragment = this.divTemplate.content.cloneNode(true);
+		this.shadow.appendChild(fragment);
+		this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
+		this.renderBrowseFilter();
+		this.renderBreadCrumbs();
+		this.renderResults();
+		this.update();
+	}
+	renderBrowseFilter() {
+		let inputElement = this.shadow.getElementById("searchText");
+		inputElement.addEventListener("keyup", (ev) => {
+			this._browseFilter.searchText = inputElement.value;
+			this.dispatchEvent(this.browseFilterChangedEvent);
+		});
+		this.shadow.querySelectorAll("ebo-button").forEach((btn) => {
+			btn.addEventListener("pressedChange", async (ev) => {
+				this.onFilterButtonPress(ev);
+			});
+			btn.addEventListener(EboplayerEvents.longPress, (ev) => {
+				this.onFilterButtonLongPress(ev);
+			});
+			btn.addEventListener("dblclick", (ev) => {
+				this.onFilterButtonDoubleClick(ev);
+			});
+		});
+	}
+	onFilterButtonLongPress(ev) {
+		this.setSingleButton(ev);
+	}
+	onFilterButtonDoubleClick(ev) {
+		this.setSingleButton(ev);
+	}
+	setSingleButton(ev) {
+		this.clearFilterButtons();
+		this.toggleFilterButton(ev.target);
+		this.update();
+	}
+	clearFilterButtons() {
+		this.browseFilter.genre = false;
+		this.browseFilter.radio = false;
+		this.browseFilter.playlist = false;
+		this.browseFilter.album = false;
+		this.browseFilter.track = false;
+		this.browseFilter.artist = false;
+	}
+	onFilterButtonPress(ev) {
+		let btn = ev.target;
+		this.toggleFilterButton(btn);
+	}
+	toggleFilterButton(btn) {
+		let propName = btn.id.replace("filter", "");
+		propName = propName.charAt(0).toLowerCase() + propName.slice(1);
+		this.browseFilter[propName] = !this.browseFilter[propName];
+		this.dispatchEvent(this.browseFilterChangedEvent);
+	}
+	updateWhenConnected() {
+		this.shadow.querySelectorAll("ebo-button").forEach((btn) => this.updateFilterButton(btn));
+		let inputElement = this.shadow.getElementById("searchText");
+		inputElement.value = this._browseFilter.searchText;
+	}
+	updateFilterButton(btn) {
+		if (btn.id.startsWith("filter")) {
+			let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
+			btn.setAttribute("pressed", this._browseFilter[propName].toString());
+		}
+	}
+	setSearchInfo(text) {
+		let searchInfo = this.shadow.getElementById("searchInfo");
+		searchInfo.innerHTML = text;
+	}
+	renderBreadCrumbs() {
+		let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
+		breadCrumbsDiv.innerHTML = "Ĥ > " + (playerState_default()?.getModel()?.getBreadCrumbs()?.list() ?? []).map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
+		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
+			btn.addEventListener("click", (ev) => {
+				this.onBreadCrumbClicked(ev);
+			});
+		});
+	}
+	renderBreadcrumb(crumb) {
+		if (crumb instanceof BreadCrumbRef) return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`;
+		else if (crumb instanceof BreadCrumbBrowseFilter) return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
+	}
+	renderResults() {
+		this.setSearchInfo("");
+		let body = this.shadow.getElementById("searchResultsTable").tBodies[0];
+		body.innerHTML = "";
+		let results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
+		if (results?.length == 0) return;
+		body.innerHTML = results.map((result) => {
+			let refType = result.ref.type;
+			if (refType == "directory") {
+				if (result.ref.uri.includes("local:directory?genre=")) refType = "genre";
+			}
+			return `
+                    <tr data-uri="${result.ref.uri}" data-type="${refType}">
+                    <td>${result.ref.name}</td>
+                    <td>...</td>
+                    </tr>`;
+		}).join("\n");
+		body.querySelectorAll("tr").forEach((tr) => {
+			tr.addEventListener("dblclick", (ev) => {
+				this.onRowDoubleClicked(ev).then((r) => {});
+			});
+			tr.addEventListener("click", (ev) => {
+				this.onRowClicked(ev);
+			});
+		});
+	}
+	onRowClicked(ev) {
+		let row = ev.currentTarget;
+		playerState_default().getController().diveIntoBrowseResult(row.cells[0].innerText, row.dataset.uri, row.dataset.type);
+	}
+	async onRowDoubleClicked(ev) {
+		let row = ev.currentTarget;
+		await playerState_default().getController().clearListAndPlay(row.dataset.uri);
+	}
+	onBreadCrumbClicked(ev) {
+		let btn = ev.currentTarget;
+		console_yellow(btn.dataset.id);
+		playerState_default().getController().resetToBreadCrumb(parseInt(btn.dataset.id));
+	}
+};
+var eboBrowseComp_default = EboBrowseComp;
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/MouseTimer.ts
+const TIME_OUT_TIME = 500;
+var MouseTimer = class {
+	activeTimer;
+	source;
+	mouseUpCount = 0;
+	isMouseDown = false;
+	onClick = void 0;
+	onTimeOut = void 0;
+	onMultiClick = void 0;
+	constructor(source, onClick = void 0, onMultiClick = void 0, onTimeOut = void 0) {
+		this.source = source;
+		this.onClick = onClick;
+		this.onMultiClick = onMultiClick;
+		this.onTimeOut = onTimeOut;
+	}
+	onMouseDown = (ev) => {
+		this.isMouseDown = true;
+		if (this.activeTimer) return;
+		this.startPressTimer(ev, () => {
+			this.doTimeOut();
+		});
+	};
+	onMouseUp = (ev) => {
+		this.isMouseDown = false;
+		if (!this.activeTimer) return;
+		this.mouseUpCount++;
+		if (this.mouseUpCount > 1) {
+			this.onMultiClick?.(this.source, this.mouseUpCount);
+			return;
+		}
+		this.onClick?.(this.source);
+	};
+	onMouseLeave = (ev) => {
+		this.cancelPressTimer();
+	};
+	doTimeOut() {
+		this.cancelPressTimer();
+		if (!this.isMouseDown) return;
+		this.onTimeOut?.(this.source);
+	}
+	cancelPressTimer() {
+		if (this.activeTimer) clearTimeout(this.activeTimer);
+		this.activeTimer = void 0;
+	}
+	startPressTimer(ev, onTimeOutCallback) {
+		this.mouseUpCount = 0;
+		this.activeTimer = setTimeout(() => {
+			if (this.activeTimer) onTimeOutCallback(ev);
+			this.cancelPressTimer();
+		}, TIME_OUT_TIME);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboButton.ts
+var PressedChangeEvent = class extends Event {
+	_pressed;
+	constructor(pressed) {
+		super("pressedChange");
+		this._pressed = pressed;
+	}
+	get pressed() {
+		return this._pressed;
+	}
+};
+var EboButton = class EboButton extends EboComponent {
+	static tagName = "ebo-button";
+	static observedAttributes = [
+		"toggle",
+		"img",
+		"img_pressed",
+		"pressed",
+		"opacity_off",
+		"click"
+	];
+	pressed = false;
+	img;
+	imgPressed;
+	opacityOff = .5;
+	pressTimer;
+	static styleText = `
+        <style>
+            img {
+                width: 100%;
+                opacity: 0.5;
+                &.pressed { 
+                    opacity: 1; 
+                }
+            }
+        </style>
+    `;
+	static htmlText = `
+        <button>
+            <img id="img" src="images/default_cover.png" alt="Button image">
+        </button>
+        `;
+	constructor() {
+		super(EboButton.styleText, EboButton.htmlText);
+		this.render();
+		this.pressTimer = new MouseTimer(this, (source) => this.onClick(source), (source, clickCount) => this.onMultiClick(source, clickCount), (source) => this.onFilterButtonTimeOut(source));
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "img":
+				this[name] = newValue;
+				break;
+			case "pressed":
+				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+				this[name] = newValue == "true";
+				break;
+		}
+		this.render();
+	}
+	connectedCallback() {}
+	renderPrepared() {
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		let fragment = this.divTemplate.content.cloneNode(true);
+		this.shadow.appendChild(fragment);
+		let imgTag = this.shadow.getElementById("img");
+		this.setClassFromBoolAttribute("pressed", imgTag);
+		imgTag.src = this.img ?? "";
+		let button = this.shadow.querySelector("button");
+		button.addEventListener("mousedown", (ev) => {
+			this.pressTimer.onMouseDown(ev);
+		});
+		button.addEventListener("mouseup", (ev) => {
+			this.pressTimer.onMouseUp(ev);
+		});
+		button.addEventListener("mouseleave", (ev) => {
+			this.pressTimer.onMouseLeave(ev);
+		});
+	}
+	onClick(eboButton) {
+		let button = this.shadow.querySelector("button");
+		this.pressed = !this.pressed;
+		this.setClassFromBoolAttribute("pressed", button);
+		this.setAttribute("pressed", this.pressed.toString());
+		let event = new PressedChangeEvent(this.pressed);
+		this.dispatchEvent(event);
+	}
+	onFilterButtonTimeOut(source) {
+		console_yellow("onLongPress");
+		this.dispatchEvent(new Event(EboplayerEvents.longPress, {
+			bubbles: true,
+			composed: true
+		}));
+	}
+	setClassFromBoolAttribute(attName, el) {
+		if (this[attName] == true) el.classList.add(attName);
+		else el.classList.remove(attName);
+	}
+	onMultiClick(eboButton, clickCount) {
+		this.dispatchEvent(new Event("dblclick", {
+			bubbles: true,
+			composed: true
+		}));
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboBigAlbumComp.ts
+var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
+	get activeTrackUri() {
+		return this._activeTrackUri;
+	}
+	set activeTrackUri(value) {
+		this._activeTrackUri = value;
+		this.onActiveTrackChanged();
+	}
+	get albumInfo() {
+		return this._albumInfo;
+	}
+	set albumInfo(value) {
+		this._albumInfo = value;
+		this.render();
+	}
+	_activeTrackUri = null;
+	static tagName = "ebo-big-album-view";
+	static progressBarAttributes = [
+		"position",
+		"min",
+		"max",
+		"button",
+		"active"
+	];
+	static observedAttributes = [
+		"name",
+		"extra",
+		"img",
+		"disabled"
+	];
+	name = "";
+	extra = "";
+	img = "images/default_cover.png";
+	albumClickEvent;
+	_albumInfo;
+	static styleText = `
+            <style>
+                :host { 
+                    display: flex;
+                } 
+                h3 {
+                    margin-block-start: .5em;
+                    margin-block-end: .5em;
+                }
+                .albumCoverContainer {
+                    display: flex;
+                    flex-direction: column;
+                    align-content: center;
+                    overflow: hidden;
+                    flex-wrap: wrap;
+                }
+                img {
+                    width: 70%;
+                    height: 70%;
+                    object-fit: contain;
+                }
+                ebo-progressbar {
+                    margin-top: .5em;
+                }
+                #wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    width: 100%;
+                    #bottom {
+                        overflow: hidden;
+                    }
+                    #buttons {
+                        display: flex;
+                        flex-direction: row;
+                        margin-bottom: .5em;
+                    }
+                }
+                #wrapper.front {
+                    #back {
+                        display: none;
+                    }                
+                }
+                #wrapper.back {
+                    #front {
+                        position: absolute;
+                        display: none;
+                    }                
+                }
+                .info {
+                    font-size: .7em;
+                }
+                #albumTableWrapper {
+                    height: 100%;
+                }
+                ebo-album-tracks-view {
+                    height: 100%;
+                }
+            </style>
+        `;
+	static htmlText = `
+            <div id="wrapper" class="front">
+                <div id="top">
+                    <div class="albumCoverContainer">
+                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                    </div>
+        
+                    <div id="info">
+                        <h3 id="albumTitle" class="selectable"></h3>
+                        <h3 id="name" class="selectable"></h3>
+                        <div id="stream_lines" class="selectable info"></div>
+                        <div id="extra" class="selectable info"></div>
+                    </div>
+                    <div id="buttons">
+                        <button id="btnPlay" class="roundBorder">Play</button>
+                        <button id="btnAdd" class="roundBorder">Add</button>
+                    </div>                
+                </div>
+                <div id="bottom">
+                    <div id="albumTableWrapper">
+                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
+                    </div>
+                </div>
+            </div>        
+        `;
+	constructor() {
+		super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
+		this.albumInfo = AlbumNone;
+		this.render();
+		this.albumClickEvent = new CustomEvent("albumClick", {
+			bubbles: true,
+			cancelable: false,
+			composed: true,
+			detail: "todo: tadaaa!"
+		});
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		if (EboBigAlbumComp.progressBarAttributes.includes(name)) {
+			this[name] = newValue;
+			return;
+		}
+		switch (name) {
+			case "name":
+			case "extra":
+			case "img":
+				this[name] = newValue;
+				break;
+		}
+		this.render();
+	}
+	renderPrepared() {
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		let fragment = this.divTemplate.content.cloneNode(true);
+		["name", "extra"].forEach((attName) => {
+			fragment.getElementById(attName).innerHTML = this[attName];
+		});
+		this.shadow.appendChild(fragment);
+		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
+		tracksComp.albumInfo = this.albumInfo;
+		this.addShadowEventListener("btnPlay", "click", (ev) => {
+			this.onBtnPlayClick();
+		});
+		this.addShadowEventListener("btnAdd", "click", (ev) => {
+			this.onBtnAddClick();
+		});
+		this.update();
+	}
+	onBtnPlayClick() {
+		if (this.albumInfo.type != AlbumDataType.Loaded) return;
+		playerState_default().getController().playAlbum(this.albumInfo.albumTrack.album.uri);
+	}
+	onBtnAddClick() {
+		if (this.albumInfo.type != AlbumDataType.Loaded) return;
+		playerState_default().getController().addAlbum(this.albumInfo.albumTrack.album.uri);
+	}
+	updateWhenConnected() {
+		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
+	}
+	onActiveTrackChanged() {
+		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
+		tracksComp.activeTrackUri = this.activeTrackUri;
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboButtonBarComp.ts
+var EboButtonBar = class EboButtonBar extends EboComponent {
+	_track;
+	get track() {
+		return this._track;
+	}
+	set track(value) {
+		this._track = value;
+		this.update();
+	}
+	static tagName = "ebo-button-bar";
+	static observedAttributes = [
+		"playing",
+		"img",
+		"show_info",
+		"volume"
+	];
+	playing = false;
+	show_info = false;
+	img;
+	isVolumeSliding = false;
+	volume = 0;
+	static styleText = `
+        <style>
+            img {
+                width: 2em;
+                height: 2em;
+                margin-right: 1em;
+            }
+        
+            .playing {
+                background-color: rgba(184, 134, 11, 0.53);
+            }
+            #buttonBar  {
+                display: flex;
+                justify-content: center;
+                flex-wrap: wrap;
+                align-items: center;
+                align-content: center;
+            
+                & button {
+                    padding-left: .5ch;
+                    padding-right: .5ch;
+                }
+            }
+            #buttonBar {
+                display: flex;
+                justify-content: center;
+                align-items: center;
+            }
+            #volumeSlider {
+                width: 100px;
+            }
+            input[type='range'] {
+                & {
+                    margin: 10px 5px;
+                    height: 2px;
+                    background-color: gray;
+                    -webkit-appearance: none;
+                }
+            
+                &::-webkit-slider-thumb {
+                    padding: 0;
+            
+                    width: 7px;
+                    appearance: none;
+                    height: 7px;
+                    background: white;
+                    color: white;
+                    border-color: white;
+                    border-style: solid;
+                    border-width:7px;
+                    border-radius: 7px;
+                }
+            }
+            #wrapper {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding-top: .5em;
+                padding-bottom: .5em;
+            }
+            #title {
+                font-size: .7em;
+            }
+        </style>
+    `;
+	static htmlText = `
+        <div id="wrapper">
+            <div id="info">
+                <span id="title">sdfsdf sdfsdf </span>
+            </div>
+            <div id="buttonBar">
+                <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
+                <div id="buttonBar">
+                    <button id="btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
+                    <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
+                    <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
+                    <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
+                    <button id="btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+                </div>
+            </div>
+        </div>
+        `;
+	constructor() {
+		super(EboButtonBar.styleText, EboButtonBar.htmlText);
+		this.render();
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "img":
+				this[name] = newValue;
+				break;
+			case "volume":
+				this.volume = parseInt(newValue);
+				break;
+			case "playing":
+			case "show_info":
+				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+				this[name] = newValue == "true";
+				break;
+		}
+		this.update();
+	}
+	renderPrepared() {
+		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		let fragment = this.divTemplate.content.cloneNode(true);
+		this.shadow.appendChild(fragment);
+		let slider = this.shadow.getElementById("volumeSlider");
+		slider.oninput = (ev) => {
+			this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {
+				bubbles: true,
+				composed: true,
+				detail: { volume: quadratic100(parseInt(slider.value)) }
+			}));
+		};
+		slider.onmousedown = slider.ontouchstart = () => {
+			this.isVolumeSliding = true;
+		};
+		slider.onmouseup = slider.ontouchend = () => {
+			this.isVolumeSliding = false;
+		};
+		let btnPlay = this.shadow.getElementById("btnPlay");
+		btnPlay.addEventListener("click", (ev) => {
+			let title = btnPlay.querySelector("i").title;
+			let eventName;
+			switch (title) {
+				case "Play":
+					eventName = EboplayerEvents.playPressed;
+					break;
+				case "Pause":
+					eventName = EboplayerEvents.pausePressed;
+					break;
+				case "Stop":
+					eventName = EboplayerEvents.stopPressed;
+					break;
+			}
+			this.dispatchEvent(new CustomEvent(eventName, {
+				bubbles: true,
+				composed: true
+			}));
+		});
+	}
+	updateWhenConnected() {
+		if (!this.track) return;
+		if (this.playing) if (this.track.type == TrackType.Stream) this.setPlayButton("Stop", "fa-stop");
+		else this.setPlayButton("Pause", "fa-pause");
+		else this.setPlayButton("Play", "fa-play");
+		let opacity = this.track.type == TrackType.File ? "1" : "0.5";
+		this.shadow.getElementById("btnNext").style.opacity = opacity;
+		this.shadow.getElementById("btnPrev").style.opacity = opacity;
+		let img = this.shadow.querySelector("img");
+		img.style.visibility = this.show_info ? "visible" : "hidden";
+		if (!this.isVolumeSliding) {
+			let slider = this.shadow.getElementById("volumeSlider");
+			let visualVolume = inverseQuadratic100(this.volume);
+			slider.value = Math.floor(visualVolume).toString();
+		}
+		this.shadow.getElementById("wrapper").classList.toggle("playing", this.playing);
+		let titleEl = this.shadow.getElementById("title");
+		titleEl.textContent = "";
+		if (this.show_info) {
+			let title;
+			if (this.track) {
+				if (this.track.type == TrackType.Stream) title = this.track.name;
+				else if (this.track.type == TrackType.File) title = this.track.title;
+				titleEl.textContent = title;
+			}
+		}
+	}
+	setPlayButton(title, addClass) {
+		let btnPlayIcon = this.shadow.getElementById("btnPlay").querySelector("i");
+		btnPlayIcon.classList.remove("fa-play", "fa-pause", "fa-stop");
+		btnPlayIcon.classList.add(addClass);
+		btnPlayIcon.setAttribute("title", title);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/gui.ts
+function getWebSocketUrl() {
+	let webSocketUrl = document.body.dataset.websocketUrl;
+	if (webSocketUrl.startsWith("{{")) webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
+	return webSocketUrl;
+}
+document.addEventListener("DOMContentLoaded", function() {
+	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((texts) => {
+		EboComponent.setGlobalCss(texts);
+		EboComponent.define(EboProgressBar);
+		EboComponent.define(EboBigTrackComp);
+		EboComponent.define(EboAlbumTracksComp);
+		EboComponent.define(eboBrowseComp_default);
+		EboComponent.define(EboButton);
+		EboComponent.define(EboBigAlbumComp);
+		EboComponent.define(EboButtonBar);
+		setupStuff();
+	});
+});
+function setupStuff() {
+	let connectOptions = {
+		webSocketUrl: getWebSocketUrl(),
+		autoConnect: false
+	};
+	let mopidy = new Mopidy(connectOptions);
+	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/");
+	let timer = new SyncedProgressTimer(8, mopidy);
+	let model = new Model();
+	let controller = new Controller(model, mopidy, eboWebSocketCtrl);
+	controller.initSocketevents();
+	let state$1 = new State(mopidy, timer, model, controller);
+	setState(state$1);
+	let mainView = new MainView();
+	let headerView = new HeaderView();
+	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
+	let buttonBarView = new ButtonBarView("buttonBar", mainView);
+	let historyView = new TimelineView();
+	playerState_default().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
+	if (location.hash == Views.Browse) mainView.showView(Views.Browse);
+	else mainView.showView(Views.NowPlaying);
+	mopidy.connect();
+	eboWebSocketCtrl.connect();
+}
+function console_yellow(msg) {
+	console.log(`%c${msg}`, "background-color: yellow");
+}
+let rootDir = document.location.pathname.replace("index.html", "");
+
+//#endregion
+export { console_yellow, getWebSocketUrl };
+//# sourceMappingURL=bundle.js.map

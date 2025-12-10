@@ -9,7 +9,5 @@
 /MANIFEST
 /.karma_coverage
 /node_modules
-/mopidy_eboplayer2/www/generated/bundle.js
-/mopidy_eboplayer2/www/generated/
 /.idea/workspace.xml
 /.idea/httpRequests
