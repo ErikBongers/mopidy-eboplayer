@@ -27,12 +27,10 @@ export class ButtonBarView extends View {
         });
 
         //todo: capture img click in comp.
-        // document.getElementById(`${this.componentId}.btnPlay`).onclick = () => {
-        //     this.playOrStopOrPause().then(r => {});
-        // };
-        document.getElementById("buttonBarImg").onclick = () => { //todo: comp must send event when img pressed.
-            this.onButtonBarImgClicked();
-        }
+        // document.getElementById("buttonBarImg").onclick = () => {
+        //     this.onButtonBarImgClicked();
+        // }
+
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         comp.addEventListener(EboplayerEvents.playPressed, () => {
             this.playOrStopOrPause(EboplayerEvents.playPressed).then(r => {});
