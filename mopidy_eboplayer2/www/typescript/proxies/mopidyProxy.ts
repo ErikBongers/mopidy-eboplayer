@@ -7,6 +7,7 @@ import {numberedDictToArray, quadratic100} from "../global";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import {HistoryLine, LibraryDict} from "../modelTypes";
+import {SearchResult} from "../refs";
 
 export class MopidyProxy {
     private controller: Controller;
@@ -58,6 +59,10 @@ export class MopidyProxy {
 
     async sendPlay() {
         return this.commands.core.playback.play();
+    }
+
+    async search(uri: string) {
+        return await this.commands.core.library.search({uri}, [], true) as SearchResult[];
     }
 
     async fetchRequiredData(dataType: EboPlayerDataType) {

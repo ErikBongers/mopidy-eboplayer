@@ -207,6 +207,16 @@ let models;
 		last_modified;
 	}
 	_models.Track = Track;
+	class Album {
+		uri;
+		name;
+		artists;
+		num_tracks;
+		num_discs;
+		date;
+		musicbrainz_id;
+	}
+	_models.Album = Album;
 	class Playlist {
 		uri;
 		name;
@@ -864,7 +874,7 @@ var Model = class extends EventTarget {
 		this.albumToViewUri = uri;
 		this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
 	}
-	getAlbumToView = () => this.view;
+	getAlbumToView = () => this.albumToViewUri;
 };
 
 //#endregion
@@ -1336,6 +1346,9 @@ var MopidyProxy = class {
 	}
 	async sendPlay() {
 		return this.commands.core.playback.play();
+	}
+	async search(uri) {
+		return await this.commands.core.library.search({ uri }, [], true);
 	}
 	async fetchRequiredData(dataType) {
 		switch (dataType) {
@@ -1860,13 +1873,8 @@ var Controller = class extends Commands {
 		switch (track.type) {
 			case TrackType.File:
 				console.log(track.track.album.uri);
-				let album = await this.lookupCached(track.track.album.uri);
-				let albumTracks = numberedDictToArray(album);
-				albumInfo = {
-					type: AlbumDataType.Loaded,
-					tracks: albumTracks,
-					albumTrack: track.track
-				};
+				let albumUri = track.track.album.uri;
+				albumInfo = await this.fetchAlbumInfo(albumUri);
 				return albumInfo;
 			case TrackType.Stream:
 				let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
@@ -1886,6 +1894,15 @@ var Controller = class extends Commands {
 				};
 				return albumInfo;
 		}
+	}
+	async fetchAlbumInfo(albumUri) {
+		let album = await this.lookupCached(albumUri);
+		let albumTracks = numberedDictToArray(album);
+		return {
+			type: AlbumDataType.Loaded,
+			tracks: albumTracks,
+			albumTrack: void 0
+		};
 	}
 	setView(view) {
 		this.model.setView(view);
@@ -2698,6 +2715,12 @@ var MainView = class extends View {
 		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
 			this.onSelectedTrackChanged();
 		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+			this.setCurrentView();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.albumToViewChanged, () => {
+			this.onAlbumToViewChanged();
+		});
 		document.getElementById("currentTrackBigView").addEventListener("albumClick", async (e) => {
 			this.onAlbumClick();
 		});
@@ -2715,18 +2738,21 @@ var MainView = class extends View {
 	onBrowseButtonClick() {
 		switch (document.getElementById("headerSearchBtn").dataset.goto) {
 			case Views.Browse:
-				this.showView(Views.Browse);
+				playerState_default().getController().setView(Views.Browse);
 				break;
 			case Views.NowPlaying:
-				this.showView(Views.NowPlaying);
+				playerState_default().getController().setView(Views.NowPlaying);
 				break;
 			case Views.Album:
-				this.showView(Views.Album);
+				playerState_default().getController().setView(Views.Album);
 				break;
 		}
 	}
+	setCurrentView() {
+		let view = playerState_default().getModel().getView();
+		this.showView(view);
+	}
 	showView(view) {
-		playerState_default().getController().setView(view);
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let layout = document.getElementById("layout");
 		layout.classList.remove("browse", "bigAlbum", "bigTrack");
@@ -2765,6 +2791,10 @@ var MainView = class extends View {
 			let albumComp = document.getElementById("bigAlbumView");
 			albumComp.albumInfo = await playerState_default().getController().fetchAlbumDataForTrack(track);
 		});
+	}
+	async onAlbumToViewChanged() {
+		let albumComp = document.getElementById("bigAlbumView");
+		albumComp.albumInfo = await playerState_default().getController().fetchAlbumInfo(playerState_default().getModel().getAlbumToView());
 	}
 };
 
@@ -3081,7 +3111,7 @@ var MouseTimer = class {
 	}
 	startPressTimer(ev, onTimeOutCallback) {
 		this.mouseUpCount = 0;
-		this.activeTimer = setTimeout(() => {
+		this.activeTimer = window.setTimeout(() => {
 			if (this.activeTimer) onTimeOutCallback(ev);
 			this.cancelPressTimer();
 		}, TIME_OUT_TIME);
@@ -3360,14 +3390,14 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	onBtnPlayClick() {
 		if (this.albumInfo.type != AlbumDataType.Loaded) return;
-		playerState_default().getController().playAlbum(this.albumInfo.albumTrack.album.uri);
+		playerState_default().getController().playAlbum(this.albumInfo.tracks[0].album.uri);
 	}
 	onBtnAddClick() {
 		if (this.albumInfo.type != AlbumDataType.Loaded) return;
-		playerState_default().getController().addAlbum(this.albumInfo.albumTrack.album.uri);
+		playerState_default().getController().addAlbum(this.albumInfo.tracks[0].album.uri);
 	}
 	updateWhenConnected() {
-		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
+		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.tracks[0].album.name;
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");

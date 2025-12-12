@@ -19,7 +19,8 @@ export interface ViewModel extends EventTarget {
     getCurrentSearchResults(): SearchResult[];
     getTrackList(): TlTrack[];
     getBreadCrumbs(): BrowseFilterBreadCrumbs;
-    getView (): Views;
+    getView(): Views;
+    getAlbumToView(): string;
 }
 
 export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
@@ -251,5 +252,5 @@ export class Model extends EventTarget implements ViewModel {
         this.albumToViewUri = uri;
         this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
     }
-    getAlbumToView = () => this.view;
+    getAlbumToView = () => this.albumToViewUri;
 }

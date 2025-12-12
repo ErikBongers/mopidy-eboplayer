@@ -151,7 +151,7 @@ interface AlbumDataLoading {
 export interface AlbumDataLoaded {
     type: AlbumDataType.Loaded;
     tracks: Track[];
-    albumTrack: models.Track;
+    albumTrack?: models.Track;
 }
 
 export interface AlbumStreamLinesLoaded {

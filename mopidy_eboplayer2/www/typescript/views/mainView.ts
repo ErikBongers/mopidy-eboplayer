@@ -29,6 +29,9 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
             this.setCurrentView();
         });
+        getState().getModel().addEventListener(EboplayerEvents.albumToViewChanged, () => {
+            this.onAlbumToViewChanged();
+        });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
             this.onAlbumClick();
@@ -114,6 +117,11 @@ export class MainView extends View {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.albumInfo = await getState().getController().fetchAlbumDataForTrack(track);
             });
+    }
+
+    private async onAlbumToViewChanged() {
+        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+        albumComp.albumInfo = await getState().getController().fetchAlbumInfo(getState().getModel().getAlbumToView());
     }
 }
 

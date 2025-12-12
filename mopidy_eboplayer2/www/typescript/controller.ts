@@ -354,13 +354,8 @@ export class Controller extends Commands implements DataRequester{
         switch (track.type) {
             case TrackType.File:
                 console.log(track.track.album.uri);
-                let album = await this.lookupCached(track.track.album.uri);
-                let albumTracks = numberedDictToArray<Track>(album);
-                albumInfo = <AlbumDataLoaded>{
-                    type: AlbumDataType.Loaded,
-                    tracks: albumTracks,
-                    albumTrack: track.track
-                };
+                let albumUri = track.track.album.uri;
+                albumInfo = await this.fetchAlbumInfo(albumUri);
                 return albumInfo;
             case TrackType.Stream:
                 let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
@@ -382,6 +377,17 @@ export class Controller extends Commands implements DataRequester{
                 };
                 return albumInfo;
         }
+    }
+
+    async fetchAlbumInfo(albumUri: string) {
+        let album = await this.lookupCached(albumUri);
+        let albumTracks = numberedDictToArray<Track>(album);
+        let albumData: AlbumDataLoaded = {
+            type: AlbumDataType.Loaded,
+            tracks: albumTracks,
+            albumTrack: undefined
+        };
+        return albumData;
     }
 
     setView(view: Views) {

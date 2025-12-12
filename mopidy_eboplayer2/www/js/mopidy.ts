@@ -76,7 +76,7 @@ namespace models {
         readonly musicbrainz_id: string;
     }
 
-    class Album {
+    export class Album {
         readonly uri: URI;
         readonly name: string;
         readonly artists: Artist[];
