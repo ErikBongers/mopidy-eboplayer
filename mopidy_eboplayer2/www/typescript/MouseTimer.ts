@@ -61,7 +61,7 @@ export class MouseTimer<Source> {
 
     private startPressTimer(ev: MouseEvent, onTimeOutCallback: (ev: MouseEvent) => void) {
         this.mouseUpCount = 0;
-        this.activeTimer = setTimeout(() => {
+        this.activeTimer = window.setTimeout(() => { //use `window.` to avoid conflict with nodejs version of setTimeout.
             if(this.activeTimer)
                 onTimeOutCallback(ev);
             this.cancelPressTimer();
