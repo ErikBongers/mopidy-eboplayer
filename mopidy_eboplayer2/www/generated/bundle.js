@@ -640,6 +640,7 @@ let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
 	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
 	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
+	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
 	return EboplayerEvents$1;
 }({});
 let ConnectionState = /* @__PURE__ */ function(ConnectionState$1) {
@@ -704,6 +705,7 @@ var Model = class extends EventTarget {
 	allRefs;
 	currentRefs;
 	view;
+	albumToViewUri;
 	constructor() {
 		super();
 	}
@@ -858,6 +860,11 @@ var Model = class extends EventTarget {
 		this.dispatchEvent(new Event(EboplayerEvents.viewChanged));
 	}
 	getView = () => this.view;
+	setAlbumToView(uri) {
+		this.albumToViewUri = uri;
+		this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
+	}
+	getAlbumToView = () => this.view;
 };
 
 //#endregion
@@ -1705,6 +1712,11 @@ var Controller = class extends Commands {
 			this.clearListAndPlay(uri).then(() => {});
 			return;
 		}
+		if (type == "album") {
+			this.model.setAlbumToView(uri);
+			this.setView(Views.Album);
+			return;
+		}
 		let browseFilter = this.model.getCurrentBrowseFilter();
 		let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
 		this.model.pushBreadCrumb(breadCrumb1);
@@ -1719,9 +1731,6 @@ var Controller = class extends Commands {
 		switch (type) {
 			case "artist":
 				newBrowseFilter.album = true;
-				break;
-			case "album":
-				newBrowseFilter.track = true;
 				break;
 			case "genre":
 				newBrowseFilter.radio = true;

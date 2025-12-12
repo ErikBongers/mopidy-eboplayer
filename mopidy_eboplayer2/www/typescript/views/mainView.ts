@@ -26,6 +26,9 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
             this.onSelectedTrackChanged();
         });
+        getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+            this.setCurrentView();
+        });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
             this.onAlbumClick();
@@ -52,19 +55,23 @@ export class MainView extends View {
         let browseBtn = document.getElementById("headerSearchBtn");
         switch (browseBtn.dataset.goto) {
             case Views.Browse:
-                this.showView(Views.Browse);
+                getState().getController().setView(Views.Browse);
                 break;
             case Views.NowPlaying:
-                this.showView(Views.NowPlaying);
+                getState().getController().setView(Views.NowPlaying);
                 break;
             case Views.Album:
-                this.showView(Views.Album);
+                getState().getController().setView(Views.Album);
                 break;
         }
     }
 
+    setCurrentView() {
+        let view = getState().getModel().getView();
+        this.showView(view);
+    }
+
     showView(view: Views) {
-        getState().getController().setView(view);
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
         layout.classList.remove("browse", "bigAlbum", "bigTrack");

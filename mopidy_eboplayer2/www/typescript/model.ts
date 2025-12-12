@@ -56,6 +56,7 @@ export class Model extends EventTarget implements ViewModel {
     private allRefs?: Refs;
     private currentRefs?: Refs;
     private view: Views;
+    private albumToViewUri: string;
 
     constructor() {
         super();
@@ -245,4 +246,10 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.viewChanged));
     }
     getView = () => this.view;
+
+    setAlbumToView(uri: string) {
+        this.albumToViewUri = uri;
+        this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
+    }
+    getAlbumToView = () => this.view;
 }

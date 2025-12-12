@@ -172,6 +172,11 @@ export class Controller extends Commands implements DataRequester{
             return; //don't dive.
         }
 
+        if(type == "album") {
+            this.model.setAlbumToView(uri);
+            this.setView(Views.Album);
+            return;
+        }
         // set 2 new breadCrumbs and a new browseFilter.
         // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
         let browseFilter = this.model.getCurrentBrowseFilter();
@@ -188,7 +193,6 @@ export class Controller extends Commands implements DataRequester{
         //for each type, we dive into the next level of type. E.g. artist -> album -> track.
         switch (type) {
             case "artist": newBrowseFilter.album = true; break;
-            case "album": newBrowseFilter.track = true; break;
             case "genre":
                 newBrowseFilter.radio = true;
                 newBrowseFilter.playlist = true;
