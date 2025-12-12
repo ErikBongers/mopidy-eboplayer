@@ -87,7 +87,7 @@ export class Commands {
                 //:rtype: list of :class:`mopidy.models.Ref`
                 //
                 //.. versionadded:: 0.18
-            browse(uri?: string) {
+            browse(uri: string) {
                 return this.commands.send("core.library.browse", {uri});
             },
                 //List distinct values for a given field from the library.
@@ -106,7 +106,7 @@ export class Commands {
                 //:rtype: set of values corresponding to the requested field type.
                 //
                 //.. versionadded:: 1.0
-            getDistinct(field?: string, query?: Object) {
+            getDistinct(field: string, query: Object) {
                 return this.commands.send("core.library.get_distinct", {field, query});
             },
                 //Lookup the images for the given URIs
@@ -123,7 +123,7 @@ export class Commands {
                 //:rtype: {uri: tuple of :class:`mopidy.models.Image`}
                 //
                 //.. versionadded:: 1.0
-            getImages(uris?: string[]) {
+            getImages(uris: string[]) {
                 return this.commands.send("core.library.get_images", {uris});
             },
                 //Lookup the given URIs.
@@ -134,14 +134,14 @@ export class Commands {
                 //:param uris: track URIs
                 //:type uris: list of string
                 //:rtype: {uri: list of :class:`mopidy.models.Track`}
-            lookup(uris?: string[]) {
+            lookup(uris: string[]) {
                 return this.commands.send("core.library.lookup", {uris});
             },
                 //Refresh library. Limit to URI and below if an URI is given.
                 //
                 //:param uri: directory or track URI
                 //:type uri: string
-            refresh(uri?: string) {
+            refresh(uri: string) {
                 return this.commands.send("core.library.refresh", {uri});
             },
                 //Search the library for tracks where ``field`` contains ``values``.
@@ -184,7 +184,7 @@ export class Commands {
                 //
                 //.. versionadded:: 1.0
                 //    The ``exact`` keyword argument.
-            search(query?: Object, uris?: string[], exact: boolean = false) {
+            search(query: Object, uris?: string[], exact: boolean = false) {
                 return this.commands.send("core.library.search", {query, uris, exact});
             },
         },
@@ -210,7 +210,7 @@ export class Commands {
                 //:class:`True` to mute, :class:`False` to unmute.
                 //
                 //Returns :class:`True` if call is successful, otherwise :class:`False`.
-            setMute(mute?: boolean) {
+            setMute(mute: boolean) {
                 return this.commands.send("core.mixer.set_mute", {mute});
             },
                 //Set the volume.
@@ -220,7 +220,7 @@ export class Commands {
                 //The volume scale is linear.
                 //
                 //Returns :class:`True` if call is successful, otherwise :class:`False`.
-            setVolume(volume?: number) {
+            setVolume(volume: number) {
                 return this.commands.send("core.mixer.set_volume", {volume});
             },
         },
@@ -304,7 +304,7 @@ export class Commands {
                 //:param time_position: time position in milliseconds
                 //:type time_position: int
                 //:rtype: :class:`True` if successful, else :class:`False`
-            seek(time_position?: number) {
+            seek(time_position: number) {
                 return this.commands.send("core.playback.seek", {time_position});
             },
                 //Set the playback state.
@@ -322,7 +322,7 @@ export class Commands {
                 //    "PLAYING" -> "PLAYING" [ label="play" ]
                 //    "PAUSED" -> "PLAYING" [ label="resume" ]
                 //    "PAUSED" -> "STOPPED" [ label="stop" ]
-            setState(new_state?: PlaybackState) {
+            setState(new_state: PlaybackState) {
                 return this.commands.send("core.playback.set_state", {new_state});
             },
                 //Stop playing.
@@ -359,7 +359,7 @@ export class Commands {
                 //:param uri_scheme: use the backend matching the URI scheme
                 //:type uri_scheme: string
                 //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-            create(name?: string, uri_scheme?: string) {
+            create(name: string, uri_scheme: string) {
                 return this.commands.send("core.playlists.create", {name, uri_scheme});
             },
                 //Delete playlist identified by the URI.
@@ -375,7 +375,7 @@ export class Commands {
                 //
                 //.. versionchanged:: 2.2
                 //    Return type defined.
-            delete(uri?: string) {
+            delete(uri: string) {
                 return this.commands.send("core.playlists.delete", {uri});
             },
                 //Get the items in a playlist specified by ``uri``.
@@ -389,7 +389,7 @@ export class Commands {
                 //:rtype: list of :class:`mopidy.models.Ref`, or :class:`None`
                 //
                 //.. versionadded:: 1.0
-            getItems(uri?: string) {
+            getItems(uri: string) {
                 return this.commands.send("core.playlists.get_items", {uri});
             },
                 //Get the list of URI schemes that support playlists.
@@ -406,7 +406,7 @@ export class Commands {
                 //:param uri: playlist URI
                 //:type uri: string
                 //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-            lookup(uri?: string) {
+            lookup(uri: string) {
                 return this.commands.send("core.playlists.lookup", {uri});
             },
                 //Refresh the playlists in :attr:`playlists`.
@@ -418,7 +418,7 @@ export class Commands {
                 //
                 //:param uri_scheme: limit to the backend matching the URI scheme
                 //:type uri_scheme: string
-            refresh(uri_scheme?: string) {
+            refresh(uri_scheme: string) {
                 return this.commands.send("core.playlists.refresh", {uri_scheme});
             },
                 //Save the playlist.
@@ -440,7 +440,7 @@ export class Commands {
                 //:param playlist: the playlist
                 //:type playlist: :class:`mopidy.models.Playlist`
                 //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-            save(playlist?: Playlist) {
+            save(playlist: Playlist) {
                 return this.commands.send("core.playlists.save", {playlist});
             },
         },
@@ -516,7 +516,7 @@ export class Commands {
                 //:param criteria: one or more rules to match by
                 //:type criteria: dict, of (string, list) pairs
                 //:rtype: list of :class:`mopidy.models.TlTrack`
-            filter(criteria?: any /*TODO: a dict*/) {
+            filter(criteria: any /*TODO: a dict*/) {
                 return this.commands.send("core.tracklist.filter", {criteria});
             },
                 //Get consume mode.
@@ -637,7 +637,7 @@ export class Commands {
                 //:type end: int
                 //:param to_position: new position for the tracks
                 //:type to_position: int
-            move(start?: number, end?: number, to_position?: number) {
+            move(start: number, end: number, to_position: number) {
                 return this.commands.send("core.tracklist.move", {start, end, to_position});
             },
                 //The track that will be played if calling
@@ -682,7 +682,7 @@ export class Commands {
                 //:param criteria: one or more rules to match by
                 //:type criteria: dict, of (string, list) pairs
                 //:rtype: list of :class:`mopidy.models.TlTrack` that were removed
-            remove(criteria?: string /*TODO: or list */) {
+            remove(criteria: string /*TODO: or list */) {
                 return this.commands.send("core.tracklist.remove", {criteria});
             },
                 //Set consume mode.
@@ -691,7 +691,7 @@ export class Commands {
                 //    Tracks are removed from the tracklist when they have been played.
                 //:class:`False`
                 //    Tracks are not removed from the tracklist.
-            setConsume(value?: boolean) {
+            setConsume(value: boolean) {
                 return this.commands.send("core.tracklist.set_consume", {value});
             },
                 //Set random mode.
@@ -700,7 +700,7 @@ export class Commands {
                 //    Tracks are selected at random from the tracklist.
                 //:class:`False`
                 //    Tracks are played in the order of the tracklist.
-            setRandom(value?: boolean) {
+            setRandom(value: boolean) {
                 return this.commands.send("core.tracklist.set_random", {value});
             },
                 //Set repeat mode.
@@ -711,7 +711,7 @@ export class Commands {
                 //    The tracklist is played repeatedly.
                 //:class:`False`
                 //    The tracklist is played once.
-            setRepeat(value?: boolean) {
+            setRepeat(value: boolean) {
                 return this.commands.send("core.tracklist.set_repeat", {value});
             },
                 //Set single mode.
@@ -720,7 +720,7 @@ export class Commands {
                 //    Playback is stopped after current song, unless in ``repeat`` mode.
                 //:class:`False`
                 //    Playback continues after current song.
-            setSingle(value?: boolean) {
+            setSingle(value: boolean) {
                 return this.commands.send("core.tracklist.set_single", {value});
             },
                 //Shuffles the entire tracklist. If ``start`` and ``end`` is given only
@@ -743,7 +743,7 @@ export class Commands {
                 //:param end: position after last track to include in slice
                 //:type end: int
                 //:rtype: :class:`mopidy.models.TlTrack`
-            slice(start?: number, end?: number) {
+            slice(start: number, end: number) {
                 return this.commands.send("core.tracklist.slice", {start, end});
             },
         },

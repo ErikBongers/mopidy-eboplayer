@@ -9,10 +9,9 @@
     "tsc": "tsc",
     "tsgo": "tsgo"
   },
-  "dependencies": {
-  },
   "//": "install rolldown globally or add it to devDependencies",
   "devDependencies": {
+    "@types/node": "^25.0.1",
     "rolldown": "^1.0.0-beta.41"
   }
 }
