@@ -1,3 +1,5 @@
+* Volume: is zero when not playing a track at startup.
+
 * Browse: dbllick on radio starts it and goes to Now Playing.
   > Animated visual feedback of dblclick:
     > Fade in and out the active bkg color of play bar.

@@ -2186,7 +2186,7 @@ var TimelineView = class extends View {
 		let allLookups = [];
 		for (let i = history.length - 1; i >= 0; i--) allLookups.push(this.insertHistoryLine(history[i], body));
 		let sliceStart = 0;
-		if (history[0]?.ref.uri == trackList[0].track.uri) sliceStart = 1;
+		if (trackList.length > 0 && history[0]?.ref.uri == trackList[0].track.uri) sliceStart = 1;
 		for (let track of trackList.slice(sliceStart)) allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid));
 		Promise.all(allLookups).then(() => {
 			this.setCurrentTrack();

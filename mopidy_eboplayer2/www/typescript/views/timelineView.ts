@@ -39,7 +39,7 @@ export class TimelineView extends View {
 
         //The last history line may be the current track. If so, we don't want to insert it again.
         let sliceStart = 0;
-        if(history[0]?.ref.uri == trackList[0].track.uri)
+        if(trackList.length > 0 && history[0]?.ref.uri == trackList[0].track.uri)
             sliceStart = 1;
         for(let track of trackList.slice(sliceStart)) {
             allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid)); //todo: actually we already have the track info. No need for lookup.
