@@ -1901,7 +1901,8 @@ var Controller = class extends Commands {
 		return {
 			type: AlbumDataType.Loaded,
 			tracks: albumTracks,
-			albumTrack: void 0
+			albumTrack: void 0,
+			albumInfo: albumTracks[0].album
 		};
 	}
 	setView(view) {
@@ -2457,7 +2458,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		this.update();
 	}
 	updateWhenConnected() {
-		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
+		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumInfo.name;
 	}
 	onActiveTrackChanged() {}
 };
@@ -3390,14 +3391,14 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	onBtnPlayClick() {
 		if (this.albumInfo.type != AlbumDataType.Loaded) return;
-		playerState_default().getController().playAlbum(this.albumInfo.tracks[0].album.uri);
+		playerState_default().getController().playAlbum(this.albumInfo.albumInfo.uri);
 	}
 	onBtnAddClick() {
 		if (this.albumInfo.type != AlbumDataType.Loaded) return;
-		playerState_default().getController().addAlbum(this.albumInfo.tracks[0].album.uri);
+		playerState_default().getController().addAlbum(this.albumInfo.albumInfo.uri);
 	}
 	updateWhenConnected() {
-		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.tracks[0].album.name;
+		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumInfo.name;
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");

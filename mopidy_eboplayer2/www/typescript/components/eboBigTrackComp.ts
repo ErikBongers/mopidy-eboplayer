@@ -176,7 +176,7 @@ export class EboBigTrackComp extends EboComponent {
 
     override updateWhenConnected() {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
-            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumTrack.album.name;
+            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumInfo.name;
         }
     }
 

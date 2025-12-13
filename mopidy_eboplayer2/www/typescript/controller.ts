@@ -385,7 +385,8 @@ export class Controller extends Commands implements DataRequester{
         let albumData: AlbumDataLoaded = {
             type: AlbumDataType.Loaded,
             tracks: albumTracks,
-            albumTrack: undefined
+            albumTrack: undefined,
+            albumInfo: albumTracks[0].album //bit of a hack
         };
         return albumData;
     }

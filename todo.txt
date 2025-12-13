@@ -1,7 +1,3 @@
-* Browse: click on album: goto album view.
-  - put View in model (or keep using hash?)
-  - put albumToView in Model
-
 * Browse: dbllick on radio starts it and goes to Now Playing.
   > Animated visual feedback of dblclick:
     > Fade in and out the active bkg color of play bar.

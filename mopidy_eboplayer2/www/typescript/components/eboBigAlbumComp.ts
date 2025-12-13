@@ -171,18 +171,18 @@ export class EboBigAlbumComp extends EboComponent {
     private onBtnPlayClick() {
         if (this.albumInfo.type != AlbumDataType.Loaded)
             return;
-        getState().getController().playAlbum(this.albumInfo.tracks[0].album.uri);
+        getState().getController().playAlbum(this.albumInfo.albumInfo.uri);
     }
 
     private onBtnAddClick() {
         if (this.albumInfo.type != AlbumDataType.Loaded)
             return;
-        getState().getController().addAlbum(this.albumInfo.tracks[0].album.uri);
+        getState().getController().addAlbum(this.albumInfo.albumInfo.uri);
     }
 
     override updateWhenConnected() {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
-            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.tracks[0].album.name;
+            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumInfo.name;
         }
     }
 
