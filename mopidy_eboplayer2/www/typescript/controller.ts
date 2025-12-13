@@ -135,7 +135,6 @@ export class Controller extends Commands implements DataRequester{
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // this.core.playback.getState().then(processPlaystate, console.error)
-        // this.core.mixer.getVolume().then(processVolume, console.error)
         // this.core.mixer.getMute().then(processMute, console.error)
     }
 

@@ -1,6 +1,7 @@
 // Type definitions for js v1.2.0, Mopidy v3.0.2 WebSocket API
 
 import {JsonRpcController} from "../typescript/jsonRpcController";
+import MopidyEventName = core.MopidyEventName;
 
 export interface Options {
     /**
@@ -125,6 +126,23 @@ export namespace core {
         | "any";
     type Query = { [key in QueryField]?: string[] };
 
+    export type MopidyEventName =
+        | "event:trackPlaybackStarted"
+        | "event:trackPlaybackResumed"
+        | "state:online"
+        | "state:offline"
+        | "event:optionsChanged"
+        | "event:playlistChanged"
+        | "event:playlistDeleted"
+        | "event:volumeChanged"
+        | "event:muteChanged"
+        | "event:streamTitleChanged"
+        | "event:playbackStateChanged"
+        | "event:optionsValidationError"
+        | "event:tracklistChanged"
+        | "event:seeked"
+        | "event:playlistsLoaded"
+        ;
 
 }
 
@@ -152,7 +170,7 @@ export class Mopidy {
         this.rpcController.connect();
     }
 
-    on(name: string | Function, callback?: any) {
+    on(name: MopidyEventName | Function, callback?: any) {
         this.rpcController?.on(name, callback);
     }
 
