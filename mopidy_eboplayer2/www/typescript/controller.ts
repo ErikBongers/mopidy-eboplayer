@@ -190,7 +190,7 @@ export class Controller extends Commands implements DataRequester{
         this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
 
         let newBrowseFilter = new BrowseFilter();
-        //for each type, we dive into the next level of type. E.g. artist -> album -> track.
+        //for each type, we dive into the next level of type. E.g., artist -> album -> track.
         switch (type) {
             case "artist": newBrowseFilter.album = true; break;
             case "genre":
