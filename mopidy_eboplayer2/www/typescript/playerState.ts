@@ -57,6 +57,7 @@ export class State {
             await this.controller.webProxy.fetchRequiredData(dataType);
         }
 
+        await this.controller.fetchAllAlbums();
         this.controller.localStorageProxy.loadCurrentBrowseFilter();
         this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
         this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {

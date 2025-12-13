@@ -11,7 +11,7 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {numberedDictToArray, transformLibraryItem} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumData, AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType, Views} from "./modelTypes";
+import {AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
@@ -167,6 +167,7 @@ export class Controller extends Commands implements DataRequester{
             this.setView(Views.Album);
             return;
         }
+
         // set 2 new breadCrumbs and a new browseFilter.
         // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
         let browseFilter = this.model.getCurrentBrowseFilter();
@@ -199,6 +200,13 @@ export class Controller extends Commands implements DataRequester{
                 break;
         }
         this.setAndSaveBrowseFilter(newBrowseFilter);
+
+        if(type == "artist") {
+            //filter the albums ourselves.
+
+            return;
+        }
+
         this.fetchRefsForCurrentBreadCrumbs().then(() => {
             this.filterBrowseResults();
         });
@@ -297,10 +305,12 @@ export class Controller extends Commands implements DataRequester{
             await this.setAllRefsAsCurrent();
             return;
         }
+
         if(lastCrumb instanceof BreadCrumbBrowseFilter) {
             await this.setAllRefsAsCurrent();
             return;
         }
+
         if(lastCrumb instanceof BreadCrumbRef) {
             if(lastCrumb.data.type == "playlist") {
                 let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
@@ -315,6 +325,7 @@ export class Controller extends Commands implements DataRequester{
                 this.model.setCurrentRefs(new SomeRefs(playlistItems));
                 return;
             }
+
             let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
             this.model.setCurrentRefs(new SomeRefs(refs));
             return;
@@ -381,5 +392,18 @@ export class Controller extends Commands implements DataRequester{
 
     setView(view: Views) {
         this.model.setView(view);
+    }
+
+    async fetchAllAlbums() {
+        //get all the albums.
+        //first refs:
+        let albumRefs = await this.mopidyProxy.browse("local:directory?type=album");
+        let albumsPromises = albumRefs.map(async ref => {
+            return await this.fetchAlbumInfo(ref.uri);
+        });
+
+        let albums = await Promise.all(albumsPromises);
+
+        console.log(albums);
     }
 }

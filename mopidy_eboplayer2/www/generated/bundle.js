@@ -532,6 +532,7 @@ var State = class {
 			await this.controller.mopidyProxy.fetchRequiredData(dataType);
 			await this.controller.webProxy.fetchRequiredData(dataType);
 		}
+		await this.controller.fetchAllAlbums();
 		this.controller.localStorageProxy.loadCurrentBrowseFilter();
 		this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
 		this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
@@ -1756,6 +1757,7 @@ var Controller = class extends Commands {
 				break;
 		}
 		this.setAndSaveBrowseFilter(newBrowseFilter);
+		if (type == "artist") return;
 		this.fetchRefsForCurrentBreadCrumbs().then(() => {
 			this.filterBrowseResults();
 		});
@@ -1899,6 +1901,13 @@ var Controller = class extends Commands {
 	}
 	setView(view) {
 		this.model.setView(view);
+	}
+	async fetchAllAlbums() {
+		let albumsPromises = (await this.mopidyProxy.browse("local:directory?type=album")).map(async (ref) => {
+			return await this.fetchAlbumInfo(ref.uri);
+		});
+		let albums = await Promise.all(albumsPromises);
+		console.log(albums);
 	}
 };
 

@@ -58,6 +58,7 @@ export class Model extends EventTarget implements ViewModel {
     private currentRefs?: Refs;
     private view: Views = Views.NowPlaying;
     private albumToViewUri: string;
+    // private albumCache: Set<LibraryItem> = new Map();
 
     constructor() {
         super();
