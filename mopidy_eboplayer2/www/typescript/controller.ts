@@ -350,13 +350,11 @@ export class Controller extends Commands implements DataRequester{
     async fetchAlbumDataForTrack(track: TrackModel) {
         if (!track)
             return AlbumNone;
-        let albumInfo: AlbumData = AlbumNone;
         switch (track.type) {
             case TrackType.File:
                 console.log(track.track.album.uri);
                 let albumUri = track.track.album.uri;
-                albumInfo = await this.fetchAlbumInfo(albumUri);
-                return albumInfo;
+                return await this.fetchAlbumInfo(albumUri);
             case TrackType.Stream:
                 let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
                 let groupLines = function (grouped: string[][], line: string){
@@ -370,7 +368,7 @@ export class Controller extends Commands implements DataRequester{
                 let grouped = stream_lines
                     .reduce<string[][]>(groupLines, new Array([]))
                     .filter(lineGroup => lineGroup.length);
-                albumInfo = <AlbumStreamLinesLoaded>{
+                let albumInfo: AlbumStreamLinesLoaded = {
                     type: AlbumDataType.StreamLinesLoaded,
                     lines: grouped,
                     albumTrack: track.track
