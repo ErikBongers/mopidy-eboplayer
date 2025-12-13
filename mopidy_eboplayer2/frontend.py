@@ -23,6 +23,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         volume = self.storage.get('volume', 50)
         self.core.mixer.set_volume(volume)
         albums = self.core.library.browse(uri="local:directory?type=album")
+        logger.info("ALBUMS")
         logger.info(albums)
 
 
