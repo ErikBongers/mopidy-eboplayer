@@ -1680,11 +1680,6 @@ var Controller = class extends Commands {
 		this.mopidy.on("event:seeked", () => {
 			if (playerState_default().play) playerState_default().syncedProgressTimer.start();
 		});
-		this.mopidy.on("event:streamHistoryChanged", (data) => {});
-		this.mopidy.on("event:streamHistoryChanged2", (data) => {
-			let streamTitles = data.data;
-			this.model.setActiveStreamLinesHistory(streamTitles);
-		});
 		this.mopidy.on((data) => {
 			if (data instanceof MessageEvent) try {
 				if ((JSON.parse(data.data).event ?? "") == "stream_title_changed") return;
@@ -1869,13 +1864,11 @@ var Controller = class extends Commands {
 	}
 	async fetchAlbumDataForTrack(track) {
 		if (!track) return AlbumNone;
-		let albumInfo = AlbumNone;
 		switch (track.type) {
 			case TrackType.File:
 				console.log(track.track.album.uri);
 				let albumUri = track.track.album.uri;
-				albumInfo = await this.fetchAlbumInfo(albumUri);
-				return albumInfo;
+				return await this.fetchAlbumInfo(albumUri);
 			case TrackType.Stream:
 				let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
 				let groupLines = function(grouped$1, line) {
@@ -1887,12 +1880,11 @@ var Controller = class extends Commands {
 					return grouped$1;
 				};
 				let grouped = stream_lines.reduce(groupLines, new Array([])).filter((lineGroup) => lineGroup.length);
-				albumInfo = {
+				return {
 					type: AlbumDataType.StreamLinesLoaded,
 					lines: grouped,
 					albumTrack: track.track
 				};
-				return albumInfo;
 		}
 	}
 	async fetchAlbumInfo(albumUri) {
