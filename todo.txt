@@ -1,4 +1,3 @@
-* Volume: is zero when not playing a track at startup.
 
 * Browse: dbllick on radio starts it and goes to Now Playing.
   > Animated visual feedback of dblclick:

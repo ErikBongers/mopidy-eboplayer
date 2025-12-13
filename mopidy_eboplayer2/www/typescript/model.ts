@@ -56,7 +56,7 @@ export class Model extends EventTarget implements ViewModel {
 
     private allRefs?: Refs;
     private currentRefs?: Refs;
-    private view: Views;
+    private view: Views = Views.NowPlaying;
     private albumToViewUri: string;
 
     constructor() {

@@ -714,7 +714,7 @@ var Model = class extends EventTarget {
 	filterBreadCrumbStack = new BreadCrumbStack();
 	allRefs;
 	currentRefs;
-	view;
+	view = Views.NowPlaying;
 	albumToViewUri;
 	constructor() {
 		super();
