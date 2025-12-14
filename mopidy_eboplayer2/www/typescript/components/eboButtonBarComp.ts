@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
-import {inverseQuadratic100, quadratic100} from "../global";
+import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
     private _track: TrackModel;
@@ -123,6 +123,7 @@ export class EboButtonBar extends EboComponent {
                 break;
             case "volume":
                 this.volume = parseInt(newValue);
+                console_yellow(`eboButtonBarComp: attributeReallyChangedCallback: volume: ${this.volume}`);
                 break;
             case "playing":
             case "show_info":
@@ -140,7 +141,10 @@ export class EboButtonBar extends EboComponent {
         this.shadow.appendChild(fragment);
         let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
         slider.oninput = (ev) => {
-            this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {bubbles: true, composed: true, detail: {volume: quadratic100(parseInt(slider.value))}}));
+            this.isVolumeSliding = true;
+            this.volume = quadratic100(parseInt(slider.value));
+            console_yellow(`eboButtonBarComp: slider.oninput: slider.value: ${slider.value}, this.volume: ${this.volume}`);
+            this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {bubbles: true, composed: true, detail: {volume: this.volume}}));
         };
         slider.onmousedown = slider.ontouchstart = () => { this.isVolumeSliding = true;};
         slider.onmouseup = slider.ontouchend = () => { this.isVolumeSliding = false;};
@@ -179,6 +183,7 @@ export class EboButtonBar extends EboComponent {
             let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
             let visualVolume = inverseQuadratic100(this.volume);
             slider.value = Math.floor(visualVolume).toString();
+            console_yellow(`eboButtonBarComp.update: slider.value: ${slider.value}, this.volume: ${this.volume}`);
         }
         let wrapper = this.shadow.getElementById("wrapper");
         wrapper.classList.toggle("playing", this.playing);

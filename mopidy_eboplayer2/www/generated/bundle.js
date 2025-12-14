@@ -1040,6 +1040,9 @@ function transformTrackDataToModel(track) {
 function transformLibraryItem(item) {
 	if (item.length == 1) return transformTrackDataToModel(item[0]);
 }
+function console_yellow(msg) {
+	console.log(`%c${msg}`, "background-color: yellow");
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/process_ws.ts
@@ -1337,7 +1340,7 @@ var MopidyProxy = class {
 		return await this.commands.core.library.browse(uri);
 	}
 	async sendVolume(value) {
-		await this.commands.core.mixer.setVolume(Math.floor(quadratic100(value)));
+		await this.commands.core.mixer.setVolume(value);
 	}
 	async sendStop() {
 		return this.commands.core.playback.stop();
@@ -1757,7 +1760,6 @@ var Controller = class extends Commands {
 				break;
 		}
 		this.setAndSaveBrowseFilter(newBrowseFilter);
-		if (type == "artist") {}
 		this.fetchRefsForCurrentBreadCrumbs().then(() => {
 			this.filterBrowseResults();
 		});
@@ -1946,7 +1948,10 @@ var ButtonBarView = class extends View {
 			this.onVolumeChanged();
 		});
 		comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
+			console_yellow(`buttonBarrView.event:changingVolume:`);
+			console.log(ev);
 			let value = parseInt(ev.detail.volume);
+			console_yellow(`value=${value}`);
 			await playerState_default().getController().mopidyProxy.sendVolume(value);
 		});
 		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
@@ -2031,14 +2036,12 @@ var EboComponent = class EboComponent extends HTMLElement {
 		});
 	}
 	connectedCallback() {
-		console_yellow("EboCompoent: connectedCallback");
 		this.connected = true;
 		this.onConnected();
 	}
 	onConnected() {}
 	update() {
 		if (!this.connected) return;
-		console_yellow("EboCompoent: update");
 		this.updateWhenConnected();
 	}
 	updateWhenConnected() {}
@@ -3060,7 +3063,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
-		console_yellow(btn.dataset.id);
 		playerState_default().getController().resetToBreadCrumb(parseInt(btn.dataset.id));
 	}
 };
@@ -3209,7 +3211,6 @@ var EboButton = class EboButton extends EboComponent {
 		this.dispatchEvent(event);
 	}
 	onFilterButtonTimeOut(source) {
-		console_yellow("onLongPress");
 		this.dispatchEvent(new Event(EboplayerEvents.longPress, {
 			bubbles: true,
 			composed: true
@@ -3526,6 +3527,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 				break;
 			case "volume":
 				this.volume = parseInt(newValue);
+				console_yellow(`eboButtonBarComp: attributeReallyChangedCallback: volume: ${this.volume}`);
 				break;
 			case "playing":
 			case "show_info":
@@ -3541,10 +3543,13 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		this.shadow.appendChild(fragment);
 		let slider = this.shadow.getElementById("volumeSlider");
 		slider.oninput = (ev) => {
+			this.isVolumeSliding = true;
+			this.volume = quadratic100(parseInt(slider.value));
+			console_yellow(`eboButtonBarComp: slider.oninput: slider.value: ${slider.value}, this.volume: ${this.volume}`);
 			this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {
 				bubbles: true,
 				composed: true,
-				detail: { volume: quadratic100(parseInt(slider.value)) }
+				detail: { volume: this.volume }
 			}));
 		};
 		slider.onmousedown = slider.ontouchstart = () => {
@@ -3588,6 +3593,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			let slider = this.shadow.getElementById("volumeSlider");
 			let visualVolume = inverseQuadratic100(this.volume);
 			slider.value = Math.floor(visualVolume).toString();
+			console_yellow(`eboButtonBarComp.update: slider.value: ${slider.value}, this.volume: ${this.volume}`);
 		}
 		this.shadow.getElementById("wrapper").classList.toggle("playing", this.playing);
 		let titleEl = this.shadow.getElementById("title");
@@ -3653,11 +3659,8 @@ function setupStuff() {
 	mopidy.connect();
 	eboWebSocketCtrl.connect();
 }
-function console_yellow(msg) {
-	console.log(`%c${msg}`, "background-color: yellow");
-}
 let rootDir = document.location.pathname.replace("index.html", "");
 
 //#endregion
-export { console_yellow, getWebSocketUrl };
+export { getWebSocketUrl };
 //# sourceMappingURL=bundle.js.map

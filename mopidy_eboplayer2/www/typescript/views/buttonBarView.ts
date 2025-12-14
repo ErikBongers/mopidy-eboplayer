@@ -3,6 +3,7 @@ import {EboPlayerDataType, View} from "./view";
 import {EboplayerEvents, PlayState, Views} from "../modelTypes";
 import {MainView} from "./mainView";
 import {EboButtonBar} from "../components/eboButtonBarComp";
+import {console_yellow} from "../global";
 
 export class ButtonBarView extends View {
     private componentId: string;
@@ -44,7 +45,10 @@ export class ButtonBarView extends View {
             this.onVolumeChanged();
         });
         comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
+            console_yellow(`buttonBarrView.event:changingVolume:`);
+            console.log(ev);
             let value = parseInt((ev as CustomEvent).detail.volume);
+            console_yellow(`value=${value}`);
             await getState().getController().mopidyProxy.sendVolume(value);
 
         });
