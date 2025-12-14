@@ -22,10 +22,6 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         logger.info("STARTING....")
         volume = self.storage.get('volume', 50)
         self.core.mixer.set_volume(volume)
-        albums = self.core.library.browse(uri="local:directory?type=album")
-        logger.info("ALBUMS")
-        logger.info(albums)
-
 
     def track_playback_started(self, tl_track):
         logger.info("STARTED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
