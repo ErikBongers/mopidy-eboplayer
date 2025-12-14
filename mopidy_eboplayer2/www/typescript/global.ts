@@ -3,12 +3,19 @@ import {validUri} from "./functionsvars";
 import getState from "./playerState";
 import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./modelTypes";
 
+// Stretch a value, e.g., between (0, 100), to a new range e.g., (-5, 100)
+function stretchLeft(x: number, min: number, max: number) {
+    return x*(max+min)/max - min;
+}
+
 export function quadratic100(x: number) {
+    x = stretchLeft(x, -5, 100);
     return (x * x) / 100;
 }
 
 export function inverseQuadratic100(y: number) {
-    return Math.floor(Math.sqrt(y * 100));
+    let x = Math.floor(Math.sqrt(y * 100));
+    return stretchLeft(x, 5, 100);
 }
 
 // noinspection JSUnusedLocalSymbols

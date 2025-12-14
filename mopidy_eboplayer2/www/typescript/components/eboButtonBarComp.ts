@@ -181,7 +181,9 @@ export class EboButtonBar extends EboComponent {
         img.style.visibility = this.show_info ? "visible" : "hidden";
         if(!this.isVolumeSliding) {
             let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
+            console_yellow(`eboButtonBarComp.update: this.volume: ${this.volume}`);
             let visualVolume = inverseQuadratic100(this.volume);
+            console_yellow(`eboButtonBarComp.update: visualVolume: ${visualVolume}`);
             slider.value = Math.floor(visualVolume).toString();
             console_yellow(`eboButtonBarComp.update: slider.value: ${slider.value}, this.volume: ${this.volume}`);
         }

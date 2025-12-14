@@ -983,11 +983,16 @@ let library = {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/global.ts
+function stretchLeft(x, min, max) {
+	return x * (max + min) / max - min;
+}
 function quadratic100(x) {
+	x = stretchLeft(x, -5, 100);
 	return x * x / 100;
 }
 function inverseQuadratic100(y) {
-	return Math.floor(Math.sqrt(y * 100));
+	let x = Math.floor(Math.sqrt(y * 100));
+	return stretchLeft(x, 5, 100);
 }
 function numberedDictToArray(dict, converter) {
 	let length = dict["length"];
@@ -3591,7 +3596,9 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		img.style.visibility = this.show_info ? "visible" : "hidden";
 		if (!this.isVolumeSliding) {
 			let slider = this.shadow.getElementById("volumeSlider");
+			console_yellow(`eboButtonBarComp.update: this.volume: ${this.volume}`);
 			let visualVolume = inverseQuadratic100(this.volume);
+			console_yellow(`eboButtonBarComp.update: visualVolume: ${visualVolume}`);
 			slider.value = Math.floor(visualVolume).toString();
 			console_yellow(`eboButtonBarComp.update: slider.value: ${slider.value}, this.volume: ${this.volume}`);
 		}
