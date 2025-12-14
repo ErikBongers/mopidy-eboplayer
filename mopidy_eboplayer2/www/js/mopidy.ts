@@ -63,14 +63,14 @@ namespace models {
         readonly musicbrainz_id: string;
         readonly last_modified: number;
     }
-    class SearchResult {
+    export class SearchResult {
         readonly uri: URI;
         readonly tracks: Track[];
         readonly artists: Artist[];
         readonly albums: Album[];
     }
 
-    class Artist {
+    export class Artist {
         readonly uri: URI;
         readonly name: string;
         readonly sortname: string;
@@ -87,7 +87,7 @@ namespace models {
         readonly musicbrainz_id: string;
     }
 
-    class Image {
+    export class Image {
         readonly uri: URI;
         readonly width: number;
         readonly height: number;
@@ -111,7 +111,7 @@ export default models
 
 export namespace core {
     export type PlaybackState = "playing" | "paused" | "stopped";
-    type QueryField =
+    export type QueryField =
         | "uri"
         | "track_name"
         | "album"
@@ -124,7 +124,7 @@ export namespace core {
         | "date"
         | "comment"
         | "any";
-    type Query = { [key in QueryField]?: string[] };
+    export type Query = { [key in QueryField]?: string[] };
 
     export type MopidyEventName =
         | "event:trackPlaybackStarted"
