@@ -1,10 +1,9 @@
-EXTRA DB function?>
-=====================
-> front end can call core functions to retrieve data.
-  > call list all albums on startup...
-> frontend has access to static data in webSocketHandler.
-  > frontend can store albums in webSocketHandler!!!!
+* Fix the goddamn volume!!!
 
+* button bar: show streamlines rather than station
+  > make this optional?
+
+* dblclick on album track > play
 
 What do I need?
 - Build playlists

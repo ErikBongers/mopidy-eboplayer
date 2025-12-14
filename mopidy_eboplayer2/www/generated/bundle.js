@@ -1757,7 +1757,7 @@ var Controller = class extends Commands {
 				break;
 		}
 		this.setAndSaveBrowseFilter(newBrowseFilter);
-		if (type == "artist") return;
+		if (type == "artist") {}
 		this.fetchRefsForCurrentBreadCrumbs().then(() => {
 			this.filterBrowseResults();
 		});

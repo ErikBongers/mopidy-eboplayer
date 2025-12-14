@@ -201,12 +201,6 @@ export class Controller extends Commands implements DataRequester{
         }
         this.setAndSaveBrowseFilter(newBrowseFilter);
 
-        if(type == "artist") {
-            //filter the albums ourselves.
-
-            return;
-        }
-
         this.fetchRefsForCurrentBreadCrumbs().then(() => {
             this.filterBrowseResults();
         });
