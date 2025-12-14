@@ -2011,7 +2011,7 @@ var ButtonBarView = class extends View {
 	}
 	onButtonBarImgClicked() {
 		playerState_default().getController().setSelectedTrack(playerState_default().getModel().getCurrentTrack());
-		this.parent.showView(Views.NowPlaying);
+		playerState_default().getController().setView(Views.NowPlaying);
 	}
 };
 
@@ -3668,8 +3668,8 @@ function setupStuff() {
 	let buttonBarView = new ButtonBarView("buttonBar", mainView);
 	let historyView = new TimelineView();
 	playerState_default().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
-	if (location.hash == Views.Browse) mainView.showView(Views.Browse);
-	else mainView.showView(Views.NowPlaying);
+	if (location.hash == Views.Browse) controller.setView(Views.Browse);
+	else controller.setView(Views.NowPlaying);
 	mopidy.connect();
 	eboWebSocketCtrl.connect();
 }

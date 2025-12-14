@@ -74,7 +74,7 @@ export class MainView extends View {
         this.showView(view);
     }
 
-    showView(view: Views) {
+    private showView(view: Views) {
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
         layout.classList.remove("browse", "bigAlbum", "bigTrack");

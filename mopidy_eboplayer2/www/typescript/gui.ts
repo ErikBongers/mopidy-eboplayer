@@ -74,9 +74,9 @@ function setupStuff() {
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 
     if(location.hash == Views.Browse)
-        mainView.showView(Views.Browse);
+        controller.setView(Views.Browse);
     else
-        mainView.showView(Views.NowPlaying);
+        controller.setView(Views.NowPlaying);
 
     mopidy.connect();
     eboWebSocketCtrl.connect();

@@ -118,6 +118,6 @@ export class ButtonBarView extends View {
 
     private onButtonBarImgClicked() {
         getState().getController().setSelectedTrack(getState().getModel().getCurrentTrack());
-        this.parent.showView(Views.NowPlaying); //todo: this call of function in parent is ugly.
+        getState().getController().setView(Views.NowPlaying);
     }
 }
