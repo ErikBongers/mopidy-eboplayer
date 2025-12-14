@@ -1,3 +1,13 @@
+What do I need?
+- Build playlists
+- Build a tracklist
+  > currently already possible to add full albums.
+
+
+
+
+
+
 * refresh dead connection on browser "wake up"
   >>> https://blog.alexmaccaw.com/javascript-wake-event/
   > or this alternative of window blur/focus
@@ -7,11 +17,6 @@
   > make this optional?
 
 * dblclick on album track > play
-
-What do I need?
-- Build playlists
-- Build a tracklist
-  > currently already possible to add full albums.
 
 
 * Browse: dbllick on radio starts it and goes to Now Playing.

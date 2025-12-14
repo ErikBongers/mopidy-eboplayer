@@ -192,18 +192,31 @@ function findParamTypeInDescription(funcDef: FuncDef, param: Param): Result<stri
     // e.g.  //:type query: dict
     let descLines = funcDef.description.split("\n");
     let paramLine = descLines.find(line => line.includes(`:type ${param.name}:`));
-    if(!paramLine)
-        return Failure(undefined);
-    let type = paramLine.replace(`:type ${param.name}: `, "");
-    type = type.replace(" or :class:`None`", "");
-    type = type.replace("mopidy.models.", "");
-    let rxClass = new RegExp(":class:`(.*?)`", "gm");
-    type = rxClass.exec(type)?.[1] ?? type;
-
+    let type = "";
+    if (paramLine) {
+        type = paramLine.replace(`:type ${param.name}: `, "");
+        type = type.replace(" or :class:`None`", "");
+        type = type.replace("mopidy.models.", "");
+        let rxClass = new RegExp(":class:`(.*?)`", "gm");
+        type = rxClass.exec(type)?.[1] ?? type;
+    } else {
+        //2d try for pattern: ":param dict query:..."
+        descLines.find(line => {
+            let rxParamLine = new RegExp(`:param (\\S+) ${param.name}:`, "gm");
+            let res = rxParamLine.exec(line);
+            type = res?.[1] ?? type;
+            return type != "";
+        });
+        if (type == "")
+            return Failure(undefined);
+    }
     switch (type) {
         case "dict": return Success("Object");
         case "list of string": return Success("string[]"); //todo: make generic
-        case "bool": return Success("boolean"); //todo: make generic
+        case "bool":
+        case "True":
+        case "False":
+            return Success("boolean"); //todo: make generic
         case "int": return Success("number"); //todo: make generic
         default: return Success(type);
     }
@@ -221,29 +234,14 @@ function guessParamType(funcDef: FuncDef, param: Param) {
     }
 
     switch (param.name) {
-        case "query":
-            return "Object";
         case "uri":
-        case "uri_scheme":
-        case "field":
-        case "name":
             return "string";
         case "mute":
         case "exact":
         case "value":
             return "boolean"
         case "volume":
-        case "tlid":
-        case "start":
-        case "end":
-        case "to_position":
-        case "time_position":
-        case "at_position":
             return "number";
-        case "uris":
-            return "string[]";
-        case "tl_track":
-            return "TlTrack";
         case "new_state":
             return "PlaybackState";
         case "playlist":
