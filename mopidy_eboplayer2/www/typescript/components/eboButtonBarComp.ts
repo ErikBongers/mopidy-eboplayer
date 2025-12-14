@@ -90,6 +90,8 @@ export class EboButtonBar extends EboComponent {
             }
             #title {
                 font-size: .7em;
+                text-align: center;
+                display: block;
             }
         </style>
     `;
@@ -207,7 +209,7 @@ export class EboButtonBar extends EboComponent {
                     title = this._streamLines ?? this.track.name;
                 else if (this.track.type == TrackType.File)
                     title = this.track.title;
-                titleEl.textContent = title;
+                titleEl.innerHTML = title;
             }
         }
     }

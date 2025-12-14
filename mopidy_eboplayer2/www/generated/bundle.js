@@ -2019,7 +2019,7 @@ var ButtonBarView = class extends View {
 	onActiveStreamLinesChanged() {
 		let lines = playerState_default().getModel().getActiveStreamLines();
 		let comp = document.getElementById(this.componentId);
-		comp.streamLines = lines.active_titles.join(" ● ");
+		comp.streamLines = lines.active_titles.join("<br>");
 	}
 };
 
@@ -3518,6 +3518,8 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
             }
             #title {
                 font-size: .7em;
+                text-align: center;
+                display: block;
             }
         </style>
     `;
@@ -3630,7 +3632,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			if (this.track) {
 				if (this.track.type == TrackType.Stream) title = this._streamLines ?? this.track.name;
 				else if (this.track.type == TrackType.File) title = this.track.title;
-				titleEl.textContent = title;
+				titleEl.innerHTML = title;
 			}
 		}
 	}

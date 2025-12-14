@@ -127,6 +127,6 @@ export class ButtonBarView extends View {
     private onActiveStreamLinesChanged() {
         let lines = getState().getModel().getActiveStreamLines();
         let comp = document.getElementById(this.componentId) as EboButtonBar;
-        comp.streamLines = lines.active_titles.join(" ● ");
+        comp.streamLines = lines.active_titles.join("<br>");
     }
 }
