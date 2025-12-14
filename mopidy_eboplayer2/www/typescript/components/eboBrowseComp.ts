@@ -1,5 +1,4 @@
 import {EboComponent} from "./EboComponent";
-import {console_yellow} from "../gui";
 import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
@@ -315,7 +314,6 @@ class EboBrowseComp extends EboComponent {
 
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
-        console_yellow(btn.dataset.id);
         getState().getController().resetToBreadCrumb(parseInt(btn.dataset.id)); //todo rename to breadCrumbId.
     }
 

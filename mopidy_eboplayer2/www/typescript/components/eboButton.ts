@@ -1,6 +1,5 @@
 import {EboComponent} from "./EboComponent";
 import {EboplayerEvents} from "../modelTypes";
-import {console_yellow} from "../gui";
 import {MouseTimer} from "../MouseTimer";
 
 export class PressedChangeEvent extends Event {
@@ -107,7 +106,6 @@ export class EboButton extends EboComponent {
     }
 
     onFilterButtonTimeOut(source: EboButton) {
-        console_yellow("onLongPress");
         this.dispatchEvent(new Event(EboplayerEvents.longPress, {bubbles: true, composed: true}));
     }
 

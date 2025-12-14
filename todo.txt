@@ -1,5 +1,10 @@
 * Fix the goddamn volume!!!
 
+* refresh dead connection on browser "wake up"
+  >>> https://blog.alexmaccaw.com/javascript-wake-event/
+  > or this alternative of window blur/focus
+    >>> https://stackoverflow.com/questions/13798516/javascript-event-for-mobile-browser-re-launch-or-device-wake
+
 * button bar: show streamlines rather than station
   > make this optional?
 

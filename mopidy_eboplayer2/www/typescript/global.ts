@@ -100,3 +100,7 @@ export function transformLibraryItem(item: LibraryItem) {
     if (item.length == 1)
         return transformTrackDataToModel(item[0]);
 }
+
+export function console_yellow(msg: string) {
+    console.log(`%c${msg}`, 'background-color: yellow');
+}

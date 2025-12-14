@@ -1,5 +1,3 @@
-import {console_yellow} from "../gui";
-
 export interface HasName {
     tagName: string;
 }
@@ -40,7 +38,6 @@ export abstract class EboComponent extends HTMLElement implements HasName {
 
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
-        console_yellow("EboCompoent: connectedCallback");
         this.connected = true;
         this.onConnected();
     }
@@ -52,7 +49,6 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     update() { //todo: aad TS option `noImplicitOverride` and set `override` modifier where needed.
         if (!this.connected)
             return;
-        console_yellow("EboCompoent: update");
         //todo: batch updates.
         this.updateWhenConnected();
     }

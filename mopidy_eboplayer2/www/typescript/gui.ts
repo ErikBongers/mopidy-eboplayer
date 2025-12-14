@@ -4,7 +4,6 @@ import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
 import {Controller} from "./controller";
-import {ComponentViewAdapter} from "./views/componentViewAdapter";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
@@ -83,9 +82,6 @@ function setupStuff() {
     eboWebSocketCtrl.connect();
 }
 
-export function console_yellow(msg: string) {
-    console.log(`%c${msg}`, 'background-color: yellow');
-}
 function updateDocumentTitle (headline) {
     headline = headline || document.getElementById('contentHeadline').textContent;
     document.title = headline + ' | ' + document.body.dataset.title;

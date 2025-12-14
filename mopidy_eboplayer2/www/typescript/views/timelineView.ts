@@ -1,7 +1,6 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import models from "../../js/mopidy";
-import {console_yellow} from "../gui";
 import {transformTrackDataToModel} from "../global";
 import {EboplayerEvents, HistoryLine, TrackType} from "../modelTypes";
 

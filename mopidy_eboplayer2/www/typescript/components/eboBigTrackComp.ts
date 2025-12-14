@@ -165,7 +165,6 @@ export class EboBigTrackComp extends EboComponent {
         this.shadow.appendChild(fragment);
         // let img = this.shadow.getElementById("img");
         // img.addEventListener("click", (ev) => {
-        //     console_yellow('CKICK');
         //     this.dispatchEvent(this.albumClickEvent);
         // });
         this.addShadowEventListener("img","click", (ev) => {
