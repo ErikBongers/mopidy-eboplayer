@@ -159,7 +159,11 @@ export class EboButtonBar extends EboComponent {
                 case "Stop": eventName = EboplayerEvents.stopPressed; break;
             }
             this.dispatchEvent(new CustomEvent(eventName, {bubbles: true, composed: true}));
-        })
+        });
+        let imgTag = this.shadow.getElementById("buttonBarImg") as HTMLImageElement;
+        imgTag.addEventListener("click", (ev) => {
+            this.dispatchEvent(new Event(EboplayerEvents.albumClicked));
+        });
     }
 
     updateWhenConnected() {

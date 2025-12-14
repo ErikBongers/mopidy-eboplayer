@@ -84,6 +84,7 @@ export enum EboplayerEvents {
     changingVolume = "eboplayer.changingVolume",
     viewChanged = "eboplayer.viewChanged",
     albumToViewChanged = "eboplayer.albumToViewChanged",
+    albumClicked = "eboplayer.albumClicked",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

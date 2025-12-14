@@ -652,6 +652,7 @@ let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
 	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
 	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
+	EboplayerEvents$1["albumClicked"] = "eboplayer.albumClicked";
 	return EboplayerEvents$1;
 }({});
 let ConnectionState = /* @__PURE__ */ function(ConnectionState$1) {
@@ -1948,6 +1949,9 @@ var ButtonBarView = class extends View {
 		});
 		comp.addEventListener(EboplayerEvents.pausePressed, () => {
 			this.playOrStopOrPause(EboplayerEvents.pausePressed).then((r) => {});
+		});
+		comp.addEventListener(EboplayerEvents.albumClicked, () => {
+			this.onButtonBarImgClicked();
 		});
 		playerState_default().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
 			this.onVolumeChanged();
@@ -3582,6 +3586,9 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 				bubbles: true,
 				composed: true
 			}));
+		});
+		this.shadow.getElementById("buttonBarImg").addEventListener("click", (ev) => {
+			this.dispatchEvent(new Event(EboplayerEvents.albumClicked));
 		});
 	}
 	updateWhenConnected() {

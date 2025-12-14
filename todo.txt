@@ -1,5 +1,3 @@
-* Fix the goddamn volume!!!
-
 * refresh dead connection on browser "wake up"
   >>> https://blog.alexmaccaw.com/javascript-wake-event/
   > or this alternative of window blur/focus

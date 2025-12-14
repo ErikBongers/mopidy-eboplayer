@@ -41,6 +41,9 @@ export class ButtonBarView extends View {
         comp.addEventListener(EboplayerEvents.pausePressed, () => {
             this.playOrStopOrPause(EboplayerEvents.pausePressed).then(r => {});
         });
+        comp.addEventListener(EboplayerEvents.albumClicked, () => {
+            this.onButtonBarImgClicked();
+        });
         getState().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
             this.onVolumeChanged();
         });
