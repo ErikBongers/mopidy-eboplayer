@@ -25,6 +25,9 @@ export class ButtonBarView extends View {
         getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
             this.onSelectedTrackChanged();
         });
+        getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+            this.onActiveStreamLinesChanged();
+        });
 
         //todo: capture img click in comp.
         // document.getElementById("buttonBarImg").onclick = () => {
@@ -119,5 +122,11 @@ export class ButtonBarView extends View {
     private onButtonBarImgClicked() {
         getState().getController().setSelectedTrack(getState().getModel().getCurrentTrack());
         getState().getController().setView(Views.NowPlaying);
+    }
+
+    private onActiveStreamLinesChanged() {
+        let lines = getState().getModel().getActiveStreamLines();
+        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        comp.streamLines = lines.active_titles.join(" ● ");
     }
 }

@@ -3,7 +3,12 @@ import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
 import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
+    set streamLines(value: string) {
+        this._streamLines = value;
+        this.update();
+    }
     private _track: TrackModel;
+    private _streamLines: string;
     get track(): TrackModel {
         return this._track;
     }
@@ -199,7 +204,7 @@ export class EboButtonBar extends EboComponent {
             let title: string;
             if (this.track) {
                 if (this.track.type == TrackType.Stream)
-                    title = this.track.name;
+                    title = this._streamLines ?? this.track.name;
                 else if (this.track.type == TrackType.File)
                     title = this.track.title;
                 titleEl.textContent = title;

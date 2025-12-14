@@ -13,9 +13,6 @@ What do I need?
   > or this alternative of window blur/focus
     >>> https://stackoverflow.com/questions/13798516/javascript-event-for-mobile-browser-re-launch-or-device-wake
 
-* button bar: show streamlines rather than station
-  > make this optional?
-
 * dblclick on album track > play
 
 

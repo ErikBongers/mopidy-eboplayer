@@ -1940,6 +1940,9 @@ var ButtonBarView = class extends View {
 		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
 			this.onSelectedTrackChanged();
 		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+			this.onActiveStreamLinesChanged();
+		});
 		let comp = document.getElementById(this.componentId);
 		comp.addEventListener(EboplayerEvents.playPressed, () => {
 			this.playOrStopOrPause(EboplayerEvents.playPressed).then((r) => {});
@@ -2012,6 +2015,11 @@ var ButtonBarView = class extends View {
 	onButtonBarImgClicked() {
 		playerState_default().getController().setSelectedTrack(playerState_default().getModel().getCurrentTrack());
 		playerState_default().getController().setView(Views.NowPlaying);
+	}
+	onActiveStreamLinesChanged() {
+		let lines = playerState_default().getModel().getActiveStreamLines();
+		let comp = document.getElementById(this.componentId);
+		comp.streamLines = lines.active_titles.join(" ● ");
 	}
 };
 
@@ -3421,7 +3429,12 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboButtonBarComp.ts
 var EboButtonBar = class EboButtonBar extends EboComponent {
+	set streamLines(value) {
+		this._streamLines = value;
+		this.update();
+	}
 	_track;
+	_streamLines;
 	get track() {
 		return this._track;
 	}
@@ -3615,7 +3628,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		if (this.show_info) {
 			let title;
 			if (this.track) {
-				if (this.track.type == TrackType.Stream) title = this.track.name;
+				if (this.track.type == TrackType.Stream) title = this._streamLines ?? this.track.name;
 				else if (this.track.type == TrackType.File) title = this.track.title;
 				titleEl.textContent = title;
 			}
