@@ -1,4 +1,4 @@
-EXTRA DB funnction?>
+EXTRA DB function?>
 =====================
 > front end can call core functions to retrieve data.
   > call list all albums on startup...

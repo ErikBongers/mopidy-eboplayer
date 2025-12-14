@@ -1809,13 +1809,14 @@ var Controller = class extends Commands {
 		if (!trackUri) return void 0;
 		return await this.getTrackInfoCached(trackUri);
 	}
+	LIBRARY_PROTOCOL = "eboback:";
 	async fetchAllRefs() {
 		let roots = await this.mopidyProxy.fetchRootDirs();
 		let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
-		let allTracks = await this.mopidyProxy.browse("local:directory?type=track");
-		let allAlbums = await this.mopidyProxy.browse("local:directory?type=album");
-		let allArtists = await this.mopidyProxy.browse("local:directory?type=artist");
-		let allGenres = await this.mopidyProxy.browse("local:directory?type=genre");
+		let allTracks = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL + "directory?type=track");
+		let allAlbums = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL + "directory?type=album");
+		let allArtists = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL + "directory?type=artist");
+		let allGenres = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL + "directory?type=genre");
 		let playLists = await this.mopidyProxy.fetchPlayLists();
 		let radioStreamsPlayList = playLists.find((playlist) => playlist.name == "[Radio Streams]");
 		let playlists = playLists.filter((playlist) => playlist.name != "[Radio Streams]");
