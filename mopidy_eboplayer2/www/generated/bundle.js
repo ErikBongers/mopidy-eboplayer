@@ -2051,9 +2051,19 @@ var ButtonBarView = class extends View {
 		document.getElementById(this.componentId).setAttribute("play_state", playState);
 	}
 	async onCurrentTrackChanged() {
+		await this.updateComponent();
+	}
+	async onSelectedTrackChanged() {
+		await this.updateComponent();
+	}
+	async updateComponent() {
 		let currentTrack = playerState_default().getModel().getCurrentTrack();
+		let selectedTrack = playerState_default().getModel().getSelectedTrack();
+		let track;
+		if (selectedTrack && currentTrack != selectedTrack) track = selectedTrack;
+		else track = currentTrack;
 		let comp = document.getElementById(this.componentId);
-		if (!currentTrack) {
+		if (!track) {
 			comp.setAttribute("text", "");
 			comp.setAttribute("allow_play", "false");
 			comp.setAttribute("allow_prev", "false");
@@ -2061,8 +2071,8 @@ var ButtonBarView = class extends View {
 			comp.setAttribute("image_url", "");
 			comp.setAttribute("stop_or_pause", "stop");
 		} else {
-			let track = await playerState_default().getController().getExpandedTrackModel(currentTrack);
-			if (isInstanceOfExpandedStreamModel(track)) {
+			let trackModel = await playerState_default().getController().getExpandedTrackModel(track);
+			if (isInstanceOfExpandedStreamModel(trackModel)) {
 				let active_titles = "";
 				let activeStreamLines = playerState_default().getModel().getActiveStreamLines();
 				if (activeStreamLines) active_titles = activeStreamLines.active_titles.join("\n");
@@ -2070,20 +2080,17 @@ var ButtonBarView = class extends View {
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", track.stream.imageUri);
+				comp.setAttribute("image_url", trackModel.stream.imageUri);
 				comp.setAttribute("stop_or_pause", "stop");
 			} else {
-				comp.setAttribute("text", track.track.track.name);
+				comp.setAttribute("text", trackModel.track.track.name);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", track.album.imageUri);
+				comp.setAttribute("image_url", trackModel.album.imageUri);
 				comp.setAttribute("stop_or_pause", "pause");
 			}
 		}
-		this.showHideInfo();
-	}
-	async onSelectedTrackChanged() {
 		this.showHideInfo();
 	}
 	showHideInfo() {

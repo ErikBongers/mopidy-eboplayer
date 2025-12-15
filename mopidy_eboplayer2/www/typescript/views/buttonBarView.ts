@@ -78,9 +78,24 @@ export class ButtonBarView extends View {
     }
 
     private async onCurrentTrackChanged() {
+        await this.updateComponent();
+    }
+
+    private async onSelectedTrackChanged() {
+        await this.updateComponent();
+    }
+
+    private async updateComponent() {
         let currentTrack = getState().getModel().getCurrentTrack();
+        let selectedTrack = getState().getModel().getSelectedTrack();
+        let track: string;
+        if(selectedTrack && currentTrack != selectedTrack)
+            track = selectedTrack;
+        else
+            track = currentTrack;
+
         let comp = document.getElementById(this.componentId) as EboButtonBar;
-        if(!currentTrack) {
+        if (!track) {
             comp.setAttribute("text", "");
             comp.setAttribute("allow_play", "false");
             comp.setAttribute("allow_prev", "false");
@@ -88,31 +103,27 @@ export class ButtonBarView extends View {
             comp.setAttribute("image_url", "");
             comp.setAttribute("stop_or_pause", "stop");
         } else {
-            let track = await getState().getController().getExpandedTrackModel(currentTrack);
-            if (isInstanceOfExpandedStreamModel(track)) {
+            let trackModel = await getState().getController().getExpandedTrackModel(track);
+            if (isInstanceOfExpandedStreamModel(trackModel)) {
                 let active_titles = "";
                 let activeStreamLines = getState().getModel().getActiveStreamLines();
-                if(activeStreamLines)
+                if (activeStreamLines)
                     active_titles = activeStreamLines.active_titles.join("\n");
                 comp.setAttribute("text", active_titles);
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", track.stream.imageUri);
+                comp.setAttribute("image_url", trackModel.stream.imageUri);
                 comp.setAttribute("stop_or_pause", "stop");
             } else {
-                comp.setAttribute("text", track.track.track.name);
+                comp.setAttribute("text", trackModel.track.track.name);
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", track.album.imageUri);
+                comp.setAttribute("image_url", trackModel.album.imageUri);
                 comp.setAttribute("stop_or_pause", "pause");
             }
         }
-        this.showHideInfo();
-    }
-
-    private async onSelectedTrackChanged() {
         this.showHideInfo();
     }
 
