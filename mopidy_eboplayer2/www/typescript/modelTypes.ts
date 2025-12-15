@@ -2,8 +2,9 @@ import models from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
 import Track = models.Track;
+import Image = models.Image;
 
-export enum TrackType { None, File, Stream}
+export enum ItemType { None, File, Stream, Album}
 
 export type Uri = string;
 export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
@@ -17,6 +18,8 @@ export class BreadCrumbRef extends BreadCrumb<Ref> {
     }
 }
 export type FilterBreadCrumbType = BreadCrumbRef | BreadCrumbBrowseFilter;
+
+export type ImageLookup = {[string: string]: Image[]}
 
 export class BrowseFilter {
     searchText: string;
@@ -43,25 +46,29 @@ export class BrowseFilter {
 }
 
 export interface FileTrackModel {
-    type: TrackType.File;
+    type: ItemType.File;
     track: models.Track;
     title: string,
     composer?: string,
     performer: string,
     songlenght: number,
+    imageUri: string,
     //...more properties?
 }
 
 export interface StreamTrackModel {
-    type: TrackType.Stream;
+    type: ItemType.Stream;
     track: models.Track;
     name: string,
-    infoLines: string[]
+    infoLines: string[],
+    imageUri: string,
 }
 
 export interface NoneTrackModel {
-    type: TrackType.None;
+    type: ItemType.None;
 }
+
+export const TrackNone = {type: ItemType.None} as NoneTrackModel;
 
 export enum EboplayerEvents {
     volumeChanged = "eboplayer.volumeChanged",
@@ -85,6 +92,7 @@ export enum EboplayerEvents {
     viewChanged = "eboplayer.viewChanged",
     albumToViewChanged = "eboplayer.albumToViewChanged",
     albumClicked = "eboplayer.albumClicked",
+    currentImageSet = "eboplayer.currentImageSet",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;
@@ -151,8 +159,13 @@ interface AlbumDataLoading {
 
 export interface AlbumDataLoaded {
     type: AlbumDataType.Loaded;
-    tracks: Track[];
-    albumTrack?: models.Track;
+    album: AlbumModel;
+}
+
+export interface AlbumModel {
+    type: ItemType.Album;
+    tracks: FileTrackModel[];
+    albumTrack?: models.Track; //todo: get rid of this
     albumInfo: models.Album;
 }
 

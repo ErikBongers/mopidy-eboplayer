@@ -3,6 +3,7 @@ import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
 import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
+import {LIBRARY_PROTOCOL} from "../controller";
 
 class EboBrowseComp extends EboComponent {
     get browseFilter(): BrowseFilter {
@@ -283,7 +284,7 @@ class EboBrowseComp extends EboComponent {
             .map(result => {
                 let refType = result.ref.type as string;
                 if(refType == "directory") {
-                    if(result.ref.uri.includes("local:directory?genre="))
+                    if(result.ref.uri.includes( LIBRARY_PROTOCOL+"directory?genre="))
                         refType = "genre";
                 }
                 return `

@@ -5,7 +5,24 @@ What do I need?
 
 
 
+lookup
+---------
 
+lookupAlbum:
+  > get from cache
+    > found? return
+    > not present: fetch all tracks
+    > stuff them grouped in AlbumModel
+    > add to cache
+
+lookupTrack:
+  > get from cache
+    > found? return
+    > not present: fetch (all) tracks
+    > stuff each of them in FileTrackModel
+    > add to cache.
+
+lookupStream????
 
 
 * refresh dead connection on browser "wake up"

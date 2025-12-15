@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
+import {EboplayerEvents, TrackModel, ItemType} from "../modelTypes";
 import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
@@ -177,7 +177,7 @@ export class EboButtonBar extends EboComponent {
         if(!this.track)
             return;
         if(this.playing) {
-            if(this.track.type == TrackType.Stream)
+            if(this.track.type == ItemType.Stream)
                 this.setPlayButton('Stop', 'fa-stop');
             else
                 this.setPlayButton('Pause', 'fa-pause');
@@ -185,7 +185,7 @@ export class EboButtonBar extends EboComponent {
         } else {
                 this.setPlayButton('Play', 'fa-play');
         }
-        let opacity = this.track.type == TrackType.File ? "1" : "0.5";
+        let opacity = this.track.type == ItemType.File ? "1" : "0.5";
         this.shadow.getElementById("btnNext").style.opacity = opacity;
         this.shadow.getElementById("btnPrev").style.opacity = opacity;
         let img = this.shadow.querySelector("img") as HTMLElement;
@@ -205,9 +205,9 @@ export class EboButtonBar extends EboComponent {
         if(this.show_info) {
             let title: string;
             if (this.track) {
-                if (this.track.type == TrackType.Stream)
+                if (this.track.type == ItemType.Stream)
                     title = this._streamLines ?? this.track.name;
-                else if (this.track.type == TrackType.File)
+                else if (this.track.type == ItemType.File)
                     title = this.track.title;
                 titleEl.innerHTML = title;
             }

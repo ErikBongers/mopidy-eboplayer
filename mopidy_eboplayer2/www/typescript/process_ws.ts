@@ -6,9 +6,9 @@ import getState from "./playerState";
 import TlTrack = models.TlTrack;
 import {transformTrackDataToModel} from "./global";
 
-import {TrackModel} from "./modelTypes";
+import {FileTrackModel, StreamTrackModel, TrackModel} from "./modelTypes";
 
-export function transformTlTrackDataToModel(tlTrack: (TlTrack | null)): TrackModel {
+export function transformTlTrackDataToModel(tlTrack: TlTrack) {
     return transformTrackDataToModel(tlTrack?.track);
 }
 

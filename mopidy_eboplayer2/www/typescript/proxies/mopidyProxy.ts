@@ -6,7 +6,7 @@ import {Controller} from "../controller";
 import {numberedDictToArray, quadratic100} from "../global";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
-import {HistoryLine, LibraryDict} from "../modelTypes";
+import {HistoryLine, ImageLookup, LibraryDict} from "../modelTypes";
 import {SearchResult} from "../refs";
 
 export class MopidyProxy {
@@ -127,10 +127,6 @@ export class MopidyProxy {
             return true;
         });
 
-        let unique = [...new Set(dedupLines)];
-        let dict: LibraryDict = await this.commands.core.library.lookup(unique.map(l => l.ref.uri));
-        this.model.addDictToLibraryCache(dict);
-
         this.model.setHistory(dedupLines);
     }
 
@@ -162,5 +158,9 @@ export class MopidyProxy {
 
     async fetchPlaylistItems(uri: string) {
         return await this.commands.core.playlists.getItems(uri) as Ref[];
+    }
+
+    async fetchImages(uris: string[]) {
+        return await this.commands.core.library.getImages(uris) as ImageLookup;
     }
 }

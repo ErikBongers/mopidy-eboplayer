@@ -1,7 +1,7 @@
 import models from "../js/mopidy";
 import {validUri} from "./functionsvars";
 import getState from "./playerState";
-import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, TrackType} from "./modelTypes";
+import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, ItemType} from "./modelTypes";
 
 // Stretch a value, e.g., between (0, 100), to a new range e.g., (-5, 100)
 function stretchLeft(x: number, min: number, max: number) {
@@ -50,32 +50,27 @@ export function isStream(track: models.Track) {
     return track?.track_no == undefined;
 }
 
-export function transformTrackDataToModel(track: (models.Track | undefined)): TrackModel {
-    if (!track) {
-        // noinspection UnnecessaryLocalVariableJS
-        let model: NoneTrackModel = {
-            type: TrackType.None
-        };
-        return model;
-    }
+export function transformTrackDataToModel(track: (models.Track)): FileTrackModel | StreamTrackModel {
     if (isStream(track)) {
         // noinspection UnnecessaryLocalVariableJS
         let model: StreamTrackModel = {
-            type: TrackType.Stream,
+            type: ItemType.Stream,
             track,
             name: track.name,
-            infoLines: []
+            infoLines: [],
+            imageUri: undefined
         };
         return model;
     }
     //for now, assume it's a file track
     let model: FileTrackModel = {
-        type: TrackType.File,
+        type: ItemType.File,
         composer: "",
         track,
         title: track.name,
         performer: "",
-        songlenght: 0
+        songlenght: 0,
+        imageUri: undefined
     };
     if (!track.name || track.name === '') {
         let parts = track.uri.split('/');
@@ -101,11 +96,6 @@ export function transformTrackDataToModel(track: (models.Track | undefined)): Tr
     // images.fetchAlbumImage(track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
 
     return model;
-}
-
-export function transformLibraryItem(item: LibraryItem) {
-    if (item.length == 1)
-        return transformTrackDataToModel(item[0]);
 }
 
 export function console_yellow(msg: string) {

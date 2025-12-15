@@ -3,7 +3,7 @@ import {Model} from "../model";
 import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
-import {AlbumData, AlbumNone, EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
+import {AlbumData, AlbumNone, EboplayerEvents, ItemType, TrackModel} from "../modelTypes";
 
 export class BigTrackViewUriAdapter extends ComponentViewAdapter {
     private streamLines: string;
@@ -31,7 +31,7 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
 
     setUri(uri: string) {
         this.uri = uri;
-        getState().getController().getTrackInfoCached(this.uri)
+        getState().getController().lookupTrackCached(this.uri)
             .then(async track => {
                 this.track = track;
                 this.albumInfo = AlbumNone;
@@ -60,19 +60,19 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
     }
 
     protected setComponentData() {
-        if(this.track.type == TrackType.None)
+        if(this.track.type == ItemType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let name = "no current track";
         let info = "";
         let position: string;
         let button: string;
         switch (this.track.type) {
-            case TrackType.Stream:
+            case ItemType.Stream:
                 name = this.track.name;
                 position = "100";
                 button = "false";
                 break;
-            case TrackType.File:
+            case ItemType.File:
                 name = this.track.title;
                 info = this.track.track.album.name;
                 position = "60"; //todo: just a test

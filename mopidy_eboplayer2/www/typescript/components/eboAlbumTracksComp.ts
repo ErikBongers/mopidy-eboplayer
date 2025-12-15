@@ -88,11 +88,11 @@ export class EboAlbumTracksComp extends EboComponent {
         tbody.innerHTML  = "";
         switch (this.albumInfo?.type) {
             case AlbumDataType.Loaded:
-                this.albumInfo.tracks.forEach(track => {
+                this.albumInfo.album.tracks.forEach(track => {
                     let tr = tbody.appendChild(document.createElement("tr"));
                     let td = tr.appendChild(document.createElement("td"));
-                    tr.dataset.uri = track.uri;
-                    td.innerText = track.name;
+                    tr.dataset.uri = track.track.uri;
+                    td.innerText = track.track.name;
                 });
                 break;
             case AlbumDataType.StreamLinesLoaded:

@@ -2,7 +2,7 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import models from "../../js/mopidy";
 import {transformTrackDataToModel} from "../global";
-import {EboplayerEvents, HistoryLine, TrackType} from "../modelTypes";
+import {EboplayerEvents, FileTrackModel, HistoryLine, StreamTrackModel, ItemType} from "../modelTypes";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
@@ -98,7 +98,7 @@ export class TimelineView extends View {
         let currentTrack = await getState().getController().getCurrertTrackInfoCached();
         if(!currentTrack)
             return;
-        if (currentTrack.type == TrackType.None)
+        if (currentTrack.type == ItemType.None)
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let currentUri = currentTrack.track.uri;
         let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
@@ -134,21 +134,20 @@ export class TimelineView extends View {
             `);
 
         //delayed update of track info.
-        const tracks = await getState().getController().lookupCached(uri);
-        this.updateTrackLineFromLookup(tr, tracks, title);
+        const track = await getState().getController().lookupTrackCached(uri);
+        this.updateTrackLineFromLookup(tr, track, title);
     }
 
-    private updateTrackLineFromLookup(tr: HTMLTableRowElement, tracks: models.Track[], title: string) {
-        let track = transformTrackDataToModel(tracks[0]);
+    private updateTrackLineFromLookup(tr: HTMLTableRowElement, track: (FileTrackModel | StreamTrackModel), title: string) {
         let artist =  "⚬⚬⚬";
         let album =  "⚬⚬⚬";
         switch (track.type) {
-            case TrackType.File:
+            case ItemType.File:
                 title = track.title;
                 artist = track.track.artists[0].name; //todo: add other names?
                 album = track.track.album.name;
                 break;
-            case TrackType.Stream:
+            case ItemType.Stream:
                 title = track.name;
                 break;
         }

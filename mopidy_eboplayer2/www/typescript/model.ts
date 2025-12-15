@@ -1,9 +1,8 @@
 import models from "../js/mopidy";
-import {AllRefs, Refs, SearchResult} from "./refs";
-import {BrowseFilter, ConnectionState, EboplayerEvents, FilterBreadCrumbType, HistoryLine, LibraryDict, LibraryItem, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, TrackModel, TrackType, Views} from "./modelTypes";
-import TlTrack = models.TlTrack;
-import Ref = models.Ref;
+import {Refs, SearchResult} from "./refs";
+import {AlbumDataLoaded, AlbumModel, BrowseFilter, ConnectionState, EboplayerEvents, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
+import TlTrack = models.TlTrack;
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
@@ -14,7 +13,7 @@ export interface ViewModel extends EventTarget {
     getPlayState: () => PlayState;
     getActiveStreamLines: () => StreamTitles;
     getHistory: () => HistoryLine[];
-    getTrackInfo(uri: string): LibraryItem;
+    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel);
     getCurrentBrowseFilter: () => BrowseFilter;
     getCurrentSearchResults(): SearchResult[];
     getTrackList(): TlTrack[];
@@ -28,7 +27,7 @@ export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
 export class Model extends EventTarget implements ViewModel {
-    static NoTrack: TrackModel = { type: TrackType.None } as NoneTrackModel;
+    static NoTrack: TrackModel = { type: ItemType.None } as NoneTrackModel;
     currentTrack: string;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
@@ -50,7 +49,7 @@ export class Model extends EventTarget implements ViewModel {
     private activeStreamLines: StreamTitles;
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
-    private libraryCache: Map<string, LibraryItem> = new Map();
+    private libraryCache: Map<string, (FileTrackModel | StreamTrackModel | AlbumModel)> = new Map();
     private currentBrowseFilter= new BrowseFilter();
     private filterBreadCrumbStack: BreadCrumbStack<FilterBreadCrumbType> = new BreadCrumbStack<FilterBreadCrumbType>();
 
@@ -59,6 +58,7 @@ export class Model extends EventTarget implements ViewModel {
     private view: Views = Views.NowPlaying;
     private albumToViewUri: string;
     // private albumCache: Set<LibraryItem> = new Map();
+    private currentImage: string;
 
     constructor() {
         super();
@@ -114,7 +114,7 @@ export class Model extends EventTarget implements ViewModel {
 
     getConnectionState = () => this.connectionState;
 
-    getTrackInfo(uri: string): LibraryItem {
+    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel  | AlbumModel) {
         return this.libraryCache.get(uri);
     }
 
@@ -134,12 +134,12 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     setCurrentTrack(track: TrackModel) {
-        if(track.type == TrackType.None) {
+        if(track.type == ItemType.None) {
             this.currentTrack = undefined;
             return;
         }
         this.currentTrack = track.track.uri;
-        this.addToLibraryCache(this.currentTrack, [track.track]);
+        this.addToLibraryCache(this.currentTrack, track);
         this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
     }
 
@@ -218,23 +218,26 @@ export class Model extends EventTarget implements ViewModel {
     getTrackList = () => this.trackList;
 
     //Doesn't overwrite
-    addToLibraryCache(uri: string, item: LibraryItem) {
+    addToLibraryCache(uri: string, item: (FileTrackModel | StreamTrackModel | AlbumModel)) {
         if(!this.libraryCache.has(uri))
         this.libraryCache.set(uri, item);
     }
 
-    updateLibraryCache(uri: string, item: LibraryItem) {
+    updateLibraryCache(uri: string, item: (FileTrackModel | StreamTrackModel | AlbumModel)) {
         this.libraryCache.set(uri, item);
     }
 
     //Overwrites!
-    addDictToLibraryCache(dict: LibraryDict) {
-        for(let key in dict) {
-            this.updateLibraryCache(key, dict[key]);
+    addItemsToLibraryCache(items: (FileTrackModel | StreamTrackModel | AlbumModel)[]) {
+        for(let item of items) {
+            if(item.type == ItemType.Album)
+                this.updateLibraryCache(item.albumInfo.uri, item);
+            else
+                this.updateLibraryCache(item.track.uri, item);
         }
     }
 
-    getTrackFromCache(uri: string): LibraryItem | undefined {
+    getFromCache(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel) | undefined {
         return this.libraryCache.get(uri);
     }
 
@@ -254,4 +257,11 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
     }
     getAlbumToView = () => this.albumToViewUri;
+
+    setCurrentImage(uri: string) {
+        this.currentImage = uri;
+        this.dispatchEvent(new Event(EboplayerEvents.currentImageSet));
+    }
+
+    getCurrentImage = () => this.currentImage;
 }

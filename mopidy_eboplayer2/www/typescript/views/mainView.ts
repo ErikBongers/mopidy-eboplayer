@@ -112,7 +112,7 @@ export class MainView extends View {
 
     private async onSelectedTrackChanged() {
         let uri = getState().getModel().getSelectedTrack();
-        getState().getController().getTrackInfoCached(uri)
+        getState().getController().lookupTrackCached(uri)
             .then(async track => {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.albumInfo = await getState().getController().fetchAlbumDataForTrack(track);

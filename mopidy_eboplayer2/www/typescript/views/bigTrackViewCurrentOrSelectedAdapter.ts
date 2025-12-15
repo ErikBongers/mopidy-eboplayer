@@ -3,7 +3,7 @@ import {Model} from "../model";
 import {EboPlayerDataType, View} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
 import { BigTrackViewUriAdapter } from "./bigTrackViewUriAdapter";
-import {EboplayerEvents, TrackModel, TrackType} from "../modelTypes";
+import {EboplayerEvents, TrackModel, ItemType} from "../modelTypes";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends BigTrackViewUriAdapter {
     constructor(id: string) {

@@ -1,5 +1,4 @@
 import {EboComponent} from "./EboComponent";
-import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
 
 export class EboBigTrackComp extends EboComponent {
@@ -175,8 +174,11 @@ export class EboBigTrackComp extends EboComponent {
 
     override updateWhenConnected() {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
-            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.albumInfo.name;
+            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
+        let img = this.shadow.getElementById("img") as HTMLImageElement;
+        if(this.albumInfo.type == AlbumDataType.Loaded)
+            img.src = this.albumInfo.album.tracks[0].imageUri;
     }
 
     private onActiveTrackChanged() {

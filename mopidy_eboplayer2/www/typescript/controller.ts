@@ -9,14 +9,15 @@ import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
-import {numberedDictToArray, transformLibraryItem} from "./global";
+import {getHostAndPort, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumDataLoaded, AlbumDataType, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, PlayState, StreamTitles, TrackModel, TrackType, Views} from "./modelTypes";
+import {AlbumDataLoaded, AlbumDataType, AlbumModel, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, FileTrackModel, ItemType, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
-import Track = models.Track;
+
+export const LIBRARY_PROTOCOL = "eboback:";
 
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
@@ -130,12 +131,27 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
-        this.model.setCurrentTrack(transformTlTrackDataToModel(data));
+        if(!data) {
+            this.model.setCurrentTrack(TrackNone);
+            return;
+        }
+        let trackModel = transformTlTrackDataToModel(data);
+        trackModel.imageUri =  await this.fetchTrackImage(data.track.uri);
+        this.model.setCurrentTrack(trackModel);
         await this.webProxy.fetchActiveStreamLines();
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // this.core.playback.getState().then(processPlaystate, console.error)
         // this.core.mixer.getMute().then(processMute, console.error)
+    }
+
+    private async fetchTrackImage(uri: string) {
+        let images = await this.mopidyProxy.fetchImages([uri]);
+        let arr = images[uri];
+        arr.sort(img => img.width * img.height);
+        if(arr.length == 0)
+            return "";
+        return arr.pop().uri;
     }
 
     setVolume(volume: number) {
@@ -223,21 +239,37 @@ export class Controller extends Commands implements DataRequester{
         //todo: if the breadCrumb is a uri, reset to the CURRENT breadCrumb and clear the current browseFilter.
     }
 
-    async getTrackInfoCached(uri: string) {
-        let track  = getState().getModel().getTrackInfo(uri);
-        if(!track)
-            await this.lookupCached(uri);
-
-        return transformLibraryItem(track);
+    async lookupTrackCached(trackUri: string) {
+        let libraryList = await this.fetchAndConvertTracks(trackUri);
+        this.model.addItemsToLibraryCache(libraryList);
+        return this.model.getFromCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
     }
 
-    async lookupCached(uri: string) {
-        let tracks = this.model.getTrackFromCache(uri);
-        if(tracks)
-            return tracks;
+    async lookupAlbumCached(albumUri: string) {
+        let item = this.model.getFromCache(albumUri);
+        if(item)
+            return item as AlbumModel; //assuming the albumUri points to an album.
+
+        let libraryList = await this.fetchAndConvertTracks(albumUri);
+        let albumModel: AlbumModel = {
+            type: ItemType.Album,
+            albumInfo: libraryList[0].track.album,
+            tracks: libraryList as FileTrackModel[] //we can safely assume that all tracks in the album are files.
+        }
+        this.model.addItemsToLibraryCache([albumModel]);
+        return albumModel;
+    }
+
+    private async fetchAndConvertTracks(uri: string) {
         let dict = await this.mopidyProxy.fetchTracks(uri);
-        this.model.addDictToLibraryCache(dict);
-        return this.model.getTrackFromCache(uri);
+        let trackList = dict[uri] as models.Track[];
+        let newListPromises = trackList.map(async track => {
+            let image = await this.fetchTrackImage(track.uri);
+            let trackModel = transformTrackDataToModel(track);
+            trackModel.imageUri = `http://${getHostAndPort()}${image}`; //todo: remove this hardcoded host in production: use a relative path instead. Create function getHostAndPortOrRelativeUrl() or something.
+            return trackModel;
+        });
+        return await Promise.all(newListPromises);
     }
 
     async clearListAndPlay(uri: string) {
@@ -266,19 +298,18 @@ export class Controller extends Commands implements DataRequester{
     async getCurrertTrackInfoCached() {
         let trackUri = this.model.getCurrentTrack();
         if(!trackUri)
-            return undefined;
-        return await this.getTrackInfoCached(trackUri);
+            return TrackNone;
+        return await this.lookupTrackCached(trackUri) as TrackModel;
     }
 
-    readonly LIBRARY_PROTOCOL = "eboback:";
 
     async fetchAllRefs() {
         let roots = await this.mopidyProxy.fetchRootDirs();
         let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
-        let allTracks = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL+"directory?type=track");
-        let allAlbums = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL+"directory?type=album");
-        let allArtists = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL+"directory?type=artist");
-        let allGenres = await this.mopidyProxy.browse(this.LIBRARY_PROTOCOL+"directory?type=genre");
+        let allTracks = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=track");
+        let allAlbums = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album");
+        let allArtists = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=artist");
+        let allGenres = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=genre");
         let playLists = await this.mopidyProxy.fetchPlayLists();
         let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
         let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
@@ -313,7 +344,7 @@ export class Controller extends Commands implements DataRequester{
                 playlistItems.forEach(ref => {
                     //"local:track:Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma"
                     ref.name = ref.uri
-                        .replace("local:track:", "")
+                        .replace(LIBRARY_PROTOCOL+"track:", "")
                         .replaceAll("%20", " ");
                     //remove the last part of the uri, which is the file extension.
                     ref.name = ref.name.split(".").slice(0,-1).join(".");
@@ -348,11 +379,11 @@ export class Controller extends Commands implements DataRequester{
         if (!track)
             return AlbumNone;
         switch (track.type) {
-            case TrackType.File:
+            case ItemType.File:
                 console.log(track.track.album.uri);
                 let albumUri = track.track.album.uri;
                 return await this.fetchAlbumInfo(albumUri);
-            case TrackType.Stream:
+            case ItemType.Stream:
                 let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
                 let groupLines = function (grouped: string[][], line: string){
                     if(line == "---") {
@@ -375,13 +406,10 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchAlbumInfo(albumUri: string) {
-        let album = await this.lookupCached(albumUri);
-        let albumTracks = numberedDictToArray<Track>(album);
+        let album = await this.lookupAlbumCached(albumUri);
         let albumData: AlbumDataLoaded = {
             type: AlbumDataType.Loaded,
-            tracks: albumTracks,
-            albumTrack: undefined,
-            albumInfo: albumTracks[0].album //bit of a hack
+            album
         };
         return albumData;
     }
@@ -393,7 +421,7 @@ export class Controller extends Commands implements DataRequester{
     async fetchAllAlbums() {
         //get all the albums.
         //first refs:
-        let albumRefs = await this.mopidyProxy.browse("local:directory?type=album");
+        let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album");
         let albumsPromises = albumRefs.map(async ref => {
             return await this.fetchAlbumInfo(ref.uri);
         });
