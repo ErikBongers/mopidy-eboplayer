@@ -1845,7 +1845,8 @@ var Controller = class extends Commands {
 		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
 			let image = await this.fetchTrackImage(track.uri);
 			let trackModel = transformTrackDataToModel(track);
-			trackModel.imageUri = `http://${getHostAndPort()}${image}`;
+			if (image == "") trackModel.imageUri = "images/default_cover.png";
+			else trackModel.imageUri = `http://${getHostAndPort()}${image}`;
 			return trackModel;
 		});
 		return await Promise.all(newListPromises);
@@ -3668,6 +3669,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		this.shadow.getElementById("btnPrev").style.opacity = opacity;
 		let img = this.shadow.querySelector("img");
 		img.style.visibility = this.show_info ? "visible" : "hidden";
+		if (this.track.type != ItemType.None) img.src = this.track.imageUri;
 		if (!this.isVolumeSliding) {
 			let slider = this.shadow.getElementById("volumeSlider");
 			console_yellow(`eboButtonBarComp.update: this.volume: ${this.volume}`);

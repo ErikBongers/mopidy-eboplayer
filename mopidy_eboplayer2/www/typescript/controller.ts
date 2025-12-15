@@ -266,7 +266,12 @@ export class Controller extends Commands implements DataRequester{
         let newListPromises = trackList.map(async track => {
             let image = await this.fetchTrackImage(track.uri);
             let trackModel = transformTrackDataToModel(track);
-            trackModel.imageUri = `http://${getHostAndPort()}${image}`; //todo: remove this hardcoded host in production: use a relative path instead. Create function getHostAndPortOrRelativeUrl() or something.
+            if (image == "") {
+                trackModel.imageUri = "images/default_cover.png";
+            }
+            else {
+                trackModel.imageUri = `http://${getHostAndPort()}${image}`; //todo: remove this hardcoded host in production: use a relative path instead. Create function getHostAndPortOrRelativeUrl() or something.
+            }
             return trackModel;
         });
         return await Promise.all(newListPromises);

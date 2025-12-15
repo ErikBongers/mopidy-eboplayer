@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {EboplayerEvents, TrackModel, ItemType} from "../modelTypes";
+import {EboplayerEvents, ItemType, TrackModel} from "../modelTypes";
 import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
@@ -188,8 +188,10 @@ export class EboButtonBar extends EboComponent {
         let opacity = this.track.type == ItemType.File ? "1" : "0.5";
         this.shadow.getElementById("btnNext").style.opacity = opacity;
         this.shadow.getElementById("btnPrev").style.opacity = opacity;
-        let img = this.shadow.querySelector("img") as HTMLElement;
+        let img = this.shadow.querySelector("img") as HTMLImageElement;
         img.style.visibility = this.show_info ? "visible" : "hidden";
+        if(this.track.type != ItemType.None)
+            img.src = this.track.imageUri;
         if(!this.isVolumeSliding) {
             let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
             console_yellow(`eboButtonBarComp.update: this.volume: ${this.volume}`);
