@@ -1739,6 +1739,7 @@ var Controller = class extends Commands {
 		}
 		let trackModel = transformTlTrackDataToModel(data);
 		this.model.setCurrentTrack(trackModel);
+		await this.webProxy.fetchActiveStreamLines();
 	}
 	async fetchLargestImageOrDefault(uri) {
 		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
@@ -2051,7 +2052,7 @@ var ButtonBarView = class extends View {
 		let currentTrack = playerState_default().getModel().getCurrentTrack();
 		let comp = document.getElementById(this.componentId);
 		if (!currentTrack) {
-			comp.setAttribute("title", "");
+			comp.setAttribute("text", "");
 			comp.setAttribute("allow_play", "false");
 			comp.setAttribute("allow_prev", "false");
 			comp.setAttribute("allow_next", "false");
@@ -2059,13 +2060,16 @@ var ButtonBarView = class extends View {
 		} else {
 			let track = await playerState_default().getController().getExpandedTrackModel(currentTrack);
 			if (isInstanceOfExpandedStreamModel(track)) {
-				comp.setAttribute("title", track.historyLines.join("\n"));
+				let active_titles = "";
+				let activeStreamLines = playerState_default().getModel().getActiveStreamLines();
+				if (activeStreamLines) active_titles = activeStreamLines.active_titles.join("\n");
+				comp.setAttribute("text", active_titles);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
 				comp.setAttribute("imageUrl", DEFAULT_IMG_URL);
 			} else {
-				comp.setAttribute("title", track.track.track.name);
+				comp.setAttribute("text", track.track.track.name);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");

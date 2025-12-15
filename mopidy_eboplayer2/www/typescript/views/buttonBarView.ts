@@ -81,7 +81,7 @@ export class ButtonBarView extends View {
         let currentTrack = getState().getModel().getCurrentTrack();
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         if(!currentTrack) {
-            comp.setAttribute("title", "");
+            comp.setAttribute("text", "");
             comp.setAttribute("allow_play", "false");
             comp.setAttribute("allow_prev", "false");
             comp.setAttribute("allow_next", "false");
@@ -89,13 +89,17 @@ export class ButtonBarView extends View {
         } else {
             let track = await getState().getController().getExpandedTrackModel(currentTrack);
             if (isInstanceOfExpandedStreamModel(track)) {
-                comp.setAttribute("title", track.historyLines.join("\n"));
+                let active_titles = "";
+                let activeStreamLines = getState().getModel().getActiveStreamLines();
+                if(activeStreamLines)
+                    active_titles = activeStreamLines.active_titles.join("\n");
+                comp.setAttribute("text", active_titles);
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
                 comp.setAttribute("imageUrl", DEFAULT_IMG_URL);
             } else {
-                comp.setAttribute("title", track.track.track.name);
+                comp.setAttribute("text", track.track.track.name);
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");

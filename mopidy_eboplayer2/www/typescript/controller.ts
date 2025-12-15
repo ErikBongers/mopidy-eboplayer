@@ -140,7 +140,7 @@ export class Controller extends Commands implements DataRequester{
         let trackModel = transformTlTrackDataToModel(data);
         this.model.setCurrentTrack(trackModel);
         //todo: only for streams:
-        // await this.webProxy.fetchActiveStreamLines();
+        await this.webProxy.fetchActiveStreamLines();
 
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
