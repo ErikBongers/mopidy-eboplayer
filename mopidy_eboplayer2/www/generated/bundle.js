@@ -2059,6 +2059,7 @@ var ButtonBarView = class extends View {
 			comp.setAttribute("allow_prev", "false");
 			comp.setAttribute("allow_next", "false");
 			comp.setAttribute("image_url", "");
+			comp.setAttribute("stop_or_pause", "stop");
 		} else {
 			let track = await playerState_default().getController().getExpandedTrackModel(currentTrack);
 			if (isInstanceOfExpandedStreamModel(track)) {
@@ -2070,12 +2071,14 @@ var ButtonBarView = class extends View {
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
 				comp.setAttribute("image_url", track.stream.imageUri);
+				comp.setAttribute("stop_or_pause", "stop");
 			} else {
 				comp.setAttribute("text", track.track.track.name);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
 				comp.setAttribute("image_url", track.album.imageUri);
+				comp.setAttribute("stop_or_pause", "pause");
 			}
 		}
 		this.showHideInfo();
@@ -3523,7 +3526,8 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		"allow_play",
 		"allow_prev",
 		"allow_next",
-		"text"
+		"text",
+		"stop_or_pause"
 	];
 	play_state;
 	show_info = false;
@@ -3534,6 +3538,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 	allow_next = true;
 	text = "";
 	image_url = "";
+	stop_or_pause;
 	static styleText = `
         <style>
             img {
@@ -3629,6 +3634,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			case "image_url":
 			case "text":
 			case "play_state":
+			case "stop_or_pause":
 				this[name] = newValue;
 				break;
 			case "volume":
@@ -3692,13 +3698,12 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 	updateWhenConnected() {
 		switch (this.play_state) {
 			case "playing":
-				this.setPlayButton("Play", "fa-play");
+				if (this.stop_or_pause == "pause") this.setPlayButton("Pause", "fa-pause");
+				else this.setPlayButton("Stop", "fa-stop");
 				break;
 			case "stopped":
-				this.setPlayButton("Stop", "fa-stop");
-				break;
 			case "paused":
-				this.setPlayButton("Pause", "fa-pause");
+				this.setPlayButton("Play", "fa-play");
 				break;
 		}
 		this.shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5";

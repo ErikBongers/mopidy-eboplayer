@@ -5,7 +5,7 @@ import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 export class EboButtonBar extends EboComponent {
     static readonly tagName=  "ebo-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text"];
+    static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text", "stop_or_pause"];
     private play_state: string;
     private show_info: boolean = false;
     private isVolumeSliding: boolean = false;
@@ -15,6 +15,7 @@ export class EboButtonBar extends EboComponent {
     private allow_next: boolean = true;
     private text: string = "";
     private image_url: string = "";
+    private stop_or_pause: string;
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -119,6 +120,7 @@ export class EboButtonBar extends EboComponent {
             case "image_url":
             case "text":
             case "play_state":
+            case "stop_or_pause":
                 this[name] = newValue;
                 break;
             case "volume":
@@ -169,9 +171,16 @@ export class EboButtonBar extends EboComponent {
 
     updateWhenConnected() {
         switch(this.play_state) {
-            case "playing": this.setPlayButton('Play', 'fa-play'); break;
-            case "stopped": this.setPlayButton('Stop', 'fa-stop'); break;
-            case "paused": this.setPlayButton('Pause', 'fa-pause'); break;
+            case "playing":
+                if(this.stop_or_pause == "pause")
+                    this.setPlayButton('Pause', 'fa-pause');
+                else
+                    this.setPlayButton('Stop', 'fa-stop');
+                break;
+            case "stopped":
+            case "paused":
+                this.setPlayButton('Play', 'fa-play');
+                break;
         }
         this.shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5" ;
         this.shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";

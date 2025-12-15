@@ -86,6 +86,7 @@ export class ButtonBarView extends View {
             comp.setAttribute("allow_prev", "false");
             comp.setAttribute("allow_next", "false");
             comp.setAttribute("image_url", "");
+            comp.setAttribute("stop_or_pause", "stop");
         } else {
             let track = await getState().getController().getExpandedTrackModel(currentTrack);
             if (isInstanceOfExpandedStreamModel(track)) {
@@ -98,12 +99,14 @@ export class ButtonBarView extends View {
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
                 comp.setAttribute("image_url", track.stream.imageUri);
+                comp.setAttribute("stop_or_pause", "stop");
             } else {
                 comp.setAttribute("text", track.track.track.name);
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
                 comp.setAttribute("image_url", track.album.imageUri);
+                comp.setAttribute("stop_or_pause", "pause");
             }
         }
         this.showHideInfo();
