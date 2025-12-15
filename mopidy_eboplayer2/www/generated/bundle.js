@@ -2899,7 +2899,8 @@ var MainView = class extends View {
 		let uri = playerState_default().getModel().getSelectedTrack();
 		playerState_default().getController().lookupTrackCached(uri).then(async (track) => {
 			let albumComp = document.getElementById("bigAlbumView");
-			albumComp.albumInfo = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
+			if (track.type == ItemType.File) albumComp.albumInfo = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
+			else albumComp.albumInfo = void 0;
 		});
 	}
 	async onAlbumToViewChanged() {

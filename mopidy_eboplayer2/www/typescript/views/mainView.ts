@@ -2,7 +2,7 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import EboBrowseComp from "../components/eboBrowseComp";
 
-import {EboplayerEvents, Views} from "../modelTypes";
+import {EboplayerEvents, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 
 export class MainView extends View {
@@ -115,7 +115,10 @@ export class MainView extends View {
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                albumComp.albumInfo = await getState().getController().getExpandedAlbumModel(track.track.album.uri)
+                if(track.type == ItemType.File)
+                    albumComp.albumInfo = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
+                else
+                    albumComp.albumInfo = undefined;
             });
     }
 
