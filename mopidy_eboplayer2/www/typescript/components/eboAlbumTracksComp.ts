@@ -1,16 +1,23 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
+import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 
 export class EboAlbumTracksComp extends EboComponent {
+    get streamInfo(): ExpandedStreamModel {
+        return this._streamInfo;
+    }
+
+    set streamInfo(value: ExpandedStreamModel) {
+        this._streamInfo = value;
+    }
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
         this.highLightActiveTrack();
     }
-    get albumInfo(): AlbumData {
+    get albumInfo() {
         return this._albumInfo;
     }
 
-    set albumInfo(value: AlbumData) {
+    set albumInfo(value: ExpandedAlbumModel) {
         this._albumInfo = value;
         this.render();
     }
@@ -22,13 +29,14 @@ export class EboAlbumTracksComp extends EboComponent {
     static observedAttributes = [
         "img",
     ];
-    private _albumInfo: AlbumData;
+    private _albumInfo?: ExpandedAlbumModel;
+    private _streamInfo?: ExpandedStreamModel;
 
 
     constructor() {
         super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 
-        this.albumInfo = AlbumNone;
+        this.albumInfo = undefined;
         this.render();
     }
 
@@ -86,23 +94,22 @@ export class EboAlbumTracksComp extends EboComponent {
     renderTrackList() {
         let tbody = (this.shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
-        switch (this.albumInfo?.type) {
-            case AlbumDataType.Loaded:
-                this.albumInfo.album.tracks.forEach(track => {
-                    let tr = tbody.appendChild(document.createElement("tr"));
-                    let td = tr.appendChild(document.createElement("td"));
-                    tr.dataset.uri = track.track.uri;
-                    td.innerText = track.track.name;
-                });
-                break;
-            case AlbumDataType.StreamLinesLoaded:
-                this.albumInfo.lines.forEach(lineGroup => {
-                    let tr = tbody.appendChild(document.createElement("tr"));
-                    let td = tr.appendChild(document.createElement("td"));
-                    td.innerHTML = lineGroup.join("<br>");
-                    td.classList.add("selectable");
-                });
-                break;
+        if(this.albumInfo) {
+            this.albumInfo.tracks.forEach(track => {
+                let tr = tbody.appendChild(document.createElement("tr"));
+                let td = tr.appendChild(document.createElement("td"));
+                tr.dataset.uri = track.track.uri;
+                td.innerText = track.track.name;
+            });
+        }
+
+        if(this._streamInfo) {
+            this.streamInfo.historyLines.forEach(lineGroup => {
+                let tr = tbody.appendChild(document.createElement("tr"));
+                let td = tr.appendChild(document.createElement("td"));
+                td.innerHTML = lineGroup.join("<br>");
+                td.classList.add("selectable");
+            });
         }
         this.highLightActiveTrack();
     }

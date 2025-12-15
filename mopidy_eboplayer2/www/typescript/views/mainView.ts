@@ -115,13 +115,13 @@ export class MainView extends View {
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                albumComp.albumInfo = await getState().getController().fetchAlbumDataForTrack(track);
+                albumComp.albumInfo = await getState().getController().getExpandedAlbumModel(track.track.album.uri)
             });
     }
 
     private async onAlbumToViewChanged() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.albumInfo = await getState().getController().fetchAlbumInfo(getState().getModel().getAlbumToView());
+        albumComp.albumInfo = await getState().getController().getExpandedAlbumModel(getState().getModel().getAlbumToView());
     }
 }
 

@@ -1,29 +1,20 @@
 import {EboComponent} from "./EboComponent";
-import {EboplayerEvents, ItemType, TrackModel} from "../modelTypes";
+import {EboplayerEvents, ExpandedFileTrackModel, ItemType, TrackModel} from "../modelTypes";
 import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
-    set streamLines(value: string) {
-        this._streamLines = value;
-        this.update();
-    }
-    private _track: TrackModel;
-    private _streamLines: string;
-    get track(): TrackModel {
-        return this._track;
-    }
-    set track(value: TrackModel) {
-        this._track = value;
-        this.update();
-    }
     static readonly tagName=  "ebo-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["playing", "img", "show_info", "volume"];
-    private playing: boolean = false;
+    static observedAttributes = ["play_state", "imageUrl", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text"];
+    private play_state: string;
     private show_info: boolean = false;
-    private img: string;
     private isVolumeSliding: boolean = false;
     private volume: number = 0;
+    private allow_play: boolean = true;
+    private allow_prev: boolean = true;
+    private allow_next: boolean = true;
+    private text: string = "";
+    private imageUrl: string = "";
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -102,7 +93,7 @@ export class EboButtonBar extends EboComponent {
     static htmlText = `
         <div id="wrapper">
             <div id="info">
-                <span id="title">sdfsdf sdfsdf </span>
+                <span id="text">sdfsdf sdfsdf </span>
             </div>
             <div id="buttonBar">
                 <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
@@ -126,14 +117,17 @@ export class EboButtonBar extends EboComponent {
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "img":
+            case "text":
+            case "play_state":
                 this[name] = newValue;
                 break;
             case "volume":
                 this.volume = parseInt(newValue);
-                console_yellow(`eboButtonBarComp: attributeReallyChangedCallback: volume: ${this.volume}`);
                 break;
-            case "playing":
             case "show_info":
+            case "allow_play":
+            case "allow_prev":
+            case "allow_next":
                 if (!["true", "false"].includes(newValue))
                     throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
                 this[name] = newValue == "true";
@@ -174,46 +168,32 @@ export class EboButtonBar extends EboComponent {
     }
 
     updateWhenConnected() {
-        if(!this.track)
-            return;
-        if(this.playing) {
-            if(this.track.type == ItemType.Stream)
-                this.setPlayButton('Stop', 'fa-stop');
-            else
-                this.setPlayButton('Pause', 'fa-pause');
-
-        } else {
-                this.setPlayButton('Play', 'fa-play');
+        switch(this.play_state) {
+            case "playing": this.setPlayButton('Play', 'fa-play'); break;
+            case "stopped": this.setPlayButton('Stop', 'fa-stop'); break;
+            case "paused": this.setPlayButton('Pause', 'fa-pause'); break;
         }
-        let opacity = this.track.type == ItemType.File ? "1" : "0.5";
-        this.shadow.getElementById("btnNext").style.opacity = opacity;
-        this.shadow.getElementById("btnPrev").style.opacity = opacity;
+        this.shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5" ;
+        this.shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";
+        this.shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
+
+        let titleEl = this.shadow.getElementById("text");
         let img = this.shadow.querySelector("img") as HTMLImageElement;
-        img.style.visibility = this.show_info ? "visible" : "hidden";
-        if(this.track.type != ItemType.None)
-            img.src = this.track.imageUri;
+        titleEl.style.display = this.show_info ? "inline" : "none";
+        if(this.imageUrl) {
+            img.style.visibility =  this.show_info ? "visible" : "hidden";
+            img.setAttribute("src", this.imageUrl);
+        }
+        else
+            img.style.visibility = "hidden";
         if(!this.isVolumeSliding) {
             let slider = this.shadow.getElementById("volumeSlider") as HTMLInputElement;
-            console_yellow(`eboButtonBarComp.update: this.volume: ${this.volume}`);
             let visualVolume = inverseQuadratic100(this.volume);
-            console_yellow(`eboButtonBarComp.update: visualVolume: ${visualVolume}`);
             slider.value = Math.floor(visualVolume).toString();
-            console_yellow(`eboButtonBarComp.update: slider.value: ${slider.value}, this.volume: ${this.volume}`);
         }
         let wrapper = this.shadow.getElementById("wrapper");
-        wrapper.classList.toggle("playing", this.playing);
-        let titleEl = this.shadow.getElementById("title");
-        titleEl.textContent = "";
-        if(this.show_info) {
-            let title: string;
-            if (this.track) {
-                if (this.track.type == ItemType.Stream)
-                    title = this._streamLines ?? this.track.name;
-                else if (this.track.type == ItemType.File)
-                    title = this.track.title;
-                titleEl.innerHTML = title;
-            }
-        }
+        wrapper.classList.toggle("playing", this.play_state == "playing");
+        titleEl.innerHTML = this.text.replaceAll("\n", "<br/>");
     }
 
     private setPlayButton(title: string, addClass: string) {

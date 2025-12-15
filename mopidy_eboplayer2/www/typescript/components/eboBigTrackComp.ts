@@ -178,7 +178,7 @@ export class EboBigTrackComp extends EboComponent {
         }
         let img = this.shadow.getElementById("img") as HTMLImageElement;
         if(this.albumInfo.type == AlbumDataType.Loaded)
-            img.src = this.albumInfo.album.tracks[0].imageUri;
+            img.src = this.albumInfo.album.imageUri;
     }
 
     private onActiveTrackChanged() {

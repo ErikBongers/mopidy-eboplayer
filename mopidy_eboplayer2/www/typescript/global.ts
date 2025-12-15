@@ -70,7 +70,6 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
         title: track.name,
         performer: "",
         songlenght: 0,
-        imageUri: undefined
     };
     if (!track.name || track.name === '') {
         let parts = track.uri.split('/');

@@ -9,9 +9,9 @@ import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
-import {getHostAndPort, numberedDictToArray, transformTrackDataToModel} from "./global";
+import {numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumDataLoaded, AlbumDataType, AlbumModel, AlbumNone, AlbumStreamLinesLoaded, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, FileTrackModel, ItemType, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
+import {AlbumModel, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, ItemType, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
@@ -22,6 +22,8 @@ export const LIBRARY_PROTOCOL = "eboback:";
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
 //The controller should not listen to model events, to avoid circular updates (dead loops).
+export const DEFAULT_IMG_URL = "images/default_cover.png";
+
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
     public mopidyProxy: MopidyProxy;
@@ -136,22 +138,26 @@ export class Controller extends Commands implements DataRequester{
             return;
         }
         let trackModel = transformTlTrackDataToModel(data);
-        trackModel.imageUri =  await this.fetchTrackImage(data.track.uri);
         this.model.setCurrentTrack(trackModel);
-        await this.webProxy.fetchActiveStreamLines();
+        //todo: only for streams:
+        // await this.webProxy.fetchActiveStreamLines();
+
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // this.core.playback.getState().then(processPlaystate, console.error)
         // this.core.mixer.getMute().then(processMute, console.error)
     }
 
-    private async fetchTrackImage(uri: string) {
+    private async fetchLargestImageOrDefault(uri: string) {
         let images = await this.mopidyProxy.fetchImages([uri]);
         let arr = images[uri];
         arr.sort(img => img.width * img.height);
         if(arr.length == 0)
-            return "";
-        return arr.pop().uri;
+            return DEFAULT_IMG_URL;
+        let imageUri = arr.pop().uri;
+        if(imageUri == "")
+             imageUri = DEFAULT_IMG_URL;
+        return imageUri;
     }
 
     setVolume(volume: number) {
@@ -240,6 +246,10 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async lookupTrackCached(trackUri: string) {
+        let item = this.model.getFromCache(trackUri);
+        if(item)
+            return item as FileTrackModel | StreamTrackModel;
+
         let libraryList = await this.fetchAndConvertTracks(trackUri);
         this.model.addItemsToLibraryCache(libraryList);
         return this.model.getFromCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
@@ -249,12 +259,17 @@ export class Controller extends Commands implements DataRequester{
         let item = this.model.getFromCache(albumUri);
         if(item)
             return item as AlbumModel; //assuming the albumUri points to an album.
+        return await this.fetchAlbum(albumUri);
+    }
 
-        let libraryList = await this.fetchAndConvertTracks(albumUri);
+    private async fetchAlbum(albumUri: string) {
+        let dict = await this.mopidyProxy.fetchTracks(albumUri);
+        let trackList = dict[albumUri] as models.Track[];
         let albumModel: AlbumModel = {
             type: ItemType.Album,
-            albumInfo: libraryList[0].track.album,
-            tracks: libraryList as FileTrackModel[] //we can safely assume that all tracks in the album are files.
+            albumInfo: trackList[0].album,
+            tracks: trackList.map(track => track.uri),
+            imageUri: await this.fetchLargestImageOrDefault(albumUri)
         }
         this.model.addItemsToLibraryCache([albumModel]);
         return albumModel;
@@ -264,17 +279,37 @@ export class Controller extends Commands implements DataRequester{
         let dict = await this.mopidyProxy.fetchTracks(uri);
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => {
-            let image = await this.fetchTrackImage(track.uri);
-            let trackModel = transformTrackDataToModel(track);
-            if (image == "") {
-                trackModel.imageUri = "images/default_cover.png";
-            }
-            else {
-                trackModel.imageUri = `http://${getHostAndPort()}${image}`; //todo: remove this hardcoded host in production: use a relative path instead. Create function getHostAndPortOrRelativeUrl() or something.
-            }
-            return trackModel;
+            return transformTrackDataToModel(track);
         });
         return await Promise.all(newListPromises);
+    }
+
+    async getExpandedTrackModel(trackUri: string): Promise<ExpandedStreamModel | ExpandedFileTrackModel>{
+        let track = await this.lookupTrackCached(trackUri);
+        if(track.type == ItemType.Stream) {
+            let streamLines = await this.fetchStreamLines(trackUri);
+            // noinspection UnnecessaryLocalVariableJS
+            let streamModel: ExpandedStreamModel = {
+                stream: track,
+                historyLines: streamLines,
+            };
+            return streamModel;
+        } else {
+            let album = await this.lookupAlbumCached(track.track.album.uri);
+            return {track, album};
+        }
+    }
+
+    async getExpandedFileTrackModel(fileTrackUri: string): Promise<ExpandedFileTrackModel> {
+        let track = await this.lookupTrackCached(fileTrackUri) as FileTrackModel;
+        let album = await this.lookupAlbumCached(track.track.album.uri);
+        return {track, album};
+    }
+
+    async getExpandedAlbumModel(albumUri: string): Promise<ExpandedAlbumModel> {
+        let album = await this.lookupAlbumCached(albumUri) as AlbumModel;
+        let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
+        return {album, tracks};
     }
 
     async clearListAndPlay(uri: string) {
@@ -381,42 +416,26 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchAlbumDataForTrack(track: TrackModel) {
-        if (!track)
-            return AlbumNone;
         switch (track.type) {
             case ItemType.File:
-                console.log(track.track.album.uri);
                 let albumUri = track.track.album.uri;
-                return await this.fetchAlbumInfo(albumUri);
-            case ItemType.Stream:
-                let stream_lines = await this.webProxy.fetchAllStreamLines(track.track.uri);
-                let groupLines = function (grouped: string[][], line: string){
-                    if(line == "---") {
-                        grouped.push([]);
-                        return grouped;
-                    }
-                    grouped[grouped.length-1].push(line);
-                    return grouped;
-                }
-                let grouped = stream_lines
-                    .reduce<string[][]>(groupLines, new Array([]))
-                    .filter(lineGroup => lineGroup.length);
-                let albumInfo: AlbumStreamLinesLoaded = {
-                    type: AlbumDataType.StreamLinesLoaded,
-                    lines: grouped,
-                    albumTrack: track.track
-                };
-                return albumInfo;
+                return await this.lookupAlbumCached(albumUri);
         }
     }
 
-    async fetchAlbumInfo(albumUri: string) {
-        let album = await this.lookupAlbumCached(albumUri);
-        let albumData: AlbumDataLoaded = {
-            type: AlbumDataType.Loaded,
-            album
-        };
-        return albumData;
+    async fetchStreamLines(streamUri: string) {
+        let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
+        let groupLines = function (grouped: string[][], line: string){ //todo: normal function declaration?
+            if(line == "---") {
+                grouped.push([]);
+                return grouped;
+            }
+            grouped[grouped.length-1].push(line);
+            return grouped;
+        }
+        return stream_lines
+            .reduce<string[][]>(groupLines, new Array([]))
+            .filter(lineGroup => lineGroup.length); // remove empty groups.
     }
 
     setView(view: Views) {
@@ -428,7 +447,7 @@ export class Controller extends Commands implements DataRequester{
         //first refs:
         let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album");
         let albumsPromises = albumRefs.map(async ref => {
-            return await this.fetchAlbumInfo(ref.uri);
+            return await this.lookupAlbumCached(ref.uri);
         });
 
         let albums = await Promise.all(albumsPromises);

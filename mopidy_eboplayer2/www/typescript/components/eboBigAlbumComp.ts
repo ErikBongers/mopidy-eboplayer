@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
+import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel} from "../modelTypes";
 import getState from "../playerState";
 
 export class EboBigAlbumComp extends EboComponent {
@@ -11,11 +11,11 @@ export class EboBigAlbumComp extends EboComponent {
         this._activeTrackUri = value;
         this.onActiveTrackChanged();
     }
-    get albumInfo(): AlbumData {
+    get albumInfo() {
         return this._albumInfo;
     }
 
-    set albumInfo(value: AlbumData) {
+    set albumInfo(value: ExpandedAlbumModel) {
         this._albumInfo = value;
         this.render();
     }
@@ -31,7 +31,7 @@ export class EboBigAlbumComp extends EboComponent {
     private extra: string = "";
     private img: string  = "images/default_cover.png";
     private albumClickEvent: CustomEvent<unknown>;
-    private _albumInfo: AlbumData;
+    private _albumInfo: ExpandedAlbumModel;
 
     static styleText= `
             <style>
@@ -123,7 +123,7 @@ export class EboBigAlbumComp extends EboComponent {
 
     constructor() {
         super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
-        this.albumInfo = AlbumNone;
+        this.albumInfo = undefined;
         this.render();
         this.albumClickEvent = new CustomEvent("albumClick", {
             bubbles: true,
@@ -169,21 +169,21 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     private onBtnPlayClick() {
-        if (this.albumInfo.type != AlbumDataType.Loaded)
+        if (!this.albumInfo)
             return;
         getState().getController().playAlbum(this.albumInfo.album.albumInfo.uri);
     }
 
     private onBtnAddClick() {
-        if (this.albumInfo.type != AlbumDataType.Loaded)
+        if (!this.albumInfo)
             return;
         getState().getController().addAlbum(this.albumInfo.album.albumInfo.uri);
     }
 
     override updateWhenConnected() {
-        if(this.albumInfo.type == AlbumDataType.Loaded) {
-            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-        }
+        if(!this.albumInfo)
+            return;
+        this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
     }
 
     private onActiveTrackChanged() {

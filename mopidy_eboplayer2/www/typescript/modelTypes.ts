@@ -45,6 +45,13 @@ export class BrowseFilter {
     }
 }
 
+export interface AlbumModel {
+    type: ItemType.Album;
+    tracks: string[];
+    albumInfo: models.Album;
+    imageUri: string;
+}
+
 export interface FileTrackModel {
     type: ItemType.File;
     track: models.Track;
@@ -52,8 +59,6 @@ export interface FileTrackModel {
     composer?: string,
     performer: string,
     songlenght: number,
-    imageUri: string,
-    //...more properties?
 }
 
 export interface StreamTrackModel {
@@ -69,6 +74,25 @@ export interface NoneTrackModel {
 }
 
 export const TrackNone = {type: ItemType.None} as NoneTrackModel;
+
+export interface ExpandedFileTrackModel {
+    track: FileTrackModel,
+    album: AlbumModel,
+}
+
+export interface ExpandedAlbumModel {
+    album: AlbumModel,
+    tracks: FileTrackModel[]
+}
+
+export interface ExpandedStreamModel {
+    stream: StreamTrackModel,
+    historyLines: string[][];
+}
+
+export function isInstanceOfExpandedStreamModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel): model is ExpandedStreamModel {
+    return 'stream' in model;
+}
 
 export enum EboplayerEvents {
     volumeChanged = "eboplayer.volumeChanged",
@@ -162,25 +186,15 @@ export interface AlbumDataLoaded {
     album: AlbumModel;
 }
 
-export interface AlbumModel {
-    type: ItemType.Album;
-    tracks: FileTrackModel[];
-    albumTrack?: models.Track; //todo: get rid of this
-    albumInfo: models.Album;
-}
-
 export interface AlbumStreamLinesLoaded {
     type: AlbumDataType.StreamLinesLoaded;
-    lines: string[][];
     albumTrack: models.Track;
 }
 
 export const AlbumNone: AlbumDataNone = {
     type: AlbumDataType.None
 }
-const AlbumLoading: AlbumDataLoading = {
-    type: AlbumDataType.Loading
-}
+
 export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
 
 export enum Views {
