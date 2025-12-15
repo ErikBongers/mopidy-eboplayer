@@ -279,7 +279,11 @@ export class Controller extends Commands implements DataRequester{
         let dict = await this.mopidyProxy.fetchTracks(uri);
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => {
-            return transformTrackDataToModel(track);
+            let model = transformTrackDataToModel(track);
+            if(model.type == ItemType.Stream) {
+                model.imageUri = DEFAULT_IMG_URL;
+            }
+            return model;
         });
         return await Promise.all(newListPromises);
     }

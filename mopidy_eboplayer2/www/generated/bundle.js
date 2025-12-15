@@ -1846,7 +1846,9 @@ var Controller = class extends Commands {
 	}
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
-			return transformTrackDataToModel(track);
+			let model = transformTrackDataToModel(track);
+			if (model.type == ItemType.Stream) model.imageUri = DEFAULT_IMG_URL;
+			return model;
 		});
 		return await Promise.all(newListPromises);
 	}
@@ -2056,7 +2058,7 @@ var ButtonBarView = class extends View {
 			comp.setAttribute("allow_play", "false");
 			comp.setAttribute("allow_prev", "false");
 			comp.setAttribute("allow_next", "false");
-			comp.setAttribute("imageUrl", "");
+			comp.setAttribute("image_url", "");
 		} else {
 			let track = await playerState_default().getController().getExpandedTrackModel(currentTrack);
 			if (isInstanceOfExpandedStreamModel(track)) {
@@ -2067,13 +2069,13 @@ var ButtonBarView = class extends View {
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("imageUrl", DEFAULT_IMG_URL);
+				comp.setAttribute("image_url", track.stream.imageUri);
 			} else {
 				comp.setAttribute("text", track.track.track.name);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("imageUrl", track.album.imageUri);
+				comp.setAttribute("image_url", track.album.imageUri);
 			}
 		}
 		this.showHideInfo();
@@ -3515,7 +3517,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 	static tagName = "ebo-button-bar";
 	static observedAttributes = [
 		"play_state",
-		"imageUrl",
+		"image_url",
 		"show_info",
 		"volume",
 		"allow_play",
@@ -3531,7 +3533,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 	allow_prev = true;
 	allow_next = true;
 	text = "";
-	imageUrl = "";
+	image_url = "";
 	static styleText = `
         <style>
             img {
@@ -3624,7 +3626,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
-			case "img":
+			case "image_url":
 			case "text":
 			case "play_state":
 				this[name] = newValue;
@@ -3705,9 +3707,9 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		let titleEl = this.shadow.getElementById("text");
 		let img = this.shadow.querySelector("img");
 		titleEl.style.display = this.show_info ? "inline" : "none";
-		if (this.imageUrl) {
+		if (this.image_url) {
 			img.style.visibility = this.show_info ? "visible" : "hidden";
-			img.setAttribute("src", this.imageUrl);
+			img.setAttribute("src", this.image_url);
 		} else img.style.visibility = "hidden";
 		if (!this.isVolumeSliding) {
 			let slider = this.shadow.getElementById("volumeSlider");

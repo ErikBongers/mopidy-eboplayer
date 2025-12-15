@@ -5,7 +5,7 @@ import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 export class EboButtonBar extends EboComponent {
     static readonly tagName=  "ebo-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["play_state", "imageUrl", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text"];
+    static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text"];
     private play_state: string;
     private show_info: boolean = false;
     private isVolumeSliding: boolean = false;
@@ -14,7 +14,7 @@ export class EboButtonBar extends EboComponent {
     private allow_prev: boolean = true;
     private allow_next: boolean = true;
     private text: string = "";
-    private imageUrl: string = "";
+    private image_url: string = "";
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -116,7 +116,7 @@ export class EboButtonBar extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
-            case "img":
+            case "image_url":
             case "text":
             case "play_state":
                 this[name] = newValue;
@@ -180,9 +180,9 @@ export class EboButtonBar extends EboComponent {
         let titleEl = this.shadow.getElementById("text");
         let img = this.shadow.querySelector("img") as HTMLImageElement;
         titleEl.style.display = this.show_info ? "inline" : "none";
-        if(this.imageUrl) {
+        if(this.image_url) {
             img.style.visibility =  this.show_info ? "visible" : "hidden";
-            img.setAttribute("src", this.imageUrl);
+            img.setAttribute("src", this.image_url);
         }
         else
             img.style.visibility = "hidden";
