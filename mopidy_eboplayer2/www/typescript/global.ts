@@ -36,14 +36,19 @@ export function numberedDictToArray<T>(dict: Object, converter?: (object: any) =
 }
 
 export function getHostAndPort() {
-    let hostName = document.body.dataset.hostname;
-    if (!hostName.startsWith("{{"))
-        return hostName;
+    let hostDefs = getHostAndPortDefs();
+    return hostDefs.altHost ?? hostDefs.host;
+}
 
-    hostName = localStorage.getItem("eboplayer.hostName");
-    if (hostName)
-        return hostName;
-    return document.location.host;
+export function getHostAndPortDefs() {
+    let altHostName = document.body.dataset.hostname;
+    if (!altHostName.startsWith("{{"))
+        altHostName = undefined;
+
+    if(!altHostName) {
+        altHostName = localStorage.getItem("eboplayer.hostName");
+    }
+    return {host: document.location.host, altHost: altHostName};
 }
 
 export function isStream(track: models.Track) {
@@ -58,7 +63,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
             track,
             name: track.name,
             infoLines: [],
-            imageUri: undefined
+            imageUrl: undefined
         };
         return model;
     }

@@ -1032,11 +1032,17 @@ function numberedDictToArray(dict, converter) {
 	return array.map(converter);
 }
 function getHostAndPort() {
-	let hostName = document.body.dataset.hostname;
-	if (!hostName.startsWith("{{")) return hostName;
-	hostName = localStorage.getItem("eboplayer.hostName");
-	if (hostName) return hostName;
-	return document.location.host;
+	let hostDefs = getHostAndPortDefs();
+	return hostDefs.altHost ?? hostDefs.host;
+}
+function getHostAndPortDefs() {
+	let altHostName = document.body.dataset.hostname;
+	if (!altHostName.startsWith("{{")) altHostName = void 0;
+	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
+	return {
+		host: document.location.host,
+		altHost: altHostName
+	};
 }
 function isStream(track) {
 	return track?.track_no == void 0;
@@ -1047,7 +1053,7 @@ function transformTrackDataToModel(track) {
 		track,
 		name: track.name,
 		infoLines: [],
-		imageUri: void 0
+		imageUrl: void 0
 	};
 	let model = {
 		type: ItemType.File,
@@ -1745,9 +1751,9 @@ var Controller = class extends Commands {
 		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
 		arr.sort((img) => img.width * img.height);
 		if (arr.length == 0) return DEFAULT_IMG_URL;
-		let imageUri = arr.pop().uri;
-		if (imageUri == "") imageUri = DEFAULT_IMG_URL;
-		return imageUri;
+		let imageUrl = arr.pop().uri;
+		if (imageUrl == "") imageUrl = DEFAULT_IMG_URL;
+		return imageUrl;
 	}
 	setVolume(volume) {
 		this.model.setVolume(volume);
@@ -1839,7 +1845,7 @@ var Controller = class extends Commands {
 			type: ItemType.Album,
 			albumInfo: trackList[0].album,
 			tracks: trackList.map((track) => track.uri),
-			imageUri: await this.fetchLargestImageOrDefault(albumUri)
+			imageUrl: await this.fetchLargestImageOrDefault(albumUri)
 		};
 		this.model.addItemsToLibraryCache([albumModel]);
 		return albumModel;
@@ -1847,7 +1853,7 @@ var Controller = class extends Commands {
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
-			if (model.type == ItemType.Stream) model.imageUri = DEFAULT_IMG_URL;
+			if (model.type == ItemType.Stream) model.imageUrl = DEFAULT_IMG_URL;
 			return model;
 		});
 		return await Promise.all(newListPromises);
@@ -2080,14 +2086,14 @@ var ButtonBarView = class extends View {
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.stream.imageUri);
+				comp.setAttribute("image_url", trackModel.stream.imageUrl);
 				comp.setAttribute("stop_or_pause", "stop");
 			} else {
 				comp.setAttribute("text", trackModel.track.track.name);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.album.imageUri);
+				comp.setAttribute("image_url", trackModel.album.imageUrl);
 				comp.setAttribute("stop_or_pause", "pause");
 			}
 		}
@@ -2586,7 +2592,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	updateWhenConnected() {
 		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
 		let img = this.shadow.getElementById("img");
-		if (this.albumInfo.type == AlbumDataType.Loaded) img.src = this.albumInfo.album.imageUri;
+		if (this.albumInfo.type == AlbumDataType.Loaded) img.src = this.albumInfo.album.imageUrl;
 	}
 	onActiveTrackChanged() {}
 };

@@ -1,7 +1,11 @@
-* Lookup track: don't fetch image, but fetch the albumInfo, and fetch image for the album only.
+* Open the mopidy database!
 
 What do I need?
 - Build playlists
+  > in Browse, when clicking on a playlist - open the playlist page.
+    > does a playlist item have a user defined name?
+
+
 - Build a tracklist
   > currently already possible to add full albums.
 
