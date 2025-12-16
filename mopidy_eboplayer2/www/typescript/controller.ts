@@ -39,7 +39,9 @@ export class Controller extends Commands implements DataRequester{
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWebSocketCtrl = eboWebSocketCtrl;
         let portDefs = getHostAndPortDefs();
-        this.baseUrl = portDefs.altHost ? "http://"+portDefs.altHost : "";
+        this.baseUrl = "";
+        if(portDefs.altHost && portDefs.altHost != portDefs.host)
+            this.baseUrl = "http://"+portDefs.altHost;
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
