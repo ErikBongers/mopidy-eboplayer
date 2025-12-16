@@ -2586,6 +2586,8 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
+		let img = fragment.getElementById("img");
+		img.src = this.img;
 		this.shadow.appendChild(fragment);
 		this.addShadowEventListener("img", "click", (ev) => {
 			this.dispatchEvent(this.albumClickEvent);
@@ -2656,15 +2658,18 @@ var BigTrackViewUriAdapter = class extends ComponentViewAdapter {
 		let info = "";
 		let position;
 		let button;
+		let imageUrl;
 		if (isInstanceOfExpandedStreamModel(track)) {
 			name = track.stream.name;
 			position = "100";
 			button = "false";
+			imageUrl = track.stream.imageUrl;
 		} else {
 			name = track.track.title;
 			info = track.album.albumInfo.name;
 			position = "60";
 			button = "true";
+			imageUrl = track.album.imageUrl;
 			let artists = track.track.track.artists.map((a) => a.name).join(", ");
 			let composers = track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
 			if (artists) info += "<br>" + artists;
@@ -2675,6 +2680,7 @@ var BigTrackViewUriAdapter = class extends ComponentViewAdapter {
 		comp.setAttribute("info", info);
 		comp.setAttribute("position", position);
 		comp.setAttribute("button", button);
+		comp.setAttribute("img", imageUrl);
 		this.onStreamLinesChanged();
 	}
 	getRequiredDataTypes() {

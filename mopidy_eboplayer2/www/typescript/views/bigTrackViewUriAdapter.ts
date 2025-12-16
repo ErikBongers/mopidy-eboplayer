@@ -53,15 +53,18 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
         let info = "";
         let position: string;
         let button: string;
+        let imageUrl: string;
         if(isInstanceOfExpandedStreamModel(track)) {
             name = track.stream.name;
             position = "100";
             button = "false";
+            imageUrl = track.stream.imageUrl;
         } else {
             name = track.track.title;
             info = track.album.albumInfo.name;
             position = "60"; //todo: just a test
             button = "true";
+            imageUrl = track.album.imageUrl;
             let artists = track.track.track.artists.map(a => a.name).join(", ");
             let composers = track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
             if(artists)
@@ -74,6 +77,7 @@ export class BigTrackViewUriAdapter extends ComponentViewAdapter {
         comp.setAttribute("info", info);
         comp.setAttribute("position", position);
         comp.setAttribute("button", button);
+        comp.setAttribute("img", imageUrl);
         this.onStreamLinesChanged();
     }
 

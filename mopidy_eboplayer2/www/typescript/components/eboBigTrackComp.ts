@@ -38,7 +38,7 @@ export class EboBigTrackComp extends EboComponent {
     private button: string = "false";
     private active: string = "true";
 
-    private img: string  = "images/default_cover.png";
+    private img: string  = "images/default_cover.png"; //todo: get rid of this. When no imageUrl specified, set image invisible.
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: AlbumData;
 
@@ -160,7 +160,8 @@ export class EboBigTrackComp extends EboComponent {
         EboBigTrackComp.progressBarAttributes.forEach(attName => {
             progressBarElement.setAttribute(attName, this[attName]);//todo: check if each of these causes a re-rendering.
         });
-        //todo: image.
+        let img = fragment.getElementById("img") as HTMLImageElement;
+        img.src = this.img;
         this.shadow.appendChild(fragment);
         // let img = this.shadow.getElementById("img");
         // img.addEventListener("click", (ev) => {
