@@ -1037,7 +1037,7 @@ function getHostAndPort() {
 }
 function getHostAndPortDefs() {
 	let altHostName = document.body.dataset.hostname;
-	if (!altHostName.startsWith("{{")) altHostName = void 0;
+	if (altHostName.startsWith("{{")) altHostName = void 0;
 	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
 	return {
 		host: document.location.host,
@@ -1657,13 +1657,14 @@ var WebProxy = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/controller.ts
 const LIBRARY_PROTOCOL = "eboback:";
-const DEFAULT_IMG_URL = "images/default_cover.png";
 var Controller = class extends Commands {
 	model;
 	mopidyProxy;
 	webProxy;
 	localStorageProxy;
 	eboWebSocketCtrl;
+	baseUrl;
+	DEFAULT_IMG_URL = "images/default_cover.png";
 	constructor(model, mopidy, eboWebSocketCtrl) {
 		super(mopidy);
 		this.model = model;
@@ -1671,6 +1672,8 @@ var Controller = class extends Commands {
 		this.webProxy = new WebProxy(model);
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWebSocketCtrl = eboWebSocketCtrl;
+		let portDefs = getHostAndPortDefs();
+		this.baseUrl = portDefs.altHost ? "http://" + portDefs.altHost : "";
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.CurrentTrack];
@@ -1750,10 +1753,10 @@ var Controller = class extends Commands {
 	async fetchLargestImageOrDefault(uri) {
 		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
 		arr.sort((img) => img.width * img.height);
-		if (arr.length == 0) return DEFAULT_IMG_URL;
+		if (arr.length == 0) return this.baseUrl + this.DEFAULT_IMG_URL;
 		let imageUrl = arr.pop().uri;
-		if (imageUrl == "") imageUrl = DEFAULT_IMG_URL;
-		return imageUrl;
+		if (imageUrl == "") imageUrl = this.baseUrl + this.DEFAULT_IMG_URL;
+		return this.baseUrl + imageUrl;
 	}
 	setVolume(volume) {
 		this.model.setVolume(volume);
@@ -1853,7 +1856,7 @@ var Controller = class extends Commands {
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
-			if (model.type == ItemType.Stream) model.imageUrl = DEFAULT_IMG_URL;
+			if (model.type == ItemType.Stream) model.imageUrl = this.baseUrl + this.DEFAULT_IMG_URL;
 			return model;
 		});
 		return await Promise.all(newListPromises);

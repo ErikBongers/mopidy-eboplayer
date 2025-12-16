@@ -42,7 +42,7 @@ export function getHostAndPort() {
 
 export function getHostAndPortDefs() {
     let altHostName = document.body.dataset.hostname;
-    if (!altHostName.startsWith("{{"))
+    if (altHostName.startsWith("{{"))
         altHostName = undefined;
 
     if(!altHostName) {

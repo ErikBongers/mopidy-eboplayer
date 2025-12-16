@@ -9,7 +9,7 @@ import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
-import {numberedDictToArray, transformTrackDataToModel} from "./global";
+import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
 import {AlbumModel, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, ItemType, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
@@ -22,14 +22,14 @@ export const LIBRARY_PROTOCOL = "eboback:";
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
 //The controller should not listen to model events, to avoid circular updates (dead loops).
-export const DEFAULT_IMG_URL = "images/default_cover.png";
-
 export class Controller extends Commands implements DataRequester{
     protected model: Model;
     public mopidyProxy: MopidyProxy;
     public webProxy: WebProxy;
     public localStorageProxy: LocalStorageProxy;
     private eboWebSocketCtrl: JsonRpcController;
+    readonly baseUrl: string;
+    readonly DEFAULT_IMG_URL = "images/default_cover.png";
 
     constructor(model: Model, mopidy: Mopidy, eboWebSocketCtrl: JsonRpcController) {
         super(mopidy);
@@ -38,6 +38,8 @@ export class Controller extends Commands implements DataRequester{
         this.webProxy = new WebProxy(model);
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWebSocketCtrl = eboWebSocketCtrl;
+        let portDefs = getHostAndPortDefs();
+        this.baseUrl = portDefs.altHost ? "http://"+portDefs.altHost : "";
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -153,11 +155,11 @@ export class Controller extends Commands implements DataRequester{
         let arr = images[uri];
         arr.sort(img => img.width * img.height);
         if(arr.length == 0)
-            return DEFAULT_IMG_URL;
+            return this.baseUrl +  this.DEFAULT_IMG_URL;
         let imageUrl = arr.pop().uri;
         if(imageUrl == "")
-             imageUrl = DEFAULT_IMG_URL;
-        return imageUrl;
+             imageUrl = this.baseUrl +  this.DEFAULT_IMG_URL;
+        return this.baseUrl + imageUrl;
     }
 
     setVolume(volume: number) {
@@ -281,7 +283,7 @@ export class Controller extends Commands implements DataRequester{
         let newListPromises = trackList.map(async track => {
             let model = transformTrackDataToModel(track);
             if(model.type == ItemType.Stream) {
-                model.imageUrl = DEFAULT_IMG_URL;
+                model.imageUrl = this.baseUrl + this.DEFAULT_IMG_URL;
             }
             return model;
         });
