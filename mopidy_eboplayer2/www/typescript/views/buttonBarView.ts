@@ -113,14 +113,14 @@ export class ButtonBarView extends View {
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.stream.imageUri);
+                comp.setAttribute("image_url", trackModel.stream.imageUrl);
                 comp.setAttribute("stop_or_pause", "stop");
             } else {
                 comp.setAttribute("text", trackModel.track.track.name);
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.album.imageUri);
+                comp.setAttribute("image_url", trackModel.album.imageUrl);
                 comp.setAttribute("stop_or_pause", "pause");
             }
         }

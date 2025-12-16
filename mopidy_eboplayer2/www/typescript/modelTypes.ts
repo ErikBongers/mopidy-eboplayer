@@ -49,7 +49,7 @@ export interface AlbumModel {
     type: ItemType.Album;
     tracks: string[];
     albumInfo: models.Album;
-    imageUri: string;
+    imageUrl: string;
 }
 
 export interface FileTrackModel {
@@ -66,7 +66,7 @@ export interface StreamTrackModel {
     track: models.Track;
     name: string,
     infoLines: string[],
-    imageUri: string,
+    imageUrl: string,
 }
 
 export interface NoneTrackModel {

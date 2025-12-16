@@ -154,10 +154,10 @@ export class Controller extends Commands implements DataRequester{
         arr.sort(img => img.width * img.height);
         if(arr.length == 0)
             return DEFAULT_IMG_URL;
-        let imageUri = arr.pop().uri;
-        if(imageUri == "")
-             imageUri = DEFAULT_IMG_URL;
-        return imageUri;
+        let imageUrl = arr.pop().uri;
+        if(imageUrl == "")
+             imageUrl = DEFAULT_IMG_URL;
+        return imageUrl;
     }
 
     setVolume(volume: number) {
@@ -269,7 +269,7 @@ export class Controller extends Commands implements DataRequester{
             type: ItemType.Album,
             albumInfo: trackList[0].album,
             tracks: trackList.map(track => track.uri),
-            imageUri: await this.fetchLargestImageOrDefault(albumUri)
+            imageUrl: await this.fetchLargestImageOrDefault(albumUri)
         }
         this.model.addItemsToLibraryCache([albumModel]);
         return albumModel;
@@ -281,7 +281,7 @@ export class Controller extends Commands implements DataRequester{
         let newListPromises = trackList.map(async track => {
             let model = transformTrackDataToModel(track);
             if(model.type == ItemType.Stream) {
-                model.imageUri = DEFAULT_IMG_URL;
+                model.imageUrl = DEFAULT_IMG_URL;
             }
             return model;
         });
