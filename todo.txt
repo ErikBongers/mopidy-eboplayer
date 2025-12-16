@@ -1,5 +1,3 @@
-* Open the mopidy database!
-
 What do I need?
 - Build playlists
   > in Browse, when clicking on a playlist - open the playlist page.

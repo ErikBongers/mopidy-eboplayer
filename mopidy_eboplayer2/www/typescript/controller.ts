@@ -143,6 +143,9 @@ export class Controller extends Commands implements DataRequester{
         }
         let trackModel = transformTlTrackDataToModel(data);
         this.model.setCurrentTrack(trackModel);
+        if(!this.model.selectedTrack)
+            this.model.setSelectedTrack(trackModel.track.uri);
+
         //todo: only for streams:
         await this.webProxy.fetchActiveStreamLines();
 

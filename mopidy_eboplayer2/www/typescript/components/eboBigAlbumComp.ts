@@ -29,7 +29,7 @@ export class EboBigAlbumComp extends EboComponent {
     ];
     private name: string = "";
     private extra: string = "";
-    private img: string  = "images/default_cover.png";
+    private img: string  = "images/default_cover.png"; //todo: get rid of this. When no imageUrl specified, set image invisible.
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: ExpandedAlbumModel;
 
@@ -155,7 +155,6 @@ export class EboBigAlbumComp extends EboComponent {
         ["name", "extra"].forEach(attName => {
             fragment.getElementById(attName).innerHTML = this[attName];
         });
-        //todo: image.
         this.shadow.appendChild(fragment);
         let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.albumInfo = this.albumInfo;
@@ -184,6 +183,8 @@ export class EboBigAlbumComp extends EboComponent {
         if(!this.albumInfo)
             return;
         this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
+        let img = this.shadow.getElementById("img") as HTMLImageElement;
+        img.src = this.img;
     }
 
     private onActiveTrackChanged() {

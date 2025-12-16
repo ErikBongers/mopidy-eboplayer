@@ -115,16 +115,22 @@ export class MainView extends View {
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                if(track.type == ItemType.File)
-                    albumComp.albumInfo = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
-                else
+                if(track.type == ItemType.File) {
+                    let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
+                    albumComp.albumInfo = albumModel;
+                    albumComp.setAttribute("img", albumModel.album.imageUrl);
+                }
+                else {
                     albumComp.albumInfo = undefined;
+                }
             });
     }
 
     private async onAlbumToViewChanged() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.albumInfo = await getState().getController().getExpandedAlbumModel(getState().getModel().getAlbumToView());
+        let albumModel = await getState().getController().getExpandedAlbumModel(getState().getModel().getAlbumToView());
+        albumComp.albumInfo = albumModel;
+        albumComp.setAttribute("img", albumModel.album.imageUrl);
     }
 }
 

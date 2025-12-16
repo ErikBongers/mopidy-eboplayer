@@ -1749,6 +1749,7 @@ var Controller = class extends Commands {
 		}
 		let trackModel = transformTlTrackDataToModel(data);
 		this.model.setCurrentTrack(trackModel);
+		if (!this.model.selectedTrack) this.model.setSelectedTrack(trackModel.track.uri);
 		await this.webProxy.fetchActiveStreamLines();
 	}
 	async fetchLargestImageOrDefault(uri) {
@@ -2922,13 +2923,18 @@ var MainView = class extends View {
 		let uri = playerState_default().getModel().getSelectedTrack();
 		playerState_default().getController().lookupTrackCached(uri).then(async (track) => {
 			let albumComp = document.getElementById("bigAlbumView");
-			if (track.type == ItemType.File) albumComp.albumInfo = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
-			else albumComp.albumInfo = void 0;
+			if (track.type == ItemType.File) {
+				let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
+				albumComp.albumInfo = albumModel;
+				albumComp.setAttribute("img", albumModel.album.imageUrl);
+			} else albumComp.albumInfo = void 0;
 		});
 	}
 	async onAlbumToViewChanged() {
 		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.albumInfo = await playerState_default().getController().getExpandedAlbumModel(playerState_default().getModel().getAlbumToView());
+		let albumModel = await playerState_default().getController().getExpandedAlbumModel(playerState_default().getModel().getAlbumToView());
+		albumComp.albumInfo = albumModel;
+		albumComp.setAttribute("img", albumModel.album.imageUrl);
 	}
 };
 
@@ -3531,6 +3537,8 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	updateWhenConnected() {
 		if (!this.albumInfo) return;
 		this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
+		let img = this.shadow.getElementById("img");
+		img.src = this.img;
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
