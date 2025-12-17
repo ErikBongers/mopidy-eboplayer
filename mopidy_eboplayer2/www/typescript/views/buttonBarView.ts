@@ -85,14 +85,7 @@ export class ButtonBarView extends View {
     }
 
     private async updateComponent() {
-        let currentTrack = getState().getModel().getCurrentTrack();
-        let selectedTrack = getState().getModel().getSelectedTrack();
-        let track: string;
-        if(selectedTrack && currentTrack != selectedTrack)
-            track = selectedTrack;
-        else
-            track = currentTrack;
-
+        let track = getState().getModel().getCurrentTrack();
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         if (!track) {
             comp.setAttribute("text", "");

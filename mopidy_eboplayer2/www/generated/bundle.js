@@ -1864,7 +1864,6 @@ var Controller = class extends Commands {
 		let track = await this.lookupTrackCached(trackUri);
 		if (track.type == ItemType.Stream) {
 			let streamLines = await this.fetchStreamLines(trackUri);
-			await this.webProxy.fetchActiveStreamLines();
 			return {
 				stream: track,
 				historyLines: streamLines
@@ -2066,11 +2065,7 @@ var ButtonBarView = class extends View {
 		await this.updateComponent();
 	}
 	async updateComponent() {
-		let currentTrack = playerState_default().getModel().getCurrentTrack();
-		let selectedTrack = playerState_default().getModel().getSelectedTrack();
-		let track;
-		if (selectedTrack && currentTrack != selectedTrack) track = selectedTrack;
-		else track = currentTrack;
+		let track = playerState_default().getModel().getCurrentTrack();
 		let comp = document.getElementById(this.componentId);
 		if (!track) {
 			comp.setAttribute("text", "");
@@ -2652,7 +2647,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	async setUri(uri) {
 		this.uri = uri;
 		let track = await playerState_default().getController().getExpandedTrackModel(uri);
-		this.onStreamLinesChanged();
 		this.setComponentData(track);
 	}
 	setComponentData(track) {
@@ -3594,7 +3588,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
                 padding-top: .5em;
                 padding-bottom: .5em;
             }
-            #title {
+            #text {
                 font-size: .7em;
                 text-align: center;
                 display: block;
@@ -3704,7 +3698,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		this.shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
 		let titleEl = this.shadow.getElementById("text");
 		let img = this.shadow.querySelector("img");
-		titleEl.style.display = this.show_info ? "inline" : "none";
+		titleEl.style.display = this.show_info ? "" : "none";
 		if (this.image_url) {
 			img.style.visibility = this.show_info ? "visible" : "hidden";
 			img.setAttribute("src", this.image_url);

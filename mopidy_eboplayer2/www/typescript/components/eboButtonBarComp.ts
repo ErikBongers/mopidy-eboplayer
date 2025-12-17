@@ -80,7 +80,7 @@ export class EboButtonBar extends EboComponent {
                 padding-top: .5em;
                 padding-bottom: .5em;
             }
-            #title {
+            #text {
                 font-size: .7em;
                 text-align: center;
                 display: block;
@@ -188,7 +188,7 @@ export class EboButtonBar extends EboComponent {
 
         let titleEl = this.shadow.getElementById("text");
         let img = this.shadow.querySelector("img") as HTMLImageElement;
-        titleEl.style.display = this.show_info ? "inline" : "none";
+        titleEl.style.display = this.show_info ? "" : "none";
         if(this.image_url) {
             img.style.visibility =  this.show_info ? "visible" : "hidden";
             img.setAttribute("src", this.image_url);
