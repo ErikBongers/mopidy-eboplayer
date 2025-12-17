@@ -30,17 +30,16 @@ export class TimelineView extends View {
         let body = timelineTable.tBodies[0];
         body.innerHTML = "";
 
+        if(history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri)
+            history.shift(); //remove most recent history line if it's the first track in the playlist.
+
         let allLookups: Promise<void>[] = [];
         //reverse order as we want the most recent tracks to at the bottom.
         for(let i = history.length - 1; i >= 0; i-- ) {
             allLookups.push(this.insertHistoryLine(history[i], body));
         }
 
-        //The last history line may be the current track. If so, we don't want to insert it again.
-        let sliceStart = 0;
-        if(trackList.length > 0 && history[0]?.ref.uri == trackList[0].track.uri)
-            sliceStart = 1;
-        for(let track of trackList.slice(sliceStart)) {
+        for(let track of trackList) {
             allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid)); //todo: actually we already have the track info. No need for lookup.
         }
 
