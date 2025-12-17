@@ -1775,10 +1775,7 @@ var Controller = class extends Commands {
 		this.filterBrowseResults();
 	}
 	diveIntoBrowseResult(label, uri, type) {
-		if (type == "track" || type == "radio") {
-			this.clearListAndPlay(uri).then(() => {});
-			return;
-		}
+		if (type == "track" || type == "radio") return;
 		if (type == "album") {
 			this.model.setAlbumToView(uri);
 			this.setView(Views.Album);

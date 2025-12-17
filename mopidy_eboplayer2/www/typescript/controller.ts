@@ -187,7 +187,6 @@ export class Controller extends Commands implements DataRequester{
 
     diveIntoBrowseResult(label: string, uri: string, type: string) {
         if(type == "track"  ||  type  == "radio") {
-            this.clearListAndPlay(uri).then(() => {});
             return; //don't dive.
         }
 
