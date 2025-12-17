@@ -50,7 +50,6 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     async setUri(uri: string) {
         this.uri = uri;
         let track = await getState().getController().getExpandedTrackModel(uri);
-        this.onStreamLinesChanged();
         this.setComponentData(track);
     }
 
