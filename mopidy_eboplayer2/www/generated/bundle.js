@@ -1864,6 +1864,7 @@ var Controller = class extends Commands {
 		let track = await this.lookupTrackCached(trackUri);
 		if (track.type == ItemType.Stream) {
 			let streamLines = await this.fetchStreamLines(trackUri);
+			await this.webProxy.fetchActiveStreamLines();
 			return {
 				stream: track,
 				historyLines: streamLines
@@ -2427,13 +2428,6 @@ var TimelineView = class extends View {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBigTrackComp.ts
 var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
-	get activeTrackUri() {
-		return this._activeTrackUri;
-	}
-	set activeTrackUri(value) {
-		this._activeTrackUri = value;
-		this.onActiveTrackChanged();
-	}
 	get albumInfo() {
 		return this._albumInfo;
 	}
@@ -2441,7 +2435,6 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		this._albumInfo = value;
 		this.render();
 	}
-	_activeTrackUri = null;
 	static tagName = "ebo-big-track-view";
 	static progressBarAttributes = [
 		"position",
@@ -2597,7 +2590,6 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		let img = this.shadow.getElementById("img");
 		if (this.albumInfo.type == AlbumDataType.Loaded) img.src = this.albumInfo.album.imageUrl;
 	}
-	onActiveTrackChanged() {}
 };
 
 //#endregion
@@ -2615,41 +2607,53 @@ var ComponentViewAdapter = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/bigTrackViewUriAdapter.ts
-var BigTrackViewUriAdapter = class extends ComponentViewAdapter {
+//#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
+var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	streamLines;
 	uri;
 	constructor(id) {
 		super(id);
-		this.streamLines = "";
-		this.uri = "";
 	}
 	bind() {
 		super.bind();
+		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
+			this.onCurrentOrSelectedChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+			this.onCurrentOrSelectedChanged();
+		});
 		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
 			this.onStreamLinesChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
-			this.onActiveTrackChanged();
-		});
+	}
+	onCurrentOrSelectedChanged() {
+		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
+		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
+		this.setUri(selectedTrackUri ?? currentTrackUri);
+	}
+	getRequiredDataTypes() {
+		return [
+			EboPlayerDataType.CurrentTrack,
+			EboPlayerDataType.TrackList,
+			EboPlayerDataType.StreamLines,
+			...super.getRequiredDataTypes()
+		];
+	}
+	onStreamLinesChanged() {
+		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
+		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
+		this.streamLines = "";
+		if (selectedTrackUri == currentTrackUri) {
+			let linesObject = playerState_default().getModel().getActiveStreamLines();
+			if (this.uri && linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
+		}
+		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
 	}
 	async setUri(uri) {
 		this.uri = uri;
 		let track = await playerState_default().getController().getExpandedTrackModel(uri);
+		this.onStreamLinesChanged();
 		this.setComponentData(track);
-	}
-	onStreamLinesChanged() {
-		this.streamLines = "";
-		let linesObject = playerState_default().getModel().getActiveStreamLines();
-		if (linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
-		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
-	}
-	onActiveTrackChanged() {
-		let streamTitles = playerState_default().getModel().getActiveStreamLines();
-		if (streamTitles?.uri == this.uri) this.streamLines = streamTitles.active_titles?.join("<br/>") ?? "";
-		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
-		let comp = document.getElementById(this.componentId);
-		comp.activeTrackUri = playerState_default().getModel().getCurrentTrack();
 	}
 	setComponentData(track) {
 		let name = "no current track";
@@ -2680,45 +2684,6 @@ var BigTrackViewUriAdapter = class extends ComponentViewAdapter {
 		comp.setAttribute("button", button);
 		comp.setAttribute("img", imageUrl);
 		this.onStreamLinesChanged();
-	}
-	getRequiredDataTypes() {
-		return [
-			EboPlayerDataType.TrackList,
-			EboPlayerDataType.StreamLines,
-			...super.getRequiredDataTypes()
-		];
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
-var BigTrackViewCurrentOrSelectedAdapter = class extends BigTrackViewUriAdapter {
-	constructor(id) {
-		super(id);
-	}
-	bind() {
-		super.bind();
-		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
-			this.onCurrentOrSelectedChanged();
-		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
-			this.onCurrentOrSelectedChanged();
-		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
-			this.onStreamLinesChanged();
-		});
-	}
-	onCurrentOrSelectedChanged() {
-		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
-		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
-		this.setUri(selectedTrackUri ?? currentTrackUri);
-	}
-	getRequiredDataTypes() {
-		return [
-			EboPlayerDataType.CurrentTrack,
-			EboPlayerDataType.TrackList,
-			...super.getRequiredDataTypes()
-		];
 	}
 };
 
