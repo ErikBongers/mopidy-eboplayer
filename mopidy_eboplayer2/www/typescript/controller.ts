@@ -160,10 +160,10 @@ export class Controller extends Commands implements DataRequester{
         let arr = images[uri];
         arr.sort(img => img.width * img.height);
         if(arr.length == 0)
-            return this.baseUrl +  this.DEFAULT_IMG_URL;
+            return this.DEFAULT_IMG_URL;
         let imageUrl = arr.pop().uri;
         if(imageUrl == "")
-             imageUrl = this.baseUrl +  this.DEFAULT_IMG_URL;
+             imageUrl = this.DEFAULT_IMG_URL;
         return this.baseUrl + imageUrl;
     }
 
@@ -288,7 +288,7 @@ export class Controller extends Commands implements DataRequester{
         let newListPromises = trackList.map(async track => {
             let model = transformTrackDataToModel(track);
             if(model.type == ItemType.Stream) {
-                model.imageUrl = this.baseUrl + this.DEFAULT_IMG_URL;
+                model.imageUrl = this.DEFAULT_IMG_URL;
             }
             return model;
         });

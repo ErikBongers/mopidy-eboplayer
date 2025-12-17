@@ -1755,9 +1755,9 @@ var Controller = class extends Commands {
 	async fetchLargestImageOrDefault(uri) {
 		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
 		arr.sort((img) => img.width * img.height);
-		if (arr.length == 0) return this.baseUrl + this.DEFAULT_IMG_URL;
+		if (arr.length == 0) return this.DEFAULT_IMG_URL;
 		let imageUrl = arr.pop().uri;
-		if (imageUrl == "") imageUrl = this.baseUrl + this.DEFAULT_IMG_URL;
+		if (imageUrl == "") imageUrl = this.DEFAULT_IMG_URL;
 		return this.baseUrl + imageUrl;
 	}
 	setVolume(volume) {
@@ -1858,7 +1858,7 @@ var Controller = class extends Commands {
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
-			if (model.type == ItemType.Stream) model.imageUrl = this.baseUrl + this.DEFAULT_IMG_URL;
+			if (model.type == ItemType.Stream) model.imageUrl = this.DEFAULT_IMG_URL;
 			return model;
 		});
 		return await Promise.all(newListPromises);
