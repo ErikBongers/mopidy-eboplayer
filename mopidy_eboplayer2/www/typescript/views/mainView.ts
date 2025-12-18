@@ -2,7 +2,7 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import EboBrowseComp from "../components/eboBrowseComp";
 
-import {EboplayerEvents, ItemType, Views} from "../modelTypes";
+import {EboplayerEvents, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 
 export class MainView extends View {
@@ -117,11 +117,15 @@ export class MainView extends View {
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 if(track.type == ItemType.File) {
                     let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
+                    albumComp.streamInfo = undefined;
                     albumComp.albumInfo = albumModel;
                     albumComp.setAttribute("img", albumModel.album.imageUrl);
                 }
                 else {
+                    let streamModel = await getState().getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
                     albumComp.albumInfo = undefined;
+                    albumComp.streamInfo = streamModel;
+                    albumComp.setAttribute("img", streamModel.stream.imageUrl);
                 }
             });
     }

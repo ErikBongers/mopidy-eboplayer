@@ -2,12 +2,14 @@ import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 
 export class EboAlbumTracksComp extends EboComponent {
+    private _streamInfo?: ExpandedStreamModel;
     get streamInfo(): ExpandedStreamModel {
         return this._streamInfo;
     }
 
     set streamInfo(value: ExpandedStreamModel) {
         this._streamInfo = value;
+        this.render();
     }
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
@@ -30,7 +32,6 @@ export class EboAlbumTracksComp extends EboComponent {
         "img",
     ];
     private _albumInfo?: ExpandedAlbumModel;
-    private _streamInfo?: ExpandedStreamModel;
 
 
     constructor() {
@@ -103,7 +104,7 @@ export class EboAlbumTracksComp extends EboComponent {
             });
         }
 
-        if(this._streamInfo) {
+        if(this.streamInfo) {
             this.streamInfo.historyLines.forEach(lineGroup => {
                 let tr = tbody.appendChild(document.createElement("tr"));
                 let td = tr.appendChild(document.createElement("td"));

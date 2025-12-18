@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel} from "../modelTypes";
+import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 import getState from "../playerState";
 
 export class EboBigAlbumComp extends EboComponent {
@@ -17,7 +17,16 @@ export class EboBigAlbumComp extends EboComponent {
 
     set albumInfo(value: ExpandedAlbumModel) {
         this._albumInfo = value;
-        this.render();
+        this.update();
+    }
+
+    private _streamInfo?: ExpandedStreamModel;
+    get streamInfo(): ExpandedStreamModel {
+        return this._streamInfo;
+    }
+    set streamInfo(value: ExpandedStreamModel) {
+        this._streamInfo = value;
+        this.update();
     }
 
     private _activeTrackUri: string | null = null;
@@ -146,18 +155,13 @@ export class EboBigAlbumComp extends EboComponent {
                 this[name] = newValue;
                 break;
         }
-        this.render();
+        this.update();
         }
 
     renderPrepared() {
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
-        ["name", "extra"].forEach(attName => {
-            fragment.getElementById(attName).innerHTML = this[attName];
-        });
         this.shadow.appendChild(fragment);
-        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
-        tracksComp.albumInfo = this.albumInfo;
         this.addShadowEventListener("btnPlay", "click", (ev) => {
             this.onBtnPlayClick();
         });
@@ -180,8 +184,15 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     override updateWhenConnected() {
-        if(!this.albumInfo)
+        ["name", "extra"].forEach(attName => {
+            this.shadow.getElementById(attName).innerHTML = this[attName];
+        });
+        let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
+        tracksComp.albumInfo = this.albumInfo;
+        tracksComp.streamInfo = this.streamInfo;
+        if(!this.albumInfo) {
             return;
+        }
         this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         let img = this.shadow.getElementById("img") as HTMLImageElement;
         img.src = this.img;
