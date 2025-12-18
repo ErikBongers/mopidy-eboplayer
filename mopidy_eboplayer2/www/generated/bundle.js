@@ -3598,7 +3598,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 	static htmlText = `
         <div id="wrapper">
             <div id="info">
-                <span id="text">sdfsdf sdfsdf </span>
+                <span id="text" class="selectable">sdfsdf sdfsdf </span>
             </div>
             <div id="buttonBar">
                 <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
