@@ -225,7 +225,7 @@ class EboBrowseComp extends EboComponent {
         this.dispatchEvent(this.browseFilterChangedEvent);
     }
 
-    updateWhenConnected() {
+    updateWhenRendered() {
         this.shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
                 this.updateFilterButton(btn));

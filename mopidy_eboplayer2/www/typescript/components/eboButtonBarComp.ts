@@ -169,7 +169,7 @@ export class EboButtonBar extends EboComponent {
         });
     }
 
-    updateWhenConnected() {
+    updateWhenRendered() {
         switch(this.play_state) {
             case "playing":
                 if(this.stop_or_pause == "pause")

@@ -2133,6 +2133,25 @@ var ButtonBarView = class extends View {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/Batching.ts
+var Batching = class {
+	constructor(task) {
+		this.task = task;
+	}
+	requested = false;
+	async schedule() {
+		if (!this.requested) {
+			this.requested = true;
+			this.requested = await false;
+			this.execute();
+		}
+	}
+	execute() {
+		this.task();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/components/EboComponent.ts
 var EboComponent = class EboComponent extends HTMLElement {
 	static globalCss;
@@ -2140,8 +2159,11 @@ var EboComponent = class EboComponent extends HTMLElement {
 	styleTemplate;
 	divTemplate;
 	connected = false;
+	rendered = false;
 	static NO_TAG_NAME = "todo: override in subclass";
 	static tagName = EboComponent.NO_TAG_NAME;
+	renderBatching;
+	updateBatching;
 	constructor(styleText, htmlText) {
 		super();
 		this.shadow = this.attachShadow({ mode: "open" });
@@ -2149,6 +2171,8 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.divTemplate = document.createElement("template");
 		this.styleTemplate.innerHTML = styleText;
 		this.divTemplate.innerHTML = htmlText;
+		this.renderBatching = new Batching(this.doRender.bind(this));
+		this.updateBatching = new Batching(this.doUpdate.bind(this));
 	}
 	attributeChangedCallback(name, oldValue, newValue) {
 		if (oldValue === newValue) return;
@@ -2167,15 +2191,23 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	onConnected() {}
 	update() {
-		if (!this.connected) return;
-		this.updateWhenConnected();
+		this.updateBatching.schedule();
 	}
-	updateWhenConnected() {}
+	doUpdate() {
+		if (!this.connected) return;
+		if (!this.rendered) return;
+		this.updateWhenRendered();
+	}
+	updateWhenRendered() {}
 	render() {
+		this.renderBatching.schedule();
+	}
+	doRender() {
 		if (!this.shadow) return;
 		this.shadow.innerHTML = "";
 		if (EboComponent.globalCss) this.shadow.adoptedStyleSheets = EboComponent.globalCss;
 		this.renderPrepared();
+		this.rendered = true;
 	}
 	setClassFromBoolAttribute(attName, el) {
 		if (this[attName] == true) el.classList.add(attName);
@@ -2580,7 +2612,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		});
 		this.update();
 	}
-	updateWhenConnected() {
+	updateWhenRendered() {
 		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
 		let img = this.shadow.getElementById("img");
 		if (this.albumInfo.type == AlbumDataType.Loaded) img.src = this.albumInfo.album.imageUrl;
@@ -3095,7 +3127,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.browseFilter[propName] = !this.browseFilter[propName];
 		this.dispatchEvent(this.browseFilterChangedEvent);
 	}
-	updateWhenConnected() {
+	updateWhenRendered() {
 		this.shadow.querySelectorAll("ebo-button").forEach((btn) => this.updateFilterButton(btn));
 		let inputElement = this.shadow.getElementById("searchText");
 		inputElement.value = this._browseFilter.searchText;
@@ -3499,7 +3531,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		if (!this.albumInfo) return;
 		playerState_default().getController().addAlbum(this.albumInfo.album.albumInfo.uri);
 	}
-	updateWhenConnected() {
+	updateWhenRendered() {
 		["name", "extra"].forEach((attName) => {
 			this.shadow.getElementById(attName).innerHTML = this[attName];
 		});
@@ -3698,7 +3730,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			this.dispatchEvent(new Event(EboplayerEvents.albumClicked));
 		});
 	}
-	updateWhenConnected() {
+	updateWhenRendered() {
 		switch (this.play_state) {
 			case "playing":
 				if (this.stop_or_pause == "pause") this.setPlayButton("Pause", "fa-pause");

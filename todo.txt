@@ -7,28 +7,6 @@ What do I need?
 - Build a tracklist
   > currently already possible to add full albums.
 
-
-
-lookup
----------
-
-lookupAlbum:
-  > get from cache
-    > found? return
-    > not present: fetch all tracks
-    > stuff them grouped in AlbumModel
-    > add to cache
-
-lookupTrack:
-  > get from cache
-    > found? return
-    > not present: fetch (all) tracks
-    > stuff each of them in FileTrackModel
-    > add to cache.
-
-lookupStream????
-
-
 * refresh dead connection on browser "wake up"
   >>> https://blog.alexmaccaw.com/javascript-wake-event/
   > or this alternative of window blur/focus

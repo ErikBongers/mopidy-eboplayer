@@ -183,7 +183,7 @@ export class EboBigAlbumComp extends EboComponent {
         getState().getController().addAlbum(this.albumInfo.album.albumInfo.uri);
     }
 
-    override updateWhenConnected() {
+    override updateWhenRendered() {
         ["name", "extra"].forEach(attName => {
             this.shadow.getElementById(attName).innerHTML = this[attName];
         });
