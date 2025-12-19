@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {Refs, SearchResult} from "./refs";
-import {AlbumDataLoaded, AlbumModel, BrowseFilter, ConnectionState, EboplayerEvents, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumModel, BrowseFilter, ConnectionState, EboplayerEvents, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
 
@@ -45,7 +45,7 @@ export class Model extends EventTarget implements ViewModel {
         consume: false,
         single: false
     }
-    private playState: PlayState;
+    private playState: PlayState = PlayState.unknown;
     private activeStreamLines: StreamTitles;
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];

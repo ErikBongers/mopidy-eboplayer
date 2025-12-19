@@ -11,7 +11,7 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumModel, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, ItemType, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
+import {AlbumModel, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, isInstanceOfExpandedStreamModel, ItemType, NoStreamTitles, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
@@ -95,8 +95,8 @@ export class Controller extends Commands implements DataRequester{
         this.mopidy.on('event:muteChanged', (_data) => {
         });
 
-        this.mopidy.on('event:playbackStateChanged', (data) => {
-            getState().getController().setPlayState(data.new_state);
+        this.mopidy.on('event:playbackStateChanged', async (data) => {
+            await this.onPlaybackStateChanged(data);
         });
 
         this.mopidy.on('event:tracklistChanged', async () => {
@@ -136,6 +136,11 @@ export class Controller extends Commands implements DataRequester{
         });
     }
 
+    private async onPlaybackStateChanged(data) {
+        getState().getController().setPlayState(data.new_state);
+        await this.updateStreamLines();
+    }
+
     async setCurrentTrackAndFetchDetails(data: (TlTrack | null)) {
         if(!data) {
             this.model.setCurrentTrack(TrackNone);
@@ -145,14 +150,19 @@ export class Controller extends Commands implements DataRequester{
         this.model.setCurrentTrack(trackModel);
         if(!this.model.selectedTrack)
             this.model.setSelectedTrack(trackModel.track.uri);
-
-        //todo: only for streams:
-        await this.webProxy.fetchActiveStreamLines();
+        await this.updateStreamLines();
 
         //todo: do this only when a track is started?s
         // this.core.playback.getTimePosition().then(processCurrentposition, console.error)
         // this.core.playback.getState().then(processPlaystate, console.error)
         // this.core.mixer.getMute().then(processMute, console.error)
+    }
+
+    private async updateStreamLines() {
+        if (this.model.getPlayState() == "playing")
+            await this.webProxy.fetchActiveStreamLines();
+        else
+            this.model.setActiveStreamLinesHistory(NoStreamTitles);
     }
 
     private async fetchLargestImageOrDefault(uri: string) {

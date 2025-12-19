@@ -143,7 +143,8 @@ export interface PlaybackModesState {
 export enum PlayState {
     stopped = "stopped",
     playing = "playing",
-    paused = "paused"
+    paused = "paused",
+    unknown = "unknown"
 }
 
 export interface HistoryRef {
@@ -160,6 +161,8 @@ export interface HistoryLine {
 
 export type LibraryItem = models.Track[];
 export type LibraryDict = { [index: string]: LibraryItem };
+
+export const NoStreamTitles: StreamTitles = {uri: "", active_titles: []};
 
 export interface StreamTitles {
     uri: string;

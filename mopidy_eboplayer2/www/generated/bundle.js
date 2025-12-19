@@ -693,6 +693,17 @@ let MessageType = /* @__PURE__ */ function(MessageType$1) {
 	MessageType$1[MessageType$1["Error"] = 3] = "Error";
 	return MessageType$1;
 }({});
+let PlayState = /* @__PURE__ */ function(PlayState$1) {
+	PlayState$1["stopped"] = "stopped";
+	PlayState$1["playing"] = "playing";
+	PlayState$1["paused"] = "paused";
+	PlayState$1["unknown"] = "unknown";
+	return PlayState$1;
+}({});
+const NoStreamTitles = {
+	uri: "",
+	active_titles: []
+};
 let AlbumDataType = /* @__PURE__ */ function(AlbumDataType$1) {
 	AlbumDataType$1[AlbumDataType$1["None"] = 0] = "None";
 	AlbumDataType$1[AlbumDataType$1["Loading"] = 1] = "Loading";
@@ -726,7 +737,7 @@ var Model = class extends EventTarget {
 		consume: false,
 		single: false
 	};
-	playState;
+	playState = PlayState.unknown;
 	activeStreamLines;
 	history;
 	trackList = [];
@@ -1639,7 +1650,7 @@ var WebProxy = class {
 	}
 	async fetchActiveStreamLines() {
 		if (!this.model.currentTrack) {
-			this.model.setActiveStreamLinesHistory(void 0);
+			this.model.setActiveStreamLinesHistory(NoStreamTitles);
 			return;
 		}
 		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
@@ -1715,8 +1726,8 @@ var Controller = class extends Commands {
 			this.model.setVolume(data.volume);
 		});
 		this.mopidy.on("event:muteChanged", (_data) => {});
-		this.mopidy.on("event:playbackStateChanged", (data) => {
-			playerState_default().getController().setPlayState(data.new_state);
+		this.mopidy.on("event:playbackStateChanged", async (data) => {
+			await this.onPlaybackStateChanged(data);
 		});
 		this.mopidy.on("event:tracklistChanged", async () => {
 			await this.mopidyProxy.fetchTracklistAndDetails();
@@ -1742,6 +1753,10 @@ var Controller = class extends Commands {
 			this.model.setActiveStreamLinesHistory(streamTitles);
 		});
 	}
+	async onPlaybackStateChanged(data) {
+		playerState_default().getController().setPlayState(data.new_state);
+		await this.updateStreamLines();
+	}
 	async setCurrentTrackAndFetchDetails(data) {
 		if (!data) {
 			this.model.setCurrentTrack(TrackNone);
@@ -1750,7 +1765,11 @@ var Controller = class extends Commands {
 		let trackModel = transformTlTrackDataToModel(data);
 		this.model.setCurrentTrack(trackModel);
 		if (!this.model.selectedTrack) this.model.setSelectedTrack(trackModel.track.uri);
-		await this.webProxy.fetchActiveStreamLines();
+		await this.updateStreamLines();
+	}
+	async updateStreamLines() {
+		if (this.model.getPlayState() == "playing") await this.webProxy.fetchActiveStreamLines();
+		else this.model.setActiveStreamLinesHistory(NoStreamTitles);
 	}
 	async fetchLargestImageOrDefault(uri) {
 		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
@@ -2054,9 +2073,10 @@ var ButtonBarView = class extends View {
 		let volume = playerState_default().getModel().getVolume();
 		document.getElementById(this.componentId).setAttribute("volume", volume.toString());
 	}
-	onPlaybackStateChangegd() {
+	async onPlaybackStateChangegd() {
 		let playState = playerState_default().getModel().getPlayState();
 		document.getElementById(this.componentId).setAttribute("play_state", playState);
+		await this.updateComponent();
 	}
 	async onCurrentTrackChanged() {
 		await this.updateComponent();

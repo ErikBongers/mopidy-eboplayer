@@ -70,10 +70,11 @@ export class ButtonBarView extends View {
 
     }
 
-    private onPlaybackStateChangegd() {
+    private async onPlaybackStateChangegd() {
         let playState = getState().getModel().getPlayState();
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         comp.setAttribute("play_state", playState);
+        await this.updateComponent();
     }
 
     private async onCurrentTrackChanged() {

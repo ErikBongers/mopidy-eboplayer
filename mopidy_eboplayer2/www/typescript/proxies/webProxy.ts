@@ -1,6 +1,7 @@
 import {Model} from "../model";
 import {EboPlayerDataType} from "../views/view";
 import {getHostAndPort} from "../global";
+import {NoStreamTitles} from "../modelTypes";
 
 export class WebProxy {
     private model: Model;
@@ -19,7 +20,7 @@ export class WebProxy {
 
     async fetchActiveStreamLines() {
         if (!this.model.currentTrack) {
-            this.model.setActiveStreamLinesHistory(undefined);
+            this.model.setActiveStreamLinesHistory(NoStreamTitles);
             return;
         }
 

@@ -1,3 +1,6 @@
+If current track is stopped and it's a stream: remove the stream_lines.
+
+
 What do I need?
 - Build playlists
   > in Browse, when clicking on a playlist - open the playlist page.
