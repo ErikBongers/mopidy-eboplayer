@@ -2347,6 +2347,7 @@ var TimelineView = class extends View {
 		let body = document.getElementById("timelineTable").tBodies[0];
 		body.innerHTML = "";
 		if (history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri) history.shift();
+		history = history.slice(0, 50);
 		let allLookups = [];
 		for (let i = history.length - 1; i >= 0; i--) allLookups.push(this.insertHistoryLine(history[i], body));
 		for (let track of trackList) allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid));

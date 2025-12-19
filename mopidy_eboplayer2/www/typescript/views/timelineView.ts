@@ -33,6 +33,9 @@ export class TimelineView extends View {
         if(history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri)
             history.shift(); //remove most recent history line if it's the first track in the playlist.
 
+        // if we want to limit the number of history lines we can do so here.
+        // history = history.slice(0, 50);
+
         let allLookups: Promise<void>[] = [];
         //reverse order as we want the most recent tracks to at the bottom.
         for(let i = history.length - 1; i >= 0; i-- ) {
