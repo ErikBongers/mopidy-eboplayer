@@ -43,7 +43,7 @@ export class EboButton extends EboComponent {
 
     static htmlText = `
         <button>
-            <img id="img" src="images/default_cover.png" alt="Button image">
+            <img id="image" src="" alt="Button image">
         </button>
         `;
 
@@ -81,7 +81,7 @@ export class EboButton extends EboComponent {
         this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
         this.shadow.appendChild(fragment);
-        let imgTag = this.shadow.getElementById("img") as HTMLImageElement;
+        let imgTag = this.shadow.getElementById("image") as HTMLImageElement;
         this.setClassFromBoolAttribute("pressed", imgTag);
         imgTag.src = this.img ?? "";
         let button = this.shadow.querySelector("button");

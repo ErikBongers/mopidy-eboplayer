@@ -30,7 +30,7 @@ export class EboBigTrackComp extends EboComponent {
     private button: string = "false";
     private active: string = "true";
 
-    private img: string  = "images/default_cover.png"; //todo: get rid of this. When no imageUrl specified, set image invisible.
+    private img: string  = "";
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: AlbumData;
 
@@ -53,6 +53,8 @@ export class EboBigTrackComp extends EboComponent {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
+                    min-width: 200px;
+                    min-height: 200px;
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -87,7 +89,7 @@ export class EboBigTrackComp extends EboComponent {
             <div id="wrapper" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                        <img id="image" style="visibility: hidden" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -152,14 +154,14 @@ export class EboBigTrackComp extends EboComponent {
         EboBigTrackComp.progressBarAttributes.forEach(attName => {
             progressBarElement.setAttribute(attName, this[attName]);//todo: check if each of these causes a re-rendering.
         });
-        let img = fragment.getElementById("img") as HTMLImageElement;
+        let img = fragment.getElementById("image") as HTMLImageElement;
         img.src = this.img;
         this.shadow.appendChild(fragment);
         // let img = this.shadow.getElementById("img");
         // img.addEventListener("click", (ev) => {
         //     this.dispatchEvent(this.albumClickEvent);
         // });
-        this.addShadowEventListener("img","click", (ev) => {
+        this.addShadowEventListener("image","click", (ev) => {
             this.dispatchEvent(this.albumClickEvent);
         });
         this.update();
@@ -169,9 +171,14 @@ export class EboBigTrackComp extends EboComponent {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
             this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
-        let img = this.shadow.getElementById("img") as HTMLImageElement;
-        if(this.albumInfo.type == AlbumDataType.Loaded)
-            img.src = this.albumInfo.album.imageUrl;
+        let img = this.shadow.getElementById("image") as HTMLImageElement;
+        if(this.img != "") {
+            img.style.visibility = "";
+            img.src = this.img;
+        }
+        else {
+            img.style.visibility = "hidden";
+        }
     }
 
 }

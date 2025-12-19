@@ -135,7 +135,6 @@ class EboBrowseComp extends EboComponent {
             case "name":
             case "stream_lines":
             case "extra":
-            case "img":
                 this[name] = newValue;
                 break;
             case "enabled":

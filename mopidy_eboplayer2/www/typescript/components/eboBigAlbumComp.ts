@@ -38,7 +38,7 @@ export class EboBigAlbumComp extends EboComponent {
     ];
     private name: string = "";
     private extra: string = "";
-    private img: string  = "images/default_cover.png"; //todo: get rid of this. When no imageUrl specified, set image invisible.
+    private img: string  = "";
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: ExpandedAlbumModel;
 
@@ -108,7 +108,7 @@ export class EboBigAlbumComp extends EboComponent {
             <div id="wrapper" class="front">
                 <div id="top">
                     <div class="albumCoverContainer">
-                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                        <img id="image" src="" alt="Album cover"/>
                     </div>
         
                     <div id="info">
@@ -124,7 +124,7 @@ export class EboBigAlbumComp extends EboComponent {
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
-                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
+                        <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
                     </div>
                 </div>
             </div>        
@@ -194,8 +194,11 @@ export class EboBigAlbumComp extends EboComponent {
             return;
         }
         this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-        let img = this.shadow.getElementById("img") as HTMLImageElement;
-        img.src = this.img;
+        let img = this.shadow.getElementById("image") as HTMLImageElement;
+        if(this.img != "")
+            img.src = this.img;
+        else
+            img.style.visibility = "hidden";
     }
 
     private onActiveTrackChanged() {

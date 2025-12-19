@@ -2347,7 +2347,6 @@ var TimelineView = class extends View {
 		let body = document.getElementById("timelineTable").tBodies[0];
 		body.innerHTML = "";
 		if (history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri) history.shift();
-		history = history.slice(0, 50);
 		let allLookups = [];
 		for (let i = history.length - 1; i >= 0; i--) allLookups.push(this.insertHistoryLine(history[i], body));
 		for (let track of trackList) allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid));
@@ -2490,7 +2489,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	max = "100";
 	button = "false";
 	active = "true";
-	img = "images/default_cover.png";
+	img = "";
 	albumClickEvent;
 	_albumInfo;
 	static styleText = `
@@ -2512,6 +2511,8 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
+                    min-width: 200px;
+                    min-height: 200px;
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -2544,7 +2545,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
             <div id="wrapper" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                        <img id="image" style="visibility: hidden" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -2605,18 +2606,21 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
-		let img = fragment.getElementById("img");
+		let img = fragment.getElementById("image");
 		img.src = this.img;
 		this.shadow.appendChild(fragment);
-		this.addShadowEventListener("img", "click", (ev) => {
+		this.addShadowEventListener("image", "click", (ev) => {
 			this.dispatchEvent(this.albumClickEvent);
 		});
 		this.update();
 	}
 	updateWhenRendered() {
 		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let img = this.shadow.getElementById("img");
-		if (this.albumInfo.type == AlbumDataType.Loaded) img.src = this.albumInfo.album.imageUrl;
+		let img = this.shadow.getElementById("image");
+		if (this.img != "") {
+			img.style.visibility = "";
+			img.src = this.img;
+		} else img.style.visibility = "hidden";
 	}
 };
 
@@ -3054,7 +3058,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			case "name":
 			case "stream_lines":
 			case "extra":
-			case "img":
 				this[name] = newValue;
 				break;
 			case "enabled":
@@ -3292,7 +3295,7 @@ var EboButton = class EboButton extends EboComponent {
     `;
 	static htmlText = `
         <button>
-            <img id="img" src="images/default_cover.png" alt="Button image">
+            <img id="image" src="" alt="Button image">
         </button>
         `;
 	constructor() {
@@ -3317,7 +3320,7 @@ var EboButton = class EboButton extends EboComponent {
 		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
 		let fragment = this.divTemplate.content.cloneNode(true);
 		this.shadow.appendChild(fragment);
-		let imgTag = this.shadow.getElementById("img");
+		let imgTag = this.shadow.getElementById("image");
 		this.setClassFromBoolAttribute("pressed", imgTag);
 		imgTag.src = this.img ?? "";
 		let button = this.shadow.querySelector("button");
@@ -3399,7 +3402,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	];
 	name = "";
 	extra = "";
-	img = "images/default_cover.png";
+	img = "";
 	albumClickEvent;
 	_albumInfo;
 	static styleText = `
@@ -3466,7 +3469,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
             <div id="wrapper" class="front">
                 <div id="top">
                     <div class="albumCoverContainer">
-                        <img id="img" src="images/default_cover.png" alt="Album cover"/>
+                        <img id="image" src="" alt="Album cover"/>
                     </div>
         
                     <div id="info">
@@ -3482,7 +3485,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
-                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
+                        <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
                     </div>
                 </div>
             </div>        
@@ -3541,8 +3544,9 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		tracksComp.streamInfo = this.streamInfo;
 		if (!this.albumInfo) return;
 		this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let img = this.shadow.getElementById("img");
-		img.src = this.img;
+		let img = this.shadow.getElementById("image");
+		if (this.img != "") img.src = this.img;
+		else img.style.visibility = "hidden";
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
