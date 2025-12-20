@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {AlbumData, AlbumDataType, AlbumNone, EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 import getState from "../playerState";
 
 export class EboBigAlbumComp extends EboComponent {
@@ -172,15 +172,11 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     private onBtnPlayClick() {
-        if (!this.albumInfo)
-            return;
-        getState().getController().playAlbum(this.albumInfo.album.albumInfo.uri);
+        this.dispatchEvent(new Event(EboplayerEvents.playAlbumClicked));
     }
 
     private onBtnAddClick() {
-        if (!this.albumInfo)
-            return;
-        getState().getController().addAlbum(this.albumInfo.album.albumInfo.uri);
+        this.dispatchEvent(new Event(EboplayerEvents.addAlbumClicked));
     }
 
     override updateWhenRendered() {

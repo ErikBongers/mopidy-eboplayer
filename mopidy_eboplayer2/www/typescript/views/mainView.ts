@@ -4,6 +4,7 @@ import EboBrowseComp from "../components/eboBrowseComp";
 
 import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
+import {console_yellow} from "../global";
 
 export class MainView extends View {
     bind() {
@@ -36,7 +37,13 @@ export class MainView extends View {
         currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
             this.onAlbumClick();
         });
-
+        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+        albumComp.addEventListener(EboplayerEvents.playAlbumClicked, () => {
+            this.onAlbumPlayClick();
+        });
+        albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {
+            this.onAlbumAddClick();
+        });
     }
 
     private onRefsFiltered() {
@@ -142,6 +149,19 @@ export class MainView extends View {
         albumComp.streamInfo = undefined;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
         albumComp.setAttribute("name", albumModel.album.albumInfo.name);
+        albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
+    }
+
+    private onAlbumPlayClick() {
+        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+        getState().getController().playAlbum(albumComp.dataset.albumUri);
+
+    }
+
+    private onAlbumAddClick() {
+        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+        getState().getController().addAlbum(albumComp.dataset.albumUri);
+
     }
 }
 

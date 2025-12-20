@@ -117,6 +117,8 @@ export enum EboplayerEvents {
     albumToViewChanged = "eboplayer.albumToViewChanged",
     albumClicked = "eboplayer.albumClicked",
     currentImageSet = "eboplayer.currentImageSet",
+    playAlbumClicked = "eboplayer.playAlbumClicked",
+    addAlbumClicked = "eboplayer.addAlbumClicked",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;
