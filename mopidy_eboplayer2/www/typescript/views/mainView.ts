@@ -161,7 +161,6 @@ export class MainView extends View {
     private onAlbumAddClick() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         getState().getController().addAlbum(albumComp.dataset.albumUri);
-
     }
 }
 
