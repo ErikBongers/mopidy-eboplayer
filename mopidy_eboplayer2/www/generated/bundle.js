@@ -2929,6 +2929,11 @@ var MainView = class extends View {
 	showView(view) {
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let layout = document.getElementById("layout");
+		let prevViewClass = [...layout.classList].filter((c) => [
+			"browse",
+			"bigAlbum",
+			"bigTrack"
+		].includes(c))[0];
 		layout.classList.remove("browse", "bigAlbum", "bigTrack");
 		switch (view) {
 			case Views.Browse:
@@ -2951,8 +2956,13 @@ var MainView = class extends View {
 			case Views.Album:
 				layout.classList.add("bigAlbum");
 				location.hash = Views.Album;
-				browseBtn.dataset.goto = Views.NowPlaying;
-				browseBtn.title = "Now playing";
+				if (prevViewClass == "browse") {
+					browseBtn.dataset.goto = Views.Browse;
+					browseBtn.title = "Search";
+				} else {
+					browseBtn.dataset.goto = Views.NowPlaying;
+					browseBtn.title = "Now playing";
+				}
 		}
 	}
 	getRequiredDataTypes() {

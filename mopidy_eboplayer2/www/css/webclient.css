@@ -101,16 +101,7 @@ button, input[type="submit"], input[type="reset"] {
         #tableWrapper {
             height: 0;
         }
-        #headerSearchBtn {
-            i {
-                display: none;
-            }
-            img {
-                display: block;
-            }
-        }
     }
-
     #stickyTop {
         height: 50vh;
         display: flex;
@@ -129,6 +120,16 @@ button, input[type="submit"], input[type="reset"] {
             display: none;
         }
     }
+
+    #headerSearchBtn[data-goto="#NowPlaying"] {
+        i {
+            display: none;
+        }
+        img {
+            display: block;
+        }
+    }
+
 }
 
 .flex_wrap_content {
