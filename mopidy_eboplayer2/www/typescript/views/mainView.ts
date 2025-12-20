@@ -136,6 +136,7 @@ export class MainView extends View {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         let albumModel = await getState().getController().getExpandedAlbumModel(getState().getModel().getAlbumToView());
         albumComp.albumInfo = albumModel;
+        albumComp.streamInfo = undefined;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
     }
 }

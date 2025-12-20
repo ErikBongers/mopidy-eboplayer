@@ -190,15 +190,16 @@ export class EboBigAlbumComp extends EboComponent {
         let tracksComp = this.shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.albumInfo = this.albumInfo;
         tracksComp.streamInfo = this.streamInfo;
+        let img = this.shadow.getElementById("image") as HTMLImageElement;
+        if(this.img != "") {
+            img.style.visibility = "";
+            img.src = this.img;
+        } else
+            img.style.visibility = "hidden";
         if(!this.albumInfo) {
             return;
         }
         this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-        let img = this.shadow.getElementById("image") as HTMLImageElement;
-        if(this.img != "")
-            img.src = this.img;
-        else
-            img.style.visibility = "hidden";
     }
 
     private onActiveTrackChanged() {

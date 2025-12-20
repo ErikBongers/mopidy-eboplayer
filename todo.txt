@@ -1,3 +1,6 @@
+* The album component needs it's data set as follows:
+  - from Now Playing:
+
 * dblclick on album track > play
 
 What do I need?

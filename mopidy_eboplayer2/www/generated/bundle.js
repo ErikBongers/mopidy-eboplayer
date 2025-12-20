@@ -2959,6 +2959,7 @@ var MainView = class extends View {
 		let albumComp = document.getElementById("bigAlbumView");
 		let albumModel = await playerState_default().getController().getExpandedAlbumModel(playerState_default().getModel().getAlbumToView());
 		albumComp.albumInfo = albumModel;
+		albumComp.streamInfo = void 0;
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
 	}
 };
@@ -3576,11 +3577,13 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
 		tracksComp.albumInfo = this.albumInfo;
 		tracksComp.streamInfo = this.streamInfo;
+		let img = this.shadow.getElementById("image");
+		if (this.img != "") {
+			img.style.visibility = "";
+			img.src = this.img;
+		} else img.style.visibility = "hidden";
 		if (!this.albumInfo) return;
 		this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let img = this.shadow.getElementById("image");
-		if (this.img != "") img.src = this.img;
-		else img.style.visibility = "hidden";
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
