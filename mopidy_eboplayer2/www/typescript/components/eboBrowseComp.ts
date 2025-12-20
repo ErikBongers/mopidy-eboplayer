@@ -1,12 +1,19 @@
 import {EboComponent} from "./EboComponent";
-import getState from "../playerState";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
 import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
 import {SearchResult} from "../refs";
 
-class EboBrowseComp extends EboComponent {
+export type EventUriArgs = {"uri": string };
+export type EventBreadcrumbArgs = {"breadcrumbId": number };
+export type EventBrowseResultArgs = {
+    "label": string,
+    "uri": string,
+    "type": string,
+};
+
+export class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
 
     get breadCrumbs(): FilterBreadCrumbType[] {
@@ -125,7 +132,7 @@ class EboBrowseComp extends EboComponent {
         <button> ALL </button>
         <button> &nbsp;&nbsp;(i) </button>
     </div>
-    <div id="breacCrumbs"></div>
+    <div id="breadCrumbs"></div>
     <div id="searchResults">
         <div id="searchInfo">
         </div>  
@@ -273,7 +280,9 @@ class EboBrowseComp extends EboComponent {
     }
 
     renderBreadCrumbs() {
-        let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
+        if(!this.rendered) //may be called directly, before initialization.
+            return;
+        let breadCrumbsDiv = this.shadow.getElementById("breadCrumbs");
         breadCrumbsDiv.innerHTML = "Ĥ > " + (this.breadCrumbs)
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" > ");
@@ -330,20 +339,17 @@ class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        getState().getController().diveIntoBrowseResult(row.cells[0].innerText, row.dataset.uri, row.dataset.type);
+        this.dispatchEvent(new CustomEvent<EventBrowseResultArgs>(EboplayerEvents.browseResultClick, {detail: {"label": row.cells[0].innerText, "uri": row.dataset.uri, "type": row.dataset.type}}));
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        await getState().getController().clearListAndPlay(row.dataset.uri);
+        this.dispatchEvent(new CustomEvent<EventUriArgs>(EboplayerEvents.browseResultDblClick, {detail: {uri: row.dataset.uri}}));
     }
-
 
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
-        getState().getController().resetToBreadCrumb(parseInt(btn.dataset.id)); //todo rename to breadCrumbId.
+        this.dispatchEvent(new CustomEvent<EventBreadcrumbArgs>(EboplayerEvents.breadCrumbClick, {detail: {breadcrumbId: parseInt(btn.dataset.id)}}));
     }
 
 }
-
-export default EboBrowseComp

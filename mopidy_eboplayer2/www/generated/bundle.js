@@ -681,6 +681,9 @@ let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["currentImageSet"] = "eboplayer.currentImageSet";
 	EboplayerEvents$1["playAlbumClicked"] = "eboplayer.playAlbumClicked";
 	EboplayerEvents$1["addAlbumClicked"] = "eboplayer.addAlbumClicked";
+	EboplayerEvents$1["browseResultDblClick"] = "eboplayer.browseResultDblClick";
+	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
+	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
 	return EboplayerEvents$1;
 }({});
 let ConnectionState = /* @__PURE__ */ function(ConnectionState$1) {
@@ -2855,6 +2858,15 @@ var MainView = class extends View {
 		browseComp.addEventListener("browseFilterChanged", (ev) => {
 			playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
 		});
+		browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev) => {
+			this.onBreadcrumbClick(ev.detail.breadcrumbId);
+		});
+		browseComp.addEventListener(EboplayerEvents.browseResultClick, (ev) => {
+			this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
+		});
+		browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev) => {
+			await this.onBrowseResultDblClick(ev.detail.uri);
+		});
 		playerState_default().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
 			this.onRefsFiltered();
 		});
@@ -2985,6 +2997,15 @@ var MainView = class extends View {
 		let albumComp = document.getElementById("bigAlbumView");
 		playerState_default().getController().addAlbum(albumComp.dataset.albumUri);
 	}
+	async onBrowseResultDblClick(uri) {
+		await playerState_default().getController().clearListAndPlay(uri);
+	}
+	onBrowseResultClick(label, uri, type) {
+		playerState_default().getController().diveIntoBrowseResult(label, uri, type);
+	}
+	onBreadcrumbClick(breadcrumbId) {
+		playerState_default().getController().resetToBreadCrumb(breadcrumbId);
+	}
 };
 
 //#endregion
@@ -3092,7 +3113,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
         <button> ALL </button>
         <button> &nbsp;&nbsp;(i) </button>
     </div>
-    <div id="breacCrumbs"></div>
+    <div id="breadCrumbs"></div>
     <div id="searchResults">
         <div id="searchInfo">
         </div>  
@@ -3213,7 +3234,8 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		if (searchInfo) searchInfo.innerHTML = text;
 	}
 	renderBreadCrumbs() {
-		let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
+		if (!this.rendered) return;
+		let breadCrumbsDiv = this.shadow.getElementById("breadCrumbs");
 		breadCrumbsDiv.innerHTML = "Ĥ > " + this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
 		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
 			btn.addEventListener("click", (ev) => {
@@ -3253,18 +3275,21 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	onRowClicked(ev) {
 		let row = ev.currentTarget;
-		playerState_default().getController().diveIntoBrowseResult(row.cells[0].innerText, row.dataset.uri, row.dataset.type);
+		this.dispatchEvent(new CustomEvent(EboplayerEvents.browseResultClick, { detail: {
+			"label": row.cells[0].innerText,
+			"uri": row.dataset.uri,
+			"type": row.dataset.type
+		} }));
 	}
 	async onRowDoubleClicked(ev) {
 		let row = ev.currentTarget;
-		await playerState_default().getController().clearListAndPlay(row.dataset.uri);
+		this.dispatchEvent(new CustomEvent(EboplayerEvents.browseResultDblClick, { detail: { uri: row.dataset.uri } }));
 	}
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
-		playerState_default().getController().resetToBreadCrumb(parseInt(btn.dataset.id));
+		this.dispatchEvent(new CustomEvent(EboplayerEvents.breadCrumbClick, { detail: { breadcrumbId: parseInt(btn.dataset.id) } }));
 	}
 };
-var eboBrowseComp_default = EboBrowseComp;
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/MouseTimer.ts
@@ -3849,7 +3874,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboProgressBar);
 		EboComponent.define(EboBigTrackComp);
 		EboComponent.define(EboAlbumTracksComp);
-		EboComponent.define(eboBrowseComp_default);
+		EboComponent.define(EboBrowseComp);
 		EboComponent.define(EboButton);
 		EboComponent.define(EboBigAlbumComp);
 		EboComponent.define(EboButtonBar);

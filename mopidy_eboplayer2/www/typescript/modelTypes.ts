@@ -119,6 +119,9 @@ export enum EboplayerEvents {
     currentImageSet = "eboplayer.currentImageSet",
     playAlbumClicked = "eboplayer.playAlbumClicked",
     addAlbumClicked = "eboplayer.addAlbumClicked",
+    browseResultDblClick = "eboplayer.browseResultDblClick",
+    browseResultClick = "eboplayer.browseResultClick",
+    breadCrumbClick = "eboplayer.breadCrumbClick",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

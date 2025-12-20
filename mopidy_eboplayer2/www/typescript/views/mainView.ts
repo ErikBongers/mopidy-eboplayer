@@ -1,10 +1,9 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import EboBrowseComp from "../components/eboBrowseComp";
 
 import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
-import {console_yellow} from "../global";
+import {EboBrowseComp, EventBreadcrumbArgs, EventBrowseResultArgs, EventUriArgs} from "../components/eboBrowseComp";
 
 export class MainView extends View {
     bind() {
@@ -14,6 +13,15 @@ export class MainView extends View {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEventListener("browseFilterChanged", (ev) => {
             getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
+        });
+        browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev: CustomEvent<EventBreadcrumbArgs>) => {
+            this.onBreadcrumbClick(ev.detail.breadcrumbId);
+        });
+        browseComp.addEventListener(EboplayerEvents.browseResultClick, (ev: CustomEvent<EventBrowseResultArgs>) => {
+            this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
+        });
+        browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev: CustomEvent<EventUriArgs>) => {
+            await this.onBrowseResultDblClick(ev.detail.uri);
         });
         getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
             this.onRefsFiltered();
@@ -162,6 +170,18 @@ export class MainView extends View {
     private onAlbumAddClick() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         getState().getController().addAlbum(albumComp.dataset.albumUri);
+    }
+
+    private async onBrowseResultDblClick(uri: string) {
+        await getState().getController().clearListAndPlay(uri);
+    }
+
+    private onBrowseResultClick(label: string, uri: string, type: string) {
+        getState().getController().diveIntoBrowseResult(label, uri, type);
+    }
+
+    private onBreadcrumbClick(breadcrumbId: number) {
+        getState().getController().resetToBreadCrumb(breadcrumbId);
     }
 }
 
