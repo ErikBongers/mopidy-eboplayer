@@ -4,11 +4,27 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 
 import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
+import {SearchResult} from "../refs";
+import {text} from "node:stream/consumers";
 
 class EboBrowseComp extends EboComponent {
+    static readonly tagName=  "ebo-browse-view";
+
+    get results(): SearchResult[] {
+        return this._results;
+    }
+
+    set results(value: SearchResult[]) {
+        this._results = value;
+        this.renderResults(); // don't render all, as user may be typing a search text.
+    }
+
+    private _results: SearchResult[] = [];
+
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
     }
+
     set browseFilter(value: BrowseFilter) {
         if(JSON.stringify(this._browseFilter) == JSON.stringify(value))
             return;
@@ -17,7 +33,6 @@ class EboBrowseComp extends EboComponent {
     }
 
     private _browseFilter: BrowseFilter;
-    static readonly tagName=  "ebo-browse-view";
 
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [];
@@ -152,8 +167,8 @@ class EboBrowseComp extends EboComponent {
 
     setFocusAndSelect() {
         let searchText = this.shadow.getElementById("searchText") as HTMLInputElement;
-        searchText.focus();
-        searchText.select();
+        searchText?.focus();
+        searchText?.select();
     }
 
     renderPrepared() {
@@ -243,7 +258,8 @@ class EboBrowseComp extends EboComponent {
 
     setSearchInfo(text: string) {
         let searchInfo = this.shadow.getElementById("searchInfo");
-        searchInfo.innerHTML = text;
+        if(searchInfo)
+            searchInfo.innerHTML = text;
     }
 
     renderBreadCrumbs() {
@@ -268,18 +284,19 @@ class EboBrowseComp extends EboComponent {
     }
 
     renderResults() {
+        if(!this.rendered) //may be called directly, before initialization.
+            return;
         this.setSearchInfo("");
 
         let table = this.shadow.getElementById("searchResultsTable") as HTMLTableElement;
         let body = table.tBodies[0];
         body.innerHTML = "";
 
-        let results = getState()?.getModel()?.getCurrentSearchResults() ?? []; //todo: direct reference to model in component. Make searchResults a property.
-        if(results?.length == 0)
+        if(this.results.length == 0)
             return;
 
 
-        let resultsHtml = results
+        let resultsHtml = this.results
             .map(result => {
                 let refType = result.ref.type as string;
                 if(refType == "directory") {

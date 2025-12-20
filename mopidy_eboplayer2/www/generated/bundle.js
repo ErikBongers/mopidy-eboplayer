@@ -2174,12 +2174,15 @@ var Batching = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/EboComponent.ts
 var EboComponent = class EboComponent extends HTMLElement {
+	get rendered() {
+		return this._rendered;
+	}
 	static globalCss;
 	shadow;
 	styleTemplate;
 	divTemplate;
 	connected = false;
-	rendered = false;
+	_rendered = false;
 	static NO_TAG_NAME = "todo: override in subclass";
 	static tagName = EboComponent.NO_TAG_NAME;
 	renderBatching;
@@ -2215,7 +2218,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	doUpdate() {
 		if (!this.connected) return;
-		if (!this.rendered) return;
+		if (!this._rendered) return;
 		this.updateWhenRendered();
 	}
 	updateWhenRendered() {}
@@ -2227,7 +2230,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.shadow.innerHTML = "";
 		if (EboComponent.globalCss) this.shadow.adoptedStyleSheets = EboComponent.globalCss;
 		this.renderPrepared();
-		this.rendered = true;
+		this._rendered = true;
 	}
 	setClassFromBoolAttribute(attName, el) {
 		if (this[attName] == true) el.classList.add(attName);
@@ -2873,7 +2876,9 @@ var MainView = class extends View {
 		});
 	}
 	onRefsFiltered() {
-		document.getElementById("browseView").renderResults();
+		let browseComp = document.getElementById("browseView");
+		browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
+		browseComp.renderResults();
 	}
 	onBreadCrumbsChanged() {
 		document.getElementById("browseView").renderBreadCrumbs();
@@ -2911,6 +2916,7 @@ var MainView = class extends View {
 				browseBtn.title = "Now playing";
 				let browseComp = document.getElementById("browseView");
 				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
 				browseComp.setFocusAndSelect();
 				break;
 			case Views.NowPlaying:
@@ -2960,6 +2966,15 @@ var MainView = class extends View {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
+	static tagName = "ebo-browse-view";
+	get results() {
+		return this._results;
+	}
+	set results(value) {
+		this._results = value;
+		this.renderResults();
+	}
+	_results = [];
 	get browseFilter() {
 		return this._browseFilter;
 	}
@@ -2969,7 +2984,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.render();
 	}
 	_browseFilter;
-	static tagName = "ebo-browse-view";
 	static observedAttributes = [];
 	browseFilterChangedEvent;
 	static styleText = `
@@ -3091,8 +3105,8 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	onConnected() {}
 	setFocusAndSelect() {
 		let searchText = this.shadow.getElementById("searchText");
-		searchText.focus();
-		searchText.select();
+		searchText?.focus();
+		searchText?.select();
 	}
 	renderPrepared() {
 		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
@@ -3164,7 +3178,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.shadow.getElementById("searchInfo");
-		searchInfo.innerHTML = text;
+		if (searchInfo) searchInfo.innerHTML = text;
 	}
 	renderBreadCrumbs() {
 		let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
@@ -3180,12 +3194,12 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		else if (crumb instanceof BreadCrumbBrowseFilter) return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
 	}
 	renderResults() {
+		if (!this.rendered) return;
 		this.setSearchInfo("");
 		let body = this.shadow.getElementById("searchResultsTable").tBodies[0];
 		body.innerHTML = "";
-		let results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
-		if (results?.length == 0) return;
-		body.innerHTML = results.map((result) => {
+		if (this.results.length == 0) return;
+		body.innerHTML = this.results.map((result) => {
 			let refType = result.ref.type;
 			if (refType == "directory") {
 				if (result.ref.uri.includes(LIBRARY_PROTOCOL + "directory?genre=")) refType = "genre";

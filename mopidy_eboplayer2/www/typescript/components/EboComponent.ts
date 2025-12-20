@@ -1,16 +1,23 @@
 import {Batching} from "../Batching";
+import {styleText} from "node:util";
+import {text} from "node:stream/consumers";
+import {id} from "rolldown/filter";
+import {type} from "node:os";
 
 export interface HasName {
     tagName: string;
 }
 
 export abstract class EboComponent extends HTMLElement implements HasName {
+    get rendered(): boolean {
+        return this._rendered;
+    }
     static globalCss: CSSStyleSheet[];
     protected shadow: ShadowRoot; //todo: make private and expose only in renderPrepared and updateWhenConnected.
     protected styleTemplate: HTMLTemplateElement;
     protected divTemplate: HTMLTemplateElement;
     private connected = false;
-    private rendered = false;
+    private _rendered = false;
     private static readonly NO_TAG_NAME: string = "todo: override in subclass";
     static tagName: string = EboComponent.NO_TAG_NAME;
     private renderBatching;
@@ -59,7 +66,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     private doUpdate() { //todo: aad TS option `noImplicitOverride` and set `override` modifier where needed.
         if (!this.connected)
             return;
-        if (!this.rendered)
+        if (!this._rendered)
             return;
         this.updateWhenRendered();
     }
@@ -80,7 +87,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         }
 
         this.renderPrepared();
-        this.rendered = true;
+        this._rendered = true;
     }
 
     abstract renderPrepared(): void;

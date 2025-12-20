@@ -1,5 +1,4 @@
-If current track is stopped and it's a stream: remove the stream_lines.
-
+* dblclick on album track > play
 
 What do I need?
 - Build playlists
@@ -14,9 +13,6 @@ What do I need?
   >>> https://blog.alexmaccaw.com/javascript-wake-event/
   > or this alternative of window blur/focus
     >>> https://stackoverflow.com/questions/13798516/javascript-event-for-mobile-browser-re-launch-or-device-wake
-
-* dblclick on album track > play
-
 
 * Browse: dbllick on radio starts it and goes to Now Playing.
   > Animated visual feedback of dblclick:

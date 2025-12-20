@@ -41,6 +41,7 @@ export class MainView extends View {
 
     private onRefsFiltered() {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
+        browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? [];
         browseComp.renderResults();
     }
 
@@ -86,6 +87,7 @@ export class MainView extends View {
                 browseBtn.title = "Now playing";
                 let browseComp = document.getElementById("browseView") as EboBrowseComp;
                 browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
+                browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? [];
                 browseComp.setFocusAndSelect();
                 break;
             case Views.NowPlaying:
