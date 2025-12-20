@@ -5,10 +5,20 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
 import {SearchResult} from "../refs";
-import {text} from "node:stream/consumers";
 
 class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
+
+    get breadCrumbs(): FilterBreadCrumbType[] {
+        return this._breadCrumbs;
+    }
+    set breadCrumbs(value: FilterBreadCrumbType[]) {
+        this._breadCrumbs = value;
+        this.renderBreadCrumbs(); // don't render all, as user may be typing a search text.
+    }
+
+    private _breadCrumbs: FilterBreadCrumbType[] = [];
+
 
     get results(): SearchResult[] {
         return this._results;
@@ -264,7 +274,7 @@ class EboBrowseComp extends EboComponent {
 
     renderBreadCrumbs() {
         let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
-        breadCrumbsDiv.innerHTML = "Ĥ > " + (getState()?.getModel()?.getBreadCrumbs()?.list() ?? [])
+        breadCrumbsDiv.innerHTML = "Ĥ > " + (this.breadCrumbs)
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" > ");
 

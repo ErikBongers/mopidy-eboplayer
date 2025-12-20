@@ -2890,7 +2890,8 @@ var MainView = class extends View {
 		browseComp.renderResults();
 	}
 	onBreadCrumbsChanged() {
-		document.getElementById("browseView").renderBreadCrumbs();
+		let browseComp = document.getElementById("browseView");
+		browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs()?.list() ?? [];
 	}
 	onBrowseFilterChanged() {
 		let browseComp = document.getElementById("browseView");
@@ -2926,6 +2927,7 @@ var MainView = class extends View {
 				let browseComp = document.getElementById("browseView");
 				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
 				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
+				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs()?.list() ?? [];
 				browseComp.setFocusAndSelect();
 				break;
 			case Views.NowPlaying:
@@ -2989,6 +2991,14 @@ var MainView = class extends View {
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	static tagName = "ebo-browse-view";
+	get breadCrumbs() {
+		return this._breadCrumbs;
+	}
+	set breadCrumbs(value) {
+		this._breadCrumbs = value;
+		this.renderBreadCrumbs();
+	}
+	_breadCrumbs = [];
 	get results() {
 		return this._results;
 	}
@@ -3204,7 +3214,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	renderBreadCrumbs() {
 		let breadCrumbsDiv = this.shadow.getElementById("breacCrumbs");
-		breadCrumbsDiv.innerHTML = "Ĥ > " + (playerState_default()?.getModel()?.getBreadCrumbs()?.list() ?? []).map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
+		breadCrumbsDiv.innerHTML = "Ĥ > " + this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
 		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
 			btn.addEventListener("click", (ev) => {
 				this.onBreadCrumbClicked(ev);

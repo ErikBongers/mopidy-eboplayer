@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {AlbumData, AlbumDataType, AlbumNone, EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
-import getState from "../playerState";
+import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+
 
 export class EboBigAlbumComp extends EboComponent {
     get activeTrackUri(): string | null {
