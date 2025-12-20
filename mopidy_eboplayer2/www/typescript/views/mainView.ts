@@ -38,8 +38,8 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
             this.setCurrentView();
         });
-        getState().getModel().addEventListener(EboplayerEvents.albumToViewChanged, () => {
-            this.onAlbumToViewChanged();
+        getState().getModel().addEventListener(EboplayerEvents.albumToViewChanged, async () => {
+            await this.onAlbumToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEventListener("albumClick", async (e) => {

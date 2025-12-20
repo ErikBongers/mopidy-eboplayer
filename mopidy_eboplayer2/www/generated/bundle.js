@@ -2882,8 +2882,8 @@ var MainView = class extends View {
 		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
 			this.setCurrentView();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.albumToViewChanged, () => {
-			this.onAlbumToViewChanged();
+		playerState_default().getModel().addEventListener(EboplayerEvents.albumToViewChanged, async () => {
+			await this.onAlbumToViewChanged();
 		});
 		document.getElementById("currentTrackBigView").addEventListener("albumClick", async (e) => {
 			this.onAlbumClick();
