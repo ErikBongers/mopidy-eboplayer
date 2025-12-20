@@ -201,9 +201,10 @@ export class Controller extends Commands implements DataRequester{
         }
 
         if(type == "album") {
-            this.model.setAlbumToView(uri);
-            this.setView(Views.Album);
-            return;
+            getState().getController().getExpandedAlbumModel(uri).then(() => { //fetch before changing view, to avoid flicker.
+                this.model.setAlbumToView(uri);
+                this.setView(Views.Album);
+            })
         }
 
         // set 2 new breadCrumbs and a new browseFilter.

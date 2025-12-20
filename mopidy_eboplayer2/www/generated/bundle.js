@@ -1800,11 +1800,10 @@ var Controller = class extends Commands {
 	}
 	diveIntoBrowseResult(label, uri, type) {
 		if (type == "track" || type == "radio") return;
-		if (type == "album") {
+		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
 			this.model.setAlbumToView(uri);
 			this.setView(Views.Album);
-			return;
-		}
+		});
 		let browseFilter = this.model.getCurrentBrowseFilter();
 		let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
 		this.model.pushBreadCrumb(breadCrumb1);
