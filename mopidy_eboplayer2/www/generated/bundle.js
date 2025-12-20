@@ -1798,7 +1798,7 @@ var Controller = class extends Commands {
 		this.model.setCurrentBrowseFilter(filter);
 		this.filterBrowseResults();
 	}
-	diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb = true) {
+	diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
 		if (type == "track" || type == "radio") return;
 		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
 			this.model.setAlbumToView(uri);
@@ -3019,7 +3019,7 @@ var MainView = class extends View {
 		await playerState_default().getController().clearListAndPlay(uri);
 	}
 	onBrowseResultClick(label, uri, type) {
-		playerState_default().getController().diveIntoBrowseResult(label, uri, type);
+		playerState_default().getController().diveIntoBrowseResult(label, uri, type, true);
 	}
 	onBreadcrumbClick(breadcrumbId) {
 		playerState_default().getController().resetToBreadCrumb(breadcrumbId);

@@ -195,7 +195,7 @@ export class Controller extends Commands implements DataRequester{
         this.filterBrowseResults();
     }
 
-    diveIntoBrowseResult(label: string, uri: string, type: string, addTextFilterBreadcrumb: boolean = true) {
+    diveIntoBrowseResult(label: string, uri: string, type: string, addTextFilterBreadcrumb: boolean) {
         if(type == "track"  ||  type  == "radio") {
             return; //don't dive.
         }

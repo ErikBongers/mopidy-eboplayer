@@ -183,7 +183,7 @@ export class MainView extends View {
     }
 
     private onBrowseResultClick(label: string, uri: string, type: string) {
-        getState().getController().diveIntoBrowseResult(label, uri, type);
+        getState().getController().diveIntoBrowseResult(label, uri, type, true);
     }
 
     private onBreadcrumbClick(breadcrumbId: number) {
