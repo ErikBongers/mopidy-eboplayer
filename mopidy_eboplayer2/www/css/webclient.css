@@ -400,3 +400,7 @@ ebo-big-track-view {
         opacity: 1;
     }
 }
+
+ebo-big-album-view {
+    width: 100%;
+}

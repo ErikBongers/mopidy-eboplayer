@@ -62,6 +62,7 @@ export class EboAlbumTracksComp extends EboComponent {
                     height: 100%;    
                 }
                 #tracksTable {
+                    width: 100%;
                     margin-left: 1em;
                     border-collapse: collapse;
                     tr {

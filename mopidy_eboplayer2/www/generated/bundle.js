@@ -2797,6 +2797,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                     height: 100%;    
                 }
                 #tracksTable {
+                    width: 100%;
                     margin-left: 1em;
                     border-collapse: collapse;
                     tr {
@@ -3512,8 +3513,8 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                     flex-wrap: wrap;
                 }
                 img {
-                    width: 70%;
-                    height: 70%;
+                    width: 90vw;
+                    height: 45vh;
                     object-fit: contain;
                 }
                 ebo-progressbar {

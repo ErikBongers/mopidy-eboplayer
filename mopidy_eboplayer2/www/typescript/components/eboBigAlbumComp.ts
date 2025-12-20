@@ -59,8 +59,8 @@ export class EboBigAlbumComp extends EboComponent {
                     flex-wrap: wrap;
                 }
                 img {
-                    width: 70%;
-                    height: 70%;
+                    width: 90vw;
+                    height: 45vh;
                     object-fit: contain;
                 }
                 ebo-progressbar {
