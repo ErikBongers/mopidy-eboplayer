@@ -299,7 +299,6 @@ export class EboBrowseComp extends EboComponent {
             return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
         else if(crumb instanceof BreadCrumbBrowseFilter)
             return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
-        //todo: click event.
     }
 
     renderResults() {

@@ -195,7 +195,7 @@ export class Controller extends Commands implements DataRequester{
         this.filterBrowseResults();
     }
 
-    diveIntoBrowseResult(label: string, uri: string, type: string) {
+    diveIntoBrowseResult(label: string, uri: string, type: string, addTextFilterBreadcrumb: boolean = true) {
         if(type == "track"  ||  type  == "radio") {
             return; //don't dive.
         }
@@ -209,10 +209,11 @@ export class Controller extends Commands implements DataRequester{
 
         // set 2 new breadCrumbs and a new browseFilter.
         // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
-        let browseFilter = this.model.getCurrentBrowseFilter();
-        let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-        this.model.pushBreadCrumb(breadCrumb1);
-
+        if(addTextFilterBreadcrumb) {
+            let browseFilter = this.model.getCurrentBrowseFilter();
+            let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
+            this.model.pushBreadCrumb(breadCrumb1);
+        }
         let ref: Ref = {type: type as models.ModelType, name: label, uri};
         let breadCrumb2 = new BreadCrumbRef(label, ref);
         this.model.pushBreadCrumb(breadCrumb2);
@@ -258,6 +259,12 @@ export class Controller extends Commands implements DataRequester{
             this.fetchRefsForCurrentBreadCrumbs().then(() => {
                 this.filterBrowseResults();
             });
+        } else if(breadCrumb instanceof BreadCrumbRef) {
+            if(breadCrumb.data.type == "artist") {
+                this.model.resetBreadCrumbsTo(id);
+                this.model.popBreadCrumb(); // remove the artist breadCrumb as it will be added again below.
+                this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+            }
         }
         //todo: if the breadCrumb is a uri, reset to the CURRENT breadCrumb and clear the current browseFilter.
     }

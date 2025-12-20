@@ -1798,15 +1798,17 @@ var Controller = class extends Commands {
 		this.model.setCurrentBrowseFilter(filter);
 		this.filterBrowseResults();
 	}
-	diveIntoBrowseResult(label, uri, type) {
+	diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb = true) {
 		if (type == "track" || type == "radio") return;
 		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
 			this.model.setAlbumToView(uri);
 			this.setView(Views.Album);
 		});
-		let browseFilter = this.model.getCurrentBrowseFilter();
-		let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-		this.model.pushBreadCrumb(breadCrumb1);
+		if (addTextFilterBreadcrumb) {
+			let browseFilter = this.model.getCurrentBrowseFilter();
+			let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
+			this.model.pushBreadCrumb(breadCrumb1);
+		}
 		let breadCrumb2 = new BreadCrumbRef(label, {
 			type,
 			name: label,
@@ -1850,6 +1852,12 @@ var Controller = class extends Commands {
 			this.fetchRefsForCurrentBreadCrumbs().then(() => {
 				this.filterBrowseResults();
 			});
+		} else if (breadCrumb instanceof BreadCrumbRef) {
+			if (breadCrumb.data.type == "artist") {
+				this.model.resetBreadCrumbsTo(id);
+				this.model.popBreadCrumb();
+				this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+			}
 		}
 	}
 	async lookupTrackCached(trackUri) {
