@@ -2941,26 +2941,29 @@ var MainView = class extends View {
 	async onSelectedTrackChanged() {
 		let uri = playerState_default().getModel().getSelectedTrack();
 		playerState_default().getController().lookupTrackCached(uri).then(async (track) => {
-			let albumComp = document.getElementById("bigAlbumView");
 			if (track.type == ItemType.File) {
 				let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
-				albumComp.streamInfo = void 0;
-				albumComp.albumInfo = albumModel;
-				albumComp.setAttribute("img", albumModel.album.imageUrl);
+				this.setAlbumComponentData(albumModel);
 			} else {
+				let albumComp = document.getElementById("bigAlbumView");
 				let streamModel = await playerState_default().getController().getExpandedTrackModel(track.track.uri);
 				albumComp.albumInfo = void 0;
 				albumComp.streamInfo = streamModel;
 				albumComp.setAttribute("img", streamModel.stream.imageUrl);
+				albumComp.setAttribute("name", streamModel.stream.name);
 			}
 		});
 	}
 	async onAlbumToViewChanged() {
-		let albumComp = document.getElementById("bigAlbumView");
 		let albumModel = await playerState_default().getController().getExpandedAlbumModel(playerState_default().getModel().getAlbumToView());
+		this.setAlbumComponentData(albumModel);
+	}
+	setAlbumComponentData(albumModel) {
+		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.albumInfo = albumModel;
 		albumComp.streamInfo = void 0;
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
+		albumComp.setAttribute("name", albumModel.album.albumInfo.name);
 	}
 };
 
@@ -3508,7 +3511,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                     </div>
         
                     <div id="info">
-                        <h3 id="albumTitle" class="selectable"></h3>
+                        <h3 id="text" class="selectable"></h3>
                         <h3 id="name" class="selectable"></h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
@@ -3583,7 +3586,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			img.src = this.img;
 		} else img.style.visibility = "hidden";
 		if (!this.albumInfo) return;
-		this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");

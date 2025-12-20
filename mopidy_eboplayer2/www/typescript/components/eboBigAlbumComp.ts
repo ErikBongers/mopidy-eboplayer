@@ -112,7 +112,7 @@ export class EboBigAlbumComp extends EboComponent {
                     </div>
         
                     <div id="info">
-                        <h3 id="albumTitle" class="selectable"></h3>
+                        <h3 id="text" class="selectable"></h3>
                         <h3 id="name" class="selectable"></h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
@@ -196,10 +196,6 @@ export class EboBigAlbumComp extends EboComponent {
             img.src = this.img;
         } else
             img.style.visibility = "hidden";
-        if(!this.albumInfo) {
-            return;
-        }
-        this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
     }
 
     private onActiveTrackChanged() {

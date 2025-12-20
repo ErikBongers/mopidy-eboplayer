@@ -2,7 +2,7 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import EboBrowseComp from "../components/eboBrowseComp";
 
-import {EboplayerEvents, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
+import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 
 export class MainView extends View {
@@ -116,28 +116,32 @@ export class MainView extends View {
         let uri = getState().getModel().getSelectedTrack();
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
-                let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 if(track.type == ItemType.File) {
                     let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
-                    albumComp.streamInfo = undefined;
-                    albumComp.albumInfo = albumModel;
-                    albumComp.setAttribute("img", albumModel.album.imageUrl);
+                    this.setAlbumComponentData(albumModel);
                 }
                 else {
+                    let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                     let streamModel = await getState().getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
                     albumComp.albumInfo = undefined;
                     albumComp.streamInfo = streamModel;
                     albumComp.setAttribute("img", streamModel.stream.imageUrl);
+                    albumComp.setAttribute("name", streamModel.stream.name);
                 }
             });
     }
 
     private async onAlbumToViewChanged() {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         let albumModel = await getState().getController().getExpandedAlbumModel(getState().getModel().getAlbumToView());
+        this.setAlbumComponentData(albumModel);
+    }
+
+    private setAlbumComponentData(albumModel: ExpandedAlbumModel) {
+        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
         albumComp.streamInfo = undefined;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
+        albumComp.setAttribute("name", albumModel.album.albumInfo.name);
     }
 }
 
