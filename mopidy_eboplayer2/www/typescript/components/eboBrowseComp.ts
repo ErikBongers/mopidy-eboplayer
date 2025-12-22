@@ -158,7 +158,6 @@ export class EboBrowseComp extends EboComponent {
             detail: "todo"
         });
         this._browseFilter = new BrowseFilter();
-        this.render();
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -183,31 +182,28 @@ export class EboBrowseComp extends EboComponent {
     }
 
     setFocusAndSelect() {
-        let searchText = this.shadow.getElementById("searchText") as HTMLInputElement;
+        let searchText = this.getShadow().getElementById("searchText") as HTMLInputElement;
         searchText?.focus();
         searchText?.select();
     }
 
-    renderPrepared() {
-        this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-        let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
-        this.shadow.appendChild(fragment);
-        this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
+    renderPrepared(shadow:ShadowRoot) {
+        shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             //todo: is this button even needed?
         });
-        this.renderBrowseFilter();
+        this.renderBrowseFilter(shadow);
         this.renderBreadCrumbs();
         this.renderResults();
         this.update();
     }
 
-    private renderBrowseFilter() {
-        let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
+    private renderBrowseFilter(shadow: ShadowRoot) {
+        let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
             this._browseFilter.searchText = inputElement.value;
             this.dispatchEvent(this.browseFilterChangedEvent);
         });
-        this.shadow.querySelectorAll("ebo-button")
+        shadow.querySelectorAll("ebo-button")
             .forEach(btn => {
                 btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
                     this.onFilterButtonPress(ev);
@@ -256,11 +252,11 @@ export class EboBrowseComp extends EboComponent {
         this.dispatchEvent(this.browseFilterChangedEvent);
     }
 
-    updateWhenRendered() {
-        this.shadow.querySelectorAll("ebo-button")
+    updateWhenRendered(shadow:ShadowRoot) {
+        shadow.querySelectorAll("ebo-button")
             .forEach(btn =>
                 this.updateFilterButton(btn));
-        let inputElement = this.shadow.getElementById("searchText") as HTMLInputElement;
+        let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
     }
 
@@ -274,7 +270,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     setSearchInfo(text: string) {
-        let searchInfo = this.shadow.getElementById("searchInfo");
+        let searchInfo = this.getShadow().getElementById("searchInfo");
         if(searchInfo)
             searchInfo.innerHTML = text;
     }
@@ -282,7 +278,7 @@ export class EboBrowseComp extends EboComponent {
     renderBreadCrumbs() {
         if(!this.rendered) //may be called directly, before initialization.
             return;
-        let breadCrumbsDiv = this.shadow.getElementById("breadCrumbs");
+        let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
         breadCrumbsDiv.innerHTML = "Ĥ > " + (this.breadCrumbs)
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" > ");
@@ -306,7 +302,7 @@ export class EboBrowseComp extends EboComponent {
             return;
         this.setSearchInfo("");
 
-        let table = this.shadow.getElementById("searchResultsTable") as HTMLTableElement;
+        let table = this.getShadow().getElementById("searchResultsTable") as HTMLTableElement;
         let body = table.tBodies[0];
         body.innerHTML = "";
 

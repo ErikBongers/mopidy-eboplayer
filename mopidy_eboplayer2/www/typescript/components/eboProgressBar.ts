@@ -91,15 +91,12 @@ export class EboProgressBar extends EboComponent {
     connectedCallback() {
     }
 
-    renderPrepared() {
+    renderPrepared(shadow:ShadowRoot) {
         let percent = (this.position - this.min) / (this.max-this.min) * 100;
-        this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-        let styleElement = this.shadow.appendChild(document.createElement("style"));
+        let styleElement = shadow.appendChild(document.createElement("style"));
         styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;
-        let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
-        this.setClassFromBoolAttribute("button", fragment.firstElementChild as HTMLElement);
-        this.setClassFromBoolAttribute("active", fragment.firstElementChild as HTMLElement);
-        this.shadow.appendChild(fragment);
+        this.setClassFromBoolAttribute("button", shadow.firstElementChild as HTMLElement);
+        this.setClassFromBoolAttribute("active", shadow.firstElementChild as HTMLElement);
     }
 
     setClassFromBoolAttribute(attName: string, el: HTMLElement) {

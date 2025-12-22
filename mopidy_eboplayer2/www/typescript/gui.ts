@@ -19,6 +19,7 @@ import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
 import {EboButtonBar} from "./components/eboButtonBarComp";
 import {Views} from "./modelTypes";
+import {EboMenuButton} from "./components/eboMenuButton";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -42,6 +43,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboButton);
             EboComponent.define(EboBigAlbumComp);
             EboComponent.define(EboButtonBar);
+            EboComponent.define(EboMenuButton);
 
             setupStuff();
         });

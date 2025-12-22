@@ -1,8 +1,4 @@
 import {Batching} from "../Batching";
-import {styleText} from "node:util";
-import {text} from "node:stream/consumers";
-import {id} from "rolldown/filter";
-import {type} from "node:os";
 
 export interface HasName {
     tagName: string;
@@ -13,23 +9,26 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         return this._rendered;
     }
     static globalCss: CSSStyleSheet[];
-    protected shadow: ShadowRoot; //todo: make private and expose only in renderPrepared and updateWhenConnected.
-    protected styleTemplate: HTMLTemplateElement;
-    protected divTemplate: HTMLTemplateElement;
+    private shadow: ShadowRoot; //todo: make private and expose only in renderPrepared and updateWhenConnected.
+    protected styleTemplate?: HTMLTemplateElement;
+    protected divTemplate?: HTMLTemplateElement;
     private connected = false;
     private _rendered = false;
     private static readonly NO_TAG_NAME: string = "todo: override in subclass";
     static tagName: string = EboComponent.NO_TAG_NAME;
-    private renderBatching;
-    private updateBatching;
+    private renderBatching: Batching;
+    private updateBatching: Batching;
 
     protected constructor(styleText: string, htmlText: string) {
         super();
-        this.shadow = this.attachShadow({mode: "open"});
-        this.styleTemplate = document.createElement("template");
-        this.divTemplate = document.createElement("template");
-        this.styleTemplate.innerHTML = styleText;
-        this.divTemplate.innerHTML = htmlText;
+        if(styleText) {
+            this.styleTemplate = document.createElement("template");
+            this.styleTemplate.innerHTML = styleText;
+        }
+        if(htmlText) {
+            this.divTemplate = document.createElement("template");
+            this.divTemplate.innerHTML = htmlText;
+        }
         this.renderBatching = new Batching(this.doRender.bind(this));
         this.updateBatching = new Batching(this.doUpdate.bind(this));
     }
@@ -52,15 +51,16 @@ export abstract class EboComponent extends HTMLElement implements HasName {
 
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
+        this.shadow = this.attachShadow({mode: "open"});
         this.connected = true;
         this.onConnected();
+        this.render();
     }
 
-    onConnected(){
-        //todo: make this abstract.
-    }
+    onConnected(){}
 
     update() {
+        // noinspection JSIgnoredPromiseFromCall
         this.updateBatching.schedule();
     }
     private doUpdate() { //todo: aad TS option `noImplicitOverride` and set `override` modifier where needed.
@@ -68,14 +68,15 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             return;
         if (!this._rendered)
             return;
-        this.updateWhenRendered();
+        this.updateWhenRendered(this.shadow);
     }
 
-    updateWhenRendered(): void {
+    updateWhenRendered(shadow: ShadowRoot): void {
         //should be overridden by subclasses.
     }
 
     render() {
+        // noinspection JSIgnoredPromiseFromCall
         this.renderBatching.schedule();
     }
     private doRender() {
@@ -85,12 +86,20 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         if(EboComponent.globalCss) {
             this.shadow.adoptedStyleSheets = EboComponent.globalCss;
         }
+        if(this.styleTemplate)
+            this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+        if(this.divTemplate)
+            this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
 
-        this.renderPrepared();
+        this.renderPrepared(this.shadow);
         this._rendered = true;
     }
 
-    abstract renderPrepared(): void;
+    abstract renderPrepared(shadow: ShadowRoot): void;
+
+    getShadow(){
+        return this.shadow;
+    }
 
     setClassFromBoolAttribute(attName: string, el: HTMLElement) {
         if (this[attName] == true)

@@ -17,12 +17,12 @@ popup menus
   border-radius: 100vw;
   aspect-ratio: 1;
 
-  anchor-name: --profile-button;
+  anchor-name: --popup-button;
 }
 
-.profile-menu {
+.popup-menu {
   position: absolute;
-  position-anchor: --profile-button;
+  position-anchor: --popup-button;
   margin: 0;
   inset: auto;
   bottom: anchor(bottom);

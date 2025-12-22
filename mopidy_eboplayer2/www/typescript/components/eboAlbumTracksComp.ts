@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumDataType, AlbumNone, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 
 export class EboAlbumTracksComp extends EboComponent {
     private _streamInfo?: ExpandedStreamModel;
@@ -78,29 +78,32 @@ export class EboAlbumTracksComp extends EboComponent {
                         </tbody>                
                     </table>
                 </div>          
-            </div>        
+            </div>
+            <dialog popover id="albumTrackPopup">
+              Tadaaa....
+            </dialog>        
         `;
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    attributeReallyChangedCallback(_name: string, _oldValue: string, _newValue: string) {
         this.render();
         }
 
-    renderPrepared() {
-        this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-        this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
-        this.renderTrackList();
+    renderPrepared(shadow:ShadowRoot) {
+        this.renderTrackList(shadow);
     }
 
-    renderTrackList() {
-        let tbody = (this.shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
+    renderTrackList(shadow:ShadowRoot) {
+        let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.albumInfo) {
             this.albumInfo.tracks.forEach(track => {
                 let tr = tbody.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"));
+                let tdData = tr.appendChild(document.createElement("td"));
                 tr.dataset.uri = track.track.uri;
-                td.innerText = track.track.name;
+                tdData.innerText = track.track.name;
+                let tdButton = tr.appendChild(document.createElement("td"));
+                tdButton.innerHTML = `<ebo-menu-button ></ebo-menu-button>`;
             });
         }
 
@@ -118,7 +121,7 @@ export class EboAlbumTracksComp extends EboComponent {
     private highLightActiveTrack() {
         if(!this._activeTrackUri)
             return;
-        let tr = this.shadow.querySelector(`tr[data-uri="${this._activeTrackUri}"]`) as HTMLTableRowElement;
+        let tr = this.getShadow().querySelector(`tr[data-uri="${this._activeTrackUri}"]`) as HTMLTableRowElement;
         if(tr) {
             tr.classList.add("current", "textGlow");
         }

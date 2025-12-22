@@ -2201,11 +2201,14 @@ var EboComponent = class EboComponent extends HTMLElement {
 	updateBatching;
 	constructor(styleText, htmlText) {
 		super();
-		this.shadow = this.attachShadow({ mode: "open" });
-		this.styleTemplate = document.createElement("template");
-		this.divTemplate = document.createElement("template");
-		this.styleTemplate.innerHTML = styleText;
-		this.divTemplate.innerHTML = htmlText;
+		if (styleText) {
+			this.styleTemplate = document.createElement("template");
+			this.styleTemplate.innerHTML = styleText;
+		}
+		if (htmlText) {
+			this.divTemplate = document.createElement("template");
+			this.divTemplate.innerHTML = htmlText;
+		}
 		this.renderBatching = new Batching(this.doRender.bind(this));
 		this.updateBatching = new Batching(this.doUpdate.bind(this));
 	}
@@ -2221,8 +2224,10 @@ var EboComponent = class EboComponent extends HTMLElement {
 		});
 	}
 	connectedCallback() {
+		this.shadow = this.attachShadow({ mode: "open" });
 		this.connected = true;
 		this.onConnected();
+		this.render();
 	}
 	onConnected() {}
 	update() {
@@ -2231,9 +2236,9 @@ var EboComponent = class EboComponent extends HTMLElement {
 	doUpdate() {
 		if (!this.connected) return;
 		if (!this._rendered) return;
-		this.updateWhenRendered();
+		this.updateWhenRendered(this.shadow);
 	}
-	updateWhenRendered() {}
+	updateWhenRendered(shadow) {}
 	render() {
 		this.renderBatching.schedule();
 	}
@@ -2241,8 +2246,13 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (!this.shadow) return;
 		this.shadow.innerHTML = "";
 		if (EboComponent.globalCss) this.shadow.adoptedStyleSheets = EboComponent.globalCss;
-		this.renderPrepared();
+		if (this.styleTemplate) this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
+		if (this.divTemplate) this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
+		this.renderPrepared(this.shadow);
 		this._rendered = true;
+	}
+	getShadow() {
+		return this.shadow;
 	}
 	setClassFromBoolAttribute(attName, el) {
 		if (this[attName] == true) el.classList.add(attName);
@@ -2342,15 +2352,12 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 		this.render();
 	}
 	connectedCallback() {}
-	renderPrepared() {
+	renderPrepared(shadow) {
 		let percent = (this.position - this.min) / (this.max - this.min) * 100;
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		let styleElement = this.shadow.appendChild(document.createElement("style"));
+		let styleElement = shadow.appendChild(document.createElement("style"));
 		styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;
-		let fragment = this.divTemplate.content.cloneNode(true);
-		this.setClassFromBoolAttribute("button", fragment.firstElementChild);
-		this.setClassFromBoolAttribute("active", fragment.firstElementChild);
-		this.shadow.appendChild(fragment);
+		this.setClassFromBoolAttribute("button", shadow.firstElementChild);
+		this.setClassFromBoolAttribute("active", shadow.firstElementChild);
 	}
 	setClassFromBoolAttribute(attName, el) {
 		if (this[attName] == true) el.classList.add(attName);
@@ -2526,7 +2533,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	active = "true";
 	img = "";
 	albumClickEvent;
-	_albumInfo;
+	_albumInfo = AlbumNone;
 	static styleText = `
             <style>
                 :host { 
@@ -2595,19 +2602,18 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
         `;
 	constructor() {
 		super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
-		this.albumInfo = AlbumNone;
-		this.render();
 		this.albumClickEvent = new CustomEvent("albumClick", {
 			bubbles: true,
 			cancelable: false,
 			composed: true,
 			detail: "todo: tadaaa!"
 		});
+		console_yellow("EboBigTrackComp constructor called.");
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigTrackComp.progressBarAttributes.includes(name)) {
 			this[name] = newValue;
-			this.shadow.querySelector("ebo-progressbar")?.setAttribute(name, newValue);
+			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
 			return;
 		}
 		switch (name) {
@@ -2626,32 +2632,31 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	}
 	connectedCallback() {
 		super.connectedCallback();
+		console_yellow("eboBigTrackComp connectedCallback called.");
 	}
-	renderPrepared() {
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		let fragment = this.divTemplate.content.cloneNode(true);
+	renderPrepared(shadow) {
+		console_yellow("eboBigTrackComp renderPrepared called.");
 		[
 			"name",
 			"stream_lines",
 			"extra"
 		].forEach((attName) => {
-			fragment.getElementById(attName).innerHTML = this[attName];
+			shadow.getElementById(attName).innerHTML = this[attName];
 		});
-		let progressBarElement = fragment.querySelector("ebo-progressbar");
+		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
-		let img = fragment.getElementById("image");
+		let img = shadow.getElementById("image");
 		img.src = this.img;
-		this.shadow.appendChild(fragment);
 		this.addShadowEventListener("image", "click", (ev) => {
 			this.dispatchEvent(this.albumClickEvent);
 		});
 		this.update();
 	}
-	updateWhenRendered() {
-		if (this.albumInfo.type == AlbumDataType.Loaded) this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let img = this.shadow.getElementById("image");
+	updateWhenRendered(shadow) {
+		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
+		let img = shadow.getElementById("image");
 		if (this.img != "") {
 			img.style.visibility = "";
 			img.src = this.img;
@@ -2821,24 +2826,27 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                         </tbody>                
                     </table>
                 </div>          
-            </div>        
+            </div>
+            <dialog popover id="albumTrackPopup">
+              Tadaaa....
+            </dialog>        
         `;
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
+	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
 		this.render();
 	}
-	renderPrepared() {
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
-		this.renderTrackList();
+	renderPrepared(shadow) {
+		this.renderTrackList(shadow);
 	}
-	renderTrackList() {
-		let tbody = this.shadow.getElementById("tracksTable").tBodies[0];
+	renderTrackList(shadow) {
+		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
 		if (this.albumInfo) this.albumInfo.tracks.forEach((track) => {
 			let tr = tbody.appendChild(document.createElement("tr"));
-			let td = tr.appendChild(document.createElement("td"));
+			let tdData = tr.appendChild(document.createElement("td"));
 			tr.dataset.uri = track.track.uri;
-			td.innerText = track.track.name;
+			tdData.innerText = track.track.name;
+			let tdButton = tr.appendChild(document.createElement("td"));
+			tdButton.innerHTML = `<ebo-menu-button ></ebo-menu-button>`;
 		});
 		if (this.streamInfo) this.streamInfo.historyLines.forEach((lineGroup) => {
 			let td = tbody.appendChild(document.createElement("tr")).appendChild(document.createElement("td"));
@@ -2849,7 +2857,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	}
 	highLightActiveTrack() {
 		if (!this._activeTrackUri) return;
-		let tr = this.shadow.querySelector(`tr[data-uri="${this._activeTrackUri}"]`);
+		let tr = this.getShadow().querySelector(`tr[data-uri="${this._activeTrackUri}"]`);
 		if (tr) tr.classList.add("current", "textGlow");
 	}
 };
@@ -3155,7 +3163,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			detail: "todo"
 		});
 		this._browseFilter = new BrowseFilter();
-		this.render();
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
@@ -3174,27 +3181,24 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	onConnected() {}
 	setFocusAndSelect() {
-		let searchText = this.shadow.getElementById("searchText");
+		let searchText = this.getShadow().getElementById("searchText");
 		searchText?.focus();
 		searchText?.select();
 	}
-	renderPrepared() {
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		let fragment = this.divTemplate.content.cloneNode(true);
-		this.shadow.appendChild(fragment);
-		this.shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
-		this.renderBrowseFilter();
+	renderPrepared(shadow) {
+		shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
+		this.renderBrowseFilter(shadow);
 		this.renderBreadCrumbs();
 		this.renderResults();
 		this.update();
 	}
-	renderBrowseFilter() {
-		let inputElement = this.shadow.getElementById("searchText");
+	renderBrowseFilter(shadow) {
+		let inputElement = shadow.getElementById("searchText");
 		inputElement.addEventListener("keyup", (ev) => {
 			this._browseFilter.searchText = inputElement.value;
 			this.dispatchEvent(this.browseFilterChangedEvent);
 		});
-		this.shadow.querySelectorAll("ebo-button").forEach((btn) => {
+		shadow.querySelectorAll("ebo-button").forEach((btn) => {
 			btn.addEventListener("pressedChange", async (ev) => {
 				this.onFilterButtonPress(ev);
 			});
@@ -3235,9 +3239,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.browseFilter[propName] = !this.browseFilter[propName];
 		this.dispatchEvent(this.browseFilterChangedEvent);
 	}
-	updateWhenRendered() {
-		this.shadow.querySelectorAll("ebo-button").forEach((btn) => this.updateFilterButton(btn));
-		let inputElement = this.shadow.getElementById("searchText");
+	updateWhenRendered(shadow) {
+		shadow.querySelectorAll("ebo-button").forEach((btn) => this.updateFilterButton(btn));
+		let inputElement = shadow.getElementById("searchText");
 		inputElement.value = this._browseFilter.searchText;
 	}
 	updateFilterButton(btn) {
@@ -3247,12 +3251,12 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		}
 	}
 	setSearchInfo(text) {
-		let searchInfo = this.shadow.getElementById("searchInfo");
+		let searchInfo = this.getShadow().getElementById("searchInfo");
 		if (searchInfo) searchInfo.innerHTML = text;
 	}
 	renderBreadCrumbs() {
 		if (!this.rendered) return;
-		let breadCrumbsDiv = this.shadow.getElementById("breadCrumbs");
+		let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
 		breadCrumbsDiv.innerHTML = "Ĥ > " + this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
 		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
 			btn.addEventListener("click", (ev) => {
@@ -3267,7 +3271,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	renderResults() {
 		if (!this.rendered) return;
 		this.setSearchInfo("");
-		let body = this.shadow.getElementById("searchResultsTable").tBodies[0];
+		let body = this.getShadow().getElementById("searchResultsTable").tBodies[0];
 		body.innerHTML = "";
 		if (this.results.length == 0) return;
 		body.innerHTML = this.results.map((result) => {
@@ -3408,7 +3412,6 @@ var EboButton = class EboButton extends EboComponent {
         `;
 	constructor() {
 		super(EboButton.styleText, EboButton.htmlText);
-		this.render();
 		this.pressTimer = new MouseTimer(this, (source) => this.onClick(source), (source, clickCount) => this.onMultiClick(source, clickCount), (source) => this.onFilterButtonTimeOut(source));
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
@@ -3423,15 +3426,11 @@ var EboButton = class EboButton extends EboComponent {
 		}
 		this.render();
 	}
-	connectedCallback() {}
-	renderPrepared() {
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		let fragment = this.divTemplate.content.cloneNode(true);
-		this.shadow.appendChild(fragment);
-		let imgTag = this.shadow.getElementById("image");
+	renderPrepared(shadow) {
+		let imgTag = shadow.getElementById("image");
 		this.setClassFromBoolAttribute("pressed", imgTag);
 		imgTag.src = this.img ?? "";
-		let button = this.shadow.querySelector("button");
+		let button = shadow.querySelector("button");
 		button.addEventListener("mousedown", (ev) => {
 			this.pressTimer.onMouseDown(ev);
 		});
@@ -3443,7 +3442,7 @@ var EboButton = class EboButton extends EboComponent {
 		});
 	}
 	onClick(eboButton) {
-		let button = this.shadow.querySelector("button");
+		let button = this.getShadow().querySelector("button");
 		this.pressed = !this.pressed;
 		this.setClassFromBoolAttribute("pressed", button);
 		this.setAttribute("pressed", this.pressed.toString());
@@ -3601,7 +3600,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	constructor() {
 		super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
 		this.albumInfo = void 0;
-		this.render();
 		this.albumClickEvent = new CustomEvent("albumClick", {
 			bubbles: true,
 			cancelable: false,
@@ -3623,10 +3621,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		}
 		this.update();
 	}
-	renderPrepared() {
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		let fragment = this.divTemplate.content.cloneNode(true);
-		this.shadow.appendChild(fragment);
+	renderPrepared(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
 			this.onBtnPlayClick();
 		});
@@ -3641,21 +3636,21 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	onBtnAddClick() {
 		this.dispatchEvent(new Event(EboplayerEvents.addAlbumClicked));
 	}
-	updateWhenRendered() {
+	updateWhenRendered(shadow) {
 		["name", "extra"].forEach((attName) => {
-			this.shadow.getElementById(attName).innerHTML = this[attName];
+			shadow.getElementById(attName).innerHTML = this[attName];
 		});
-		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
+		let tracksComp = shadow.querySelector("ebo-album-tracks-view");
 		tracksComp.albumInfo = this.albumInfo;
 		tracksComp.streamInfo = this.streamInfo;
-		let img = this.shadow.getElementById("image");
+		let img = shadow.getElementById("image");
 		if (this.img != "") {
 			img.style.visibility = "";
 			img.src = this.img;
 		} else img.style.visibility = "hidden";
 	}
 	onActiveTrackChanged() {
-		let tracksComp = this.shadow.querySelector("ebo-album-tracks-view");
+		let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view");
 		tracksComp.activeTrackUri = this.activeTrackUri;
 	}
 };
@@ -3773,7 +3768,6 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
         `;
 	constructor() {
 		super(EboButtonBar.styleText, EboButtonBar.htmlText);
-		this.render();
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
@@ -3796,11 +3790,8 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		}
 		this.update();
 	}
-	renderPrepared() {
-		this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		let fragment = this.divTemplate.content.cloneNode(true);
-		this.shadow.appendChild(fragment);
-		let slider = this.shadow.getElementById("volumeSlider");
+	renderPrepared(shadow) {
+		let slider = shadow.getElementById("volumeSlider");
 		slider.oninput = (ev) => {
 			this.isVolumeSliding = true;
 			this.volume = quadratic100(parseInt(slider.value));
@@ -3817,7 +3808,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		slider.onmouseup = slider.ontouchend = () => {
 			this.isVolumeSliding = false;
 		};
-		let btnPlay = this.shadow.getElementById("btnPlay");
+		let btnPlay = shadow.getElementById("btnPlay");
 		btnPlay.addEventListener("click", (ev) => {
 			let title = btnPlay.querySelector("i").title;
 			let eventName;
@@ -3837,11 +3828,11 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 				composed: true
 			}));
 		});
-		this.shadow.getElementById("buttonBarImg").addEventListener("click", (ev) => {
+		shadow.getElementById("buttonBarImg").addEventListener("click", (ev) => {
 			this.dispatchEvent(new Event(EboplayerEvents.albumClicked));
 		});
 	}
-	updateWhenRendered() {
+	updateWhenRendered(shadow) {
 		switch (this.play_state) {
 			case "playing":
 				if (this.stop_or_pause == "pause") this.setPlayButton("Pause", "fa-pause");
@@ -3852,30 +3843,66 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 				this.setPlayButton("Play", "fa-play");
 				break;
 		}
-		this.shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5";
-		this.shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";
-		this.shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
-		let titleEl = this.shadow.getElementById("text");
-		let img = this.shadow.querySelector("img");
+		shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5";
+		shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";
+		shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
+		let titleEl = shadow.getElementById("text");
+		let img = shadow.querySelector("img");
 		titleEl.style.display = this.show_info ? "" : "none";
 		if (this.image_url) {
 			img.style.visibility = this.show_info ? "visible" : "hidden";
 			img.setAttribute("src", this.image_url);
 		} else img.style.visibility = "hidden";
 		if (!this.isVolumeSliding) {
-			let slider = this.shadow.getElementById("volumeSlider");
+			let slider = shadow.getElementById("volumeSlider");
 			let visualVolume = inverseQuadratic100(this.volume);
 			slider.value = Math.floor(visualVolume).toString();
 		}
-		this.shadow.getElementById("wrapper").classList.toggle("playing", this.play_state == "playing");
+		shadow.getElementById("wrapper").classList.toggle("playing", this.play_state == "playing");
 		titleEl.innerHTML = this.text.replaceAll("\n", "<br/>");
 	}
 	setPlayButton(title, addClass) {
-		let btnPlayIcon = this.shadow.getElementById("btnPlay").querySelector("i");
+		let btnPlayIcon = this.getShadow().getElementById("btnPlay").querySelector("i");
 		btnPlayIcon.classList.remove("fa-play", "fa-pause", "fa-stop");
 		btnPlayIcon.classList.add(addClass);
 		btnPlayIcon.setAttribute("title", title);
 	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboMenuButton.ts
+var EboMenuButton = class EboMenuButton extends EboComponent {
+	static tagName = "ebo-menu-button";
+	static observedAttributes = [];
+	static styleText = `
+        <style>
+        </style>
+    `;
+	static htmlText = `
+        <button>
+            ...
+        </button>
+        `;
+	constructor() {
+		super(EboMenuButton.styleText, EboMenuButton.htmlText);
+	}
+	onConnected() {
+		super.onConnected();
+		this.render();
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "img":
+				this[name] = newValue;
+				break;
+			case "pressed":
+				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+				this[name] = newValue == "true";
+				break;
+		}
+		this.render();
+	}
+	renderPrepared() {}
 };
 
 //#endregion
@@ -3895,6 +3922,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboButton);
 		EboComponent.define(EboBigAlbumComp);
 		EboComponent.define(EboButtonBar);
+		EboComponent.define(EboMenuButton);
 		setupStuff();
 	});
 });

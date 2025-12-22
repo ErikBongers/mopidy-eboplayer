@@ -49,7 +49,6 @@ export class EboButton extends EboComponent {
 
     constructor() {
         super(EboButton.styleText, EboButton.htmlText);
-        this.render();
         this.pressTimer = new MouseTimer<EboButton>(
             this,
             (source) => this.onClick(source),
@@ -73,18 +72,11 @@ export class EboButton extends EboComponent {
         this.render();
         }
 
-    // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
-    }
-
-    renderPrepared() {
-        this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-        let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
-        this.shadow.appendChild(fragment);
-        let imgTag = this.shadow.getElementById("image") as HTMLImageElement;
+    renderPrepared(shadow:ShadowRoot) {
+        let imgTag = shadow.getElementById("image") as HTMLImageElement;
         this.setClassFromBoolAttribute("pressed", imgTag);
         imgTag.src = this.img ?? "";
-        let button = this.shadow.querySelector("button");
+        let button = shadow.querySelector("button");
         button.addEventListener("mousedown", (ev) => {
             this.pressTimer.onMouseDown(ev);
         });
@@ -97,7 +89,7 @@ export class EboButton extends EboComponent {
     }
 
     private onClick(eboButton: EboButton) {
-        let button = this.shadow.querySelector("button");
+        let button = this.getShadow().querySelector("button");
         this.pressed = !this.pressed;
         this.setClassFromBoolAttribute("pressed", button);
         this.setAttribute("pressed", this.pressed.toString());

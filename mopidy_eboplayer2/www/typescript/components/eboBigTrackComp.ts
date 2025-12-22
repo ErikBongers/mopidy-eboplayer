@@ -1,5 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
+import {console_yellow} from "../global";
 
 export class EboBigTrackComp extends EboComponent {
     get albumInfo(): AlbumData {
@@ -32,7 +33,7 @@ export class EboBigTrackComp extends EboComponent {
 
     private img: string  = "";
     private albumClickEvent: CustomEvent<unknown>;
-    private _albumInfo: AlbumData;
+    private _albumInfo: AlbumData = AlbumNone;
 
     static styleText= `
             <style>
@@ -105,21 +106,21 @@ export class EboBigTrackComp extends EboComponent {
 
     constructor() {
         super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
-        this.albumInfo = AlbumNone;
-        this.render();
         this.albumClickEvent = new CustomEvent("albumClick", {
             bubbles: true,
             cancelable: false,
             composed: true, //needed to 'break' out of the shadow.
             detail: "todo: tadaaa!"
         });
+
+        console_yellow("EboBigTrackComp constructor called.");
     }
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboBigTrackComp.progressBarAttributes.includes(name)) {
             this[name] = newValue;
-            this.shadow.querySelector("ebo-progressbar")?.setAttribute(name, newValue);
+            this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
         }
         switch (name) {
@@ -141,33 +142,32 @@ export class EboBigTrackComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
         super.connectedCallback();
+        console_yellow("eboBigTrackComp connectedCallback called.");
     }
 
-    renderPrepared() {
-        this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-        let fragment = this.divTemplate.content.cloneNode(true) as DocumentFragment;
+    renderPrepared(shadow:ShadowRoot) {
+        console_yellow("eboBigTrackComp renderPrepared called.");
         ["name", "stream_lines", "extra"].forEach(attName => {
-            fragment.getElementById(attName).innerHTML = this[attName];
+            shadow.getElementById(attName).innerHTML = this[attName];
         });
-        let progressBarElement = fragment.querySelector("ebo-progressbar") as HTMLElement;
+        let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         //todo: try casting to EboProgressBar class and set attributes directly? Without re-rendering?
         EboBigTrackComp.progressBarAttributes.forEach(attName => {
             progressBarElement.setAttribute(attName, this[attName]);//todo: check if each of these causes a re-rendering.
         });
-        let img = fragment.getElementById("image") as HTMLImageElement;
+        let img = shadow.getElementById("image") as HTMLImageElement;
         img.src = this.img;
-        this.shadow.appendChild(fragment);
         this.addShadowEventListener("image","click", (ev) => {
             this.dispatchEvent(this.albumClickEvent);
         });
         this.update();
     }
 
-    override updateWhenRendered() {
+    override updateWhenRendered(shadow:ShadowRoot) {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
-            this.shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
+            shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
-        let img = this.shadow.getElementById("image") as HTMLImageElement;
+        let img = shadow.getElementById("image") as HTMLImageElement;
         if(this.img != "") {
             img.style.visibility = "";
             img.src = this.img;
