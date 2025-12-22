@@ -1,9 +1,10 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {EboplayerEvents, isInstanceOfExpandedStreamModel, Views} from "../modelTypes";
+import {isInstanceOfExpandedStreamModel, Views} from "../modelTypes";
 import {MainView} from "./mainView";
 import {EboButtonBar} from "../components/eboButtonBarComp";
 import {console_yellow} from "../global";
+import {EboplayerEvents} from "../events";
 
 export class ButtonBarView extends View {
     private componentId: string;

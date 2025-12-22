@@ -656,37 +656,6 @@ const TrackNone = { type: ItemType.None };
 function isInstanceOfExpandedStreamModel(model) {
 	return "stream" in model;
 }
-let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
-	EboplayerEvents$1["volumeChanged"] = "eboplayer.volumeChanged";
-	EboplayerEvents$1["connectionChanged"] = "eboplayer.connectionChanged";
-	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
-	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
-	EboplayerEvents$1["currentTrackChanged"] = "eboplayer.currentTrackChanged";
-	EboplayerEvents$1["selectedTrackChanged"] = "eboplayer.selectedTrackChanged";
-	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
-	EboplayerEvents$1["historyChanged"] = "eboplayer.historyChanged";
-	EboplayerEvents$1["trackListChanged"] = "eboplayer.trackListChanged";
-	EboplayerEvents$1["browseFilterChanged"] = "eboplayer.browseFilterChanged";
-	EboplayerEvents$1["currentRefsLoaded"] = "eboplayer.currentRefsLoaded";
-	EboplayerEvents$1["refsFiltered"] = "eboplayer.refsFiltered";
-	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
-	EboplayerEvents$1["breadCrumbsChanged"] = "eboplayer.breadCrumbsChanged";
-	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
-	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
-	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
-	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
-	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
-	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
-	EboplayerEvents$1["albumClicked"] = "eboplayer.albumClicked";
-	EboplayerEvents$1["currentImageSet"] = "eboplayer.currentImageSet";
-	EboplayerEvents$1["playAlbumClicked"] = "eboplayer.playAlbumClicked";
-	EboplayerEvents$1["addAlbumClicked"] = "eboplayer.addAlbumClicked";
-	EboplayerEvents$1["browseResultDblClick"] = "eboplayer.browseResultDblClick";
-	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
-	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
-	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
-	return EboplayerEvents$1;
-}({});
 let ConnectionState = /* @__PURE__ */ function(ConnectionState$1) {
 	ConnectionState$1[ConnectionState$1["Offline"] = 0] = "Offline";
 	ConnectionState$1[ConnectionState$1["Online"] = 1] = "Online";
@@ -724,6 +693,50 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["Album"] = "#Album";
 	return Views$1;
 }({});
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/events.ts
+let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
+	EboplayerEvents$1["volumeChanged"] = "eboplayer.volumeChanged";
+	EboplayerEvents$1["connectionChanged"] = "eboplayer.connectionChanged";
+	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
+	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
+	EboplayerEvents$1["currentTrackChanged"] = "eboplayer.currentTrackChanged";
+	EboplayerEvents$1["selectedTrackChanged"] = "eboplayer.selectedTrackChanged";
+	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
+	EboplayerEvents$1["historyChanged"] = "eboplayer.historyChanged";
+	EboplayerEvents$1["trackListChanged"] = "eboplayer.trackListChanged";
+	EboplayerEvents$1["browseFilterChanged"] = "eboplayer.browseFilterChanged";
+	EboplayerEvents$1["currentRefsLoaded"] = "eboplayer.currentRefsLoaded";
+	EboplayerEvents$1["refsFiltered"] = "eboplayer.refsFiltered";
+	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
+	EboplayerEvents$1["breadCrumbsChanged"] = "eboplayer.breadCrumbsChanged";
+	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
+	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
+	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
+	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
+	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
+	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
+	EboplayerEvents$1["albumClicked"] = "eboplayer.albumClicked";
+	EboplayerEvents$1["currentImageSet"] = "eboplayer.currentImageSet";
+	EboplayerEvents$1["playAlbumClicked"] = "eboplayer.playAlbumClicked";
+	EboplayerEvents$1["addAlbumClicked"] = "eboplayer.addAlbumClicked";
+	EboplayerEvents$1["browseResultDblClick"] = "eboplayer.browseResultDblClick";
+	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
+	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
+	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
+	return EboplayerEvents$1;
+}({});
+var EboplayerEvent = class extends CustomEvent {
+	constructor(event, detail) {
+		super(event, {
+			detail,
+			bubbles: true,
+			composed: true,
+			cancelable: true
+		});
+	}
+};
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/model.ts
@@ -2873,11 +2886,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 			tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {});
 			tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
 				ev.target.closest("ebo-menu-button").closeMenu();
-				this.dispatchEvent(new CustomEvent(EboplayerEvents.playTrackClicked, {
-					detail: { uri: track.track.uri },
-					bubbles: true,
-					composed: true
-				}));
+				this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playTrackClicked, { uri: track.track.uri }));
 			});
 		});
 		if (this.streamInfo) this.streamInfo.historyLines.forEach((lineGroup) => {
@@ -3342,11 +3351,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	async onRowDoubleClicked(ev) {
 		let row = ev.currentTarget;
-		this.dispatchEvent(new CustomEvent(EboplayerEvents.browseResultDblClick, { detail: { uri: row.dataset.uri } }));
+		this.dispatchEvent(new EboplayerEvent(EboplayerEvents.browseResultDblClick, { uri: row.dataset.uri }));
 	}
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
-		this.dispatchEvent(new CustomEvent(EboplayerEvents.breadCrumbClick, { detail: { breadcrumbId: parseInt(btn.dataset.id) } }));
+		this.dispatchEvent(new EboplayerEvent(EboplayerEvents.breadCrumbClick, { breadcrumbId: parseInt(btn.dataset.id) }));
 	}
 };
 

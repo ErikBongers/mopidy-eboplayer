@@ -1,6 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {EboplayerEvents, MessageType} from "../modelTypes";
+import {MessageType} from "../modelTypes";
+import {EboplayerEvents} from "../events";
 
 export class HeaderView extends View {
     bind() {

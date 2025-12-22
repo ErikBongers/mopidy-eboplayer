@@ -1,17 +1,10 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, EboplayerEvents, FilterBreadCrumbType} from "../modelTypes";
+import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
 import {SearchResult} from "../refs";
-
-export type EventUriArgs = {"uri": string };
-export type EventBreadcrumbArgs = {"breadcrumbId": number };
-export type EventBrowseResultArgs = {
-    "label": string,
-    "uri": string,
-    "type": string,
-};
+import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEvent} from "../events";
 
 export class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
@@ -334,17 +327,17 @@ export class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEvent(new CustomEvent<EventBrowseResultArgs>(EboplayerEvents.browseResultClick, {detail: {"label": row.cells[0].innerText, "uri": row.dataset.uri, "type": row.dataset.type}}));
+        this.dispatchEvent(new CustomEvent<BrowseResultArgs>(EboplayerEvents.browseResultClick, {detail: {"label": row.cells[0].innerText, "uri": row.dataset.uri, "type": row.dataset.type}}));
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEvent(new CustomEvent<EventUriArgs>(EboplayerEvents.browseResultDblClick, {detail: {uri: row.dataset.uri}}));
+        this.dispatchEvent(new EboplayerEvent<UriArgs>(EboplayerEvents.browseResultDblClick, {uri: row.dataset.uri}));
     }
 
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
-        this.dispatchEvent(new CustomEvent<EventBreadcrumbArgs>(EboplayerEvents.breadCrumbClick, {detail: {breadcrumbId: parseInt(btn.dataset.id)}}));
+        this.dispatchEvent(new EboplayerEvent<BreadcrumbArgs>(EboplayerEvents.breadCrumbClick, {breadcrumbId: parseInt(btn.dataset.id)}));
     }
 
 }

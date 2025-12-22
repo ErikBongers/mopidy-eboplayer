@@ -1,10 +1,11 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 
-import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
+import {ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
-import {EboBrowseComp, EventBreadcrumbArgs, EventBrowseResultArgs, EventUriArgs} from "../components/eboBrowseComp";
+import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
+import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs} from "../events";
 
 export class MainView extends View {
     bind() {
@@ -15,13 +16,13 @@ export class MainView extends View {
         browseComp.addEventListener("browseFilterChanged", (ev) => {
             getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
         });
-        browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev: CustomEvent<EventBreadcrumbArgs>) => {
+        browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev: CustomEvent<BreadcrumbArgs>) => {
             this.onBreadcrumbClick(ev.detail.breadcrumbId);
         });
-        browseComp.addEventListener(EboplayerEvents.browseResultClick, (ev: CustomEvent<EventBrowseResultArgs>) => {
+        browseComp.addEventListener(EboplayerEvents.browseResultClick, (ev: CustomEvent<BrowseResultArgs>) => {
             this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
         });
-        browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev: CustomEvent<EventUriArgs>) => {
+        browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev: CustomEvent<UriArgs>) => {
             await this.onBrowseResultDblClick(ev.detail.uri);
         });
         getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
@@ -53,7 +54,7 @@ export class MainView extends View {
         albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {
             this.onAlbumAddClick();
         });
-        albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<EventUriArgs>) => {
+        albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<UriArgs>) => {
             this.onPlayTrackClicked(ev.detail.uri);
         });
     }

@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {EboplayerEvents, ExpandedFileTrackModel, ItemType, TrackModel} from "../modelTypes";
+import {ExpandedFileTrackModel, ItemType, TrackModel} from "../modelTypes";
 import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
+import {EboplayerEvents} from "../events";
 
 export class EboButtonBar extends EboComponent {
     static readonly tagName=  "ebo-button-bar";

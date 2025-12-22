@@ -1,7 +1,6 @@
 import models from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
-import Track = models.Track;
 import Image = models.Image;
 
 export enum ItemType { None, File, Stream, Album}
@@ -92,37 +91,6 @@ export interface ExpandedStreamModel {
 
 export function isInstanceOfExpandedStreamModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel): model is ExpandedStreamModel {
     return 'stream' in model;
-}
-
-export enum EboplayerEvents {
-    volumeChanged = "eboplayer.volumeChanged",
-    connectionChanged = "eboplayer.connectionChanged",
-    playStateChanged = "eboplayer.playbackStateChanged",
-    messageChanged = "eboplayer.messageChanged",
-    currentTrackChanged = "eboplayer.currentTrackChanged",
-    selectedTrackChanged = "eboplayer.selectedTrackChanged",
-    activeStreamLinesChanged = "eboplayer.activeStreamLinesChanged",
-    historyChanged = "eboplayer.historyChanged",
-    trackListChanged = "eboplayer.trackListChanged",
-    browseFilterChanged = "eboplayer.browseFilterChanged",
-    currentRefsLoaded = "eboplayer.currentRefsLoaded",
-    refsFiltered = "eboplayer.refsFiltered",
-    longPress = "eboplayer.longPress",
-    breadCrumbsChanged = "eboplayer.breadCrumbsChanged",
-    playPressed = "eboplayer.playPressed",
-    pausePressed = "eboplayer.pausePressed",
-    stopPressed = "eboplayer.stopPressed",
-    changingVolume = "eboplayer.changingVolume",
-    viewChanged = "eboplayer.viewChanged",
-    albumToViewChanged = "eboplayer.albumToViewChanged",
-    albumClicked = "eboplayer.albumClicked",
-    currentImageSet = "eboplayer.currentImageSet",
-    playAlbumClicked = "eboplayer.playAlbumClicked",
-    addAlbumClicked = "eboplayer.addAlbumClicked",
-    browseResultDblClick = "eboplayer.browseResultDblClick",
-    browseResultClick = "eboplayer.browseResultClick",
-    breadCrumbClick = "eboplayer.breadCrumbClick",
-    playTrackClicked = "eboplayer.playTrackClicked",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

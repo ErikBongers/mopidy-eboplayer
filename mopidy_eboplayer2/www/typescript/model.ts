@@ -1,8 +1,9 @@
 import models from "../js/mopidy";
 import {Refs, SearchResult} from "./refs";
-import {AlbumModel, BrowseFilter, ConnectionState, EboplayerEvents, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumModel, BrowseFilter, ConnectionState, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
+import {EboplayerEvents} from "./events";
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;

@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {EboplayerEvents} from "../modelTypes";
 import {MouseTimer} from "../MouseTimer";
+import {EboplayerEvents} from "../events";
 
 export class PressedChangeEvent extends Event {
     private _pressed: boolean;
