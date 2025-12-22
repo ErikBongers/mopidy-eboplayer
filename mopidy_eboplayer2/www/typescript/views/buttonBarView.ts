@@ -51,10 +51,7 @@ export class ButtonBarView extends View {
             this.onVolumeChanged();
         });
         comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
-            console_yellow(`buttonBarrView.event:changingVolume:`);
-            console.log(ev);
             let value = parseInt((ev as CustomEvent).detail.volume);
-            console_yellow(`value=${value}`);
             await getState().getController().mopidyProxy.sendVolume(value);
 
         });

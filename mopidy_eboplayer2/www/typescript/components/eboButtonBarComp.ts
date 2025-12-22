@@ -142,7 +142,6 @@ export class EboButtonBar extends EboComponent {
         slider.oninput = (ev) => {
             this.isVolumeSliding = true;
             this.volume = quadratic100(parseInt(slider.value));
-            console_yellow(`eboButtonBarComp: slider.oninput: slider.value: ${slider.value}, this.volume: ${this.volume}`);
             this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {bubbles: true, composed: true, detail: {volume: this.volume}}));
         };
         slider.onmousedown = slider.ontouchstart = () => { this.isVolumeSliding = true;};

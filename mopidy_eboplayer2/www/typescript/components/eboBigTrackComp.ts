@@ -112,8 +112,6 @@ export class EboBigTrackComp extends EboComponent {
             composed: true, //needed to 'break' out of the shadow.
             detail: "todo: tadaaa!"
         });
-
-        console_yellow("EboBigTrackComp constructor called.");
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -139,14 +137,7 @@ export class EboBigTrackComp extends EboComponent {
         this.render();
         }
 
-    // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
-        super.connectedCallback();
-        console_yellow("eboBigTrackComp connectedCallback called.");
-    }
-
     renderPrepared(shadow:ShadowRoot) {
-        console_yellow("eboBigTrackComp renderPrepared called.");
         ["name", "stream_lines", "extra"].forEach(attName => {
             shadow.getElementById(attName).innerHTML = this[attName];
         });
