@@ -122,6 +122,7 @@ export enum EboplayerEvents {
     browseResultDblClick = "eboplayer.browseResultDblClick",
     browseResultClick = "eboplayer.browseResultClick",
     breadCrumbClick = "eboplayer.breadCrumbClick",
+    playTrackClicked = "eboplayer.playTrackClicked",
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

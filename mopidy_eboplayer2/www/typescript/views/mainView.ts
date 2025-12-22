@@ -4,6 +4,7 @@ import {EboPlayerDataType, View} from "./view";
 import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp, EventBreadcrumbArgs, EventBrowseResultArgs, EventUriArgs} from "../components/eboBrowseComp";
+import {console_yellow} from "../global";
 
 export class MainView extends View {
     bind() {
@@ -51,6 +52,9 @@ export class MainView extends View {
         });
         albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {
             this.onAlbumAddClick();
+        });
+        albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<EventUriArgs>) => {
+            this.onPlayTrackClicked(ev.detail.uri);
         });
     }
 
@@ -169,13 +173,13 @@ export class MainView extends View {
 
     private onAlbumPlayClick() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        getState().getController().playAlbum(albumComp.dataset.albumUri);
+        getState().getController().playUri(albumComp.dataset.albumUri);
 
     }
 
     private onAlbumAddClick() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        getState().getController().addAlbum(albumComp.dataset.albumUri);
+        getState().getController().addUri(albumComp.dataset.albumUri);
     }
 
     private async onBrowseResultDblClick(uri: string) {
@@ -188,6 +192,10 @@ export class MainView extends View {
 
     private onBreadcrumbClick(breadcrumbId: number) {
         getState().getController().resetToBreadCrumb(breadcrumbId);
+    }
+
+    private onPlayTrackClicked(uri: string) {
+        getState().getController().playUri(uri);
     }
 }
 

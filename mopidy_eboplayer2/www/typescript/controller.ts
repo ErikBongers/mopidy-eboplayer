@@ -435,12 +435,12 @@ export class Controller extends Commands implements DataRequester{
         this.model.setCurrentRefs(this.model.getAllRefs());
     }
 
-    playAlbum(albumUri: string) {
-        this.clearListAndPlay(albumUri);
+    playUri(uri: string) {
+        this.clearListAndPlay(uri);
     }
 
-    addAlbum(albumUri: string) {
-        this.addToPlaylist(albumUri);
+    addUri(uri: string) {
+        this.addToPlaylist(uri);
     }
 
     async fetchAlbumDataForTrack(track: TrackModel) {

@@ -1,5 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {EboplayerEvents, ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {EboMenuButton} from "./eboMenuButton";
+import {EventUriArgs} from "./eboBrowseComp";
 
 export class EboAlbumTracksComp extends EboComponent {
     private _streamInfo?: ExpandedStreamModel;
@@ -121,6 +123,14 @@ export class EboAlbumTracksComp extends EboComponent {
                             </div>
                         </div>  
                     </ebo-menu-button>`;
+                tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {
+                });
+                tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
+                    let menuButton = ev.target as HTMLElement;
+                    let button = menuButton.closest("ebo-menu-button") as EboMenuButton;
+                    button.closeMenu();
+                    this.dispatchEvent(new CustomEvent<EventUriArgs>(EboplayerEvents.playTrackClicked, {detail: {uri: track.track.uri}, bubbles: true, composed: true})); //todo: make an EboEvent that extens CustomEvent, only allows EboplayterEvents and automatically bubbles and composes.
+                });
             });
         }
 
