@@ -39,21 +39,13 @@ export class EboMenuButton extends EboComponent {
                 }
             }
             
-            .flexColumn {
-                display: flex;
-                flex-direction: column;
-                & button {
-                    border-color: gray;
-                    text-align: left;
-                    & i {
-                        position: relative;
-                        top: 2px;
-                    }
+            .trackButton {
+                border-color: gray;
+                text-align: left;
+                & i {
+                    position: relative;
+                    top: 2px;
                 }
-            }
-            .flexRow {
-                display: flex;
-                flex-direction: row;
             }
       </style>
     `;
@@ -63,22 +55,8 @@ export class EboMenuButton extends EboComponent {
             ...
         </button>
         <div popover id="menu" class="popupMenu">
-            <div class="flexColumn">
-                <button id="" class="roundBorder">Set genre</button>
-                <button id="" class="roundBorder">Add to playlist</button>
-                <button id="" class="roundBorder">Rename</button>
-                <button id="" class="roundBorder">Artist ></button>
-                <button id="" class="roundBorder">Album ></button>
-                <div class="flexRow">
-                    <button id="addTrack" class="roundBorder">
-                        <i class="fa fa-plus"></i>
-                    </button>
-                    <button id="playTrack" class="roundBorder">
-                        <i class="fa fa-play"></i>
-                    </button>
-                </div>
-            </div>  
-      </div>
+            <slot></slot>
+        </div>
         `;
 
     constructor() {

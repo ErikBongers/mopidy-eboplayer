@@ -61,3 +61,12 @@ button {
     margin-right: .2em;
     margin-top: .2em;
 }
+
+.flexColumn {
+    display: flex;
+    flex-direction: column;
+}
+.flexRow {
+    display: flex;
+    flex-direction: row;
+}

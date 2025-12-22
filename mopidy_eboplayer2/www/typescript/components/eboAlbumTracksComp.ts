@@ -103,7 +103,24 @@ export class EboAlbumTracksComp extends EboComponent {
                 tr.dataset.uri = track.track.uri;
                 tdData.innerText = track.track.name;
                 let tdButton = tr.appendChild(document.createElement("td"));
-                tdButton.innerHTML = `<ebo-menu-button ></ebo-menu-button>`;
+                tdButton.innerHTML = `
+                    <ebo-menu-button >
+                        <div class="flexColumn">
+                            <button id="" class="roundBorder trackButton">Set genre</button>
+                            <button id="" class="roundBorder trackButton">Add to playlist</button>
+                            <button id="" class="roundBorder trackButton">Rename</button>
+                            <button id="" class="roundBorder trackButton">Artist ></button>
+                            <button id="" class="roundBorder trackButton">Album ></button>
+                            <div class="flexRow">
+                                <button id="addTrack" class="roundBorder trackButton">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                                <button id="playTrack" class="roundBorder trackButton">
+                                    <i class="fa fa-play"></i>
+                                </button>
+                            </div>
+                        </div>  
+                    </ebo-menu-button>`;
             });
         }
 

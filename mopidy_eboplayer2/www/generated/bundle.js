@@ -2863,7 +2863,24 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 			tr.dataset.uri = track.track.uri;
 			tdData.innerText = track.track.name;
 			let tdButton = tr.appendChild(document.createElement("td"));
-			tdButton.innerHTML = `<ebo-menu-button ></ebo-menu-button>`;
+			tdButton.innerHTML = `
+                    <ebo-menu-button >
+                        <div class="flexColumn">
+                            <button id="" class="roundBorder trackButton">Set genre</button>
+                            <button id="" class="roundBorder trackButton">Add to playlist</button>
+                            <button id="" class="roundBorder trackButton">Rename</button>
+                            <button id="" class="roundBorder trackButton">Artist ></button>
+                            <button id="" class="roundBorder trackButton">Album ></button>
+                            <div class="flexRow">
+                                <button id="addTrack" class="roundBorder trackButton">
+                                    <i class="fa fa-plus"></i>
+                                </button>
+                                <button id="playTrack" class="roundBorder trackButton">
+                                    <i class="fa fa-play"></i>
+                                </button>
+                            </div>
+                        </div>  
+                    </ebo-menu-button>`;
 		});
 		if (this.streamInfo) this.streamInfo.historyLines.forEach((lineGroup) => {
 			let td = tbody.appendChild(document.createElement("tr")).appendChild(document.createElement("td"));
@@ -3920,21 +3937,13 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
                 }
             }
             
-            .flexColumn {
-                display: flex;
-                flex-direction: column;
-                & button {
-                    border-color: gray;
-                    text-align: left;
-                    & i {
-                        position: relative;
-                        top: 2px;
-                    }
+            .trackButton {
+                border-color: gray;
+                text-align: left;
+                & i {
+                    position: relative;
+                    top: 2px;
                 }
-            }
-            .flexRow {
-                display: flex;
-                flex-direction: row;
             }
       </style>
     `;
@@ -3943,22 +3952,8 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
             ...
         </button>
         <div popover id="menu" class="popupMenu">
-            <div class="flexColumn">
-                <button id="" class="roundBorder">Set genre</button>
-                <button id="" class="roundBorder">Add to playlist</button>
-                <button id="" class="roundBorder">Rename</button>
-                <button id="" class="roundBorder">Artist ></button>
-                <button id="" class="roundBorder">Album ></button>
-                <div class="flexRow">
-                    <button id="addTrack" class="roundBorder">
-                        <i class="fa fa-plus"></i>
-                    </button>
-                    <button id="playTrack" class="roundBorder">
-                        <i class="fa fa-play"></i>
-                    </button>
-                </div>
-            </div>  
-      </div>
+            <slot></slot>
+        </div>
         `;
 	constructor() {
 		super(EboMenuButton.styleText, EboMenuButton.htmlText);
