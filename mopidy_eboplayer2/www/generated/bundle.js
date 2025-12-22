@@ -2806,7 +2806,6 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                 }
                 #tracksTable {
                     width: 100%;
-                    margin-left: 1em;
                     border-collapse: collapse;
                     tr {
                         border-bottom: 1px solid #ffffff80;

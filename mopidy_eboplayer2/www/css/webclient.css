@@ -404,4 +404,7 @@ ebo-big-track-view {
 
 ebo-big-album-view {
     width: 100%;
+    padding-left: 1em;
+    padding-right: 1em;
+    box-sizing: border-box;
 }
