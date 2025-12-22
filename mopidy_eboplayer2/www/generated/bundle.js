@@ -2189,7 +2189,8 @@ var EboComponent = class EboComponent extends HTMLElement {
 	get rendered() {
 		return this._rendered;
 	}
-	static globalCss;
+	static globalCss = [];
+	static cssCache = /* @__PURE__ */ new Map();
 	shadow;
 	styleTemplate;
 	divTemplate;
@@ -2199,6 +2200,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	static tagName = EboComponent.NO_TAG_NAME;
 	renderBatching;
 	updateBatching;
+	cssNeeded = [];
 	constructor(styleText, htmlText) {
 		super();
 		if (styleText) {
@@ -2225,9 +2227,22 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	connectedCallback() {
 		this.shadow = this.attachShadow({ mode: "open" });
-		this.connected = true;
-		this.onConnected();
-		this.render();
+		this.fetchCssAndCache().then(() => {
+			this.connected = true;
+			this.onConnected();
+			this.render();
+		});
+	}
+	async fetchCssAndCache() {
+		let fetches = [];
+		this.cssNeeded.forEach((url) => {
+			if (!EboComponent.cssCache.has(url)) fetches.push(fetch(url).then((res) => res.text()));
+		});
+		(await Promise.all(fetches)).forEach((text, i) => {
+			let css = new CSSStyleSheet();
+			css.replaceSync(text);
+			EboComponent.cssCache.set(this.cssNeeded[i], css);
+		});
 	}
 	onConnected() {}
 	update() {
@@ -2245,7 +2260,9 @@ var EboComponent = class EboComponent extends HTMLElement {
 	doRender() {
 		if (!this.shadow) return;
 		this.shadow.innerHTML = "";
-		if (EboComponent.globalCss) this.shadow.adoptedStyleSheets = EboComponent.globalCss;
+		let css = [...EboComponent.globalCss];
+		css = css.concat(this.cssNeeded.map((name) => EboComponent.cssCache.get(name)));
+		this.shadow.adoptedStyleSheets = css;
 		if (this.styleTemplate) this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
 		if (this.divTemplate) this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
 		this.renderPrepared(this.shadow);
@@ -3876,12 +3893,72 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 	static observedAttributes = [];
 	static styleText = `
         <style>
-        </style>
+            .menuButton {
+                padding: 0;
+                border-radius: 100vw;
+                aspect-ratio: 1;
+                
+                anchor-name: --popup-button;
+            }
+            
+            .popupMenu {
+                border: solid white 1px;
+                border-radius: 20px 20px 0px 20px;
+                xposition: absolute;
+                position-anchor: --popup-button;
+                margin: 0;
+                inset: auto;
+                bottom: anchor(top);
+                right: anchor(right);
+                opacity: 0;
+                margin-left: 0.25rem;
+                background-color: var(--body-background);
+                
+                &:popover-open {
+                    xdisplay: grid;
+                    opacity: 1;
+                }
+            }
+            
+            .flexColumn {
+                display: flex;
+                flex-direction: column;
+                & button {
+                    border-color: gray;
+                    text-align: left;
+                    & i {
+                        position: relative;
+                        top: 2px;
+                    }
+                }
+            }
+            .flexRow {
+                display: flex;
+                flex-direction: row;
+            }
+      </style>
     `;
 	static htmlText = `
-        <button>
+        <button class="menuButton" popovertarget="menu">
             ...
         </button>
+        <div popover id="menu" class="popupMenu">
+            <div class="flexColumn">
+                <button id="" class="roundBorder">Set genre</button>
+                <button id="" class="roundBorder">Add to playlist</button>
+                <button id="" class="roundBorder">Rename</button>
+                <button id="" class="roundBorder">Artist ></button>
+                <button id="" class="roundBorder">Album ></button>
+                <div class="flexRow">
+                    <button id="addTrack" class="roundBorder">
+                        <i class="fa fa-plus"></i>
+                    </button>
+                    <button id="playTrack" class="roundBorder">
+                        <i class="fa fa-play"></i>
+                    </button>
+                </div>
+            </div>  
+      </div>
         `;
 	constructor() {
 		super(EboMenuButton.styleText, EboMenuButton.htmlText);

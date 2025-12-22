@@ -13,17 +13,6 @@ body * {
     -o-user-select: none;
     user-select: none;
 }
-* {
-    --body-background: #323;
-    --header-background: #2a1c2a;
-    --panel-background: black;
-    --panel-button-background: transparent;
-    --panel-button-selected: purple;
-    font-family: "Sofia Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 400;
-}
-
 
 .title.condensed  {
     font-family: "Sofia Sans", sans-serif;

@@ -1,3 +1,15 @@
+* {
+    --body-background: #323;
+    --header-background: #2a1c2a;
+    --panel-background: black;
+    --panel-button-background: transparent;
+    --panel-button-selected: purple;
+    font-family: "Sofia Sans", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: 400;
+    color: white;
+}
+
 input[type=text],
 .selectable {
     -webkit-user-select: text;
@@ -47,4 +59,5 @@ button {
     padding: .2rem 1rem;
     margin-left: .2em;
     margin-right: .2em;
+    margin-top: .2em;
 }

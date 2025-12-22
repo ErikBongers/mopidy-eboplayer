@@ -1,4 +1,5 @@
 import {Batching} from "../Batching";
+import {console_yellow} from "../global";
 
 export interface HasName {
     tagName: string;
@@ -8,7 +9,8 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     get rendered(): boolean {
         return this._rendered;
     }
-    static globalCss: CSSStyleSheet[];
+    static globalCss: CSSStyleSheet[] = [];
+    static cssCache: Map<string, CSSStyleSheet> = new Map();
     private shadow: ShadowRoot; //todo: make private and expose only in renderPrepared and updateWhenConnected.
     protected styleTemplate?: HTMLTemplateElement;
     protected divTemplate?: HTMLTemplateElement;
@@ -18,6 +20,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     static tagName: string = EboComponent.NO_TAG_NAME;
     private renderBatching: Batching;
     private updateBatching: Batching;
+    protected cssNeeded: string[] = [];
 
     protected constructor(styleText: string, htmlText: string) {
         super();
@@ -52,9 +55,27 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
         this.shadow = this.attachShadow({mode: "open"});
-        this.connected = true;
-        this.onConnected();
-        this.render();
+        this.fetchCssAndCache().then( () => {
+            this.connected = true;
+            this.onConnected();
+            this.render();
+        });
+    }
+
+    private async fetchCssAndCache() {
+        let fetches: Promise<string>[] = [];
+        this.cssNeeded.forEach(url => {
+            if (!EboComponent.cssCache.has(url)) {
+                fetches.push(fetch(url).then(res => res.text()));
+            }
+        });
+
+        const texts = await Promise.all(fetches);
+        texts.forEach((text, i) => {
+            let css = new CSSStyleSheet();
+            css.replaceSync(text);
+            EboComponent.cssCache.set(this.cssNeeded[i], css);
+        });
     }
 
     onConnected(){}
@@ -83,9 +104,9 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         if(!this.shadow)
             return;
         this.shadow.innerHTML = "";
-        if(EboComponent.globalCss) {
-            this.shadow.adoptedStyleSheets = EboComponent.globalCss;
-        }
+        let css = [...EboComponent.globalCss];
+        css = css.concat(this.cssNeeded.map(name => EboComponent.cssCache.get(name)!));
+        this.shadow.adoptedStyleSheets = css;
         if(this.styleTemplate)
             this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
         if(this.divTemplate)
