@@ -1,3 +1,7 @@
+* in scan command, check if there's a meta file for an album
+  > first just log it.
+  > then save the fields from the file in the db.
+
 * get Metadata for album
   > when?
     > when saving metadata, save it in db AND in files

@@ -2,6 +2,7 @@ import models from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
 import Image = models.Image;
+import {AlbumMetaData} from "./proxies/webProxy";
 
 export enum ItemType { None, File, Stream, Album}
 
@@ -81,7 +82,8 @@ export interface ExpandedFileTrackModel {
 
 export interface ExpandedAlbumModel {
     album: AlbumModel,
-    tracks: FileTrackModel[]
+    tracks: FileTrackModel[],
+    meta: AlbumMetaData,
 }
 
 export interface ExpandedStreamModel {

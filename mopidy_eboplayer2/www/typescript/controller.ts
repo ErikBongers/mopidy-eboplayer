@@ -9,7 +9,7 @@ import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
-import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
+import {console_yellow, getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
 import {AlbumModel, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, isInstanceOfExpandedStreamModel, ItemType, NoStreamTitles, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
@@ -336,8 +336,14 @@ export class Controller extends Commands implements DataRequester{
 
     async getExpandedAlbumModel(albumUri: string): Promise<ExpandedAlbumModel> {
         let album = await this.lookupAlbumCached(albumUri) as AlbumModel;
+        let meta = await this.getMetaData(albumUri); //todo: make cached.
+        console.log(meta);
         let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
-        return {album, tracks};
+        return {album, tracks, meta};
+    }
+
+    async getMetaData(albumUri: string) {
+        return this.webProxy.fetchMetaData(albumUri);
     }
 
     async clearListAndPlay(uri: string) {

@@ -3,6 +3,12 @@ import {EboPlayerDataType} from "../views/view";
 import {getHostAndPort} from "../global";
 import {NoStreamTitles} from "../modelTypes";
 
+export interface AlbumMetaData {
+    showTrackNumbers: boolean,
+    albumTitle: string,
+    imageFile: string
+}
+
 export class WebProxy {
     private model: Model;
 
@@ -36,5 +42,15 @@ export class WebProxy {
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as string[];
+    }
+
+    async fetchMetaData(albumUri: string) {
+        let url = new URL(`http://${getHostAndPort()}/eboback/data/get_album_meta`);
+        url.searchParams.set("uri", albumUri);
+        let res = await fetch(url);
+        let text = await res.text();
+        if(text)
+            return JSON.parse(text) as AlbumMetaData;
+        return null;
     }
 }

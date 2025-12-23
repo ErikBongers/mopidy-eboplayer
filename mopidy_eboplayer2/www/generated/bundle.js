@@ -1683,6 +1683,13 @@ var WebProxy = class {
 		url.searchParams.set("uri", uri);
 		return await (await fetch(url)).json();
 	}
+	async fetchMetaData(albumUri) {
+		let url = new URL(`http://${getHostAndPort()}/eboback/data/get_album_meta`);
+		url.searchParams.set("uri", albumUri);
+		let text = await (await fetch(url)).text();
+		if (text) return JSON.parse(text);
+		return null;
+	}
 };
 
 //#endregion
@@ -1932,11 +1939,17 @@ var Controller = class extends Commands {
 	}
 	async getExpandedAlbumModel(albumUri) {
 		let album = await this.lookupAlbumCached(albumUri);
+		let meta = await this.getMetaData(albumUri);
+		console.log(meta);
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
 		return {
 			album,
-			tracks
+			tracks,
+			meta
 		};
+	}
+	async getMetaData(albumUri) {
+		return this.webProxy.fetchMetaData(albumUri);
 	}
 	async clearListAndPlay(uri) {
 		await this.mopidyProxy.clearTrackList();
