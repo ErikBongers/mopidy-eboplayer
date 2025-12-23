@@ -1,0 +1,10 @@
+POST http://192.168.1.111:6680/eboback/data/set_album_meta?uri=eboback:album:md5:8fd78cc44cc9c718d10a6f9d10823ead
+Content-Type: application/json
+
+{
+ "sdf": "xxxxxxxxxxx",
+ "niks": "noppes",
+ "nog": "vanda"
+ }
+
+###
