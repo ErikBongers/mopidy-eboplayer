@@ -171,7 +171,7 @@ export class MainView extends View {
         albumComp.albumInfo = albumModel;
         albumComp.streamInfo = undefined;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
-        albumComp.setAttribute("name", albumModel.album.albumInfo.name);
+        albumComp.setAttribute("name", albumModel.meta?.albumTitle?? albumModel.album.albumInfo.name);
         albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
     }
 

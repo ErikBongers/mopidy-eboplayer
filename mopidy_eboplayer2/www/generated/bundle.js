@@ -3088,7 +3088,7 @@ var MainView = class extends View {
 		albumComp.albumInfo = albumModel;
 		albumComp.streamInfo = void 0;
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
-		albumComp.setAttribute("name", albumModel.album.albumInfo.name);
+		albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 		albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
 	}
 	onAlbumPlayClick() {
