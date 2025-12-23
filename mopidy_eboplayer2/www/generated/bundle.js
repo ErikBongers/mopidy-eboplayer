@@ -725,6 +725,7 @@ let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
 	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
 	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
+	EboplayerEvents$1["addTrackClicked"] = "eboplayer.addTrackClicked";
 	return EboplayerEvents$1;
 }({});
 var EboplayerEvent = class extends CustomEvent {
@@ -1104,6 +1105,9 @@ function transformTrackDataToModel(track) {
 	if (!track.length || track.length === 0) model.songlenght = playerState_default().songlength = Infinity;
 	else model.songlenght = playerState_default().songlength = track.length;
 	return model;
+}
+function console_yellow(msg) {
+	console.log(`%c${msg}`, "background-color: yellow");
 }
 
 //#endregion
@@ -2883,7 +2887,10 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                             </div>
                         </div>  
                     </ebo-menu-button>`;
-			tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {});
+			tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {
+				ev.target.closest("ebo-menu-button").closeMenu();
+				this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addTrackClicked, { uri: track.track.uri }));
+			});
 			tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
 				ev.target.closest("ebo-menu-button").closeMenu();
 				this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playTrackClicked, { uri: track.track.uri }));
@@ -2953,6 +2960,9 @@ var MainView = class extends View {
 		});
 		albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev) => {
 			this.onPlayTrackClicked(ev.detail.uri);
+		});
+		albumComp.addEventListener(EboplayerEvents.addTrackClicked, (ev) => {
+			this.onAddTrackClicked(ev.detail.uri);
 		});
 	}
 	onRefsFiltered() {
@@ -3077,6 +3087,13 @@ var MainView = class extends View {
 	}
 	onPlayTrackClicked(uri) {
 		playerState_default().getController().playUri(uri);
+	}
+	async onAddTrackClicked(uri) {
+		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
+		if (!isInstanceOfExpandedStreamModel(trackModel)) {
+			let text = await (await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri)).text();
+			console_yellow(text);
+		}
 	}
 };
 

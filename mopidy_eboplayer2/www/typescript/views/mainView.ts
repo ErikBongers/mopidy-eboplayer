@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 
-import {ExpandedAlbumModel, ExpandedStreamModel, ItemType, Views} from "../modelTypes";
+import {ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
@@ -56,6 +56,9 @@ export class MainView extends View {
         });
         albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<UriArgs>) => {
             this.onPlayTrackClicked(ev.detail.uri);
+        });
+        albumComp.addEventListener(EboplayerEvents.addTrackClicked, (ev: CustomEvent<UriArgs>) => {
+            this.onAddTrackClicked(ev.detail.uri);
         });
     }
 
@@ -197,6 +200,15 @@ export class MainView extends View {
 
     private onPlayTrackClicked(uri: string) {
         getState().getController().playUri(uri);
+    }
+
+    private async onAddTrackClicked(uri: string) {
+        let trackModel = await getState().getController().getExpandedTrackModel(uri);
+        if(!isInstanceOfExpandedStreamModel(trackModel)) {
+            let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
+            let text = await res.text();
+            console_yellow(text);
+        }
     }
 }
 

@@ -124,6 +124,10 @@ export class EboAlbumTracksComp extends EboComponent {
                         </div>  
                     </ebo-menu-button>`;
                 tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {
+                    let menuButton = ev.target as HTMLElement;
+                    let button = menuButton.closest("ebo-menu-button") as EboMenuButton;
+                    button.closeMenu();
+                    this.dispatchEvent(new EboplayerEvent<UriArgs>(EboplayerEvents.addTrackClicked, {uri: track.track.uri}));
                 });
                 tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
                     let menuButton = ev.target as HTMLElement;

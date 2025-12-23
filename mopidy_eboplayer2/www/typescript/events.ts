@@ -27,6 +27,7 @@ export enum EboplayerEvents {
     browseResultClick = "eboplayer.browseResultClick",
     breadCrumbClick = "eboplayer.breadCrumbClick",
     playTrackClicked = "eboplayer.playTrackClicked",
+    addTrackClicked = "eboplayer.addTrackClicked",
 }
 
 export class EboplayerEvent<T extends EboEventArgs> extends CustomEvent<T> {
