@@ -762,6 +762,7 @@ var Model = class extends EventTarget {
 	history;
 	trackList = [];
 	libraryCache = /* @__PURE__ */ new Map();
+	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BreadCrumbStack();
 	allRefs;
@@ -905,6 +906,12 @@ var Model = class extends EventTarget {
 	addToLibraryCache(uri, item) {
 		if (!this.libraryCache.has(uri)) this.libraryCache.set(uri, item);
 	}
+	addToMetaCache(albumUri, item) {
+		if (!this.metaCache.has(albumUri)) this.metaCache.set(albumUri, { meta: item });
+	}
+	getFromMetaCache(albumUri) {
+		return this.metaCache.get(albumUri);
+	}
 	updateLibraryCache(uri, item) {
 		this.libraryCache.set(uri, item);
 	}
@@ -912,7 +919,7 @@ var Model = class extends EventTarget {
 		for (let item of items) if (item.type == ItemType.Album) this.updateLibraryCache(item.albumInfo.uri, item);
 		else this.updateLibraryCache(item.track.uri, item);
 	}
-	getFromCache(uri) {
+	getFromLibraryCache(uri) {
 		return this.libraryCache.get(uri);
 	}
 	setCurrentRefs(refs) {
@@ -1883,14 +1890,14 @@ var Controller = class extends Commands {
 		}
 	}
 	async lookupTrackCached(trackUri) {
-		let item = this.model.getFromCache(trackUri);
+		let item = this.model.getFromLibraryCache(trackUri);
 		if (item) return item;
 		let libraryList = await this.fetchAndConvertTracks(trackUri);
 		this.model.addItemsToLibraryCache(libraryList);
-		return this.model.getFromCache(trackUri);
+		return this.model.getFromLibraryCache(trackUri);
 	}
 	async lookupAlbumCached(albumUri) {
-		let item = this.model.getFromCache(albumUri);
+		let item = this.model.getFromLibraryCache(albumUri);
 		if (item) return item;
 		return await this.fetchAlbum(albumUri);
 	}
@@ -1939,8 +1946,7 @@ var Controller = class extends Commands {
 	}
 	async getExpandedAlbumModel(albumUri) {
 		let album = await this.lookupAlbumCached(albumUri);
-		let meta = await this.getMetaData(albumUri);
-		console.log(meta);
+		let meta = await this.getMetaDataCached(albumUri);
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
 		return {
 			album,
@@ -1948,8 +1954,12 @@ var Controller = class extends Commands {
 			meta
 		};
 	}
-	async getMetaData(albumUri) {
-		return this.webProxy.fetchMetaData(albumUri);
+	async getMetaDataCached(albumUri) {
+		let cachedMeta = this.model.getFromMetaCache(albumUri);
+		if (cachedMeta) return cachedMeta.meta;
+		let meta = await this.webProxy.fetchMetaData(albumUri);
+		this.model.addToMetaCache(albumUri, meta);
+		return meta;
 	}
 	async clearListAndPlay(uri) {
 		await this.mopidyProxy.clearTrackList();

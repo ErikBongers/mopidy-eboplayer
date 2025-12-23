@@ -1,13 +1,7 @@
 import {Model} from "../model";
 import {EboPlayerDataType} from "../views/view";
 import {getHostAndPort} from "../global";
-import {NoStreamTitles} from "../modelTypes";
-
-export interface AlbumMetaData {
-    showTrackNumbers: boolean,
-    albumTitle: string,
-    imageFile: string
-}
+import {AlbumMetaData, NoStreamTitles} from "../modelTypes";
 
 export class WebProxy {
     private model: Model;

@@ -1,3 +1,5 @@
+* make branded uris: (albumUri)
+
 * in scan command, check if there's a meta file for an album
   > first just log it.
   > then save the fields from the file in the db.

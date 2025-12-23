@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {Refs, SearchResult} from "./refs";
-import {AlbumModel, BrowseFilter, ConnectionState, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
 import {EboplayerEvents} from "./events";
@@ -51,6 +51,7 @@ export class Model extends EventTarget implements ViewModel {
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, (FileTrackModel | StreamTrackModel | AlbumModel)> = new Map();
+    private metaCache: Map<string, CachedAlbumMetaData> = new Map();
     private currentBrowseFilter= new BrowseFilter();
     private filterBreadCrumbStack: BreadCrumbStack<FilterBreadCrumbType> = new BreadCrumbStack<FilterBreadCrumbType>();
 
@@ -221,7 +222,17 @@ export class Model extends EventTarget implements ViewModel {
     //Doesn't overwrite
     addToLibraryCache(uri: string, item: (FileTrackModel | StreamTrackModel | AlbumModel)) {
         if(!this.libraryCache.has(uri))
-        this.libraryCache.set(uri, item);
+            this.libraryCache.set(uri, item);
+    }
+
+    //Doesn't overwrite
+    addToMetaCache(albumUri: string, item: AlbumMetaData) {
+        if(!this.metaCache.has(albumUri))
+            this.metaCache.set(albumUri, {meta: item});
+    }
+
+    getFromMetaCache(albumUri: string): CachedAlbumMetaData | undefined {
+        return this.metaCache.get(albumUri);
     }
 
     updateLibraryCache(uri: string, item: (FileTrackModel | StreamTrackModel | AlbumModel)) {
@@ -238,7 +249,7 @@ export class Model extends EventTarget implements ViewModel {
         }
     }
 
-    getFromCache(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel) | undefined {
+    getFromLibraryCache(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel) | undefined {
         return this.libraryCache.get(uri);
     }
 

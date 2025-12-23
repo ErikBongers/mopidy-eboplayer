@@ -270,17 +270,17 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async lookupTrackCached(trackUri: string) {
-        let item = this.model.getFromCache(trackUri);
+        let item = this.model.getFromLibraryCache(trackUri);
         if(item)
             return item as FileTrackModel | StreamTrackModel;
 
         let libraryList = await this.fetchAndConvertTracks(trackUri);
         this.model.addItemsToLibraryCache(libraryList);
-        return this.model.getFromCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
+        return this.model.getFromLibraryCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
     }
 
     async lookupAlbumCached(albumUri: string) {
-        let item = this.model.getFromCache(albumUri);
+        let item = this.model.getFromLibraryCache(albumUri);
         if(item)
             return item as AlbumModel; //assuming the albumUri points to an album.
         return await this.fetchAlbum(albumUri);
@@ -336,14 +336,18 @@ export class Controller extends Commands implements DataRequester{
 
     async getExpandedAlbumModel(albumUri: string): Promise<ExpandedAlbumModel> {
         let album = await this.lookupAlbumCached(albumUri) as AlbumModel;
-        let meta = await this.getMetaData(albumUri); //todo: make cached.
-        console.log(meta);
+        let meta = await this.getMetaDataCached(albumUri);
         let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
         return {album, tracks, meta};
     }
 
-    async getMetaData(albumUri: string) {
-        return this.webProxy.fetchMetaData(albumUri);
+    async getMetaDataCached(albumUri: string) {
+        let cachedMeta = this.model.getFromMetaCache(albumUri);
+        if(cachedMeta)
+            return cachedMeta.meta;
+        let meta = await this.webProxy.fetchMetaData(albumUri);
+        this.model.addToMetaCache(albumUri, meta);
+        return meta;
     }
 
     async clearListAndPlay(uri: string) {
