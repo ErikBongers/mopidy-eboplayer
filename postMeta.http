@@ -3,7 +3,7 @@ Content-Type: application/json
 
 {
  "showTrackNumbers": true,
- "albumTitle": "En airreke...",
+ "albumTitle": "En airreke...!!",
  "imageFile": "todo: path to the preferred image file"
  }
 

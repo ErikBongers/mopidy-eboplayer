@@ -1,3 +1,9 @@
+* get Metadata for album
+  > when?
+    > when saving metadata, save it in db AND in files
+    > when scanning, update the db based on the file metadata.
+
+
 * dblclick on album track > play
 
 What do I need?
