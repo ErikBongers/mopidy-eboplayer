@@ -1786,6 +1786,9 @@ var Controller = class extends Commands {
 			let streamTitles = data.data;
 			this.model.setActiveStreamLinesHistory(streamTitles);
 		});
+		this.model.addEventListener(EboplayerEvents.playStateChanged, async () => {
+			await this.updateStreamLines();
+		});
 	}
 	async onPlaybackStateChanged(data) {
 		playerState_default().getController().setPlayState(data.new_state);

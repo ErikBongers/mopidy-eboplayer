@@ -16,6 +16,7 @@ import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
+import {EboplayerEvents} from "./events";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -134,6 +135,10 @@ export class Controller extends Commands implements DataRequester{
             let streamTitles: StreamTitles = data.data;
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
+        this.model.addEventListener(EboplayerEvents.playStateChanged, async () => {
+            await this.updateStreamLines();
+        });
+
     }
 
     private async onPlaybackStateChanged(data) {
