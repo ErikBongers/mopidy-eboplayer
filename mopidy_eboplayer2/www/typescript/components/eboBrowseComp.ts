@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "../modelTypes";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
 import {SearchResult} from "../refs";
 import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEvent} from "../events";
@@ -327,7 +327,7 @@ export class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEvent(new CustomEvent<BrowseResultArgs>(EboplayerEvents.browseResultClick, {detail: {"label": row.cells[0].innerText, "uri": row.dataset.uri, "type": row.dataset.type}}));
+        this.dispatchEvent(new CustomEvent<BrowseResultArgs>(EboplayerEvents.browseResultClick, {detail: {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": row.dataset.type}}));
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {

@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 
-import {ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, ItemType, Views} from "../modelTypes";
+import {AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, ItemType, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
@@ -190,7 +190,7 @@ export class MainView extends View {
         await getState().getController().clearListAndPlay(uri);
     }
 
-    private onBrowseResultClick(label: string, uri: string, type: string) {
+    private onBrowseResultClick(label: string, uri: AllUris, type: string) {
         getState().getController().diveIntoBrowseResult(label, uri, type, true);
     }
 

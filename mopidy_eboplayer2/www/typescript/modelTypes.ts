@@ -3,6 +3,22 @@ import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
 import Image = models.Image;
 
+declare const __brand: unique symbol;
+
+export type Branded<T, Brand> = T & {__brand: Brand};
+export type AlbumUri = Branded<string, "AlbumUri">;
+export type TrackUri = Branded<string, "TrackUri">;
+export type RadioUri = Branded<string, "RadioUri">;
+export type PlaylistUri = Branded<string, "PlaylistUri">;
+export type GenreUri = Branded<string, "GenreUri">;
+export type ArtistUri = Branded<string, "ArtistUri">;
+export type ImageUri = Branded<string, "ImageUri">;
+export type StreamUri = Branded<string, "StreamUri">;
+export type LibraryUri = Branded<string, "LibraryUri">;
+export type BrowseUri = Branded<string, "BrowseUri">;
+
+export type AllUris = AlbumUri | TrackUri | RadioUri | PlaylistUri | GenreUri | ArtistUri | ImageUri | StreamUri | LibraryUri | BrowseUri;
+
 export enum ItemType { None, File, Stream, Album}
 
 export type Uri = string;
@@ -11,8 +27,8 @@ export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
         super(label, filter, "browseFilter");
     }
 }
-export class BreadCrumbRef extends BreadCrumb<Ref> {
-    constructor(label: string, ref: Ref) {
+export class BreadCrumbRef extends BreadCrumb<Ref<AllUris>> {
+    constructor(label: string, ref: Ref<AllUris>) {
         super(label, ref, "ref");
     }
 }

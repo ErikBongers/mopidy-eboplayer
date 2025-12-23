@@ -11,7 +11,7 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {console_yellow, getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumModel, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, isInstanceOfExpandedStreamModel, ItemType, NoStreamTitles, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackNone, Views} from "./modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isInstanceOfExpandedStreamModel, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import TlTrack = models.TlTrack;
@@ -200,14 +200,14 @@ export class Controller extends Commands implements DataRequester{
         this.filterBrowseResults();
     }
 
-    diveIntoBrowseResult(label: string, uri: string, type: string, addTextFilterBreadcrumb: boolean) {
+    diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
         if(type == "track"  ||  type  == "radio") {
             return; //don't dive.
         }
 
         if(type == "album") {
-            getState().getController().getExpandedAlbumModel(uri).then(() => { //fetch before changing view, to avoid flicker.
-                this.model.setAlbumToView(uri);
+            getState().getController().getExpandedAlbumModel(uri as AlbumUri).then(() => { //fetch before changing view, to avoid flicker.
+                this.model.setAlbumToView(uri as AlbumUri);
                 this.setView(Views.Album);
             })
         }
@@ -219,7 +219,7 @@ export class Controller extends Commands implements DataRequester{
             let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
             this.model.pushBreadCrumb(breadCrumb1);
         }
-        let ref: Ref = {type: type as models.ModelType, name: label, uri};
+        let ref: Ref<AllUris> = {type: type as models.ModelType, name: label, uri};
         let breadCrumb2 = new BreadCrumbRef(label, ref);
         this.model.pushBreadCrumb(breadCrumb2);
 
@@ -284,7 +284,7 @@ export class Controller extends Commands implements DataRequester{
         return this.model.getFromLibraryCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
     }
 
-    async lookupAlbumCached(albumUri: string) {
+    async lookupAlbumCached(albumUri: AlbumUri) {
         let item = this.model.getFromLibraryCache(albumUri);
         if(item)
             return item as AlbumModel; //assuming the albumUri points to an album.
@@ -339,7 +339,7 @@ export class Controller extends Commands implements DataRequester{
         return {track, album};
     }
 
-    async getExpandedAlbumModel(albumUri: string): Promise<ExpandedAlbumModel> {
+    async getExpandedAlbumModel(albumUri: AlbumUri): Promise<ExpandedAlbumModel> {
         let album = await this.lookupAlbumCached(albumUri) as AlbumModel;
         let meta = await this.getMetaDataCached(albumUri);
         let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
@@ -388,17 +388,17 @@ export class Controller extends Commands implements DataRequester{
 
     async fetchAllRefs() {
         let roots = await this.mopidyProxy.fetchRootDirs();
-        let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
-        let allTracks = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=track");
-        let allAlbums = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album");
-        let allArtists = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=artist");
-        let allGenres = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=genre");
+        let subDir1 = await this.mopidyProxy.browse<AllUris>(roots[1].uri);
+        let allTracks = await this.mopidyProxy.browse<TrackUri>(LIBRARY_PROTOCOL+"directory?type=track");
+        let allAlbums = await this.mopidyProxy.browse<AlbumUri>(LIBRARY_PROTOCOL+"directory?type=album");
+        let allArtists = await this.mopidyProxy.browse<ArtistUri>(LIBRARY_PROTOCOL+"directory?type=artist");
+        let allGenres = await this.mopidyProxy.browse<GenreUri>(LIBRARY_PROTOCOL+"directory?type=genre");
         let playLists = await this.mopidyProxy.fetchPlayLists();
         let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
         let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
-        let radioStreams: models.Ref[];
+        let radioStreams: models.Ref<RadioUri>[];
         if(radioStreamsPlayList) {
-            radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
+            radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri) as models.Ref<RadioUri>[];
         }
 
         return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
@@ -488,7 +488,7 @@ export class Controller extends Commands implements DataRequester{
     async fetchAllAlbums() {
         //get all the albums.
         //first refs:
-        let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album");
+        let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
         let albumsPromises = albumRefs.map(async ref => {
             return await this.lookupAlbumCached(ref.uri);
         });

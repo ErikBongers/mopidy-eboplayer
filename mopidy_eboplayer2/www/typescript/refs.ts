@@ -1,10 +1,12 @@
 import models from "../js/mopidy";
 import Ref = models.Ref;
 
-import {BrowseFilter} from "./modelTypes";
+import {AlbumUri, AllUris, ArtistUri, BrowseFilter, GenreUri, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
+import Track = models.Track;
+import Artist = models.Artist;
 
 export interface SearchResult {
-    ref: Ref;
+    ref: Ref<AllUris>;
     weight: number;
 }
 
@@ -59,16 +61,16 @@ export abstract class Refs {
 }
 
 export class AllRefs extends Refs {
-    roots: Ref[];
-    sub: Ref[];
-    tracks: Ref[];
-    albums: Ref[];
-    artists: Ref[];
-    genres: Ref[];
-    radioStreams: Ref[];
-    playlists: Ref[];
+    roots: Ref<AllUris>[]; //todo: is DirectoryUri
+    sub: Ref<AllUris>[];
+    tracks: Ref<TrackUri>[];
+    albums: Ref<AlbumUri>[];
+    artists: Ref<ArtistUri>[];
+    genres: Ref<GenreUri>[];
+    radioStreams: Ref<RadioUri>[];
+    playlists: Ref<PlaylistUri>[];
 
-    constructor( roots: Ref[], sub: Ref[], tracks: Ref[], albums: Ref[], artists: Ref[], genres: Ref[], radioStreams: Ref[], playlists: Ref[]) {
+    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: Ref<GenreUri>[], radioStreams: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
         super();
         this.roots = roots;
         this.sub = sub;
@@ -103,9 +105,9 @@ export class AllRefs extends Refs {
 }
 
 export class SomeRefs extends Refs {
-    refs: Ref[];
+    refs: Ref<AllUris>[];
 
-    constructor(refs: Ref[]) {
+    constructor(refs: Ref<AllUris>[]) {
         super();
         this.refs = refs;
     }

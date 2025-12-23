@@ -2,6 +2,7 @@
 
 import {JsonRpcController} from "../typescript/jsonRpcController";
 import MopidyEventName = core.MopidyEventName;
+import {AlbumUri, AllUris} from "../typescript/modelTypes";
 
 export interface Options {
     /**
@@ -78,7 +79,7 @@ namespace models {
     }
 
     export class Album {
-        readonly uri: URI;
+        readonly uri: AlbumUri;
         readonly name: string;
         readonly artists: Artist[];
         readonly num_tracks: number;
@@ -101,8 +102,8 @@ namespace models {
         readonly length: number;
     }
 
-    export class Ref {
-        readonly uri: URI;
+    export class Ref<T extends AllUris> {
+        readonly uri: T;
         name?: string;
         readonly type: ModelType;
     }

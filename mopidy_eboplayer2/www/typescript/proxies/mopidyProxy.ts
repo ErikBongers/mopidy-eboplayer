@@ -6,7 +6,7 @@ import {Controller} from "../controller";
 import {numberedDictToArray, quadratic100} from "../global";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
-import {HistoryLine, ImageLookup, LibraryDict} from "../modelTypes";
+import {AllUris, HistoryLine, ImageLookup, LibraryDict, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
 
 export class MopidyProxy {
@@ -41,8 +41,8 @@ export class MopidyProxy {
         await this.commands.core.tracklist.clear();
     }
 
-    async browse(uri: string) {
-        return await this.commands.core.library.browse(uri) as Ref[];
+    async browse<T extends AllUris>(uri: string) {
+        return await this.commands.core.library.browse(uri) as Ref<T>[];
     }
 
     async sendVolume(value: number) {
@@ -153,11 +153,11 @@ export class MopidyProxy {
     }
 
     async fetchPlayLists() {
-        return await this.commands.core.playlists.asList() as Ref[];
+        return await this.commands.core.playlists.asList() as Ref<PlaylistUri>[];
     }
 
     async fetchPlaylistItems(uri: string) {
-        return await this.commands.core.playlists.getItems(uri) as Ref[];
+        return await this.commands.core.playlists.getItems(uri) as Ref<AllUris>[];
     }
 
     async fetchImages(uris: string[]) {

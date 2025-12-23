@@ -1,3 +1,5 @@
+import {AllUris} from "./modelTypes";
+
 export enum EboplayerEvents {
     volumeChanged = "eboplayer.volumeChanged",
     connectionChanged = "eboplayer.connectionChanged",
@@ -45,6 +47,6 @@ export interface BreadcrumbArgs extends EboEventArgs {
 }
 export interface BrowseResultArgs extends EboEventArgs {
     "label": string,
-    "uri": string,
+    "uri": AllUris,
     "type": string,
 }

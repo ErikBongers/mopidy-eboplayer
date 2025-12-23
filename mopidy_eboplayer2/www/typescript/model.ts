@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {Refs, SearchResult} from "./refs";
-import {AlbumMetaData, AlbumModel, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
 import {EboplayerEvents} from "./events";
@@ -20,7 +20,7 @@ export interface ViewModel extends EventTarget {
     getTrackList(): TlTrack[];
     getBreadCrumbs(): BrowseFilterBreadCrumbs;
     getView(): Views;
-    getAlbumToView(): string;
+    getAlbumToView(): AlbumUri;
 }
 
 export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
@@ -58,7 +58,7 @@ export class Model extends EventTarget implements ViewModel {
     private allRefs?: Refs;
     private currentRefs?: Refs;
     private view: Views = Views.NowPlaying;
-    private albumToViewUri: string;
+    private albumToViewUri: AlbumUri;
     // private albumCache: Set<LibraryItem> = new Map();
     private currentImage: string;
 
@@ -264,7 +264,7 @@ export class Model extends EventTarget implements ViewModel {
     }
     getView = () => this.view;
 
-    setAlbumToView(uri: string) {
+    setAlbumToView(uri: AlbumUri) {
         this.albumToViewUri = uri;
         this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
     }
