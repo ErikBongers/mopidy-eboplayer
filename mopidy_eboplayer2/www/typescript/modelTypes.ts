@@ -37,6 +37,9 @@ export type FilterBreadCrumbType = BreadCrumbRef<AllUris> | BreadCrumbBrowseFilt
 export function isBreadCrumbForAlbum(breadCrumb: BreadCrumbRef<AllUris>): breadCrumb is BreadCrumbRef<AlbumUri> {
     return breadCrumb.data.type == "album";
 }
+export function isBreadCrumbForArtist(breadCrumb: BreadCrumbRef<AllUris>): breadCrumb is BreadCrumbRef<ArtistUri> {
+    return breadCrumb.data.type == "artist";
+}
 
 export type ImageLookup = {[string: string]: Image[]}
 

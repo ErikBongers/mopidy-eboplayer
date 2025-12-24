@@ -11,7 +11,7 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import {EboplayerEvents} from "./events";
@@ -265,7 +265,7 @@ export class Controller extends Commands implements DataRequester{
                 this.filterBrowseResults();
             });
         } else if(breadCrumb instanceof BreadCrumbRef) {
-            if(breadCrumb.data.type == "artist") {
+            if(isBreadCrumbForArtist(breadCrumb)) {
                 this.model.resetBreadCrumbsTo(id);
                 this.model.popBreadCrumb(); // remove the artist breadCrumb as it will be added again below.
                 this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
@@ -274,9 +274,7 @@ export class Controller extends Commands implements DataRequester{
                 this.setView(Views.Album);
             }
         }
-        //todo: if the breadCrumb is a uri, reset to the CURRENT breadCrumb and clear the current browseFilter.
     }
-
 
     async lookupTrackCached(trackUri: string) {
         let item = this.model.getFromLibraryCache(trackUri);

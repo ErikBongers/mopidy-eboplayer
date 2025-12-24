@@ -631,6 +631,12 @@ var BreadCrumbRef = class extends BreadCrumb {
 		super(label, ref, "ref");
 	}
 };
+function isBreadCrumbForAlbum(breadCrumb) {
+	return breadCrumb.data.type == "album";
+}
+function isBreadCrumbForArtist(breadCrumb) {
+	return breadCrumb.data.type == "artist";
+}
 var BrowseFilter = class {
 	searchText;
 	album;
@@ -1885,11 +1891,11 @@ var Controller = class extends Commands {
 				this.filterBrowseResults();
 			});
 		} else if (breadCrumb instanceof BreadCrumbRef) {
-			if (breadCrumb.data.type == "artist") {
+			if (isBreadCrumbForArtist(breadCrumb)) {
 				this.model.resetBreadCrumbsTo(id);
 				this.model.popBreadCrumb();
 				this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
-			} else if (breadCrumb.data.type == "album") {
+			} else if (isBreadCrumbForAlbum(breadCrumb)) {
 				this.model.setAlbumToView(breadCrumb.data.uri);
 				this.setView(Views.Album);
 			}
