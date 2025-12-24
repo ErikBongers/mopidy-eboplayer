@@ -1889,6 +1889,9 @@ var Controller = class extends Commands {
 				this.model.resetBreadCrumbsTo(id);
 				this.model.popBreadCrumb();
 				this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+			} else if (breadCrumb.data.type == "album") {
+				this.model.setAlbumToView(breadCrumb.data.uri);
+				this.setView(Views.Album);
 			}
 		}
 	}

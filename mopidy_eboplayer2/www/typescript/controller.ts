@@ -269,6 +269,10 @@ export class Controller extends Commands implements DataRequester{
                 this.model.resetBreadCrumbsTo(id);
                 this.model.popBreadCrumb(); // remove the artist breadCrumb as it will be added again below.
                 this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+            } else if(breadCrumb.data.type == "album") { //todo: make a fucntion that determines the type.
+                //goto album.
+                this.model.setAlbumToView(breadCrumb.data.uri as AlbumUri);
+                this.setView(Views.Album);
             }
         }
         //todo: if the breadCrumb is a uri, reset to the CURRENT breadCrumb and clear the current browseFilter.

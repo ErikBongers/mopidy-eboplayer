@@ -27,12 +27,12 @@ export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
         super(label, filter, "browseFilter");
     }
 }
-export class BreadCrumbRef extends BreadCrumb<Ref<AllUris>> {
-    constructor(label: string, ref: Ref<AllUris>) {
+export class BreadCrumbRef<T extends AllUris> extends BreadCrumb<Ref<T>> {
+    constructor(label: string, ref: Ref<T>) {
         super(label, ref, "ref");
     }
 }
-export type FilterBreadCrumbType = BreadCrumbRef | BreadCrumbBrowseFilter;
+export type FilterBreadCrumbType = BreadCrumbRef<AllUris> | BreadCrumbBrowseFilter;
 
 export type ImageLookup = {[string: string]: Image[]}
 
