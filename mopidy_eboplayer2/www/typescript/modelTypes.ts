@@ -34,6 +34,10 @@ export class BreadCrumbRef<T extends AllUris> extends BreadCrumb<Ref<T>> {
 }
 export type FilterBreadCrumbType = BreadCrumbRef<AllUris> | BreadCrumbBrowseFilter;
 
+export function isBreadCrumbForAlbum(breadCrumb: BreadCrumbRef<AllUris>): breadCrumb is BreadCrumbRef<AlbumUri> {
+    return breadCrumb.data.type == "album";
+}
+
 export type ImageLookup = {[string: string]: Image[]}
 
 export class BrowseFilter {

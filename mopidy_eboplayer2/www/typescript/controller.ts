@@ -9,14 +9,14 @@ import {EboPlayerDataType} from "./views/view";
 import {DataRequester} from "./views/dataRequester";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
-import {console_yellow, getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
+import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isInstanceOfExpandedStreamModel, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
+import {EboplayerEvents} from "./events";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
-import {EboplayerEvents} from "./events";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -269,14 +269,14 @@ export class Controller extends Commands implements DataRequester{
                 this.model.resetBreadCrumbsTo(id);
                 this.model.popBreadCrumb(); // remove the artist breadCrumb as it will be added again below.
                 this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
-            } else if(breadCrumb.data.type == "album") { //todo: make a fucntion that determines the type.
-                //goto album.
-                this.model.setAlbumToView(breadCrumb.data.uri as AlbumUri);
+            } else if(isBreadCrumbForAlbum(breadCrumb)) {
+                this.model.setAlbumToView(breadCrumb.data.uri);
                 this.setView(Views.Album);
             }
         }
         //todo: if the breadCrumb is a uri, reset to the CURRENT breadCrumb and clear the current browseFilter.
     }
+
 
     async lookupTrackCached(trackUri: string) {
         let item = this.model.getFromLibraryCache(trackUri);
@@ -502,3 +502,4 @@ export class Controller extends Commands implements DataRequester{
         console.log(albums);
     }
 }
+
