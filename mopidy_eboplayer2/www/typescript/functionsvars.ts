@@ -29,7 +29,7 @@ interface StreamInfo {
 
 
 // constants
-export const STREAMS_PLAYLIST_NAME = '[Radio Streams]';
+export const STREAMS_PLAYLIST_NAME = '[Radio Streams]'; //todo: put in config of...see todo.txt
 export const STREAMS_PLAYLIST_SCHEME = 'm3u';
 export const HOSTNAME = document.body.dataset.hostname;
 export const ARTIST_TABLE = '#artiststable';

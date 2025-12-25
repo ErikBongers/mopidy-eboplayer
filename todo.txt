@@ -1,4 +1,21 @@
-* make branded uris: (albumUri)
+* create meta for radio streams
+  > put where?
+    > perhaps create a meta file at the root of a media librart
+      > every root has it's own
+        : root.eboplayer
+      > which has a different structure than the media type.
+        > create a Type for it.
+      > on scan, load the streams in the [Radio...] playlist
+        > root.eboplayer should contain the name of the radio playlist.
+          > or...put in in config of...eboplayer or eboback?
+            > who decides what the playlist name is?
+              > I think the player - this is not backend related.
+                > can a config contain square brackets?
+                  > toml format: todo: check it.
+      > web client should be able to get that root
+        > via http of...player or backend.
+* create image for Klara
+  > set it in the meta file
 
 * in scan command, check if there's a meta file for an album
   > first just log it.
