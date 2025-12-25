@@ -173,7 +173,7 @@ export class Controller extends Commands implements DataRequester{
     private async fetchLargestImageOrDefault(uri: string) {
         let images = await this.mopidyProxy.fetchImages([uri]);
         let arr = images[uri];
-        arr.sort(img => img.width * img.height);
+        arr.sort((imgA, imgB) => (imgA.width * imgA.height) - (imgB.width * imgB.height));
         if(arr.length == 0)
             return this.DEFAULT_IMG_URL;
         let imageUrl = arr.pop().uri;

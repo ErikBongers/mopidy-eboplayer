@@ -1816,7 +1816,7 @@ var Controller = class extends Commands {
 	}
 	async fetchLargestImageOrDefault(uri) {
 		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
-		arr.sort((img) => img.width * img.height);
+		arr.sort((imgA, imgB) => imgA.width * imgA.height - imgB.width * imgB.height);
 		if (arr.length == 0) return this.DEFAULT_IMG_URL;
 		let imageUrl = arr.pop().uri;
 		if (imageUrl == "") imageUrl = this.DEFAULT_IMG_URL;
