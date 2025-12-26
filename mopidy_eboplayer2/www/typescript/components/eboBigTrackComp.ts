@@ -49,6 +49,7 @@ export class EboBigTrackComp extends EboComponent {
                     flex-direction: column;
                     align-content: center;
                     overflow: hidden;
+                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 img {
                     width: 100%;

@@ -58,6 +58,7 @@ export class EboBigAlbumComp extends EboComponent {
                     align-content: center;
                     overflow: hidden;
                     flex-wrap: wrap;
+                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 img {
                     width: 90vw;
