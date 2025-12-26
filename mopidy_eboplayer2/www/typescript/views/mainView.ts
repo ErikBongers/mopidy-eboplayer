@@ -34,8 +34,11 @@ export class MainView extends View {
         getState().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
             this.onBrowseFilterChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
-            this.onSelectedTrackChanged();
+        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+            await this.onSelectedTrackChanged();
+        });
+        getState().getModel().addEventListener(EboplayerEvents.trackListChanged, async () => {
+            await this.onTrackListChanged();
         });
         getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
             this.setCurrentView();
@@ -140,6 +143,14 @@ export class MainView extends View {
 
     private onAlbumClick() {
         this.showView(Views.Album);
+    }
+
+    private async onTrackListChanged() {
+        if(!getState().getModel().getCurrentTrack()) {
+            let trackList = getState().getModel().getTrackList();
+            if(trackList.length > 0)
+                await getState().getController().setCurrentTrackAndFetchDetails(trackList[0]);
+        }
     }
 
     private async onSelectedTrackChanged() {

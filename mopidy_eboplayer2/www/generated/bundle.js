@@ -2966,8 +2966,11 @@ var MainView = class extends View {
 		playerState_default().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
 			this.onBrowseFilterChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
-			this.onSelectedTrackChanged();
+		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+			await this.onSelectedTrackChanged();
+		});
+		playerState_default().getModel().addEventListener(EboplayerEvents.trackListChanged, async () => {
+			await this.onTrackListChanged();
 		});
 		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
 			this.setCurrentView();
@@ -3066,6 +3069,12 @@ var MainView = class extends View {
 	}
 	onAlbumClick() {
 		this.showView(Views.Album);
+	}
+	async onTrackListChanged() {
+		if (!playerState_default().getModel().getCurrentTrack()) {
+			let trackList = playerState_default().getModel().getTrackList();
+			if (trackList.length > 0) await playerState_default().getController().setCurrentTrackAndFetchDetails(trackList[0]);
+		}
 	}
 	async onSelectedTrackChanged() {
 		let uri = playerState_default().getModel().getSelectedTrack();
