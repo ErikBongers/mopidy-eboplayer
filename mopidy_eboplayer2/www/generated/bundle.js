@@ -1053,83 +1053,6 @@ let library = {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/global.ts
-function stretchLeft(x, min, max) {
-	return x * (max + min) / max - min;
-}
-function quadratic100(x) {
-	x = stretchLeft(x, -5, 100);
-	return x * x / 100;
-}
-function inverseQuadratic100(y) {
-	let x = Math.floor(Math.sqrt(y * 100));
-	return stretchLeft(x, 5, 100);
-}
-function numberedDictToArray(dict, converter) {
-	let length = dict["length"];
-	let array = [];
-	for (let index = 0; index < length; index++) {
-		let line = dict[index.toString()];
-		array.push(line);
-	}
-	if (!converter) return array;
-	return array.map(converter);
-}
-function getHostAndPort() {
-	let hostDefs = getHostAndPortDefs();
-	return hostDefs.altHost ?? hostDefs.host;
-}
-function getHostAndPortDefs() {
-	let altHostName = document.body.dataset.hostname;
-	if (altHostName.startsWith("{{")) altHostName = void 0;
-	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
-	return {
-		host: document.location.host,
-		altHost: altHostName
-	};
-}
-function isStream(track) {
-	return track?.track_no == void 0;
-}
-function transformTrackDataToModel(track) {
-	if (isStream(track)) return {
-		type: ItemType.Stream,
-		track,
-		name: track.name,
-		infoLines: [],
-		imageUrl: void 0
-	};
-	let model = {
-		type: ItemType.File,
-		composer: "",
-		track,
-		title: track.name,
-		performer: "",
-		songlenght: 0
-	};
-	if (!track.name || track.name === "") {
-		let parts = track.uri.split("/");
-		model.title = decodeURI(parts[parts.length - 1]);
-	}
-	if (validUri(track.name)) for (let key in playerState_default().streamUris) {
-		let rs = playerState_default().streamUris[key];
-		if (rs && rs[1] === track.name) model.title = rs[0] || rs[1];
-	}
-	if (!track.length || track.length === 0) model.songlenght = playerState_default().songlength = Infinity;
-	else model.songlenght = playerState_default().songlength = track.length;
-	return model;
-}
-function console_yellow(msg) {
-	console.log(`%c${msg}`, "background-color: yellow");
-}
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/process_ws.ts
-function transformTlTrackDataToModel(tlTrack) {
-	return transformTrackDataToModel(tlTrack?.track);
-}
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/commands.ts
 var Commands = class {
 	mopidy;
@@ -1388,6 +1311,77 @@ var Commands = class {
 		}
 	};
 };
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/global.ts
+function stretchLeft(x, min, max) {
+	return x * (max + min) / max - min;
+}
+function quadratic100(x) {
+	x = stretchLeft(x, -5, 100);
+	return x * x / 100;
+}
+function inverseQuadratic100(y) {
+	let x = Math.floor(Math.sqrt(y * 100));
+	return stretchLeft(x, 5, 100);
+}
+function numberedDictToArray(dict, converter) {
+	let length = dict["length"];
+	let array = [];
+	for (let index = 0; index < length; index++) {
+		let line = dict[index.toString()];
+		array.push(line);
+	}
+	if (!converter) return array;
+	return array.map(converter);
+}
+function getHostAndPort() {
+	let hostDefs = getHostAndPortDefs();
+	return hostDefs.altHost ?? hostDefs.host;
+}
+function getHostAndPortDefs() {
+	let altHostName = document.body.dataset.hostname;
+	if (altHostName.startsWith("{{")) altHostName = void 0;
+	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
+	return {
+		host: document.location.host,
+		altHost: altHostName
+	};
+}
+function isStream(track) {
+	return track?.track_no == void 0;
+}
+function transformTrackDataToModel(track) {
+	if (isStream(track)) return {
+		type: ItemType.Stream,
+		track,
+		name: track.name,
+		infoLines: [],
+		imageUrl: void 0
+	};
+	let model = {
+		type: ItemType.File,
+		composer: "",
+		track,
+		title: track.name,
+		performer: "",
+		songlenght: 0
+	};
+	if (!track.name || track.name === "") {
+		let parts = track.uri.split("/");
+		model.title = decodeURI(parts[parts.length - 1]);
+	}
+	if (validUri(track.name)) for (let key in playerState_default().streamUris) {
+		let rs = playerState_default().streamUris[key];
+		if (rs && rs[1] === track.name) model.title = rs[0] || rs[1];
+	}
+	if (!track.length || track.length === 0) model.songlenght = playerState_default().songlength = Infinity;
+	else model.songlenght = playerState_default().songlength = track.length;
+	return model;
+}
+function console_yellow(msg) {
+	console.log(`%c${msg}`, "background-color: yellow");
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
@@ -1805,7 +1799,7 @@ var Controller = class extends Commands {
 			this.model.setCurrentTrack(TrackNone);
 			return;
 		}
-		let trackModel = transformTlTrackDataToModel(data);
+		let trackModel = await this.lookupTrackCached(data.track.uri);
 		this.model.setCurrentTrack(trackModel);
 		if (!this.model.selectedTrack) this.model.setSelectedTrack(trackModel.track.uri);
 		await this.updateStreamLines();
@@ -1927,7 +1921,11 @@ var Controller = class extends Commands {
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
-			if (model.type == ItemType.Stream) model.imageUrl = this.DEFAULT_IMG_URL;
+			if (model.type == ItemType.Stream) {
+				let images = await this.mopidyProxy.fetchImages([track.uri]);
+				if (images[track.uri].length > 0) model.imageUrl = this.baseUrl + images[track.uri][0].uri;
+				else model.imageUrl = this.DEFAULT_IMG_URL;
+			}
 			return model;
 		});
 		return await Promise.all(newListPromises);
@@ -1947,14 +1945,6 @@ var Controller = class extends Commands {
 				album
 			};
 		}
-	}
-	async getExpandedFileTrackModel(fileTrackUri) {
-		let track = await this.lookupTrackCached(fileTrackUri);
-		let album = await this.lookupAlbumCached(track.track.album.uri);
-		return {
-			track,
-			album
-		};
 	}
 	async getExpandedAlbumModel(albumUri) {
 		let album = await this.lookupAlbumCached(albumUri);
@@ -2610,7 +2600,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                 .albumCoverContainer {
                     display: flex;
                     flex-direction: column;
-                    align-content: center;
+                    /*align-content: center;*/
                     overflow: hidden;
                 }
                 img {
@@ -2619,6 +2609,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                     object-fit: contain;
                     min-width: 200px;
                     min-height: 200px;
+                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -2632,6 +2623,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                         display: flex;
                         flex-direction: column;
                         width: 100%;
+                        align-items: center;
                     }
                 }
                 #wrapper.front {
@@ -3631,6 +3623,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                     width: 90vw;
                     height: 45vh;
                     object-fit: contain;
+                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 ebo-progressbar {
                     margin-top: .5em;

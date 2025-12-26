@@ -151,7 +151,7 @@ export class Controller extends Commands implements DataRequester{
             this.model.setCurrentTrack(TrackNone);
             return;
         }
-        let trackModel = transformTlTrackDataToModel(data);
+        let trackModel = await this.lookupTrackCached(data.track.uri);
         this.model.setCurrentTrack(trackModel);
         if(!this.model.selectedTrack)
             this.model.setSelectedTrack(trackModel.track.uri);
@@ -312,7 +312,11 @@ export class Controller extends Commands implements DataRequester{
         let newListPromises = trackList.map(async track => {
             let model = transformTrackDataToModel(track);
             if(model.type == ItemType.Stream) {
-                model.imageUrl = this.DEFAULT_IMG_URL;
+                let images = await this.mopidyProxy.fetchImages([track.uri]);
+                if(images[track.uri].length > 0)
+                    model.imageUrl = this.baseUrl + images[track.uri][0].uri;
+                else
+                    model.imageUrl = this.DEFAULT_IMG_URL;
             }
             return model;
         });
@@ -333,12 +337,6 @@ export class Controller extends Commands implements DataRequester{
             let album = await this.lookupAlbumCached(track.track.album.uri);
             return {track, album};
         }
-    }
-
-    async getExpandedFileTrackModel(fileTrackUri: string): Promise<ExpandedFileTrackModel> {
-        let track = await this.lookupTrackCached(fileTrackUri) as FileTrackModel;
-        let album = await this.lookupAlbumCached(track.track.album.uri);
-        return {track, album};
     }
 
     async getExpandedAlbumModel(albumUri: AlbumUri): Promise<ExpandedAlbumModel> {

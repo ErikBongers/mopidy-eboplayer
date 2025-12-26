@@ -41,7 +41,7 @@ export function isBreadCrumbForArtist(breadCrumb: BreadCrumbRef<AllUris>): bread
     return breadCrumb.data.type == "artist";
 }
 
-export type ImageLookup = {[string: string]: Image[]}
+export type ImageLookup = {[string: string]: Image[]} //todo replace with [uri:string] ?
 
 export class BrowseFilter {
     searchText: string;
