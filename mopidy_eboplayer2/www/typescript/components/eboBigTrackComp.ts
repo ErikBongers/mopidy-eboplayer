@@ -47,9 +47,8 @@ export class EboBigTrackComp extends EboComponent {
                 .albumCoverContainer {
                     display: flex;
                     flex-direction: column;
-                    align-content: center;
+                    /*align-content: center;*/
                     overflow: hidden;
-                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 img {
                     width: 100%;
@@ -57,6 +56,7 @@ export class EboBigTrackComp extends EboComponent {
                     object-fit: contain;
                     min-width: 200px;
                     min-height: 200px;
+                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -70,6 +70,7 @@ export class EboBigTrackComp extends EboComponent {
                         display: flex;
                         flex-direction: column;
                         width: 100%;
+                        align-items: center;
                     }
                 }
                 #wrapper.front {
