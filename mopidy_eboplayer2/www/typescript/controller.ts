@@ -67,7 +67,11 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
-            this.setPlayState("playing");
+        });
+
+        this.mopidy.on('event:trackPlaybackEnded', async (data) => {
+            await this.setCurrentTrackAndFetchDetails(data.tl_track);
+            this.setPlayState("stopped"); //don't rely solely on the state changes!
         });
 
         this.mopidy.on('event:trackPlaybackResumed', async (data) => {

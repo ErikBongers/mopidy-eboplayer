@@ -129,6 +129,7 @@ export namespace core {
 
     export type MopidyEventName =
         | "event:trackPlaybackStarted"
+        | "event:trackPlaybackEnded"
         | "event:trackPlaybackResumed"
         | "state:online"
         | "state:offline"

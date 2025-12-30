@@ -1745,17 +1745,25 @@ var Controller = class extends Commands {
 		});
 		this.mopidy.on("event:optionsChanged", this.mopidyProxy.fetchPlaybackOptions);
 		this.mopidy.on("event:trackPlaybackStarted", async (data) => {
+			console_yellow("event:trackPlaybackStarted");
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
-			this.setPlayState("playing");
+		});
+		this.mopidy.on("event:trackPlaybackEnded", async (data) => {
+			console_yellow("event:trackPlaybackEnded");
+			await this.setCurrentTrackAndFetchDetails(data.tl_track);
+			this.setPlayState("stopped");
 		});
 		this.mopidy.on("event:trackPlaybackResumed", async (data) => {
+			console_yellow("event:trackPlaybackResumed");
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
 		this.mopidy.on("event:playlistsLoaded", () => {
+			console_yellow("event:playlistsLoaded");
 			/* @__PURE__ */ showLoading(true);
 			library.getPlaylists();
 		});
 		this.mopidy.on("event:playlistChanged", (data) => {
+			console_yellow("event:playlistChanged");
 			delete playerState_default().playlists[data.playlist.uri];
 			library.getPlaylists();
 		});
@@ -1768,6 +1776,7 @@ var Controller = class extends Commands {
 		});
 		this.mopidy.on("event:muteChanged", (_data) => {});
 		this.mopidy.on("event:playbackStateChanged", async (data) => {
+			console_yellow("event:playbackStateChanged");
 			await this.onPlaybackStateChanged(data);
 		});
 		this.mopidy.on("event:tracklistChanged", async () => {
@@ -2145,6 +2154,8 @@ var ButtonBarView = class extends View {
 	async onPlaybackStateChangegd() {
 		let playState = playerState_default().getModel().getPlayState();
 		document.getElementById(this.componentId).setAttribute("play_state", playState);
+		if (playState == "playing") debugger;
+		console_yellow(`Play state = ${playState}`);
 		await this.updateComponent();
 	}
 	async onCurrentTrackChanged() {
