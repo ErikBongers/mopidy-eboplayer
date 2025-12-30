@@ -46,16 +46,22 @@ function snakeToCamel(name) {
 var JsonRpcController = class JsonRpcController extends EventEmitter {
 	_pendingRequests;
 	_webSocket;
+	_backoffDelay;
 	webSocketUrl;
-	constructor(webSocketUrl) {
+	backoffDelayMin;
+	backoffDelayMax;
+	constructor(webSocketUrl, backoffDelayMin, backoffDelayMax) {
 		super();
 		this.webSocketUrl = webSocketUrl;
 		this._pendingRequests = {};
 		this._webSocket = null;
+		this._backoffDelay = backoffDelayMin;
+		this.backoffDelayMin = backoffDelayMin;
+		this.backoffDelayMax = backoffDelayMax;
 		this.hookUpEvents();
 	}
 	hookUpEvents() {
-		this.on("websocket:close", this.cleanup);
+		this.on("websocket:close", this.onWebSocketClose);
 		this.on("websocket:error", this.handleWebSocketError);
 		this.on("websocket:incomingMessage", this.handleMessage);
 	}
@@ -73,12 +79,13 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 		};
 		this._webSocket.onopen = () => {
 			this.emit("websocket:open");
+			this._backoffDelay = this.backoffDelayMin;
 		};
 		this._webSocket.onmessage = (message) => {
 			this.emit("websocket:incomingMessage", message);
 		};
 	}
-	cleanup(closeEvent) {
+	onWebSocketClose(closeEvent) {
 		Object.keys(this._pendingRequests).forEach((requestId) => {
 			const { reject } = this._pendingRequests[requestId];
 			delete this._pendingRequests[requestId];
@@ -86,9 +93,22 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 			error.closeEvent = closeEvent;
 			reject(error);
 		});
+		this._reconnect();
 	}
 	close() {
+		this.eventOff("state:offline", this._reconnect);
 		if (this._webSocket) this._webSocket.close();
+	}
+	eventOff(eventName, callback) {
+		if (!eventName) {
+			this.removeAllListeners();
+			return;
+		}
+		if (!callback) {
+			this.removeAllListeners(eventName);
+			return;
+		}
+		this.removeListener(eventName, callback);
 	}
 	handleWebSocketError(error) {
 		console.warn("WebSocket error:", error.stack || error);
@@ -155,6 +175,19 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 	static idCounter = -1;
 	_nextRequestId() {
 		return ++JsonRpcController.idCounter;
+	}
+	_reconnect() {
+		setTimeout(() => {
+			this.emit("state", ["reconnectionPending", { timeToAttempt: this._backoffDelay }]);
+			this.emit("reconnectionPending", { timeToAttempt: this._backoffDelay });
+			setTimeout(() => {
+				this.emit("state", "reconnecting");
+				this.emit("reconnecting");
+				this.connect();
+			}, this._backoffDelay);
+			this._backoffDelay *= 2;
+			if (this._backoffDelay > this.backoffDelayMax) this._backoffDelay = this.backoffDelayMax;
+		}, 0);
 	}
 };
 var ConnectionError = class extends Error {
@@ -254,7 +287,6 @@ let models;
 })(models || (models = {}));
 var Mopidy = class {
 	_options;
-	_backoffDelay;
 	rpcController;
 	constructor(options) {
 		this._options = this._configure({
@@ -264,8 +296,7 @@ var Mopidy = class {
 			webSocketUrl: "",
 			...options
 		});
-		this._backoffDelay = this._options.backoffDelayMin;
-		this.rpcController = new JsonRpcController(this._options.webSocketUrl);
+		this.rpcController = new JsonRpcController(this._options.webSocketUrl, this._options.backoffDelayMin, this._options.backoffDelayMax);
 		this._delegateEvents();
 		if (this._options.autoConnect) this.connect();
 	}
@@ -283,44 +314,14 @@ var Mopidy = class {
 		return options;
 	}
 	_delegateEvents() {
-		this.rpcController.on("websocket:close", (closeEvent) => this._cleanup(closeEvent));
-		this.rpcController.on("websocket:open", () => this._resetBackoffDelay());
+		this.rpcController.on("websocket:close", (closeEvent) => this.onWebSocketClose(closeEvent));
 		this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
-		this.rpcController.on("state:offline", () => this._reconnect());
 	}
-	eventOff(eventName, callback) {
-		if (!eventName) {
-			this.rpcController.removeAllListeners();
-			return;
-		}
-		if (!callback) {
-			this.rpcController.removeAllListeners(eventName);
-			return;
-		}
-		this.rpcController.removeListener(eventName, callback);
-	}
-	_cleanup(closeEvent) {
+	onWebSocketClose(closeEvent) {
 		this.rpcController.emit("state", "state:offline");
 		this.rpcController.emit("state:offline");
 	}
-	_reconnect() {
-		setTimeout(() => {
-			this.rpcController.emit("state", ["reconnectionPending", { timeToAttempt: this._backoffDelay }]);
-			this.rpcController.emit("reconnectionPending", { timeToAttempt: this._backoffDelay });
-			setTimeout(() => {
-				this.rpcController.emit("state", "reconnecting");
-				this.rpcController.emit("reconnecting");
-				this.rpcController.connect();
-			}, this._backoffDelay);
-			this._backoffDelay *= 2;
-			if (this._backoffDelay > this._options.backoffDelayMax) this._backoffDelay = this._options.backoffDelayMax;
-		}, 0);
-	}
-	_resetBackoffDelay() {
-		this._backoffDelay = this._options.backoffDelayMin;
-	}
 	close() {
-		this.eventOff("state:offline", this._reconnect);
 		if (this.rpcController) this.rpcController.close();
 	}
 	send(message) {
@@ -4093,7 +4094,7 @@ function setupStuff() {
 		autoConnect: false
 	};
 	let mopidy = new Mopidy(connectOptions);
-	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/");
+	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
 	let timer = new SyncedProgressTimer(8, mopidy);
 	let model = new Model();
 	let controller = new Controller(model, mopidy, eboWebSocketCtrl);

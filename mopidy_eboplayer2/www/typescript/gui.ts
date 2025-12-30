@@ -57,7 +57,7 @@ function setupStuff() {
     };
     let mopidy = new Mopidy(connectOptions);
     let wsUrl = "ws://192.168.1.111:6680/eboplayer2/ws/"; //iris socket: ws://192.168.1.111:6680/iris/ws/
-    let eboWebSocketCtrl = new JsonRpcController(wsUrl);
+    let eboWebSocketCtrl = new JsonRpcController(wsUrl, 1000, 64000);
     let timer = new SyncedProgressTimer(8, mopidy);
     let model = new Model();
 

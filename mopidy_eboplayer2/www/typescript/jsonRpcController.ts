@@ -9,19 +9,25 @@ function snakeToCamel(name: string) {
 export class JsonRpcController extends EventEmitter {
     private readonly _pendingRequests: {}; //this initialization gets stripped by rolldown!
     private _webSocket: WebSocket;
+    private _backoffDelay: number; //todo: rename to currentDelay
     private readonly webSocketUrl: string;
+    private backoffDelayMin: number;
+    private backoffDelayMax: number;
 
-    constructor(webSocketUrl: string) {
+    constructor(webSocketUrl: string, backoffDelayMin: number, backoffDelayMax: number) {
         super();
         this.webSocketUrl = webSocketUrl;
         this._pendingRequests = {};
         this._webSocket = null;
+        this._backoffDelay = backoffDelayMin;
+        this.backoffDelayMin = backoffDelayMin;
+        this.backoffDelayMax = backoffDelayMax;
         this.hookUpEvents();
         //this.connect(); //todo: connect AFTER construction!  > To allow for other events to hook up.
     }
 
     private hookUpEvents() {
-        this.on("websocket:close", this.cleanup);
+        this.on("websocket:close", this.onWebSocketClose);
         this.on("websocket:error", this.handleWebSocketError);
         this.on("websocket:incomingMessage", this.handleMessage);
     }
@@ -44,13 +50,15 @@ export class JsonRpcController extends EventEmitter {
         };
         this._webSocket.onopen = () => {
             this.emit("websocket:open");
+            this._backoffDelay = this.backoffDelayMin;
+
         };
         this._webSocket.onmessage = (message) => {
             this.emit("websocket:incomingMessage", message);
         };
     }
 
-    private cleanup(closeEvent: any) {
+    private onWebSocketClose(closeEvent: any) {
         Object.keys(this._pendingRequests).forEach((requestId) => {
             const {reject} = this._pendingRequests[requestId];
             delete this._pendingRequests[requestId];
@@ -58,12 +66,26 @@ export class JsonRpcController extends EventEmitter {
             error.closeEvent = closeEvent;
             reject(error);
         });
+        this._reconnect();
     }
 
     close() {
+        this.eventOff("state:offline", this._reconnect);
         if (this._webSocket) {
             this._webSocket.close();
         }
+    }
+
+    eventOff(eventName?: string, callback?: any) {
+        if (!eventName) {
+            this.removeAllListeners();
+            return;
+        }
+        if (!callback) {
+            this.removeAllListeners(eventName);
+            return;
+        }
+        this.removeListener(eventName, callback);
     }
 
     private handleWebSocketError(error: any) {
@@ -164,6 +186,31 @@ export class JsonRpcController extends EventEmitter {
 
     _nextRequestId() {
         return ++JsonRpcController.idCounter;
+    }
+
+    _reconnect() {
+        // We asynchronously process the reconnect because we don't want to start
+        // emitting "reconnectionPending" events before we've finished handling the
+        // "state:offline" event, which would lead to emitting the events to
+        // listeners in the wrong order.
+        setTimeout(() => {
+            this.emit("state", [
+                "reconnectionPending",
+                { timeToAttempt: this._backoffDelay}
+            ]);
+            this.emit("reconnectionPending", {
+                timeToAttempt: this._backoffDelay,
+            });
+            setTimeout(() => {
+                this.emit("state", "reconnecting");
+                this.emit("reconnecting");
+                this.connect();
+            }, this._backoffDelay);
+            this._backoffDelay *= 2;
+            if (this._backoffDelay > this.backoffDelayMax) {
+                this._backoffDelay = this.backoffDelayMax;
+            }
+        }, 0);
     }
 }
 

@@ -149,7 +149,6 @@ export namespace core {
 
 export class Mopidy {
     _options: Options;
-    private _backoffDelay: number;
     private rpcController: JsonRpcController;
     constructor(options: Options) {
         const defaultOptions = {
@@ -159,8 +158,7 @@ export class Mopidy {
             webSocketUrl: ''
         };
         this._options = this._configure({...defaultOptions, ...options});
-        this._backoffDelay = this._options.backoffDelayMin;
-        this.rpcController = new JsonRpcController(this._options.webSocketUrl);
+        this.rpcController = new JsonRpcController(this._options.webSocketUrl, this._options.backoffDelayMin, this._options.backoffDelayMax);
         this._delegateEvents();
         if (this._options.autoConnect) {
             this.connect();
@@ -191,60 +189,16 @@ export class Mopidy {
     }
 
   _delegateEvents() {
-    this.rpcController.on("websocket:close", (closeEvent: any) => this._cleanup(closeEvent));
-    this.rpcController.on("websocket:open", () => this._resetBackoffDelay());
+    this.rpcController.on("websocket:close", (closeEvent: any) => this.onWebSocketClose(closeEvent));
     this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
-    this.rpcController.on("state:offline", () => this._reconnect());
   }
 
-  eventOff(eventName?: string, callback?: any) {
-    if (!eventName) {
-      this.rpcController.removeAllListeners();
-      return;
-    }
-    if (!callback) {
-        this.rpcController.removeAllListeners(eventName);
-        return;
-    }
-  this.rpcController.removeListener(eventName, callback);
-  }
-
-  _cleanup(closeEvent) {
+  onWebSocketClose(closeEvent) {
     this.rpcController.emit("state", "state:offline");
     this.rpcController.emit("state:offline");
   }
 
-  _reconnect() {
-    // We asynchronously process the reconnect because we don't want to start
-    // emitting "reconnectionPending" events before we've finished handling the
-    // "state:offline" event, which would lead to emitting the events to
-    // listeners in the wrong order.
-    setTimeout(() => {
-      this.rpcController.emit("state", [
-          "reconnectionPending",
-          { timeToAttempt: this._backoffDelay}
-      ]);
-      this.rpcController.emit("reconnectionPending", {
-        timeToAttempt: this._backoffDelay,
-      });
-      setTimeout(() => {
-        this.rpcController.emit("state", "reconnecting");
-        this.rpcController.emit("reconnecting");
-        this.rpcController.connect();
-      }, this._backoffDelay);
-      this._backoffDelay *= 2;
-      if (this._backoffDelay > this._options.backoffDelayMax) {
-        this._backoffDelay = this._options.backoffDelayMax;
-      }
-    }, 0);
-  }
-
-  _resetBackoffDelay() {
-    this._backoffDelay = this._options.backoffDelayMin;
-  }
-
   close() {
-    this.eventOff("state:offline", this._reconnect);
     if (this.rpcController) {
       this.rpcController.close();
     }

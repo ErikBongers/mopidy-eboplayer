@@ -1,3 +1,26 @@
+* Offline -> reconnect
+  - this._webSocket.onclose() is called
+  - which emits "websocket:close"
+  - caught by mopidy :
+    _delegateEvents() {
+        this.rpcController.on("websocket:close", (closeEvent: any) => this._cleanup(closeEvent));
+  - which emits:
+        _cleanup(closeEvent) {
+            this.rpcController.emit("state", "state:offline");
+            this.rpcController.emit("state:offline");
+          }
+  - caught in controller:
+    this.mopidy.on('state:offline', () => {
+                this.model.setConnectionState(ConnectionState.Offline);
+            });
+
+ ---
+   - jsonCtrl emits "websocket:close"
+   - mopidy captures and calls this._cleanup(closeEvent)
+   - mopidy.cleanup emits "state:offline"
+   - controller captures this.
+   - mopidy captures this and calls _reconnect!!!
+
 * Browse playlist: stay in browse!
   > a search in the track list should be possible.
   > same for Genre
