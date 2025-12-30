@@ -1,9 +1,12 @@
 import models from "../js/mopidy";
 import {Refs, SearchResult} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumbType, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
 import {EboplayerEvents} from "./events";
+import {WithId} from "./util/idStack";
+
+
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
@@ -18,12 +21,12 @@ export interface ViewModel extends EventTarget {
     getCurrentBrowseFilter: () => BrowseFilter;
     getCurrentSearchResults(): SearchResult[];
     getTrackList(): TlTrack[];
-    getBreadCrumbs(): BrowseFilterBreadCrumbs;
+    getBreadCrumbs(): BrowseFilterBreadCrumbStack;
     getView(): Views;
     getAlbumToView(): AlbumUri;
 }
 
-export type BrowseFilterBreadCrumbs = BreadCrumbStack<FilterBreadCrumbType>;
+export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrumbTypeName, FilterBreadCrumb>{}
 
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
@@ -53,7 +56,8 @@ export class Model extends EventTarget implements ViewModel {
     private libraryCache: Map<string, (FileTrackModel | StreamTrackModel | AlbumModel)> = new Map();
     private metaCache: Map<string, CachedAlbumMetaData> = new Map();
     private currentBrowseFilter= new BrowseFilter();
-    private filterBreadCrumbStack: BreadCrumbStack<FilterBreadCrumbType> = new BreadCrumbStack<FilterBreadCrumbType>();
+    // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
+    private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
 
     private allRefs?: Refs;
     private currentRefs?: Refs;
@@ -64,9 +68,10 @@ export class Model extends EventTarget implements ViewModel {
 
     constructor() {
         super();
+        this.initializeBreadcrumbStack();
     }
 
-    pushBreadCrumb(crumb: BreadCrumb<any, any>) {
+    pushBreadCrumb(crumb: FilterBreadCrumb) {
         this.filterBreadCrumbStack.push(crumb);
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
@@ -83,8 +88,13 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
+    private initializeBreadcrumbStack() {
+        this.filterBreadCrumbStack.length = 0;
+        this.filterBreadCrumbStack.push(new BreadCrumbHome());
+    }
+
     clearBreadCrumbs() {
-        this.filterBreadCrumbStack.clear();
+        this.initializeBreadcrumbStack();
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
@@ -126,8 +136,9 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
     }
 
-    setBrowseFilterBreadCrumbs(breadCrumbStack: BreadCrumbStack<FilterBreadCrumbType>) {
-        this.filterBreadCrumbStack = breadCrumbStack;
+    setBrowseFilterBreadCrumbs(breadCrumbStack: BrowseFilterBreadCrumbStack) {
+        this.initializeBreadcrumbStack();
+        this.filterBreadCrumbStack.push(...breadCrumbStack);
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
@@ -276,4 +287,5 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     getCurrentImage = () => this.currentImage;
+
 }

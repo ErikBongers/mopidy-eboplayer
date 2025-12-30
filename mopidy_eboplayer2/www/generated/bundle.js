@@ -568,6 +568,23 @@ const getState = () => state;
 var playerState_default = getState;
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/util/idStack.ts
+var IdStack = class extends Array {
+	resetTo(id) {
+		let index = this.findIndex((breadCrumb, index$1, obj) => {
+			return breadCrumb.id == id;
+		});
+		this.splice(index + 1);
+	}
+	getLast() {
+		return this[this.length - 1];
+	}
+	get(id) {
+		return this.find((crumb) => crumb.id == id);
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/breadCrumb.ts
 var BreadCrumb = class BreadCrumb {
 	id;
@@ -582,35 +599,7 @@ var BreadCrumb = class BreadCrumb {
 		this.type = type;
 	}
 };
-var BreadCrumbStack = class {
-	breadCrumbStack = [];
-	push(crumb) {
-		this.breadCrumbStack.push(crumb);
-	}
-	pop() {
-		return this.breadCrumbStack.pop();
-	}
-	list = () => this.breadCrumbStack;
-	resetTo(id) {
-		let index = this.breadCrumbStack.findIndex((breadCrumb, index$1, obj) => {
-			return breadCrumb.id == id;
-		});
-		this.breadCrumbStack = this.breadCrumbStack.slice(0, index + 1);
-	}
-	clear() {
-		this.breadCrumbStack = [];
-	}
-	getLast() {
-		if (this.breadCrumbStack.length == 0) return void 0;
-		return this.breadCrumbStack[this.breadCrumbStack.length - 1];
-	}
-	get(id) {
-		return this.breadCrumbStack.find((crumb) => crumb.id == id);
-	}
-	setArray(breadCrumbsArray) {
-		this.breadCrumbStack = breadCrumbsArray;
-	}
-};
+var BreadCrumbStack = class extends IdStack {};
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/modelTypes.ts
@@ -624,6 +613,11 @@ let ItemType = /* @__PURE__ */ function(ItemType$1) {
 var BrowseFilterBreadCrumb = class extends BreadCrumb {
 	constructor(label, filter, type) {
 		super(label, filter, type);
+	}
+};
+var BreadCrumbHome = class extends BrowseFilterBreadCrumb {
+	constructor() {
+		super("Home", null, "home");
 	}
 };
 var BreadCrumbBrowseFilter = class extends BrowseFilterBreadCrumb {
@@ -752,6 +746,7 @@ var EboplayerEvent = class extends CustomEvent {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/model.ts
+var BrowseFilterBreadCrumbStack = class extends BreadCrumbStack {};
 var Model = class extends EventTarget {
 	static NoTrack = { type: ItemType.None };
 	currentTrack;
@@ -775,7 +770,7 @@ var Model = class extends EventTarget {
 	libraryCache = /* @__PURE__ */ new Map();
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
-	filterBreadCrumbStack = new BreadCrumbStack();
+	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
 	allRefs;
 	currentRefs;
 	view = Views.NowPlaying;
@@ -783,6 +778,7 @@ var Model = class extends EventTarget {
 	currentImage;
 	constructor() {
 		super();
+		this.initializeBreadcrumbStack();
 	}
 	pushBreadCrumb(crumb) {
 		this.filterBreadCrumbStack.push(crumb);
@@ -798,8 +794,12 @@ var Model = class extends EventTarget {
 		this.filterBreadCrumbStack.resetTo(id);
 		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
 	}
+	initializeBreadcrumbStack() {
+		this.filterBreadCrumbStack.length = 0;
+		this.filterBreadCrumbStack.push(new BreadCrumbHome());
+	}
 	clearBreadCrumbs() {
-		this.filterBreadCrumbStack.clear();
+		this.initializeBreadcrumbStack();
 		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
 	}
 	setAllRefs(refs) {
@@ -831,7 +831,8 @@ var Model = class extends EventTarget {
 		this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
 	}
 	setBrowseFilterBreadCrumbs(breadCrumbStack) {
-		this.filterBreadCrumbStack = breadCrumbStack;
+		this.initializeBreadcrumbStack();
+		this.filterBreadCrumbStack.push(...breadCrumbStack);
 		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
 	}
 	getCurrentTrack() {
@@ -1536,8 +1537,8 @@ var LocalStorageProxy = class {
 	loadBrowseFiltersBreadCrumbs() {
 		let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
 		if (breadCrumbsString) {
-			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs().list());
-			let breadCrumbs = new BreadCrumbStack();
+			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs());
+			let breadCrumbs = new BrowseFilterBreadCrumbStack();
 			breadCrumbsArray.map((crumb) => {
 				switch (crumb.type) {
 					case "browseFilter":
@@ -1558,7 +1559,7 @@ var LocalStorageProxy = class {
 		localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
 	}
 	saveBrowseFilterBreadCrumbs(breadCrumbs) {
-		let obj = JSON.stringify(breadCrumbs.list());
+		let obj = JSON.stringify(breadCrumbs);
 		console.log(obj);
 		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
 	}
@@ -1898,6 +1899,13 @@ var Controller = class extends Commands {
 				this.model.setAlbumToView(breadCrumb.data.uri);
 				this.setView(Views.Album);
 			}
+		} else if (breadCrumb instanceof BreadCrumbHome) {
+			this.model.resetBreadCrumbsTo(id);
+			this.setAndSaveBrowseFilter(new BrowseFilter());
+			this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
+			this.fetchRefsForCurrentBreadCrumbs().then(() => {
+				this.filterBrowseResults();
+			});
 		}
 	}
 	async lookupTrackCached(trackUri) {
@@ -2010,6 +2018,10 @@ var Controller = class extends Commands {
 	async fetchRefsForCurrentBreadCrumbs() {
 		let lastCrumb = this.model.getBreadCrumbs().getLast();
 		if (!lastCrumb) {
+			await this.setAllRefsAsCurrent();
+			return;
+		}
+		if (lastCrumb instanceof BreadCrumbHome) {
 			await this.setAllRefsAsCurrent();
 			return;
 		}
@@ -3009,7 +3021,7 @@ var MainView = class extends View {
 	}
 	onBreadCrumbsChanged() {
 		let browseComp = document.getElementById("browseView");
-		browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs()?.list() ?? [];
+		browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
 	}
 	onBrowseFilterChanged() {
 		let browseComp = document.getElementById("browseView");
@@ -3050,7 +3062,7 @@ var MainView = class extends View {
 				let browseComp = document.getElementById("browseView");
 				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
 				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
-				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs()?.list() ?? [];
+				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
 				browseComp.setFocusAndSelect();
 				break;
 			case Views.NowPlaying:
@@ -3364,7 +3376,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	renderBreadCrumbs() {
 		if (!this.rendered) return;
 		let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
-		breadCrumbsDiv.innerHTML = "Ĥ > " + this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
+		breadCrumbsDiv.innerHTML = this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
 		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
 			btn.addEventListener("click", (ev) => {
 				this.onBreadCrumbClicked(ev);
@@ -3374,6 +3386,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	renderBreadcrumb(crumb) {
 		if (crumb instanceof BreadCrumbRef) return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`;
 		else if (crumb instanceof BreadCrumbBrowseFilter) return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
+		else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="filter"><i class="fa fa-home"></i></button>`;
 	}
 	renderResults() {
 		if (!this.rendered) return;

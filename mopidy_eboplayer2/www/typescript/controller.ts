@@ -11,7 +11,7 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {LocalStorageProxy} from "./proxies/localStorageProxy";
 import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
 import {AllRefs, SomeRefs} from "./refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
 import {JsonRpcController} from "./jsonRpcController";
 import {WebProxy} from "./proxies/webProxy";
 import {EboplayerEvents} from "./events";
@@ -273,6 +273,13 @@ export class Controller extends Commands implements DataRequester{
                 this.model.setAlbumToView(breadCrumb.data.uri);
                 this.setView(Views.Album);
             }
+        } else if (breadCrumb instanceof BreadCrumbHome) {
+            this.model.resetBreadCrumbsTo(id);
+            this.setAndSaveBrowseFilter(new BrowseFilter());
+            this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
+            this.fetchRefsForCurrentBreadCrumbs().then(() => {
+                this.filterBrowseResults();
+            });
         }
     }
 
@@ -412,6 +419,11 @@ export class Controller extends Commands implements DataRequester{
         let breadCrumbs = this.model.getBreadCrumbs();
         let lastCrumb = breadCrumbs.getLast();
         if(!lastCrumb) {
+            await this.setAllRefsAsCurrent();
+            return;
+        }
+
+        if(lastCrumb instanceof BreadCrumbHome) {
             await this.setAllRefsAsCurrent();
             return;
         }

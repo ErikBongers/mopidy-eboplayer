@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "../modelTypes";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
 import {SearchResult} from "../refs";
 import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEvent} from "../events";
@@ -9,15 +9,15 @@ import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEve
 export class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
 
-    get breadCrumbs(): FilterBreadCrumbType[] {
+    get breadCrumbs(): FilterBreadCrumb[] {
         return this._breadCrumbs;
     }
-    set breadCrumbs(value: FilterBreadCrumbType[]) {
+    set breadCrumbs(value: FilterBreadCrumb[]) {
         this._breadCrumbs = value;
         this.renderBreadCrumbs(); // don't render all, as user may be typing a search text.
     }
 
-    private _breadCrumbs: FilterBreadCrumbType[] = [];
+    private _breadCrumbs: FilterBreadCrumb[] = [];
 
 
     get results(): SearchResult[] {
@@ -272,7 +272,7 @@ export class EboBrowseComp extends EboComponent {
         if(!this.rendered) //may be called directly, before initialization.
             return;
         let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
-        breadCrumbsDiv.innerHTML = "Ĥ > " + (this.breadCrumbs)
+        breadCrumbsDiv.innerHTML = this.breadCrumbs
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" > ");
 
@@ -283,11 +283,13 @@ export class EboBrowseComp extends EboComponent {
         })
     }
 
-    private renderBreadcrumb(crumb: FilterBreadCrumbType) {
+    private renderBreadcrumb(crumb: FilterBreadCrumb) {
         if(crumb instanceof BreadCrumbRef)
             return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
         else if(crumb instanceof BreadCrumbBrowseFilter)
             return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
+        else if(crumb instanceof BreadCrumbHome)
+            return `<button data-id="${crumb.id}" class="filter"><i class="fa fa-home"></i></button>`;
     }
 
     renderResults() {

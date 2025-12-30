@@ -31,8 +31,8 @@ export class BrowseFilterBreadCrumb<T> extends BreadCrumb<T, FilterBreadCrumbTyp
 
 export type Uri = string;
 export class BreadCrumbHome extends BrowseFilterBreadCrumb<null> {
-    constructor(label: string, filter: null) {
-        super(label, filter, "home");
+    constructor() {
+        super("Home", null, "home");
     }
 }
 export class BreadCrumbBrowseFilter extends BrowseFilterBreadCrumb<BrowseFilter> {
@@ -45,7 +45,7 @@ export class BreadCrumbRef<T extends AllUris> extends BrowseFilterBreadCrumb<Ref
         super(label, ref, "ref");
     }
 }
-export type FilterBreadCrumbType = BreadCrumbRef<AllUris> | BreadCrumbBrowseFilter;
+export type FilterBreadCrumb = BreadCrumbRef<AllUris> | BreadCrumbBrowseFilter | BreadCrumbHome;
 
 export function isBreadCrumbForAlbum(breadCrumb: BreadCrumbRef<AllUris>): breadCrumb is BreadCrumbRef<AlbumUri> {
     return breadCrumb.data.type == "album";

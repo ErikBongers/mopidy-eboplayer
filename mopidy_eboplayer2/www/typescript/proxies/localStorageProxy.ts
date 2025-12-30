@@ -1,6 +1,6 @@
-import {BrowseFilterBreadCrumbs, Model} from "../model";
+import {BrowseFilterBreadCrumbStack, Model} from "../model";
 import {jsonParse} from "../functionsvars";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumbType} from "../modelTypes";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "../breadCrumb";
 import models from "../../js/mopidy";
 import Ref = models.Ref;
@@ -30,8 +30,8 @@ export class LocalStorageProxy {
     loadBrowseFiltersBreadCrumbs() {
         let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
         if (breadCrumbsString) {
-            let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs().list());
-            let breadCrumbs = new BreadCrumbStack<FilterBreadCrumbType>();
+            let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs());
+            let breadCrumbs = new BrowseFilterBreadCrumbStack();
             breadCrumbsArray
                 .map(crumb => {
                     switch (crumb.type) {
@@ -57,8 +57,8 @@ export class LocalStorageProxy {
         localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
     }
 
-    saveBrowseFilterBreadCrumbs(breadCrumbs: BrowseFilterBreadCrumbs) {
-        let obj = JSON.stringify(breadCrumbs.list());
+    saveBrowseFilterBreadCrumbs(breadCrumbs: BrowseFilterBreadCrumbStack) {
+        let obj = JSON.stringify(breadCrumbs);
         console.log(obj);
         localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
     }

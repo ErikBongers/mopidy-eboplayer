@@ -73,7 +73,7 @@ export class MainView extends View {
 
     private onBreadCrumbsChanged() {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs()?.list() ?? [];
+        browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
     }
 
     private onBrowseFilterChanged() {
@@ -115,7 +115,7 @@ export class MainView extends View {
                 let browseComp = document.getElementById("browseView") as EboBrowseComp;
                 browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
                 browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? [];
-                browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs()?.list() ?? [];
+                browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
                 browseComp.setFocusAndSelect();
                 break;
             case Views.NowPlaying:
