@@ -2016,8 +2016,10 @@ var Controller = class extends Commands {
 			if (lastCrumb.data.type == "playlist") {
 				let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
 				playlistItems.forEach((ref) => {
-					ref.name = ref.uri.replace(LIBRARY_PROTOCOL + "track:", "").replaceAll("%20", " ");
-					ref.name = ref.name.split(".").slice(0, -1).join(".");
+					if (!ref.name || ref.name == "") {
+						ref.name = ref.uri.replace(LIBRARY_PROTOCOL + "track:", "").replaceAll("%20", " ");
+						ref.name = ref.name.split(".").slice(0, -1).join(".");
+					}
 				});
 				this.model.setCurrentRefs(new SomeRefs(playlistItems));
 				return;

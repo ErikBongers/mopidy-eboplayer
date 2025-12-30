@@ -426,11 +426,14 @@ export class Controller extends Commands implements DataRequester{
                 let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
                 playlistItems.forEach(ref => {
                     //"local:track:Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma"
-                    ref.name = ref.uri
-                        .replace(LIBRARY_PROTOCOL+"track:", "")
-                        .replaceAll("%20", " ");
-                    //remove the last part of the uri, which is the file extension.
-                    ref.name = ref.name.split(".").slice(0,-1).join(".");
+
+                    if(!ref.name || ref.name == "") {
+                        ref.name = ref.uri
+                            .replace(LIBRARY_PROTOCOL + "track:", "")
+                            .replaceAll("%20", " ");
+                        //remove the last part of the uri, which is the file extension.
+                        ref.name = ref.name.split(".").slice(0, -1).join(".");
+                    }
                 });
                 this.model.setCurrentRefs(new SomeRefs(playlistItems));
                 return;
