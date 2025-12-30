@@ -21,13 +21,26 @@ export type AllUris = AlbumUri | TrackUri | RadioUri | PlaylistUri | GenreUri | 
 
 export enum ItemType { None, File, Stream, Album}
 
+export type FilterBreadCrumbTypeName = "home" | "browseFilter" | "ref";
+
+export class BrowseFilterBreadCrumb<T> extends BreadCrumb<T, FilterBreadCrumbTypeName> {
+    constructor(label: string, filter: T, type: FilterBreadCrumbTypeName) {
+        super(label, filter, type);
+    }
+}
+
 export type Uri = string;
-export class BreadCrumbBrowseFilter extends BreadCrumb<BrowseFilter> {
+export class BreadCrumbHome extends BrowseFilterBreadCrumb<null> {
+    constructor(label: string, filter: null) {
+        super(label, filter, "home");
+    }
+}
+export class BreadCrumbBrowseFilter extends BrowseFilterBreadCrumb<BrowseFilter> {
     constructor(label: string, filter: BrowseFilter) {
         super(label, filter, "browseFilter");
     }
 }
-export class BreadCrumbRef<T extends AllUris> extends BreadCrumb<Ref<T>> {
+export class BreadCrumbRef<T extends AllUris> extends BrowseFilterBreadCrumb<Ref<T>> {
     constructor(label: string, ref: Ref<T>) {
         super(label, ref, "ref");
     }

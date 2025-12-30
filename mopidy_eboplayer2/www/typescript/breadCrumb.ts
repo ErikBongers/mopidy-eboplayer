@@ -1,14 +1,13 @@
-import {FilterBreadCrumbType} from "./modelTypes";
-
-export class BreadCrumb<T> {
+export class BreadCrumb<T, TName extends string> {
     id: number;
     label: string;
     data: T;
-    type: string
+    type: TName
 
     private static nextId = 1;
 
-    constructor(label: string, value: T, type: string) {
+
+    constructor(label: string, value: T, type: TName) {
         this.label = label;
         this.data = value;
         this.id = BreadCrumb.nextId++;
@@ -16,7 +15,7 @@ export class BreadCrumb<T> {
     }
 }
 
-export class BreadCrumbStack<T extends BreadCrumb<any>> { //todo: use extends Array<BreadCrumb<T>>?
+export class BreadCrumbStack<T extends BreadCrumb<any, any>> { //todo: use extends Array<BreadCrumb<T>>?
     private breadCrumbStack: T[] = [];
 
     push(crumb: T) {

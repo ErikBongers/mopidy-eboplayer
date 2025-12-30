@@ -621,12 +621,17 @@ let ItemType = /* @__PURE__ */ function(ItemType$1) {
 	ItemType$1[ItemType$1["Album"] = 3] = "Album";
 	return ItemType$1;
 }({});
-var BreadCrumbBrowseFilter = class extends BreadCrumb {
+var BrowseFilterBreadCrumb = class extends BreadCrumb {
+	constructor(label, filter, type) {
+		super(label, filter, type);
+	}
+};
+var BreadCrumbBrowseFilter = class extends BrowseFilterBreadCrumb {
 	constructor(label, filter) {
 		super(label, filter, "browseFilter");
 	}
 };
-var BreadCrumbRef = class extends BreadCrumb {
+var BreadCrumbRef = class extends BrowseFilterBreadCrumb {
 	constructor(label, ref) {
 		super(label, ref, "ref");
 	}

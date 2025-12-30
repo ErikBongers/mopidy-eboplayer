@@ -66,7 +66,7 @@ export class Model extends EventTarget implements ViewModel {
         super();
     }
 
-    pushBreadCrumb(crumb: BreadCrumb<any>) {
+    pushBreadCrumb(crumb: BreadCrumb<any, any>) {
         this.filterBreadCrumbStack.push(crumb);
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }

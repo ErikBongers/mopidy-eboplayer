@@ -1,3 +1,23 @@
+* Browse playlist: stay in browse!
+  > a search in the track list should be possible.
+  > same for Genre
+
+* Create a button-bar in browse to play all the found tracks.
+  > have a button to turn the browse filter sequence into a playlist!
+    > Save as playlist
+      > Choice:
+        - Dynamic list based on the filters
+        - Fixed list of only these tracks.
+
+* Create view for playlists
+   > fetch expanded tracks
+   > Similar to album view:
+     > same buttons (to get started)
+     > no image (for now?)
+       > or a set of images behind each other?
+       > clicking is browsing?
+         > how about going to the album?
+
 * create meta for radio streams
   > put where?
     > perhaps create a meta file at the root of a media librart
