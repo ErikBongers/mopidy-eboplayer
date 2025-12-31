@@ -50,67 +50,74 @@ export class EboBrowseComp extends EboComponent {
     private readonly browseFilterChangedEvent: CustomEvent<unknown>;
 
     static styleText= `
-            <style>
-                :host { 
-                    display: flex;
-                } 
-                #wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    width: 100%;
-                    height: 100%;
-                }
-                #filterButtons {
-                    margin-top: .3em;
-                    display: flex;
-                    flex-direction: row;
-                }
-                #searchBox {
-                    display: flex;
-                    flex-direction: row;
-                    border-bottom: 1px solid #ffffff80;
-                    & input {
-                        flex-grow: 1;
-                        background-color: transparent;
-                        color: white;
-                        border: none;
-                        &:focus {
-                            outline: none;
-                        }
+        <style>
+            :host { 
+                display: flex;
+            } 
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+            #filterButtons {
+                margin-top: .3em;
+                display: flex;
+                flex-direction: row;
+            }
+            #searchBox {
+                display: flex;
+                flex-direction: row;
+                border-bottom: 1px solid #ffffff80;
+                & input {
+                    flex-grow: 1;
+                    background-color: transparent;
+                    color: white;
+                    border: none;
+                    &:focus {
+                        outline: none;
                     }
                 }
-                .filterButton {
-                    width: 2em;
-                    height: 2em;
-                    object-fit: contain;
-                    margin-right: .5em;
+            }
+            .filterButton {
+                width: 2em;
+                height: 2em;
+                object-fit: contain;
+                margin-right: .5em;
+            }
+            #searchResultsTable {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            #tableWrapper {
+                height: 100%;
+                width: 100%;
+                overflow: scroll;
+                scrollbar-width: none;
+                td {
+                    padding-top: .2em;
+                    padding-bottom: .2em;
                 }
-                #searchResultsTable {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                #tableWrapper {
-                    height: 100%;
-                    width: 100%;
-                    overflow: scroll;
-                    scrollbar-width: none;
-                    td {
-                        padding-top: .2em;
-                        padding-bottom: .2em;
-                    }
-                }
-                #searchResults {
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                }
-
-            </style>
+            }
+            #searchResults {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .breadcrumb {
+                background-color: var(--highlight-background);
+                border-radius: 1rem;
+                padding-inline-start: 0.5rem;
+                padding-inline-end: 0.6em;
+                corner-inline-end-shape: bevel;
+            }
+        </style>
         `;
 
     // noinspection HtmlUnknownTarget
     static htmlText = `
 <div id="wrapper">
+    <div id="breadCrumbs"></div>
     <div id="searchBox">
         <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
         <input id="searchText" type="text" autofocus>
@@ -125,7 +132,6 @@ export class EboBrowseComp extends EboComponent {
         <button> ALL </button>
         <button> &nbsp;&nbsp;(i) </button>
     </div>
-    <div id="breadCrumbs"></div>
     <div id="searchResults">
         <div id="searchInfo">
         </div>  
@@ -274,7 +280,7 @@ export class EboBrowseComp extends EboComponent {
         let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
         breadCrumbsDiv.innerHTML = this.breadCrumbs
             .map(crumb => this.renderBreadcrumb(crumb))
-            .join(" > ");
+            .join(" ");
 
         breadCrumbsDiv.querySelectorAll("button").forEach(btn => {
             btn.addEventListener("click", (ev)  => {
@@ -285,11 +291,11 @@ export class EboBrowseComp extends EboComponent {
 
     private renderBreadcrumb(crumb: FilterBreadCrumb) {
         if(crumb instanceof BreadCrumbRef)
-            return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
+            return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
         else if(crumb instanceof BreadCrumbBrowseFilter)
-            return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
+            return `<button data-id="${crumb.id}" class="breadcrumb filter">"${crumb.label}"</button>`;
         else if(crumb instanceof BreadCrumbHome)
-            return `<button data-id="${crumb.id}" class="filter"><i class="fa fa-home"></i></button>`;
+            return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
     }
 
     renderResults() {

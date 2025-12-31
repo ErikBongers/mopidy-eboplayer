@@ -832,7 +832,7 @@ var Model = class extends EventTarget {
 		this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
 	}
 	setBrowseFilterBreadCrumbs(breadCrumbStack) {
-		this.initializeBreadcrumbStack();
+		this.filterBreadCrumbStack.length = 0;
 		this.filterBreadCrumbStack.push(...breadCrumbStack);
 		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
 	}
@@ -1547,8 +1547,11 @@ var LocalStorageProxy = class {
 						Object.assign(browseFilter, crumb.data);
 						return new BreadCrumbBrowseFilter(crumb.label, browseFilter);
 					case "ref": return new BreadCrumbRef(crumb.label, crumb.data);
+					case "home": return new BreadCrumbHome();
 				}
 			}).forEach((crumb) => breadCrumbs.push(crumb));
+			if (breadCrumbs.length == 0) breadCrumbs.push(new BreadCrumbHome());
+			else if (breadCrumbs[0].type != "home") breadCrumbs.unshift(new BreadCrumbHome());
 			this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
 			return;
 		}
@@ -1745,25 +1748,20 @@ var Controller = class extends Commands {
 		});
 		this.mopidy.on("event:optionsChanged", this.mopidyProxy.fetchPlaybackOptions);
 		this.mopidy.on("event:trackPlaybackStarted", async (data) => {
-			console_yellow("event:trackPlaybackStarted");
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
 		this.mopidy.on("event:trackPlaybackEnded", async (data) => {
-			console_yellow("event:trackPlaybackEnded");
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 			this.setPlayState("stopped");
 		});
 		this.mopidy.on("event:trackPlaybackResumed", async (data) => {
-			console_yellow("event:trackPlaybackResumed");
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
 		this.mopidy.on("event:playlistsLoaded", () => {
-			console_yellow("event:playlistsLoaded");
 			/* @__PURE__ */ showLoading(true);
 			library.getPlaylists();
 		});
 		this.mopidy.on("event:playlistChanged", (data) => {
-			console_yellow("event:playlistChanged");
 			delete playerState_default().playlists[data.playlist.uri];
 			library.getPlaylists();
 		});
@@ -1776,7 +1774,6 @@ var Controller = class extends Commands {
 		});
 		this.mopidy.on("event:muteChanged", (_data) => {});
 		this.mopidy.on("event:playbackStateChanged", async (data) => {
-			console_yellow("event:playbackStateChanged");
 			await this.onPlaybackStateChanged(data);
 		});
 		this.mopidy.on("event:tracklistChanged", async () => {
@@ -2154,8 +2151,6 @@ var ButtonBarView = class extends View {
 	async onPlaybackStateChangegd() {
 		let playState = playerState_default().getModel().getPlayState();
 		document.getElementById(this.componentId).setAttribute("play_state", playState);
-		if (playState == "playing") debugger;
-		console_yellow(`Play state = ${playState}`);
 		await this.updateComponent();
 	}
 	async onCurrentTrackChanged() {
@@ -3196,65 +3191,72 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	static observedAttributes = [];
 	browseFilterChangedEvent;
 	static styleText = `
-            <style>
-                :host { 
-                    display: flex;
-                } 
-                #wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    width: 100%;
-                    height: 100%;
-                }
-                #filterButtons {
-                    margin-top: .3em;
-                    display: flex;
-                    flex-direction: row;
-                }
-                #searchBox {
-                    display: flex;
-                    flex-direction: row;
-                    border-bottom: 1px solid #ffffff80;
-                    & input {
-                        flex-grow: 1;
-                        background-color: transparent;
-                        color: white;
-                        border: none;
-                        &:focus {
-                            outline: none;
-                        }
+        <style>
+            :host { 
+                display: flex;
+            } 
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+            #filterButtons {
+                margin-top: .3em;
+                display: flex;
+                flex-direction: row;
+            }
+            #searchBox {
+                display: flex;
+                flex-direction: row;
+                border-bottom: 1px solid #ffffff80;
+                & input {
+                    flex-grow: 1;
+                    background-color: transparent;
+                    color: white;
+                    border: none;
+                    &:focus {
+                        outline: none;
                     }
                 }
-                .filterButton {
-                    width: 2em;
-                    height: 2em;
-                    object-fit: contain;
-                    margin-right: .5em;
+            }
+            .filterButton {
+                width: 2em;
+                height: 2em;
+                object-fit: contain;
+                margin-right: .5em;
+            }
+            #searchResultsTable {
+                width: 100%;
+                border-collapse: collapse;
+            }
+            #tableWrapper {
+                height: 100%;
+                width: 100%;
+                overflow: scroll;
+                scrollbar-width: none;
+                td {
+                    padding-top: .2em;
+                    padding-bottom: .2em;
                 }
-                #searchResultsTable {
-                    width: 100%;
-                    border-collapse: collapse;
-                }
-                #tableWrapper {
-                    height: 100%;
-                    width: 100%;
-                    overflow: scroll;
-                    scrollbar-width: none;
-                    td {
-                        padding-top: .2em;
-                        padding-bottom: .2em;
-                    }
-                }
-                #searchResults {
-                    height: 100%;
-                    display: flex;
-                    flex-direction: column;
-                }
-
-            </style>
+            }
+            #searchResults {
+                height: 100%;
+                display: flex;
+                flex-direction: column;
+            }
+            .breadcrumb {
+                background-color: var(--highlight-background);
+                border-radius: 1rem;
+                padding-inline-start: 0.5rem;
+                padding-inline-end: 0.6em;
+                corner-inline-end-shape: bevel;
+            }
+        </style>
         `;
 	static htmlText = `
 <div id="wrapper">
+    <div id="breadCrumbs"></div>
     <div id="searchBox">
         <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
         <input id="searchText" type="text" autofocus>
@@ -3269,7 +3271,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
         <button> ALL </button>
         <button> &nbsp;&nbsp;(i) </button>
     </div>
-    <div id="breadCrumbs"></div>
     <div id="searchResults">
         <div id="searchInfo">
         </div>  
@@ -3388,7 +3389,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	renderBreadCrumbs() {
 		if (!this.rendered) return;
 		let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
-		breadCrumbsDiv.innerHTML = this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" > ");
+		breadCrumbsDiv.innerHTML = this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" ");
 		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
 			btn.addEventListener("click", (ev) => {
 				this.onBreadCrumbClicked(ev);
@@ -3396,9 +3397,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		});
 	}
 	renderBreadcrumb(crumb) {
-		if (crumb instanceof BreadCrumbRef) return `<button data-id="${crumb.id}" class="uri">${crumb.label}</button>`;
-		else if (crumb instanceof BreadCrumbBrowseFilter) return `<button data-id="${crumb.id}" class="filter">"${crumb.label}"</button>`;
-		else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="filter"><i class="fa fa-home"></i></button>`;
+		if (crumb instanceof BreadCrumbRef) return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`;
+		else if (crumb instanceof BreadCrumbBrowseFilter) return `<button data-id="${crumb.id}" class="breadcrumb filter">"${crumb.label}"</button>`;
+		else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
 	}
 	renderResults() {
 		if (!this.rendered) return;
@@ -3822,7 +3823,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
             }
         
             .playing {
-                background-color: rgba(184, 134, 11, 0.53);
+                background-color: var(--highlight-background);
             }
             #buttonBar  {
                 display: flex;
