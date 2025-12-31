@@ -137,7 +137,7 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     setBrowseFilterBreadCrumbs(breadCrumbStack: BrowseFilterBreadCrumbStack) {
-        this.initializeBreadcrumbStack();
+        this.filterBreadCrumbStack.length = 0;
         this.filterBreadCrumbStack.push(...breadCrumbStack);
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
