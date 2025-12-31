@@ -657,6 +657,17 @@ var BrowseFilter = class {
 	isNoTypeSelected() {
 		return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
 	}
+	getSingleSingleSelection() {
+		let booleanArray = Object.entries(this).filter((entry) => [
+			"album",
+			"track",
+			"radio",
+			"artist",
+			"playlist",
+			"genre"
+		].includes(entry[0]) && entry[1] == true).map((entry) => entry[0]);
+		if (booleanArray.length == 1) return booleanArray[0];
+	}
 };
 const TrackNone = { type: ItemType.None };
 function isInstanceOfExpandedStreamModel(model) {
@@ -3209,7 +3220,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
             #searchBox {
                 display: flex;
                 flex-direction: row;
-                /*border-bottom: 1px solid #ffffff80;*/
                 & input {
                     flex-grow: 1;
                     background-color: transparent;
@@ -3224,7 +3234,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
            #filterBox {
                 margin-block: .5rem;
                 padding:.3rem;
-                background-color: rgba(255,255,255,.05);
+                background-color: rgba(0,,0,0,.5);
                 border-radius: .5rem;
             }
             .filterButton {
@@ -3258,10 +3268,14 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 padding-inline-start: 0.5rem;
                 padding-inline-end: 0.6em;
                 corner-inline-end-shape: bevel;
-            }
-            #breadCrumbs {
-                /*padding-block-end: .3rem;*/
-                /*border-bottom: 1px solid #ffffff80;*/
+                .filterButton {
+                    filter: invert(100%) sepia(100%) saturate(0%) hue-rotate(350deg) brightness(104%) contrast(102%);
+                    height: 1rem;
+                    width: 1rem;
+                    position: relative;
+                    top: .1rem;
+                    margin-right: .2rem;
+                }
             }
         </style>
         `;
@@ -3411,8 +3425,37 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	renderBreadcrumb(crumb) {
 		if (crumb instanceof BreadCrumbRef) return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`;
-		else if (crumb instanceof BreadCrumbBrowseFilter) return `<button data-id="${crumb.id}" class="breadcrumb filter">"${crumb.label}"</button>`;
-		else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
+		else if (crumb instanceof BreadCrumbBrowseFilter) {
+			let singleSelection = crumb.data.getSingleSingleSelection();
+			let imgTag = "";
+			let filterText = "";
+			if (singleSelection) {
+				let imgUrl = "";
+				switch (singleSelection) {
+					case "album":
+						imgUrl = "images/icons/Album.svg";
+						break;
+					case "track":
+						imgUrl = "images/icons/Track.svg";
+						break;
+					case "radio":
+						imgUrl = "images/icons/Radio.svg";
+						break;
+					case "artist":
+						imgUrl = "images/icons/Artist.svg";
+						break;
+					case "playlist":
+						imgUrl = "images/icons/Playlist.svg";
+						break;
+					case "genre":
+						imgUrl = "images/icons/Genre.svg";
+						break;
+				}
+				imgTag = `<img class="filterButton" src="${imgUrl}" alt="">`;
+			}
+			if (crumb.data.searchText) filterText = `"${crumb.data.searchText}"`;
+			return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTag}${filterText}</button>`;
+		} else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
 	}
 	renderResults() {
 		if (!this.rendered) return;

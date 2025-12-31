@@ -78,6 +78,15 @@ export class BrowseFilter {
     isNoTypeSelected(): boolean {
         return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
     }
+
+    getSingleSingleSelection() {
+        let booleanArray = Object.entries(this)
+            .filter(entry => ["album", "track", "radio", "artist", "playlist", "genre"]
+                .includes(entry[0]) && entry[1] == true).map(entry => entry[0] as keyof BrowseFilter);
+        if(booleanArray.length == 1)
+            return booleanArray[0];
+        return undefined;
+    }
 }
 
 export interface AlbumModel {
