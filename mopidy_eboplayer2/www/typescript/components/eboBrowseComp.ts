@@ -68,7 +68,6 @@ export class EboBrowseComp extends EboComponent {
             #searchBox {
                 display: flex;
                 flex-direction: row;
-                border-bottom: 1px solid #ffffff80;
                 & input {
                     flex-grow: 1;
                     background-color: transparent;
@@ -78,6 +77,13 @@ export class EboBrowseComp extends EboComponent {
                         outline: none;
                     }
                 }
+            }
+            
+           #filterBox {
+                margin-block: .5rem;
+                padding:.3rem;
+                background-color: rgba(0,,0,0,.5);
+                border-radius: .5rem;
             }
             .filterButton {
                 width: 2em;
@@ -118,20 +124,22 @@ export class EboBrowseComp extends EboComponent {
     static htmlText = `
 <div id="wrapper">
     <div id="breadCrumbs"></div>
-    <div id="searchBox">
-        <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
-        <input id="searchText" type="text" autofocus>
-    </div>
-    <div id="filterButtons">
-        <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
-        <button> ALL </button>
-        <button> &nbsp;&nbsp;(i) </button>
-    </div>
+    <div id="filterBox">
+        <div id="searchBox">
+            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
+            <input id="searchText" type="text" autofocus>
+        </div>
+        <div id="filterButtons">
+            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <button> ALL </button>
+            <button> &nbsp;&nbsp;(i) </button>
+        </div>
+    </div>    
     <div id="searchResults">
         <div id="searchInfo">
         </div>  

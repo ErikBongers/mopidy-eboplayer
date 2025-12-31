@@ -1,3 +1,8 @@
+* filter buttons: info button is "?"
+  > it un-collapses a legend below, with a button
+    : [don't show "?" again]
+    : (this can be reset in the settings)
+
 * Add button borders around breadcrumbs.
 
 
