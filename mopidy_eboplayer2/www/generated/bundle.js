@@ -657,16 +657,15 @@ var BrowseFilter = class {
 	isNoTypeSelected() {
 		return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
 	}
-	getSingleSingleSelection() {
-		let booleanArray = Object.entries(this).filter((entry) => [
+	getSelectedFilters() {
+		return [
 			"album",
 			"track",
 			"radio",
 			"artist",
 			"playlist",
 			"genre"
-		].includes(entry[0]) && entry[1] == true).map((entry) => entry[0]);
-		if (booleanArray.length == 1) return booleanArray[0];
+		].filter((key) => this[key] == true);
 	}
 };
 const TrackNone = { type: ItemType.None };
@@ -3482,36 +3481,37 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	renderBreadcrumb(crumb) {
 		if (crumb instanceof BreadCrumbRef) return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`;
 		else if (crumb instanceof BreadCrumbBrowseFilter) {
-			let singleSelection = crumb.data.getSingleSingleSelection();
-			let imgTag = "";
+			let selectedFilters = crumb.data.getSelectedFilters();
+			let imgTags = "";
 			let filterText = "";
-			if (singleSelection) {
-				let imgUrl = "";
-				switch (singleSelection) {
-					case "album":
-						imgUrl = "images/icons/Album.svg";
-						break;
-					case "track":
-						imgUrl = "images/icons/Track.svg";
-						break;
-					case "radio":
-						imgUrl = "images/icons/Radio.svg";
-						break;
-					case "artist":
-						imgUrl = "images/icons/Artist.svg";
-						break;
-					case "playlist":
-						imgUrl = "images/icons/Playlist.svg";
-						break;
-					case "genre":
-						imgUrl = "images/icons/Genre.svg";
-						break;
-				}
-				imgTag = `<img class="filterButton" src="${imgUrl}" alt="">`;
-			}
+			imgTags = selectedFilters.map((filter) => this.filterToImg(filter)).join("");
 			if (crumb.data.searchText) filterText = `"${crumb.data.searchText}"`;
-			return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTag}${filterText}</button>`;
+			return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTags}${filterText}</button>`;
 		} else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
+	}
+	filterToImg(filter) {
+		let imgUrl = "";
+		switch (filter) {
+			case "album":
+				imgUrl = "images/icons/Album.svg";
+				break;
+			case "track":
+				imgUrl = "images/icons/Track.svg";
+				break;
+			case "radio":
+				imgUrl = "images/icons/Radio.svg";
+				break;
+			case "artist":
+				imgUrl = "images/icons/Artist.svg";
+				break;
+			case "playlist":
+				imgUrl = "images/icons/Playlist.svg";
+				break;
+			case "genre":
+				imgUrl = "images/icons/Genre.svg";
+				break;
+		}
+		return `<img class="filterButton" src="${imgUrl}" alt="">`;
 	}
 	renderResults() {
 		if (!this.rendered) return;
@@ -3693,6 +3693,7 @@ var EboButton = class EboButton extends EboComponent {
 		});
 	}
 	onClick(eboButton) {
+		if (this.disabled) return;
 		let button = this.getShadow().querySelector("button");
 		this.pressed = !this.pressed;
 		this.setClassFromBoolAttribute(button, "pressed");
@@ -3707,6 +3708,7 @@ var EboButton = class EboButton extends EboComponent {
 		}));
 	}
 	onMultiClick(eboButton, clickCount) {
+		if (this.disabled) return;
 		this.dispatchEvent(new Event("dblclick", {
 			bubbles: true,
 			composed: true

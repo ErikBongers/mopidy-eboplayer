@@ -311,29 +311,30 @@ export class EboBrowseComp extends EboComponent {
         if(crumb instanceof BreadCrumbRef)
             return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
         else if(crumb instanceof BreadCrumbBrowseFilter) {
-            let singleSelection = crumb.data.getSingleSingleSelection();
-            let imgTag = "";
+            let selectedFilters = crumb.data.getSelectedFilters();
+            let imgTags = "";
             let filterText = "";
-            if(singleSelection) {
-                let imgUrl = "";
-                switch (singleSelection) {
-                    case "album": imgUrl = "images/icons/Album.svg"; break;
-                    case "track": imgUrl = "images/icons/Track.svg"; break;
-                    case "radio": imgUrl = "images/icons/Radio.svg"; break;
-                    case "artist": imgUrl = "images/icons/Artist.svg"; break;
-                    case "playlist": imgUrl = "images/icons/Playlist.svg"; break;
-                    case "genre": imgUrl = "images/icons/Genre.svg"; break;
-                }
-                imgTag = `<img class="filterButton" src="${imgUrl}" alt="">`;
-            }
+            imgTags = selectedFilters.map(filter => this.filterToImg(filter)).join("");
             if(crumb.data.searchText)
                 filterText = `"${crumb.data.searchText}"`;
-            return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTag}${filterText}</button>`;
+            return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTags}${filterText}</button>`;
         }
         else if(crumb instanceof BreadCrumbHome)
             return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
     }
 
+    private filterToImg(filter: string) {
+        let imgUrl = "";
+        switch (filter) {
+            case "album": imgUrl = "images/icons/Album.svg"; break;
+            case "track": imgUrl = "images/icons/Track.svg"; break;
+            case "radio": imgUrl = "images/icons/Radio.svg"; break;
+            case "artist": imgUrl = "images/icons/Artist.svg"; break;
+            case "playlist": imgUrl = "images/icons/Playlist.svg"; break;
+            case "genre": imgUrl = "images/icons/Genre.svg"; break;
+        }
+        return `<img class="filterButton" src="${imgUrl}" alt="">`;
+    }
     renderResults() {
         if(!this.rendered) //may be called directly, before initialization.
             return;
