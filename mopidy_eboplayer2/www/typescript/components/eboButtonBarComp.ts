@@ -28,7 +28,7 @@ export class EboButtonBar extends EboComponent {
             }
         
             .playing {
-                background-color: rgba(184, 134, 11, 0.53);
+                background-color: var(--highlight-background);
             }
             #buttonBar  {
                 display: flex;
