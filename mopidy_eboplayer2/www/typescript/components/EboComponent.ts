@@ -122,7 +122,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         return this.shadow;
     }
 
-    setClassFromBoolAttribute(attName: string, el: HTMLElement) {
+    setClassFromBoolAttribute(el: HTMLElement, attName: string) {
         if (this[attName] == true)
             el.classList.add(attName);
         else
