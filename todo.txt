@@ -3,8 +3,7 @@
     : [don't show "?" again]
     : (this can be reset in the settings)
 
-* Add button borders around breadcrumbs.
-
+* Browse: Make filter buttons really dark if there are no relevant items in search results.
 
 * click on filter button adds a new breadcrumb.
   > adding text filter changes the current breadcrumb.

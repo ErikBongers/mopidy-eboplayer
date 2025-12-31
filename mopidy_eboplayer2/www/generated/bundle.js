@@ -818,7 +818,10 @@ var Model = class extends EventTarget {
 		this.allRefs = refs;
 	}
 	getCurrentSearchResults() {
-		return this.currentRefs?.getSearchResults() ?? [];
+		return this.currentRefs?.getSearchResults() ?? {
+			refs: [],
+			availableRefTypes: /* @__PURE__ */ new Set()
+		};
 	}
 	getAllRefs = () => this.allRefs;
 	filterCurrentRefs() {
@@ -1588,15 +1591,18 @@ var Refs = class {
 		return this._browseFilter;
 	}
 	constructor() {
-		this.searchResults = [];
+		this.searchResults = {
+			refs: [],
+			availableRefTypes: /* @__PURE__ */ new Set()
+		};
 	}
 	set browseFilter(value) {
 		this._browseFilter = value;
 	}
 	_browseFilter;
 	calculateWeight(result, browseFilter) {
-		if (result.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
-		if (result.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.ref.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.ref.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
 	}
 	setFilter(browseFilter) {
@@ -1607,12 +1613,17 @@ var Refs = class {
 			this.calculateWeight(result, this.browseFilter);
 		});
 		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
-			if (b.weight === a.weight) return a.ref.name.localeCompare(b.ref.name);
+			if (b.weight === a.weight) return a.ref.ref.name.localeCompare(b.ref.ref.name);
 			return b.weight - a.weight;
 		});
 	}
 	getSearchResults() {
 		return this.searchResults;
+	}
+	getAvailableRefTypes(refs) {
+		let distinctTypes = refs.map((r) => r.type).reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
+		console.log(distinctTypes);
+		return distinctTypes;
 	}
 };
 var AllRefs = class extends Refs {
@@ -1622,63 +1633,107 @@ var AllRefs = class extends Refs {
 	albums;
 	artists;
 	genres;
-	radioStreams;
+	radios;
 	playlists;
-	constructor(roots, sub, tracks, albums, artists, genres, radioStreams, playlists) {
+	availableRefTypes;
+	constructor(roots, sub, tracks, albums, artists, genres, radios, playlists) {
 		super();
 		this.roots = roots;
 		this.sub = sub;
-		this.tracks = tracks;
-		this.albums = albums;
-		this.artists = artists;
-		this.genres = genres;
-		this.radioStreams = radioStreams;
-		this.playlists = playlists;
+		this.tracks = tracks.map((track) => ({
+			type: "track",
+			ref: track
+		}));
+		this.albums = albums.map((album) => ({
+			type: "album",
+			ref: album
+		}));
+		this.artists = artists.map((artist) => ({
+			type: "artist",
+			ref: artist
+		}));
+		this.genres = genres.map((genre) => ({
+			type: "genre",
+			ref: genre
+		}));
+		this.radios = radios.map((radio) => ({
+			type: "radio",
+			ref: radio
+		}));
+		this.playlists = playlists.map((album) => ({
+			type: "playlist",
+			ref: album
+		}));
+		this.availableRefTypes = /* @__PURE__ */ new Set();
+		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.artists).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.genres).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.radios).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.playlists).forEach((type) => this.availableRefTypes.add(type));
 	}
 	filter() {
-		this.prefillWithTypes(this.browseFilter);
-		this.searchResults = this.applyFilter(this.searchResults);
+		this.searchResults = {
+			refs: this.applyFilter(this.prefillWithTypes(this.browseFilter)),
+			availableRefTypes: this.availableRefTypes
+		};
 	}
 	prefillWithTypes(browseFilter) {
-		this.searchResults = [];
-		if (browseFilter.album || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.albums.map((album) => ({
-			ref: album,
-			weight: 0
-		})));
-		if (browseFilter.artist || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.artists.map((artist) => ({
-			ref: artist,
-			weight: 0
-		})));
-		if (browseFilter.track || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.tracks.map((track) => ({
-			ref: track,
-			weight: 0
-		})));
-		if (browseFilter.genre || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.genres.map((track) => ({
-			ref: track,
-			weight: 0
-		})));
-		if (browseFilter.radio || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.radioStreams.map((track) => ({
-			ref: track,
-			weight: 0
-		})));
-		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) this.searchResults.push(...this.playlists.map((track) => ({
-			ref: track,
-			weight: 0
-		})));
-	}
-};
-var SomeRefs = class extends Refs {
-	refs;
-	constructor(refs) {
-		super();
-		this.refs = refs;
-	}
-	filter() {
-		this.searchResults = this.refs.map((ref) => ({
+		let refs = [];
+		if (browseFilter.album || browseFilter.isNoTypeSelected()) refs.push(...this.albums.map((ref) => ({
 			ref,
 			weight: 0
-		}));
-		this.searchResults = this.applyFilter(this.searchResults);
+		})));
+		if (browseFilter.artist || browseFilter.isNoTypeSelected()) refs.push(...this.artists.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.track || browseFilter.isNoTypeSelected()) refs.push(...this.tracks.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.genre || browseFilter.isNoTypeSelected()) refs.push(...this.genres.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.radio || browseFilter.isNoTypeSelected()) refs.push(...this.radios.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) refs.push(...this.playlists.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		return refs;
+	}
+};
+var SomeRefs = class SomeRefs extends Refs {
+	refs;
+	availableRefTypes;
+	constructor(refs) {
+		super();
+		this.refs = refs.map((r) => {
+			return {
+				ref: r,
+				type: SomeRefs.toRefType(r)
+			};
+		});
+		this.availableRefTypes = this.getAvailableRefTypes(this.refs);
+	}
+	static toRefType(ref) {
+		if (!["directory", "track"].includes(ref.type)) return ref.type;
+		if (ref.uri.startsWith("eboback:stream:")) return "radio";
+		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
+		return ref.type;
+	}
+	filter() {
+		this.searchResults = {
+			refs: this.applyFilter(this.refs.map((ref) => ({
+				ref,
+				weight: 0
+			}))),
+			availableRefTypes: this.availableRefTypes
+		};
 	}
 };
 
@@ -2345,7 +2400,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	getShadow() {
 		return this.shadow;
 	}
-	setClassFromBoolAttribute(attName, el) {
+	setClassFromBoolAttribute(el, attName) {
 		if (this[attName] == true) el.classList.add(attName);
 		else el.classList.remove(attName);
 	}
@@ -2447,12 +2502,8 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 		let percent = (this.position - this.min) / (this.max - this.min) * 100;
 		let styleElement = shadow.appendChild(document.createElement("style"));
 		styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;
-		this.setClassFromBoolAttribute("button", shadow.firstElementChild);
-		this.setClassFromBoolAttribute("active", shadow.firstElementChild);
-	}
-	setClassFromBoolAttribute(attName, el) {
-		if (this[attName] == true) el.classList.add(attName);
-		else el.classList.remove(attName);
+		this.setClassFromBoolAttribute(shadow.firstElementChild, "button");
+		this.setClassFromBoolAttribute(shadow.firstElementChild, "active");
 	}
 };
 
@@ -3034,7 +3085,10 @@ var MainView = class extends View {
 	}
 	onRefsFiltered() {
 		let browseComp = document.getElementById("browseView");
-		browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
+		browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
+			refs: [],
+			availableRefTypes: /* @__PURE__ */ new Set()
+		};
 		browseComp.renderResults();
 	}
 	onBreadCrumbsChanged() {
@@ -3079,7 +3133,10 @@ var MainView = class extends View {
 				browseBtn.title = "Now playing";
 				let browseComp = document.getElementById("browseView");
 				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
-				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? [];
+				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
+					refs: [],
+					availableRefTypes: /* @__PURE__ */ new Set()
+				};
 				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
 				browseComp.setFocusAndSelect();
 				break;
@@ -3189,7 +3246,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this._results = value;
 		this.renderResults();
 	}
-	_results = [];
+	_results;
 	get browseFilter() {
 		return this._browseFilter;
 	}
@@ -3234,7 +3291,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
            #filterBox {
                 margin-block: .5rem;
                 padding:.3rem;
-                background-color: rgba(0,,0,0,.5);
+                background-color: rgba(0,0,0,.5);
                 border-radius: .5rem;
             }
             .filterButton {
@@ -3295,7 +3352,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
             <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
             <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
             <button> ALL </button>
-            <button> &nbsp;&nbsp;(i) </button>
+            <button> &nbsp;&nbsp;(?) </button>
         </div>
     </div>    
     <div id="searchResults">
@@ -3399,15 +3456,14 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.dispatchEvent(this.browseFilterChangedEvent);
 	}
 	updateWhenRendered(shadow) {
-		shadow.querySelectorAll("ebo-button").forEach((btn) => this.updateFilterButton(btn));
+		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
 		let inputElement = shadow.getElementById("searchText");
 		inputElement.value = this._browseFilter.searchText;
 	}
 	updateFilterButton(btn) {
-		if (btn.id.startsWith("filter")) {
-			let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
-			btn.setAttribute("pressed", this._browseFilter[propName].toString());
-		}
+		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
+		btn.setAttribute("pressed", this._browseFilter[propName].toString());
+		btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
@@ -3462,15 +3518,12 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.setSearchInfo("");
 		let body = this.getShadow().getElementById("searchResultsTable").tBodies[0];
 		body.innerHTML = "";
-		if (this.results.length == 0) return;
-		body.innerHTML = this.results.map((result) => {
+		if (this.results.refs.length == 0) return;
+		body.innerHTML = this.results.refs.map((result) => {
 			let refType = result.ref.type;
-			if (refType == "directory") {
-				if (result.ref.uri.includes(LIBRARY_PROTOCOL + "directory?genre=")) refType = "genre";
-			}
 			return `
-                    <tr data-uri="${result.ref.uri}" data-type="${refType}">
-                    <td>${result.ref.name}</td>
+                    <tr data-uri="${result.ref.ref.uri}" data-type="${refType}">
+                    <td>${result.ref.ref.name}</td>
                     <td>...</td>
                     </tr>`;
 		}).join("\n");
@@ -3482,6 +3535,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 				this.onRowClicked(ev);
 			});
 		});
+		this.update();
 	}
 	onRowClicked(ev) {
 		let row = ev.currentTarget;
@@ -3576,12 +3630,12 @@ var EboButton = class EboButton extends EboComponent {
 		"img_pressed",
 		"pressed",
 		"opacity_off",
-		"click"
+		"click",
+		"disabled"
 	];
 	pressed = false;
+	disabled = false;
 	img;
-	imgPressed;
-	opacityOff = .5;
 	pressTimer;
 	static styleText = `
         <style>
@@ -3590,6 +3644,12 @@ var EboButton = class EboButton extends EboComponent {
                 opacity: 0.5;
                 &.pressed { 
                     opacity: 1; 
+                    &.disabled { 
+                        opacity: .2; /*if needed, set this too a lower value then when disabled+not pressed. */
+                    }
+                }
+                &.disabled { 
+                    opacity: .2; 
                 }
             }
         </style>
@@ -3609,6 +3669,7 @@ var EboButton = class EboButton extends EboComponent {
 				this[name] = newValue;
 				break;
 			case "pressed":
+			case "disabled":
 				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
 				this[name] = newValue == "true";
 				break;
@@ -3617,7 +3678,8 @@ var EboButton = class EboButton extends EboComponent {
 	}
 	renderPrepared(shadow) {
 		let imgTag = shadow.getElementById("image");
-		this.setClassFromBoolAttribute("pressed", imgTag);
+		this.setClassFromBoolAttribute(imgTag, "pressed");
+		this.setClassFromBoolAttribute(imgTag, "disabled");
 		imgTag.src = this.img ?? "";
 		let button = shadow.querySelector("button");
 		button.addEventListener("mousedown", (ev) => {
@@ -3633,7 +3695,7 @@ var EboButton = class EboButton extends EboComponent {
 	onClick(eboButton) {
 		let button = this.getShadow().querySelector("button");
 		this.pressed = !this.pressed;
-		this.setClassFromBoolAttribute("pressed", button);
+		this.setClassFromBoolAttribute(button, "pressed");
 		this.setAttribute("pressed", this.pressed.toString());
 		let event = new PressedChangeEvent(this.pressed);
 		this.dispatchEvent(event);
@@ -3643,10 +3705,6 @@ var EboButton = class EboButton extends EboComponent {
 			bubbles: true,
 			composed: true
 		}));
-	}
-	setClassFromBoolAttribute(attName, el) {
-		if (this[attName] == true) el.classList.add(attName);
-		else el.classList.remove(attName);
 	}
 	onMultiClick(eboButton, clickCount) {
 		this.dispatchEvent(new Event("dblclick", {

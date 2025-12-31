@@ -3,8 +3,10 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
-import {SearchResult} from "../refs";
-import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEvent} from "../events";
+import {RefType, SearchResults} from "../refs";
+import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, UriArgs} from "../events";
+import models from "../../js/mopidy";
+import ModelType = models.ModelType;
 
 export class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
@@ -20,16 +22,16 @@ export class EboBrowseComp extends EboComponent {
     private _breadCrumbs: FilterBreadCrumb[] = [];
 
 
-    get results(): SearchResult[] {
+    get results(): SearchResults {
         return this._results;
     }
 
-    set results(value: SearchResult[]) {
+    set results(value: SearchResults) {
         this._results = value;
         this.renderResults(); // don't render all, as user may be typing a search text.
     }
 
-    private _results: SearchResult[] = [];
+    private _results: SearchResults;
 
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
@@ -82,7 +84,7 @@ export class EboBrowseComp extends EboComponent {
            #filterBox {
                 margin-block: .5rem;
                 padding:.3rem;
-                background-color: rgba(0,,0,0,.5);
+                background-color: rgba(0,0,0,.5);
                 border-radius: .5rem;
             }
             .filterButton {
@@ -145,7 +147,7 @@ export class EboBrowseComp extends EboComponent {
             <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
             <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
             <button> ALL </button>
-            <button> &nbsp;&nbsp;(i) </button>
+            <button> &nbsp;&nbsp;(?) </button>
         </div>
     </div>    
     <div id="searchResults">
@@ -268,20 +270,20 @@ export class EboBrowseComp extends EboComponent {
     }
 
     updateWhenRendered(shadow:ShadowRoot) {
-        shadow.querySelectorAll("ebo-button")
+        [...shadow.querySelectorAll("ebo-button")]
+            .filter(el => el.id.startsWith("filter"))
             .forEach(btn =>
-                this.updateFilterButton(btn));
+                this.updateFilterButton(btn as HTMLButtonElement));
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
     }
 
-    private updateFilterButton(btn: Element) {
-        if (btn.id.startsWith("filter")) {
-            let propName = btn.id
-                    .replace("filter", "").charAt(0).toLowerCase()
-                + btn.id.replace("filter", "").slice(1);
-            btn.setAttribute("pressed", this._browseFilter[propName].toString());
-        }
+    private updateFilterButton(btn: HTMLButtonElement) {
+        let propName = btn.id
+                .replace("filter", "").charAt(0).toLowerCase()
+               + btn.id.replace("filter", "").slice(1) as RefType;
+        btn.setAttribute("pressed", this._browseFilter[propName].toString());
+        btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
     }
 
     setSearchInfo(text: string) {
@@ -341,30 +343,24 @@ export class EboBrowseComp extends EboComponent {
         let body = table.tBodies[0];
         body.innerHTML = "";
 
-        if(this.results.length == 0)
+        if(this.results.refs.length == 0)
             return;
 
-
-        let resultsHtml = this.results
+        body.innerHTML = this.results.refs
             .map(result => {
-                let refType = result.ref.type as string;
-                if(refType == "directory") {
-                    if(result.ref.uri.includes( LIBRARY_PROTOCOL+"directory?genre="))
-                        refType = "genre";
-                }
+                let refType = result.ref.type;
                 return `
-                    <tr data-uri="${result.ref.uri}" data-type="${refType}">
-                    <td>${result.ref.name}</td>
+                    <tr data-uri="${result.ref.ref.uri}" data-type="${refType}">
+                    <td>${result.ref.ref.name}</td>
                     <td>...</td>
                     </tr>`;
             })
             .join("\n");
-        body.innerHTML = resultsHtml;
         body.querySelectorAll("tr").forEach(tr => {
             tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
             tr.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
-
+        this.update();
     }
 
     private onRowClicked(ev: MouseEvent) {

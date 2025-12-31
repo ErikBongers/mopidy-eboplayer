@@ -1,5 +1,5 @@
 import models from "../js/mopidy";
-import {Refs, SearchResult} from "./refs";
+import {Refs, SearchResult, SearchResults} from "./refs";
 import {AlbumMetaData, AlbumModel, AlbumUri, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
@@ -19,7 +19,7 @@ export interface ViewModel extends EventTarget {
     getHistory: () => HistoryLine[];
     getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel);
     getCurrentBrowseFilter: () => BrowseFilter;
-    getCurrentSearchResults(): SearchResult[];
+    getCurrentSearchResults(): SearchResults;
     getTrackList(): TlTrack[];
     getBreadCrumbs(): BrowseFilterBreadCrumbStack;
     getView(): Views;
@@ -102,8 +102,8 @@ export class Model extends EventTarget implements ViewModel {
         this.allRefs = refs;
     }
 
-    getCurrentSearchResults(): SearchResult[] {
-        return this.currentRefs?.getSearchResults() ?? [] as SearchResult[];
+    getCurrentSearchResults(): SearchResults {
+        return this.currentRefs?.getSearchResults() ?? { refs: [], availableRefTypes: new Set()} as SearchResults;
     }
 
     getAllRefs = () => this.allRefs;

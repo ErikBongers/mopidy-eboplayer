@@ -18,11 +18,10 @@ export class PressedChangeEvent extends Event {
 export class EboButton extends EboComponent {
     static readonly tagName=  "ebo-button";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["toggle", "img", "img_pressed", "pressed", "opacity_off", "click"];
+    static observedAttributes = ["toggle", "img", "img_pressed", "pressed", "opacity_off", "click", "disabled"];
     private pressed: boolean = false;
+    private disabled: boolean = false;
     private img: string;
-    private imgPressed: string;
-    private opacityOff: number = 0.5;
     private pressTimer: MouseTimer<EboButton>;
 
     // noinspection CssUnresolvedCustomProperty
@@ -33,6 +32,12 @@ export class EboButton extends EboComponent {
                 opacity: 0.5;
                 &.pressed { 
                     opacity: 1; 
+                    &.disabled { 
+                        opacity: .2; /*if needed, set this too a lower value then when disabled+not pressed. */
+                    }
+                }
+                &.disabled { 
+                    opacity: .2; 
                 }
             }
         </style>
@@ -64,6 +69,7 @@ export class EboButton extends EboComponent {
                 this[name] = newValue;
                 break;
             case "pressed":
+            case "disabled":
                 if (!["true", "false"].includes(newValue))
                     throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
                 this[name] = newValue == "true";
@@ -74,7 +80,8 @@ export class EboButton extends EboComponent {
 
     renderPrepared(shadow:ShadowRoot) {
         let imgTag = shadow.getElementById("image") as HTMLImageElement;
-        this.setClassFromBoolAttribute("pressed", imgTag);
+        this.setClassFromBoolAttribute(imgTag, "pressed");
+        this.setClassFromBoolAttribute(imgTag, "disabled");
         imgTag.src = this.img ?? "";
         let button = shadow.querySelector("button");
         button.addEventListener("mousedown", (ev) => {
@@ -89,9 +96,10 @@ export class EboButton extends EboComponent {
     }
 
     private onClick(eboButton: EboButton) {
+        if(this.disabled) return;
         let button = this.getShadow().querySelector("button");
         this.pressed = !this.pressed;
-        this.setClassFromBoolAttribute("pressed", button);
+        this.setClassFromBoolAttribute(button, "pressed");
         this.setAttribute("pressed", this.pressed.toString());
         let event = new PressedChangeEvent(this.pressed);
         this.dispatchEvent(event);
@@ -101,14 +109,8 @@ export class EboButton extends EboComponent {
         this.dispatchEvent(new Event(EboplayerEvents.longPress, {bubbles: true, composed: true}));
     }
 
-    setClassFromBoolAttribute(attName: string, el: HTMLElement) {
-        if (this[attName] == true)
-            el.classList.add(attName);
-        else
-            el.classList.remove(attName);
-    }
-
     private onMultiClick(eboButton: EboButton, clickCount: number) {
+        if(this.disabled) return;
         this.dispatchEvent(new Event("dblclick", {bubbles: true, composed: true}));
     }
 }
