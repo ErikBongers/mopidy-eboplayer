@@ -59,7 +59,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
     if (isStream(track)) {
         // noinspection UnnecessaryLocalVariableJS
         let model: StreamTrackModel = {
-            type: ItemType.Stream,
+            type: "stream",
             track,
             name: track.name,
             infoLines: [],
@@ -69,7 +69,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
     }
     //for now, assume it's a file track
     let model: FileTrackModel = {
-        type: ItemType.File,
+        type: "file",
         composer: "",
         track,
         title: track.name,

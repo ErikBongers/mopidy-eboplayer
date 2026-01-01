@@ -338,7 +338,7 @@ export class Controller extends Commands implements DataRequester{
         let albumModelsPending = Object.keys(dict).map(async albumUri => {
             let trackList = dict[albumUri] as models.Track[];
             let albumModel: AlbumModel = {
-                type: ItemType.Album,
+                type: "album",
                 albumInfo: trackList[0].album,
                 tracks: trackList.map(track => track.uri),
                 imageUrl: undefined,
@@ -358,7 +358,7 @@ export class Controller extends Commands implements DataRequester{
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => {
             let model = transformTrackDataToModel(track);
-            if(model.type == ItemType.Stream) {
+            if(model.type == "stream") {
                 let images = await this.mopidyProxy.fetchImages([track.uri]);
                 if(images[track.uri].length > 0)
                     model.imageUrl = this.baseUrl + images[track.uri][0].uri;
@@ -372,7 +372,7 @@ export class Controller extends Commands implements DataRequester{
 
     async getExpandedTrackModel(trackUri: string): Promise<ExpandedStreamModel | ExpandedFileTrackModel>{
         let track = await this.lookupTrackCached(trackUri);
-        if(track.type == ItemType.Stream) {
+        if(track.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
             // noinspection UnnecessaryLocalVariableJS
             let streamModel: ExpandedStreamModel = {

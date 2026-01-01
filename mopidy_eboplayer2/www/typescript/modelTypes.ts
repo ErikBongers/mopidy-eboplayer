@@ -18,7 +18,7 @@ export type BrowseUri = Branded<string, "BrowseUri">;
 
 export type AllUris = AlbumUri | TrackUri | RadioUri | PlaylistUri | GenreUri | ArtistUri | ImageUri | StreamUri | LibraryUri | BrowseUri;
 
-export enum ItemType { None, File, Stream, Album}
+export type ItemType =  "None" | "File" | "Stream" | "Album";
 
 export type FilterBreadCrumbTypeName = "home" | "browseFilter" | "ref";
 
@@ -84,14 +84,14 @@ export class BrowseFilter {
 }
 
 export interface AlbumModel {
-    type: ItemType.Album;
+    type: "album";
     tracks: string[];
     albumInfo: models.Album;
     imageUrl: string;
 }
 
 export interface FileTrackModel {
-    type: ItemType.File;
+    type: "file";
     track: models.Track;
     title: string,
     composer?: string,
@@ -100,7 +100,7 @@ export interface FileTrackModel {
 }
 
 export interface StreamTrackModel {
-    type: ItemType.Stream;
+    type: "stream";
     track: models.Track;
     name: string,
     infoLines: string[],
@@ -108,10 +108,10 @@ export interface StreamTrackModel {
 }
 
 export interface NoneTrackModel {
-    type: ItemType.None;
+    type: "none";
 }
 
-export const TrackNone = {type: ItemType.None} as NoneTrackModel;
+export const TrackNone = {type: "none"} as NoneTrackModel;
 
 export interface ExpandedFileTrackModel {
     track: FileTrackModel,

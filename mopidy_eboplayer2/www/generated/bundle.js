@@ -765,13 +765,6 @@ var BreadCrumbStack = class extends IdStack {};
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/modelTypes.ts
-let ItemType = /* @__PURE__ */ function(ItemType$1) {
-	ItemType$1[ItemType$1["None"] = 0] = "None";
-	ItemType$1[ItemType$1["File"] = 1] = "File";
-	ItemType$1[ItemType$1["Stream"] = 2] = "Stream";
-	ItemType$1[ItemType$1["Album"] = 3] = "Album";
-	return ItemType$1;
-}({});
 var BrowseFilterBreadCrumb = class extends BreadCrumb {
 	constructor(label, filter, type) {
 		super(label, filter, type);
@@ -829,7 +822,7 @@ var BrowseFilter = class {
 		].filter((key) => this[key] == true);
 	}
 };
-const TrackNone = { type: ItemType.None };
+const TrackNone = { type: "none" };
 function isInstanceOfExpandedStreamModel(model) {
 	return "stream" in model;
 }
@@ -913,7 +906,7 @@ var EboplayerEvent = class extends CustomEvent {
 //#region mopidy_eboplayer2/www/typescript/model.ts
 var BrowseFilterBreadCrumbStack = class extends BreadCrumbStack {};
 var Model = class extends EventTarget {
-	static NoTrack = { type: ItemType.None };
+	static NoTrack = { type: "none" };
 	currentTrack;
 	selectedTrack;
 	volume;
@@ -1004,7 +997,7 @@ var Model = class extends EventTarget {
 		return this.currentTrack;
 	}
 	setCurrentTrack(track) {
-		if (track.type == ItemType.None) {
+		if (track.type == "none") {
 			this.currentTrack = void 0;
 			return;
 		}
@@ -1093,7 +1086,7 @@ var Model = class extends EventTarget {
 		this.libraryCache.set(uri, item);
 	}
 	addItemsToLibraryCache(items) {
-		for (let item of items) if (item.type == ItemType.Album) this.updateLibraryCache(item.albumInfo.uri, item);
+		for (let item of items) if (item.type == "album") this.updateLibraryCache(item.albumInfo.uri, item);
 		else this.updateLibraryCache(item.track.uri, item);
 	}
 	getFromLibraryCache(uri) {
@@ -1578,14 +1571,14 @@ function isStream(track) {
 }
 function transformTrackDataToModel(track) {
 	if (isStream(track)) return {
-		type: ItemType.Stream,
+		type: "stream",
 		track,
 		name: track.name,
 		infoLines: [],
 		imageUrl: void 0
 	};
 	let model = {
-		type: ItemType.File,
+		type: "file",
 		composer: "",
 		track,
 		title: track.name,
@@ -1897,7 +1890,7 @@ var Controller = class Controller extends Commands {
 		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
 			let trackList = dict[albumUri];
 			let albumModel = {
-				type: ItemType.Album,
+				type: "album",
 				albumInfo: trackList[0].album,
 				tracks: trackList.map((track) => track.uri),
 				imageUrl: void 0
@@ -1913,7 +1906,7 @@ var Controller = class Controller extends Commands {
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
-			if (model.type == ItemType.Stream) {
+			if (model.type == "stream") {
 				let images = await this.mopidyProxy.fetchImages([track.uri]);
 				if (images[track.uri].length > 0) model.imageUrl = this.baseUrl + images[track.uri][0].uri;
 				else model.imageUrl = Controller.DEFAULT_IMG_URL;
@@ -1924,7 +1917,7 @@ var Controller = class Controller extends Commands {
 	}
 	async getExpandedTrackModel(trackUri) {
 		let track = await this.lookupTrackCached(trackUri);
-		if (track.type == ItemType.Stream) {
+		if (track.type == "stream") {
 			let streamLines = await this.fetchStreamLines(trackUri);
 			return {
 				stream: track,
@@ -2457,7 +2450,7 @@ var TimelineView = class extends View {
 		let timelineTable = document.getElementById("timelineTable");
 		let currentTrack = await playerState_default().getController().getCurrertTrackInfoCached();
 		if (!currentTrack) return;
-		if (currentTrack.type == ItemType.None) return;
+		if (currentTrack.type == "none") return;
 		let currentUri = currentTrack.track.uri;
 		let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
 		if (trs.length == 0) return;
@@ -2497,12 +2490,12 @@ var TimelineView = class extends View {
 		let album = "⚬⚬⚬";
 		let title;
 		switch (track.type) {
-			case ItemType.File:
+			case "file":
 				title = track.title;
 				artist = track.track.artists[0].name;
 				album = track.track.album.name;
 				break;
-			case ItemType.Stream:
+			case "stream":
 				title = track.name;
 				break;
 		}
@@ -3067,7 +3060,7 @@ var MainView = class extends View {
 	async onSelectedTrackChanged() {
 		let uri = playerState_default().getModel().getSelectedTrack();
 		playerState_default().getController().lookupTrackCached(uri).then(async (track) => {
-			if (track.type == ItemType.File) {
+			if (track.type == "file") {
 				let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
 				this.setAlbumComponentData(albumModel);
 			} else {

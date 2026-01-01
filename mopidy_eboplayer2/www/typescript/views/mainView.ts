@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 
-import {AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, ItemType, Views} from "../modelTypes";
+import {AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
@@ -157,7 +157,7 @@ export class MainView extends View {
         let uri = getState().getModel().getSelectedTrack();
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
-                if(track.type == ItemType.File) {
+                if(track.type == "file") {
                     let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
                     this.setAlbumComponentData(albumModel);
                 }

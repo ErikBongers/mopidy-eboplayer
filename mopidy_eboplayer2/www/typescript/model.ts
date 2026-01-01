@@ -31,7 +31,7 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
 export class Model extends EventTarget implements ViewModel {
-    static NoTrack: TrackModel = { type: ItemType.None } as NoneTrackModel;
+    static NoTrack: TrackModel = { type: "none" } as NoneTrackModel;
     currentTrack: string;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
@@ -147,7 +147,7 @@ export class Model extends EventTarget implements ViewModel {
     }
 
     setCurrentTrack(track: TrackModel) {
-        if(track.type == ItemType.None) {
+        if(track.type == "none") {
             this.currentTrack = undefined;
             return;
         }
@@ -253,7 +253,7 @@ export class Model extends EventTarget implements ViewModel {
     //Overwrites!
     addItemsToLibraryCache(items: (FileTrackModel | StreamTrackModel | AlbumModel)[]) {
         for(let item of items) {
-            if(item.type == ItemType.Album)
+            if(item.type == "album")
                 this.updateLibraryCache(item.albumInfo.uri, item);
             else
                 this.updateLibraryCache(item.track.uri, item);

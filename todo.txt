@@ -1,3 +1,7 @@
+* Radio streams album cover is undefined
+
+
+
 * Create a button-bar in browse to play all the found tracks.
   > have a button to turn the browse filter sequence into a playlist!
     > Save as playlist

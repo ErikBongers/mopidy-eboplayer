@@ -102,7 +102,7 @@ export class TimelineView extends View {
         let currentTrack = await getState().getController().getCurrertTrackInfoCached();
         if(!currentTrack)
             return;
-        if (currentTrack.type == ItemType.None)
+        if (currentTrack.type == "none")
             return; // don't clear the screen as this is probably temporary and will cause a flicker.
         let currentUri = currentTrack.track.uri;
         let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
@@ -153,12 +153,12 @@ export class TimelineView extends View {
         let album =  "⚬⚬⚬";
         let title: string;
         switch (track.type) {
-            case ItemType.File:
+            case "file":
                 title = track.title;
                 artist = track.track.artists[0].name; //todo: add other names?
                 album = track.track.album.name;
                 break;
-            case ItemType.Stream:
+            case "stream":
                 title = track.name;
                 break;
         }
