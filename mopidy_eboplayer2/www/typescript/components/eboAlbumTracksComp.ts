@@ -11,7 +11,7 @@ export class EboAlbumTracksComp extends EboComponent {
 
     set streamInfo(value: ExpandedStreamModel) {
         this._streamInfo = value;
-        this.render();
+        this.requestRender();
     }
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
@@ -23,7 +23,7 @@ export class EboAlbumTracksComp extends EboComponent {
 
     set albumInfo(value: ExpandedAlbumModel) {
         this._albumInfo = value;
-        this.render();
+        this.requestRender();
     }
 
     private _activeTrackUri: string | null = null;
@@ -40,7 +40,7 @@ export class EboAlbumTracksComp extends EboComponent {
         super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 
         this.albumInfo = undefined;
-        this.render();
+        this.requestRender();
     }
 
     static styleText = `
@@ -88,10 +88,10 @@ export class EboAlbumTracksComp extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(_name: string, _oldValue: string, _newValue: string) {
-        this.render();
+        this.requestRender();
         }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         this.renderTrackList(shadow);
     }
 

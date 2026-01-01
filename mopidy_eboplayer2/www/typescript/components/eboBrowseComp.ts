@@ -41,7 +41,7 @@ export class EboBrowseComp extends EboComponent {
         if(JSON.stringify(this._browseFilter) == JSON.stringify(value))
             return;
         this._browseFilter = value;
-        this.render();
+        this.requestRender();
     }
 
     private _browseFilter: BrowseFilter;
@@ -192,7 +192,7 @@ export class EboBrowseComp extends EboComponent {
                 this[name] = newValue == "true";
                 break;
         }
-        this.render();
+        this.requestRender();
         }
 
     onConnected() {
@@ -204,14 +204,14 @@ export class EboBrowseComp extends EboComponent {
         searchText?.select();
     }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             //todo: is this button even needed?
         });
         this.renderBrowseFilter(shadow);
         this.renderBreadCrumbs();
         this.renderResults();
-        this.update();
+        this.requestUpdate();
     }
 
     private renderBrowseFilter(shadow: ShadowRoot) {
@@ -245,7 +245,7 @@ export class EboBrowseComp extends EboComponent {
     private setSingleButton(ev: Event) {
         this.clearFilterButtons();
         this.toggleFilterButton(ev.target as EboButton);
-        this.update();
+        this.requestUpdate();
     }
 
     private clearFilterButtons() {
@@ -269,7 +269,7 @@ export class EboBrowseComp extends EboComponent {
         this.dispatchEvent(this.browseFilterChangedEvent);
     }
 
-    updateWhenRendered(shadow:ShadowRoot) {
+    update(shadow:ShadowRoot) {
         [...shadow.querySelectorAll("ebo-button")]
             .filter(el => el.id.startsWith("filter"))
             .forEach(btn =>
@@ -361,7 +361,7 @@ export class EboBrowseComp extends EboComponent {
             tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
             tr.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
-        this.update();
+        this.requestUpdate();
     }
 
     private onRowClicked(ev: MouseEvent) {

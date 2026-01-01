@@ -713,35 +713,35 @@ let Views = /* @__PURE__ */ function(Views$1) {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/events.ts
 let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
-	EboplayerEvents$1["volumeChanged"] = "eboplayer.volumeChanged";
-	EboplayerEvents$1["connectionChanged"] = "eboplayer.connectionChanged";
-	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
-	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
-	EboplayerEvents$1["currentTrackChanged"] = "eboplayer.currentTrackChanged";
-	EboplayerEvents$1["selectedTrackChanged"] = "eboplayer.selectedTrackChanged";
 	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
-	EboplayerEvents$1["historyChanged"] = "eboplayer.historyChanged";
-	EboplayerEvents$1["trackListChanged"] = "eboplayer.trackListChanged";
-	EboplayerEvents$1["browseFilterChanged"] = "eboplayer.browseFilterChanged";
-	EboplayerEvents$1["currentRefsLoaded"] = "eboplayer.currentRefsLoaded";
-	EboplayerEvents$1["refsFiltered"] = "eboplayer.refsFiltered";
-	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
-	EboplayerEvents$1["breadCrumbsChanged"] = "eboplayer.breadCrumbsChanged";
-	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
-	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
-	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
-	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
-	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
-	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
-	EboplayerEvents$1["albumClicked"] = "eboplayer.albumClicked";
-	EboplayerEvents$1["currentImageSet"] = "eboplayer.currentImageSet";
-	EboplayerEvents$1["playAlbumClicked"] = "eboplayer.playAlbumClicked";
 	EboplayerEvents$1["addAlbumClicked"] = "eboplayer.addAlbumClicked";
-	EboplayerEvents$1["browseResultDblClick"] = "eboplayer.browseResultDblClick";
-	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
-	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
-	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
 	EboplayerEvents$1["addTrackClicked"] = "eboplayer.addTrackClicked";
+	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
+	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
+	EboplayerEvents$1["breadCrumbsChanged"] = "eboplayer.breadCrumbsChanged";
+	EboplayerEvents$1["browseFilterChanged"] = "eboplayer.browseFilterChanged";
+	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
+	EboplayerEvents$1["browseResultDblClick"] = "eboplayer.browseResultDblClick";
+	EboplayerEvents$1["buttonBarAlbumImgClicked"] = "eboplayer.buttonBarAlbumImgClicked";
+	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
+	EboplayerEvents$1["connectionChanged"] = "eboplayer.connectionChanged";
+	EboplayerEvents$1["currentImageSet"] = "eboplayer.currentImageSet";
+	EboplayerEvents$1["currentRefsLoaded"] = "eboplayer.currentRefsLoaded";
+	EboplayerEvents$1["currentTrackChanged"] = "eboplayer.currentTrackChanged";
+	EboplayerEvents$1["historyChanged"] = "eboplayer.historyChanged";
+	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
+	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
+	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
+	EboplayerEvents$1["playAlbumClicked"] = "eboplayer.playAlbumClicked";
+	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
+	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
+	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
+	EboplayerEvents$1["refsFiltered"] = "eboplayer.refsFiltered";
+	EboplayerEvents$1["selectedTrackChanged"] = "eboplayer.selectedTrackChanged";
+	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
+	EboplayerEvents$1["trackListChanged"] = "eboplayer.trackListChanged";
+	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
+	EboplayerEvents$1["volumeChanged"] = "eboplayer.volumeChanged";
 	return EboplayerEvents$1;
 }({});
 var EboplayerEvent = class extends CustomEvent {
@@ -2195,7 +2195,7 @@ var ButtonBarView = class extends View {
 		comp.addEventListener(EboplayerEvents.pausePressed, () => {
 			this.playOrStopOrPause(EboplayerEvents.pausePressed).then((r) => {});
 		});
-		comp.addEventListener(EboplayerEvents.albumClicked, () => {
+		comp.addEventListener(EboplayerEvents.buttonBarAlbumImgClicked, () => {
 			this.onButtonBarImgClicked();
 		});
 		playerState_default().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
@@ -2358,7 +2358,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.fetchCssAndCache().then(() => {
 			this.connected = true;
 			this.onConnected();
-			this.render();
+			this.requestRender();
 		});
 	}
 	async fetchCssAndCache() {
@@ -2373,16 +2373,16 @@ var EboComponent = class EboComponent extends HTMLElement {
 		});
 	}
 	onConnected() {}
-	update() {
+	requestUpdate() {
 		this.updateBatching.schedule();
 	}
 	doUpdate() {
 		if (!this.connected) return;
 		if (!this._rendered) return;
-		this.updateWhenRendered(this.shadow);
+		this.update(this.shadow);
 	}
-	updateWhenRendered(shadow) {}
-	render() {
+	update(shadow) {}
+	requestRender() {
 		this.renderBatching.schedule();
 	}
 	doRender() {
@@ -2393,7 +2393,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.shadow.adoptedStyleSheets = css;
 		if (this.styleTemplate) this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
 		if (this.divTemplate) this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
-		this.renderPrepared(this.shadow);
+		this.render(this.shadow);
 		this._rendered = true;
 	}
 	getShadow() {
@@ -2476,7 +2476,7 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
         `;
 	constructor() {
 		super(EboProgressBar.styleText, EboProgressBar.htmlText);
-		this.render();
+		this.requestRender();
 	}
 	attributeReallyChangedCallback(name, oldValue, newValue) {
 		switch (name) {
@@ -2494,10 +2494,10 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 				break;
 		}
 		if (!(this.min <= this.position && this.position <= this.max)) throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
-		this.render();
+		this.requestRender();
 	}
 	connectedCallback() {}
-	renderPrepared(shadow) {
+	render(shadow) {
 		let percent = (this.position - this.min) / (this.max - this.min) * 100;
 		let styleElement = shadow.appendChild(document.createElement("style"));
 		styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;
@@ -2643,7 +2643,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	}
 	set albumInfo(value) {
 		this._albumInfo = value;
-		this.render();
+		this.requestRender();
 	}
 	static tagName = "ebo-big-track-view";
 	static progressBarAttributes = [
@@ -2770,9 +2770,9 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 				this[name] = newValue == "true";
 				break;
 		}
-		this.render();
+		this.requestRender();
 	}
-	renderPrepared(shadow) {
+	render(shadow) {
 		[
 			"name",
 			"stream_lines",
@@ -2789,9 +2789,9 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		this.addShadowEventListener("image", "click", (ev) => {
 			this.dispatchEvent(this.albumClickEvent);
 		});
-		this.update();
+		this.requestUpdate();
 	}
-	updateWhenRendered(shadow) {
+	update(shadow) {
 		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
 		let img = shadow.getElementById("image");
 		if (this.img != "") {
@@ -2904,7 +2904,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	}
 	set streamInfo(value) {
 		this._streamInfo = value;
-		this.render();
+		this.requestRender();
 	}
 	set activeTrackUri(value) {
 		this._activeTrackUri = value;
@@ -2915,7 +2915,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	}
 	set albumInfo(value) {
 		this._albumInfo = value;
-		this.render();
+		this.requestRender();
 	}
 	_activeTrackUri = null;
 	static tagName = "ebo-album-tracks-view";
@@ -2924,7 +2924,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	constructor() {
 		super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 		this.albumInfo = void 0;
-		this.render();
+		this.requestRender();
 	}
 	static styleText = `
             <style>
@@ -2969,9 +2969,9 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
             </dialog>        
         `;
 	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
-		this.render();
+		this.requestRender();
 	}
-	renderPrepared(shadow) {
+	render(shadow) {
 		this.renderTrackList(shadow);
 	}
 	renderTrackList(shadow) {
@@ -3252,7 +3252,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	set browseFilter(value) {
 		if (JSON.stringify(this._browseFilter) == JSON.stringify(value)) return;
 		this._browseFilter = value;
-		this.render();
+		this.requestRender();
 	}
 	_browseFilter;
 	static observedAttributes = [];
@@ -3392,7 +3392,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 				this[name] = newValue == "true";
 				break;
 		}
-		this.render();
+		this.requestRender();
 	}
 	onConnected() {}
 	setFocusAndSelect() {
@@ -3400,12 +3400,12 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		searchText?.focus();
 		searchText?.select();
 	}
-	renderPrepared(shadow) {
+	render(shadow) {
 		shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
 		this.renderBrowseFilter(shadow);
 		this.renderBreadCrumbs();
 		this.renderResults();
-		this.update();
+		this.requestUpdate();
 	}
 	renderBrowseFilter(shadow) {
 		let inputElement = shadow.getElementById("searchText");
@@ -3434,7 +3434,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	setSingleButton(ev) {
 		this.clearFilterButtons();
 		this.toggleFilterButton(ev.target);
-		this.update();
+		this.requestUpdate();
 	}
 	clearFilterButtons() {
 		this.browseFilter.genre = false;
@@ -3454,7 +3454,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.browseFilter[propName] = !this.browseFilter[propName];
 		this.dispatchEvent(this.browseFilterChangedEvent);
 	}
-	updateWhenRendered(shadow) {
+	update(shadow) {
 		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
 		let inputElement = shadow.getElementById("searchText");
 		inputElement.value = this._browseFilter.searchText;
@@ -3535,7 +3535,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 				this.onRowClicked(ev);
 			});
 		});
-		this.update();
+		this.requestUpdate();
 	}
 	onRowClicked(ev) {
 		let row = ev.currentTarget;
@@ -3674,9 +3674,9 @@ var EboButton = class EboButton extends EboComponent {
 				this[name] = newValue == "true";
 				break;
 		}
-		this.render();
+		this.requestRender();
 	}
-	renderPrepared(shadow) {
+	render(shadow) {
 		let imgTag = shadow.getElementById("image");
 		this.setClassFromBoolAttribute(imgTag, "pressed");
 		this.setClassFromBoolAttribute(imgTag, "disabled");
@@ -3731,7 +3731,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	set albumInfo(value) {
 		this._albumInfo = value;
-		this.update();
+		this.requestUpdate();
 	}
 	_streamInfo;
 	get streamInfo() {
@@ -3739,7 +3739,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	set streamInfo(value) {
 		this._streamInfo = value;
-		this.update();
+		this.requestUpdate();
 	}
 	_activeTrackUri = null;
 	static tagName = "ebo-big-album-view";
@@ -3869,16 +3869,16 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 				this[name] = newValue;
 				break;
 		}
-		this.update();
+		this.requestUpdate();
 	}
-	renderPrepared(shadow) {
+	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
 			this.onBtnPlayClick();
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
 			this.onBtnAddClick();
 		});
-		this.update();
+		this.requestUpdate();
 	}
 	onBtnPlayClick() {
 		this.dispatchEvent(new Event(EboplayerEvents.playAlbumClicked));
@@ -3886,7 +3886,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	onBtnAddClick() {
 		this.dispatchEvent(new Event(EboplayerEvents.addAlbumClicked));
 	}
-	updateWhenRendered(shadow) {
+	update(shadow) {
 		["name", "extra"].forEach((attName) => {
 			shadow.getElementById(attName).innerHTML = this[attName];
 		});
@@ -4038,9 +4038,9 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 				this[name] = newValue == "true";
 				break;
 		}
-		this.update();
+		this.requestUpdate();
 	}
-	renderPrepared(shadow) {
+	render(shadow) {
 		let slider = shadow.getElementById("volumeSlider");
 		slider.oninput = (ev) => {
 			this.isVolumeSliding = true;
@@ -4078,10 +4078,10 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			}));
 		});
 		shadow.getElementById("buttonBarImg").addEventListener("click", (ev) => {
-			this.dispatchEvent(new Event(EboplayerEvents.albumClicked));
+			this.dispatchEvent(new Event(EboplayerEvents.buttonBarAlbumImgClicked));
 		});
 	}
-	updateWhenRendered(shadow) {
+	update(shadow) {
 		switch (this.play_state) {
 			case "playing":
 				if (this.stop_or_pause == "pause") this.setPlayButton("Pause", "fa-pause");
@@ -4175,7 +4175,7 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 	}
 	onConnected() {
 		super.onConnected();
-		this.render();
+		this.requestRender();
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
@@ -4187,9 +4187,9 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 				this[name] = newValue == "true";
 				break;
 		}
-		this.render();
+		this.requestRender();
 	}
-	renderPrepared() {}
+	render() {}
 	closeMenu() {
 		this.getShadow().getElementById("menu").hidePopover();
 	}

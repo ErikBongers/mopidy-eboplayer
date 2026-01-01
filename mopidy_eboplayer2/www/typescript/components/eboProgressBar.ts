@@ -61,7 +61,7 @@ export class EboProgressBar extends EboComponent {
 
     constructor() {
         super(EboProgressBar.styleText, EboProgressBar.htmlText);
-        this.render();
+        this.requestRender();
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -84,14 +84,14 @@ export class EboProgressBar extends EboComponent {
         }
         if(!(this.min <= this.position && this.position <= this.max))
             throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
-        this.render();
+        this.requestRender();
         }
 
     // noinspection JSUnusedGlobalSymbols
     connectedCallback() {
     }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         let percent = (this.position - this.min) / (this.max-this.min) * 100;
         let styleElement = shadow.appendChild(document.createElement("style"));
         styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;

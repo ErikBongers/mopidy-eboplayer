@@ -9,7 +9,7 @@ export class EboBigTrackComp extends EboComponent {
 
     set albumInfo(value: AlbumData) {
         this._albumInfo = value;
-        this.render();
+        this.requestRender();
     }
 
     static readonly tagName=  "ebo-big-track-view";
@@ -136,10 +136,10 @@ export class EboBigTrackComp extends EboComponent {
                 this[name] = newValue == "true";
                 break;
         }
-        this.render();
+        this.requestRender();
         }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         ["name", "stream_lines", "extra"].forEach(attName => {
             shadow.getElementById(attName).innerHTML = this[attName];
         });
@@ -153,10 +153,10 @@ export class EboBigTrackComp extends EboComponent {
         this.addShadowEventListener("image","click", (ev) => {
             this.dispatchEvent(this.albumClickEvent);
         });
-        this.update();
+        this.requestUpdate();
     }
 
-    override updateWhenRendered(shadow:ShadowRoot) {
+    override update(shadow:ShadowRoot) {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
             shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }

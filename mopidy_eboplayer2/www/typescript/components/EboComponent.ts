@@ -58,7 +58,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         this.fetchCssAndCache().then( () => {
             this.connected = true;
             this.onConnected();
-            this.render();
+            this.requestRender();
         });
     }
 
@@ -80,7 +80,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
 
     onConnected(){}
 
-    update() {
+    requestUpdate() {
         // noinspection JSIgnoredPromiseFromCall
         this.updateBatching.schedule();
     }
@@ -89,14 +89,14 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             return;
         if (!this._rendered)
             return;
-        this.updateWhenRendered(this.shadow);
+        this.update(this.shadow);
     }
 
-    updateWhenRendered(shadow: ShadowRoot): void {
+    update(shadow: ShadowRoot): void {
         //should be overridden by subclasses.
     }
 
-    render() {
+    requestRender() {
         // noinspection JSIgnoredPromiseFromCall
         this.renderBatching.schedule();
     }
@@ -112,11 +112,11 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         if(this.divTemplate)
             this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
 
-        this.renderPrepared(this.shadow);
+        this.render(this.shadow);
         this._rendered = true;
     }
 
-    abstract renderPrepared(shadow: ShadowRoot): void;
+    abstract render(shadow: ShadowRoot): void;
 
     getShadow(){
         return this.shadow;

@@ -75,10 +75,10 @@ export class EboButton extends EboComponent {
                 this[name] = newValue == "true";
                 break;
         }
-        this.render();
+        this.requestRender();
         }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         let imgTag = shadow.getElementById("image") as HTMLImageElement;
         this.setClassFromBoolAttribute(imgTag, "pressed");
         this.setClassFromBoolAttribute(imgTag, "disabled");

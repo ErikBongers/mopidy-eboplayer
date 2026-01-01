@@ -18,7 +18,7 @@ export class EboBigAlbumComp extends EboComponent {
 
     set albumInfo(value: ExpandedAlbumModel) {
         this._albumInfo = value;
-        this.update();
+        this.requestUpdate();
     }
 
     private _streamInfo?: ExpandedStreamModel;
@@ -27,7 +27,7 @@ export class EboBigAlbumComp extends EboComponent {
     }
     set streamInfo(value: ExpandedStreamModel) {
         this._streamInfo = value;
-        this.update();
+        this.requestUpdate();
     }
 
     private _activeTrackUri: string | null = null;
@@ -156,17 +156,17 @@ export class EboBigAlbumComp extends EboComponent {
                 this[name] = newValue;
                 break;
         }
-        this.update();
+        this.requestUpdate();
         }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
             this.onBtnPlayClick();
         });
         this.addShadowEventListener("btnAdd", "click", (ev) => {
             this.onBtnAddClick();
         });
-        this.update();
+        this.requestUpdate();
     }
 
     private onBtnPlayClick() {
@@ -177,7 +177,7 @@ export class EboBigAlbumComp extends EboComponent {
         this.dispatchEvent(new Event(EboplayerEvents.addAlbumClicked));
     }
 
-    override updateWhenRendered(shadow:ShadowRoot) {
+    override update(shadow:ShadowRoot) {
         ["name", "extra"].forEach(attName => {
             shadow.getElementById(attName).innerHTML = this[attName];
         });

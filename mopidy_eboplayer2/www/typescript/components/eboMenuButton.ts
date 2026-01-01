@@ -65,7 +65,7 @@ export class EboMenuButton extends EboComponent {
 
     onConnected() {
         super.onConnected();
-        this.render();
+        this.requestRender();
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -80,10 +80,10 @@ export class EboMenuButton extends EboComponent {
                 this[name] = newValue == "true";
                 break;
         }
-        this.render();
+        this.requestRender();
         }
 
-    renderPrepared() {
+    render() {
     }
 
     closeMenu() {

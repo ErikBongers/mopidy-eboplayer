@@ -135,10 +135,10 @@ export class EboButtonBar extends EboComponent {
                 this[name] = newValue == "true";
                 break;
         }
-        this.update();
+        this.requestUpdate();
         }
 
-    renderPrepared(shadow:ShadowRoot) {
+    render(shadow:ShadowRoot) {
         let slider = shadow.getElementById("volumeSlider") as HTMLInputElement;
         slider.oninput = (ev) => {
             this.isVolumeSliding = true;
@@ -165,7 +165,7 @@ export class EboButtonBar extends EboComponent {
         });
     }
 
-    updateWhenRendered(shadow:ShadowRoot) {
+    update(shadow:ShadowRoot) {
         switch(this.play_state) {
             case "playing":
                 if(this.stop_or_pause == "pause")
