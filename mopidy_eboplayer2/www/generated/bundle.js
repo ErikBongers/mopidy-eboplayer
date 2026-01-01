@@ -3068,13 +3068,13 @@ var MainView = class extends View {
 		document.getElementById("currentTrackBigView").addEventListener("albumClick", async (e) => {
 			this.onAlbumClick();
 		});
-		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEventListener(EboplayerEvents.playItemListClicked, (ev) => {
+		document.body.addEventListener(EboplayerEvents.playItemListClicked, (ev) => {
 			this.onPlayItemListClick(ev);
 		});
-		albumComp.addEventListener(EboplayerEvents.addItemListClicked, () => {
+		document.body.addEventListener(EboplayerEvents.addItemListClicked, () => {
 			this.onAddItemListClick();
 		});
+		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev) => {
 			this.onPlayTrackClicked(ev.detail.uri);
 		});
@@ -3232,6 +3232,7 @@ var MainView = class extends View {
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	static tagName = "ebo-browse-view";
+	static listSource = "browseView";
 	get breadCrumbs() {
 		return this._breadCrumbs;
 	}
@@ -3357,6 +3358,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
         </div>
     </div>    
     <div id="searchResults">
+        <ebo-list-button-bar list_source="${this.listSource}"></ebo-list-button-bar>
         <div id="searchInfo">
         </div>  
         <div id="tableWrapper" class="">
@@ -4179,9 +4181,14 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 //#region mopidy_eboplayer2/www/typescript/components/eboListButtonBar.ts
 var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	static tagName = "ebo-list-button-bar";
-	static observedAttributes = ["show_add_btn", "show_play_btn"];
+	static observedAttributes = [
+		"show_add_btn",
+		"show_play_btn",
+		"list_source"
+	];
 	show_add_btn;
 	show_play_btn;
+	list_source;
 	static styleText = `
         <style>
             #buttons {
@@ -4206,6 +4213,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			case "show_play_btn":
 				this.updateBoolAtrribute(newValue, name);
 				break;
+			case "list_source":
+				this.list_source = newValue;
+				break;
 		}
 		this.requestRender();
 	}
@@ -4215,10 +4225,10 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playItemListClicked, { source: "albumView" }));
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playItemListClicked, { source: this.list_source }));
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addItemListClicked, { source: "albumView" }));
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addItemListClicked, { source: this.list_source }));
 		});
 		this.requestUpdate();
 	}

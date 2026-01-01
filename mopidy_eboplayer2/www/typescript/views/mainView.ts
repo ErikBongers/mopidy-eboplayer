@@ -50,13 +50,13 @@ export class MainView extends View {
         currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
             this.onAlbumClick();
         });
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEventListener(EboplayerEvents.playItemListClicked, (ev: EboplayerEvent<GuiSourceArgs>) => {
+        document.body.addEventListener(EboplayerEvents.playItemListClicked, (ev: EboplayerEvent<GuiSourceArgs>) => {
             this.onPlayItemListClick(ev);
         });
-        albumComp.addEventListener(EboplayerEvents.addItemListClicked, () => {
+        document.body.addEventListener(EboplayerEvents.addItemListClicked, () => {
             this.onAddItemListClick();
         });
+        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<UriArgs>) => {
             this.onPlayTrackClicked(ev.detail.uri);
         });
@@ -190,6 +190,10 @@ export class MainView extends View {
         if(ev.detail.source == "albumView") {
             let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
             getState().getController().playUri(albumComp.dataset.albumUri);
+            return;
+        }
+        if(ev.detail.source == "browseView") {
+            //todo.
         }
     }
 

@@ -1,5 +1,6 @@
 import {Batching} from "../Batching";
 import {console_yellow} from "../global";
+import {debug} from "node:util";
 
 export interface HasName {
     tagName: string;

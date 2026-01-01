@@ -4,12 +4,13 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controller";
 import {RefType, SearchResults} from "../refs";
-import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, UriArgs} from "../events";
+import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs, UriArgs} from "../events";
 import models from "../../js/mopidy";
 import ModelType = models.ModelType;
 
 export class EboBrowseComp extends EboComponent {
     static readonly tagName=  "ebo-browse-view";
+    private static listSource: GuiSource = "browseView";
 
     get breadCrumbs(): FilterBreadCrumb[] {
         return this._breadCrumbs;
@@ -151,6 +152,7 @@ export class EboBrowseComp extends EboComponent {
         </div>
     </div>    
     <div id="searchResults">
+        <ebo-list-button-bar list_source="${this.listSource}"></ebo-list-button-bar>
         <div id="searchInfo">
         </div>  
         <div id="tableWrapper" class="">

@@ -1,14 +1,15 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
-import {EboplayerEvent, EboplayerEvents, GuiSourceArgs, UriArgs} from "../events";
+import {EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs, UriArgs} from "../events";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 
 export class EboListButtonBar extends EboComponent {
     static readonly tagName=  "ebo-list-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["show_add_btn", "show_play_btn"];
+    static observedAttributes = ["show_add_btn", "show_play_btn", "list_source"];
     show_add_btn: boolean;
     show_play_btn: boolean;
+    list_source: GuiSource;
     static styleText = `
         <style>
             #buttons {
@@ -36,6 +37,9 @@ export class EboListButtonBar extends EboComponent {
             case "show_play_btn":
                 this.updateBoolAtrribute(newValue, name);
                 break;
+            case "list_source":
+                this.list_source = newValue as GuiSource;
+                break;
         }
         this.requestRender();
         }
@@ -48,10 +52,10 @@ export class EboListButtonBar extends EboComponent {
 
     render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.playItemListClicked, {source: "albumView"})); //todo: override dispatchEvent to make it tied to EboplayerEvent?
+            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.playItemListClicked, {source: this.list_source})); //todo: override dispatchEvent to make it tied to EboplayerEvent?
         });
         this.addShadowEventListener("btnAdd", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.addItemListClicked, {source: "albumView"}));
+            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.addItemListClicked, {source: this.list_source}));
         });
         this.requestUpdate();
     }

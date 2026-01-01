@@ -53,7 +53,7 @@ export interface BrowseResultArgs extends EboEventArgs {
     "type": string,
 }
 
-export type GuiSource = "albumView" | "todo...";
+export type GuiSource = "albumView" | "browseView";
 export interface GuiSourceArgs extends EboEventArgs {
     "source": GuiSource
 }
