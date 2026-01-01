@@ -283,7 +283,8 @@ export class EboBrowseComp extends EboComponent {
                 .replace("filter", "").charAt(0).toLowerCase()
                + btn.id.replace("filter", "").slice(1) as RefType;
         btn.setAttribute("pressed", this._browseFilter[propName].toString());
-        btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
+        if(this.results)
+            btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
     }
 
     setSearchInfo(text: string) {
