@@ -30,18 +30,10 @@
                   > toml format: todo: check it.
       > web client should be able to get that root
         > via http of...player or backend.
-* create image for Klara
-  > set it in the meta file
 
 * in scan command, check if there's a meta file for an album
   > first just log it.
   > then save the fields from the file in the db.
-
-* get Metadata for album
-  > when?
-    > when saving metadata, save it in db AND in files
-    > when scanning, update the db based on the file metadata.
-
 
 * dblclick on album track > play
 
@@ -49,10 +41,6 @@ What do I need?
 - Build playlists
   > in Browse, when clicking on a playlist - open the playlist page.
     > does a playlist item have a user defined name?
-
-
-- Build a tracklist
-  > currently already possible to add full albums.
 
 * refresh dead connection on browser "wake up"
   >>> https://blog.alexmaccaw.com/javascript-wake-event/

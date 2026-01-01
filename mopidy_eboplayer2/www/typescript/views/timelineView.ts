@@ -1,8 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import models, {TlId} from "../../js/mopidy";
-import {transformTrackDataToModel} from "../global";
-import {FileTrackModel, HistoryLine, StreamTrackModel, ItemType} from "../modelTypes";
+import {TlId} from "../../js/mopidy";
+import {AllUris, FileTrackModel, HistoryLine, ItemType, StreamTrackModel} from "../modelTypes";
 import {EboplayerEvents} from "../events";
 
 export class TimelineView extends View {
@@ -37,19 +36,21 @@ export class TimelineView extends View {
         // if we want to limit the number of history lines we can do so here.
         // history = history.slice(0, 50);
 
-        let allLookups: Promise<void>[] = [];
         //reverse order as we want the most recent tracks to at the bottom.
         for(let i = history.length - 1; i >= 0; i-- ) {
-            allLookups.push(this.insertHistoryLine(history[i], body));
+            this.insertHistoryLine(history[i], body);
         }
 
         for(let track of trackList) {
-            allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid)); //todo: actually we already have the track info. No need for lookup.
+            this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid);
         }
 
-        Promise.all(allLookups).then(()=> {
-            this.setCurrentTrack();
-        });
+        let uris = trackList.map(tl => tl.track.uri) as AllUris[];
+        uris = [...uris, ...history.map(h => h.ref.uri)] as AllUris[];
+        uris = [...new Set(uris)];
+        await this.lookupAllTracksAndUpdateRows(uris);
+
+        await this.setCurrentTrack();
 
         body.querySelectorAll("tr").forEach(tr => {
             tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev)});
@@ -114,13 +115,13 @@ export class TimelineView extends View {
         tr.classList.add("current", "textGlow");
     }
 
-    private async insertHistoryLine(line: HistoryLine, body: HTMLTableSectionElement) {
+    private insertHistoryLine(line: HistoryLine, body: HTMLTableSectionElement) {
         let slices = line.ref.name.split(" - ");
         let title = slices.pop();
-        await this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
+        this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
     }
 
-    private async insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = [], tlid?: number) {
+    private insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = [], tlid?: number) {
         let tr = document.createElement("tr");
         body.appendChild(tr);
         tr.classList.add("trackLine", ...classes);
@@ -136,14 +137,21 @@ export class TimelineView extends View {
 </tr>
             `);
 
-        //delayed update of track info.
-        const track = await getState().getController().lookupTrackCached(uri);
-        this.updateTrackLineFromLookup(tr, track, title);
     }
 
-    private updateTrackLineFromLookup(tr: HTMLTableRowElement, track: (FileTrackModel | StreamTrackModel), title: string) {
+    async lookupAllTracksAndUpdateRows(uris: AllUris[]) {
+        await getState().getController().lookupAllTracks(uris);
+        for (const uri of uris) {
+            const track = await getState().getController().lookupTrackCached(uri);
+            let trs = document.querySelectorAll(`tr[data-uri="${uri}"]`) as NodeListOf<HTMLTableRowElement>;
+            trs.forEach(tr => this.updateTrackLineFromLookup(tr, track));
+        }
+    }
+
+    private updateTrackLineFromLookup(tr: HTMLTableRowElement, track: (FileTrackModel | StreamTrackModel)) {
         let artist =  "⚬⚬⚬";
         let album =  "⚬⚬⚬";
+        let title: string;
         switch (track.type) {
             case ItemType.File:
                 title = track.title;

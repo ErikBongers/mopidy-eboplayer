@@ -1871,24 +1871,36 @@ var Controller = class extends Commands {
 		this.model.addItemsToLibraryCache(libraryList);
 		return this.model.getFromLibraryCache(trackUri);
 	}
-	async lookupAlbumCached(albumUri) {
-		let item = this.model.getFromLibraryCache(albumUri);
-		if (item) return item;
-		return await this.fetchAlbum(albumUri);
+	async lookupAlbumsCached(albumUris) {
+		let albums = [];
+		let albumUrisToFetch = [];
+		for (let albumUri of albumUris) {
+			let album = this.model.getFromLibraryCache(albumUri);
+			if (album) albums.push(album);
+			else albumUrisToFetch.push(albumUri);
+		}
+		let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
+		this.model.addItemsToLibraryCache(fetchedAlbums);
+		albums = albums.concat(fetchedAlbums);
+		return albums;
 	}
-	async fetchAlbum(albumUri) {
-		let trackList = (await this.mopidyProxy.fetchTracks(albumUri))[albumUri];
-		let albumModel = {
-			type: ItemType.Album,
-			albumInfo: trackList[0].album,
-			tracks: trackList.map((track) => track.uri),
-			imageUrl: await this.fetchLargestImageOrDefault(albumUri)
-		};
-		this.model.addItemsToLibraryCache([albumModel]);
-		return albumModel;
+	async fetchAlbums(albumUris) {
+		let dict = await this.mopidyProxy.lookup(albumUris);
+		let albumModels = Object.keys(dict).map(async (albumUri) => {
+			let trackList = dict[albumUri];
+			let albumModel = {
+				type: ItemType.Album,
+				albumInfo: trackList[0].album,
+				tracks: trackList.map((track) => track.uri),
+				imageUrl: await this.fetchLargestImageOrDefault(albumUri)
+			};
+			this.model.addItemsToLibraryCache([albumModel]);
+			return albumModel;
+		});
+		return await Promise.all(albumModels);
 	}
 	async fetchAndConvertTracks(uri) {
-		let newListPromises = (await this.mopidyProxy.fetchTracks(uri))[uri].map(async (track) => {
+		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
 			if (model.type == ItemType.Stream) {
 				let images = await this.mopidyProxy.fetchImages([track.uri]);
@@ -1908,15 +1920,15 @@ var Controller = class extends Commands {
 				historyLines: streamLines
 			};
 		} else {
-			let album = await this.lookupAlbumCached(track.track.album.uri);
+			let album = await this.lookupAlbumsCached([track.track.album.uri]);
 			return {
 				track,
-				album
+				album: album[0]
 			};
 		}
 	}
 	async getExpandedAlbumModel(albumUri) {
-		let album = await this.lookupAlbumCached(albumUri);
+		let album = (await this.lookupAlbumsCached([albumUri]))[0];
 		let meta = await this.getMetaDataCached(albumUri);
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
 		return {
@@ -2011,15 +2023,19 @@ var Controller = class extends Commands {
 		this.model.setView(view);
 	}
 	async fetchAllAlbums() {
-		let albumsPromises = (await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album")).map(async (ref) => {
-			return await this.lookupAlbumCached(ref.uri);
-		});
-		let albums = await Promise.all(albumsPromises);
-		console.log(albums);
+		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
+		return await this.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
 	}
 	async addCurrentSearchResultsToPlayer() {
 		let results = playerState_default()?.getModel()?.getCurrentSearchResults();
 		await this.player.add(results.refs.map((r) => r.ref.ref.uri));
+	}
+	async lookupAllTracks(uris) {
+		let results = await this.mopidyProxy.lookup(uris);
+		Object.keys(results).forEach((trackUri) => {
+			let track = results[trackUri][0];
+			this.model.addItemsToLibraryCache([transformTrackDataToModel(track)]);
+		});
 	}
 };
 
@@ -2391,12 +2407,13 @@ var TimelineView = class extends View {
 		let body = document.getElementById("timelineTable").tBodies[0];
 		body.innerHTML = "";
 		if (history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri) history.shift();
-		let allLookups = [];
-		for (let i = history.length - 1; i >= 0; i--) allLookups.push(this.insertHistoryLine(history[i], body));
-		for (let track of trackList) allLookups.push(this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid));
-		Promise.all(allLookups).then(() => {
-			this.setCurrentTrack();
-		});
+		for (let i = history.length - 1; i >= 0; i--) this.insertHistoryLine(history[i], body);
+		for (let track of trackList) this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid);
+		let uris = trackList.map((tl) => tl.track.uri);
+		uris = [...uris, ...history.map((h) => h.ref.uri)];
+		uris = [...new Set(uris)];
+		await this.lookupAllTracksAndUpdateRows(uris);
+		await this.setCurrentTrack();
 		body.querySelectorAll("tr").forEach((tr) => {
 			tr.addEventListener("dblclick", (ev) => {
 				this.onRowDoubleClicked(ev);
@@ -2438,11 +2455,11 @@ var TimelineView = class extends View {
 		timelineTable.querySelectorAll("tr").forEach((tr$1) => tr$1.classList.remove("current", "textGlow"));
 		tr.classList.add("current", "textGlow");
 	}
-	async insertHistoryLine(line, body) {
+	insertHistoryLine(line, body) {
 		let title = line.ref.name.split(" - ").pop();
-		await this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
+		this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
 	}
-	async insertTrackLine(title, uri, body, classes = [], tlid) {
+	insertTrackLine(title, uri, body, classes = [], tlid) {
 		let tr = document.createElement("tr");
 		body.appendChild(tr);
 		tr.classList.add("trackLine", ...classes);
@@ -2456,12 +2473,18 @@ var TimelineView = class extends View {
     </td>
 </tr>
             `);
-		const track = await playerState_default().getController().lookupTrackCached(uri);
-		this.updateTrackLineFromLookup(tr, track, title);
 	}
-	updateTrackLineFromLookup(tr, track, title) {
+	async lookupAllTracksAndUpdateRows(uris) {
+		await playerState_default().getController().lookupAllTracks(uris);
+		for (const uri of uris) {
+			const track = await playerState_default().getController().lookupTrackCached(uri);
+			document.querySelectorAll(`tr[data-uri="${uri}"]`).forEach((tr) => this.updateTrackLineFromLookup(tr, track));
+		}
+	}
+	updateTrackLineFromLookup(tr, track) {
 		let artist = "⚬⚬⚬";
 		let album = "⚬⚬⚬";
+		let title;
 		switch (track.type) {
 			case ItemType.File:
 				title = track.title;
@@ -3061,7 +3084,7 @@ var MainView = class extends View {
 	async onPlayItemListClick(ev) {
 		if (ev.detail.source == "albumView") {
 			let albumUri = playerState_default().getModel().getAlbumToView();
-			let album = await playerState_default().getController().lookupAlbumCached(albumUri);
+			let album = (await playerState_default().getController().lookupAlbumsCached([albumUri]))[0];
 			await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
 			return;
 		}
@@ -4179,7 +4202,7 @@ var MopidyProxy = class {
 	async search(uri) {
 		return await this.commands.core.library.search({ uri }, [], true);
 	}
-	async fetchTracks(uris) {
+	async lookup(uris) {
 		if (typeof uris == "string") uris = [uris];
 		return await this.commands.core.library.lookup(uris);
 	}

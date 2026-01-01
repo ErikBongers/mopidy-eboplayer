@@ -190,7 +190,7 @@ export class MainView extends View {
         if(ev.detail.source == "albumView") {
             let model = getState().getModel();
             let albumUri = model.getAlbumToView();
-            let album = await getState().getController().lookupAlbumCached(albumUri);
+            let album = (await getState().getController().lookupAlbumsCached([albumUri]))[0];
             await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
             return;
         }

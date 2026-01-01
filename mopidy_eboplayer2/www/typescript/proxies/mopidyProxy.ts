@@ -65,7 +65,7 @@ export class MopidyProxy {
         return await this.commands.core.library.search({uri}, [], true) as SearchResult[];
     }
 
-    async fetchTracks(uris: string | string[]) {
+    async lookup(uris: string | string[]) {
         if (typeof uris == "string")
             uris = [uris];
         let dict: LibraryDict = await this.commands.core.library.lookup(uris);

@@ -307,28 +307,43 @@ export class Controller extends Commands implements DataRequester{
         return this.model.getFromLibraryCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
     }
 
-    async lookupAlbumCached(albumUri: AlbumUri) {
-        let item = this.model.getFromLibraryCache(albumUri);
-        if(item)
-            return item as AlbumModel; //assuming the albumUri points to an album.
-        return await this.fetchAlbum(albumUri);
+    async lookupAlbumsCached(albumUris: AlbumUri[]) {
+        let albums: AlbumModel[] = [];
+        let albumUrisToFetch: AlbumUri[] = [];
+        for(let albumUri of albumUris) {
+            let album = this.model.getFromLibraryCache(albumUri);
+            if(album) {
+                albums.push(album as AlbumModel);
+            } else {
+                albumUrisToFetch.push(albumUri);
+            }
+        }
+
+        //fetch remaining albums
+        let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
+        this.model.addItemsToLibraryCache(fetchedAlbums);
+        albums = albums.concat(fetchedAlbums);
+        return albums;
     }
 
-    private async fetchAlbum(albumUri: string) {
-        let dict = await this.mopidyProxy.fetchTracks(albumUri);
-        let trackList = dict[albumUri] as models.Track[];
-        let albumModel: AlbumModel = {
-            type: ItemType.Album,
-            albumInfo: trackList[0].album,
-            tracks: trackList.map(track => track.uri),
-            imageUrl: await this.fetchLargestImageOrDefault(albumUri)
-        }
-        this.model.addItemsToLibraryCache([albumModel]);
-        return albumModel;
+    private async fetchAlbums(albumUris: string[]): Promise<AlbumModel[]> {
+        let dict = await this.mopidyProxy.lookup(albumUris);
+        let albumModels = Object.keys(dict).map(async albumUri => {
+            let trackList = dict[albumUri] as models.Track[];
+            let albumModel: AlbumModel = {
+                type: ItemType.Album,
+                albumInfo: trackList[0].album,
+                tracks: trackList.map(track => track.uri),
+                imageUrl: await this.fetchLargestImageOrDefault(albumUri)
+            }
+            this.model.addItemsToLibraryCache([albumModel]);
+            return albumModel;
+        });
+        return await Promise.all(albumModels);
     }
 
     private async fetchAndConvertTracks(uri: string) {
-        let dict = await this.mopidyProxy.fetchTracks(uri);
+        let dict = await this.mopidyProxy.lookup(uri);
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => {
             let model = transformTrackDataToModel(track);
@@ -355,13 +370,13 @@ export class Controller extends Commands implements DataRequester{
             };
             return streamModel;
         } else {
-            let album = await this.lookupAlbumCached(track.track.album.uri);
-            return {track, album};
+            let album = await this.lookupAlbumsCached([track.track.album.uri]);
+            return {track, album: album[0]};
         }
     }
 
     async getExpandedAlbumModel(albumUri: AlbumUri): Promise<ExpandedAlbumModel> {
-        let album = await this.lookupAlbumCached(albumUri) as AlbumModel;
+        let album =  (await this.lookupAlbumsCached([albumUri]))[0];
         let meta = await this.getMetaDataCached(albumUri);
         let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
         return {album, tracks, meta};
@@ -480,16 +495,8 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchAllAlbums() {
-        //get all the albums.
-        //first refs:
         let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
-        let albumsPromises = albumRefs.map(async ref => {
-            return await this.lookupAlbumCached(ref.uri);
-        });
-
-        let albums = await Promise.all(albumsPromises);
-
-        console.log(albums);
+        return await this.lookupAlbumsCached(albumRefs.map(ref => ref.uri));
     }
 
     async addCurrentSearchResultsToPlayer() {
@@ -497,5 +504,12 @@ export class Controller extends Commands implements DataRequester{
         let trackList = await this.player.add(results.refs.map(r => r.ref.ref.uri));
     }
 
+    async lookupAllTracks(uris: AllUris[]) {
+        let results = await this.mopidyProxy.lookup(uris);
+        Object.keys(results).forEach(trackUri => {
+            let track = results[trackUri][0];
+            this.model.addItemsToLibraryCache([transformTrackDataToModel(track)]);
+        })
+    }
 }
 
