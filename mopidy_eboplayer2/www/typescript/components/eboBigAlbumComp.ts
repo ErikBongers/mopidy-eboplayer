@@ -76,11 +76,6 @@ export class EboBigAlbumComp extends EboComponent {
                     #bottom {
                         overflow: hidden;
                     }
-                    #buttons {
-                        display: flex;
-                        flex-direction: row;
-                        margin-bottom: .5em;
-                    }
                 }
                 #wrapper.front {
                     #back {
@@ -119,10 +114,7 @@ export class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <div id="buttons">
-                        <button id="btnPlay" class="roundBorder">Play</button>
-                        <button id="btnAdd" class="roundBorder">Add</button>
-                    </div>                
+                    <ebo-list-button-bar></ebo-list-button-bar>
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
@@ -159,24 +151,6 @@ export class EboBigAlbumComp extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
-        this.addShadowEventListener("btnPlay", "click", (ev) => {
-            this.onBtnPlayClick();
-        });
-        this.addShadowEventListener("btnAdd", "click", (ev) => {
-            this.onBtnAddClick();
-        });
-        this.requestUpdate();
-    }
-
-    private onBtnPlayClick() {
-        this.dispatchEvent(new Event(EboplayerEvents.playAlbumClicked));
-    }
-
-    private onBtnAddClick() {
-        this.dispatchEvent(new Event(EboplayerEvents.addAlbumClicked));
-    }
-
     override update(shadow:ShadowRoot) {
         ["name", "extra"].forEach(attName => {
             shadow.getElementById(attName).innerHTML = this[attName];
@@ -190,6 +164,9 @@ export class EboBigAlbumComp extends EboComponent {
             img.src = this.img;
         } else
             img.style.visibility = "hidden";
+    }
+
+    override render(shadow:ShadowRoot) {
     }
 
     private onActiveTrackChanged() {

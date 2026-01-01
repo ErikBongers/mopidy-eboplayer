@@ -732,7 +732,7 @@ let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
 	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
 	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
-	EboplayerEvents$1["playAlbumClicked"] = "eboplayer.playAlbumClicked";
+	EboplayerEvents$1["playListClicked"] = "eboplayer.playListClicked";
 	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
 	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
 	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
@@ -3069,7 +3069,7 @@ var MainView = class extends View {
 			this.onAlbumClick();
 		});
 		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEventListener(EboplayerEvents.playAlbumClicked, () => {
+		albumComp.addEventListener(EboplayerEvents.playListClicked, () => {
 			this.onAlbumPlayClick();
 		});
 		albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {
@@ -3794,11 +3794,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                     #bottom {
                         overflow: hidden;
                     }
-                    #buttons {
-                        display: flex;
-                        flex-direction: row;
-                        margin-bottom: .5em;
-                    }
                 }
                 #wrapper.front {
                     #back {
@@ -3835,10 +3830,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <div id="buttons">
-                        <button id="btnPlay" class="roundBorder">Play</button>
-                        <button id="btnAdd" class="roundBorder">Add</button>
-                    </div>                
+                    <ebo-list-button-bar></ebo-list-button-bar>
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
@@ -3871,21 +3863,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		}
 		this.requestUpdate();
 	}
-	render(shadow) {
-		this.addShadowEventListener("btnPlay", "click", (ev) => {
-			this.onBtnPlayClick();
-		});
-		this.addShadowEventListener("btnAdd", "click", (ev) => {
-			this.onBtnAddClick();
-		});
-		this.requestUpdate();
-	}
-	onBtnPlayClick() {
-		this.dispatchEvent(new Event(EboplayerEvents.playAlbumClicked));
-	}
-	onBtnAddClick() {
-		this.dispatchEvent(new Event(EboplayerEvents.addAlbumClicked));
-	}
 	update(shadow) {
 		["name", "extra"].forEach((attName) => {
 			shadow.getElementById(attName).innerHTML = this[attName];
@@ -3899,6 +3876,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			img.src = this.img;
 		} else img.style.visibility = "hidden";
 	}
+	render(shadow) {}
 	onActiveTrackChanged() {
 		let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view");
 		tracksComp.activeTrackUri = this.activeTrackUri;
@@ -4196,6 +4174,55 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboListButtonBar.ts
+var EboListButtonBar = class EboListButtonBar extends EboComponent {
+	static tagName = "ebo-list-button-bar";
+	static observedAttributes = ["show_add_btn", "show_play_btn"];
+	show_add_btn;
+	show_play_btn;
+	static styleText = `
+        <style>
+            #buttons {
+                display: flex;
+                flex-direction: row;
+                margin-bottom: .5em;
+            }
+        </style>
+    `;
+	static htmlText = `
+        <div id="buttons">
+            <button id="btnPlay" class="roundBorder">Play</button>
+            <button id="btnAdd" class="roundBorder">Add</button>
+        </div>                   
+    `;
+	constructor() {
+		super(EboListButtonBar.styleText, EboListButtonBar.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "show_add_btn":
+			case "show_play_btn":
+				this.updateBoolAtrribute(newValue, name);
+				break;
+		}
+		this.requestRender();
+	}
+	updateBoolAtrribute(newValue, name) {
+		if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+		this[name] = newValue == "true";
+	}
+	render(shadow) {
+		this.addShadowEventListener("btnPlay", "click", (ev) => {
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playListClicked));
+		});
+		this.addShadowEventListener("btnAdd", "click", (ev) => {
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addAlbumClicked));
+		});
+		this.requestUpdate();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl;
@@ -4213,6 +4240,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboBigAlbumComp);
 		EboComponent.define(EboButtonBar);
 		EboComponent.define(EboMenuButton);
+		EboComponent.define(EboListButtonBar);
 		setupStuff();
 	});
 });

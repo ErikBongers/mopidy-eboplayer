@@ -20,6 +20,7 @@ import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
 import {EboButtonBar} from "./components/eboButtonBarComp";
 import {Views} from "./modelTypes";
 import {EboMenuButton} from "./components/eboMenuButton";
+import {EboListButtonBar} from "./components/eboListButtonBar";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -44,6 +45,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboBigAlbumComp);
             EboComponent.define(EboButtonBar);
             EboComponent.define(EboMenuButton);
+            EboComponent.define(EboListButtonBar);
 
             setupStuff();
         });

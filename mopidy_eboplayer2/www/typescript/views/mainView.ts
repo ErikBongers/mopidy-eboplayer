@@ -51,7 +51,7 @@ export class MainView extends View {
             this.onAlbumClick();
         });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEventListener(EboplayerEvents.playAlbumClicked, () => {
+        albumComp.addEventListener(EboplayerEvents.playListClicked, () => {
             this.onAlbumPlayClick();
         });
         albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {

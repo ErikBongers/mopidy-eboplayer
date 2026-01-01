@@ -20,7 +20,7 @@ export enum EboplayerEvents {
     longPress =                     "eboplayer.longPress",
     messageChanged =                "eboplayer.messageChanged",
     pausePressed =                  "eboplayer.pausePressed",
-    playAlbumClicked =              "eboplayer.playAlbumClicked",
+    playListClicked =               "eboplayer.playListClicked",
     playPressed =                   "eboplayer.playPressed",
     playStateChanged =              "eboplayer.playbackStateChanged",
     playTrackClicked =              "eboplayer.playTrackClicked",
