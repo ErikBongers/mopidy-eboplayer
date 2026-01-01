@@ -30,7 +30,7 @@ export class Controller extends Commands implements DataRequester{
     public localStorageProxy: LocalStorageProxy;
     private eboWebSocketCtrl: JsonRpcController;
     readonly baseUrl: string;
-    readonly DEFAULT_IMG_URL = "images/default_cover.png";
+    public static readonly DEFAULT_IMG_URL = "images/default_cover.png";
     protected player: PlayController;
 
     constructor(model: Model, mopidy: Mopidy, eboWebSocketCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController) {
@@ -196,16 +196,23 @@ export class Controller extends Commands implements DataRequester{
             this.model.setActiveStreamLinesHistory(NoStreamTitles);
     }
 
-    private async fetchLargestImageOrDefault(uri: string) {
-        let images = await this.mopidyProxy.fetchImages([uri]);
-        let arr = images[uri];
-        arr.sort((imgA, imgB) => (imgA.width * imgA.height) - (imgB.width * imgB.height));
-        if(arr.length == 0)
-            return this.DEFAULT_IMG_URL;
-        let imageUrl = arr.pop().uri;
-        if(imageUrl == "")
-             imageUrl = this.DEFAULT_IMG_URL;
-        return this.baseUrl + imageUrl;
+    private async fetchLargestImagesOrDefault(uris: AllUris[]) {
+        function getImageUrl(uri: string, baseUrl: string) {
+            let arr = images[uri];
+            arr.sort((imgA, imgB) => (imgA.width * imgA.height) - (imgB.width * imgB.height));
+            if (arr.length == 0)
+                return Controller.DEFAULT_IMG_URL;
+            let imageUrl = arr.pop().uri;
+            if (imageUrl == "")
+                imageUrl = Controller.DEFAULT_IMG_URL;
+            return baseUrl + imageUrl;
+        }
+        let images = await this.mopidyProxy.fetchImages(uris);
+        let mappedImage: [string, string][] = uris.map(uri => {
+            let imageUrl = getImageUrl(uri, this.baseUrl);
+            return [uri as string, imageUrl];
+        });
+        return new Map(mappedImage);
     }
 
     setAndSaveBrowseFilter(filter: BrowseFilter) {
@@ -328,18 +335,22 @@ export class Controller extends Commands implements DataRequester{
 
     private async fetchAlbums(albumUris: string[]): Promise<AlbumModel[]> {
         let dict = await this.mopidyProxy.lookup(albumUris);
-        let albumModels = Object.keys(dict).map(async albumUri => {
+        let albumModelsPending = Object.keys(dict).map(async albumUri => {
             let trackList = dict[albumUri] as models.Track[];
             let albumModel: AlbumModel = {
                 type: ItemType.Album,
                 albumInfo: trackList[0].album,
                 tracks: trackList.map(track => track.uri),
-                imageUrl: await this.fetchLargestImageOrDefault(albumUri)
+                imageUrl: undefined,
             }
             this.model.addItemsToLibraryCache([albumModel]);
             return albumModel;
         });
-        return await Promise.all(albumModels);
+        let albumModels = await Promise.all(albumModelsPending);
+
+        let images = await this.fetchLargestImagesOrDefault(albumModels.map(album => album.albumInfo.uri));
+        albumModels.forEach(album => album.imageUrl = images.get(album.albumInfo.uri));
+        return albumModels;
     }
 
     private async fetchAndConvertTracks(uri: string) {
@@ -352,7 +363,7 @@ export class Controller extends Commands implements DataRequester{
                 if(images[track.uri].length > 0)
                     model.imageUrl = this.baseUrl + images[track.uri][0].uri;
                 else
-                    model.imageUrl = this.DEFAULT_IMG_URL;
+                    model.imageUrl = Controller.DEFAULT_IMG_URL;
             }
             return model;
         });

@@ -1649,14 +1649,14 @@ var WebProxy = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/controllers/controller.ts
 const LIBRARY_PROTOCOL = "eboback:";
-var Controller = class extends Commands {
+var Controller = class Controller extends Commands {
 	model;
 	mopidyProxy;
 	webProxy;
 	localStorageProxy;
 	eboWebSocketCtrl;
 	baseUrl;
-	DEFAULT_IMG_URL = "images/default_cover.png";
+	static DEFAULT_IMG_URL = "images/default_cover.png";
 	player;
 	constructor(model, mopidy, eboWebSocketCtrl, mopdyProxy, player) {
 		super(mopidy);
@@ -1779,13 +1779,21 @@ var Controller = class extends Commands {
 		if (this.model.getPlayState() == "playing") await this.webProxy.fetchActiveStreamLines();
 		else this.model.setActiveStreamLinesHistory(NoStreamTitles);
 	}
-	async fetchLargestImageOrDefault(uri) {
-		let arr = (await this.mopidyProxy.fetchImages([uri]))[uri];
-		arr.sort((imgA, imgB) => imgA.width * imgA.height - imgB.width * imgB.height);
-		if (arr.length == 0) return this.DEFAULT_IMG_URL;
-		let imageUrl = arr.pop().uri;
-		if (imageUrl == "") imageUrl = this.DEFAULT_IMG_URL;
-		return this.baseUrl + imageUrl;
+	async fetchLargestImagesOrDefault(uris) {
+		function getImageUrl(uri, baseUrl) {
+			let arr = images[uri];
+			arr.sort((imgA, imgB) => imgA.width * imgA.height - imgB.width * imgB.height);
+			if (arr.length == 0) return Controller.DEFAULT_IMG_URL;
+			let imageUrl = arr.pop().uri;
+			if (imageUrl == "") imageUrl = Controller.DEFAULT_IMG_URL;
+			return baseUrl + imageUrl;
+		}
+		let images = await this.mopidyProxy.fetchImages(uris);
+		let mappedImage = uris.map((uri) => {
+			let imageUrl = getImageUrl(uri, this.baseUrl);
+			return [uri, imageUrl];
+		});
+		return new Map(mappedImage);
 	}
 	setAndSaveBrowseFilter(filter) {
 		this.localStorageProxy.saveCurrentBrowseFilter(filter);
@@ -1886,18 +1894,21 @@ var Controller = class extends Commands {
 	}
 	async fetchAlbums(albumUris) {
 		let dict = await this.mopidyProxy.lookup(albumUris);
-		let albumModels = Object.keys(dict).map(async (albumUri) => {
+		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
 			let trackList = dict[albumUri];
 			let albumModel = {
 				type: ItemType.Album,
 				albumInfo: trackList[0].album,
 				tracks: trackList.map((track) => track.uri),
-				imageUrl: await this.fetchLargestImageOrDefault(albumUri)
+				imageUrl: void 0
 			};
 			this.model.addItemsToLibraryCache([albumModel]);
 			return albumModel;
 		});
-		return await Promise.all(albumModels);
+		let albumModels = await Promise.all(albumModelsPending);
+		let images = await this.fetchLargestImagesOrDefault(albumModels.map((album) => album.albumInfo.uri));
+		albumModels.forEach((album) => album.imageUrl = images.get(album.albumInfo.uri));
+		return albumModels;
 	}
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => {
@@ -1905,7 +1916,7 @@ var Controller = class extends Commands {
 			if (model.type == ItemType.Stream) {
 				let images = await this.mopidyProxy.fetchImages([track.uri]);
 				if (images[track.uri].length > 0) model.imageUrl = this.baseUrl + images[track.uri][0].uri;
-				else model.imageUrl = this.DEFAULT_IMG_URL;
+				else model.imageUrl = Controller.DEFAULT_IMG_URL;
 			}
 			return model;
 		});
