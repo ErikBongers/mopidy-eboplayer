@@ -13,7 +13,7 @@ export class MainView extends View {
             this.onBrowseButtonClick();
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        browseComp.addEventListener("browseFilterChanged", (ev) => {
+        browseComp.addEventListener("browseFilterChanged", () => {
             getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
         });
         browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev: CustomEvent<BreadcrumbArgs>) => {
@@ -47,21 +47,21 @@ export class MainView extends View {
             await this.onAlbumToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
-        currentTrackBigViewComp.addEventListener("albumClick", async (e) => {
+        currentTrackBigViewComp.addEventListener("albumClick", async () => {
             this.onAlbumClick();
         });
-        document.body.addEventListener(EboplayerEvents.playItemListClicked, (ev: EboplayerEvent<GuiSourceArgs>) => {
-            this.onPlayItemListClick(ev);
+        document.body.addEventListener(EboplayerEvents.playItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
+            await this.onPlayItemListClick(ev);
         });
-        document.body.addEventListener(EboplayerEvents.addItemListClicked, () => {
-            this.onAddItemListClick();
+        document.body.addEventListener(EboplayerEvents.addItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
+            await this.onAddItemListClick(ev);
         });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<UriArgs>) => {
-            this.onPlayTrackClicked(ev.detail.uri);
+        albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev: CustomEvent<UriArgs>) => {
+            await this.onPlayTrackClicked(ev.detail.uri);
         });
-        albumComp.addEventListener(EboplayerEvents.addTrackClicked, (ev: CustomEvent<UriArgs>) => {
-            this.onAddTrackClicked(ev.detail.uri);
+        albumComp.addEventListener(EboplayerEvents.addTrackClicked, async (ev: CustomEvent<UriArgs>) => {
+            await this.onAddTrackClicked(ev.detail.uri);
         });
     }
 
