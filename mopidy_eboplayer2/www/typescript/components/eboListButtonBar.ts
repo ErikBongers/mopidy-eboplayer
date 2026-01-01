@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
-import {EboplayerEvent, EboplayerEvents, UriArgs} from "../events";
+import {EboplayerEvent, EboplayerEvents, GuiSourceArgs, UriArgs} from "../events";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 
 export class EboListButtonBar extends EboComponent {
@@ -48,10 +48,10 @@ export class EboListButtonBar extends EboComponent {
 
     render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<UriArgs>(EboplayerEvents.playListClicked)); //todo: override dispatchEvent to make it tied to EboplayerEvent?
+            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.playItemListClicked, {source: "albumView"})); //todo: override dispatchEvent to make it tied to EboplayerEvent?
         });
         this.addShadowEventListener("btnAdd", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<UriArgs>(EboplayerEvents.addAlbumClicked));
+            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.addItemListClicked, {source: "albumView"}));
         });
         this.requestUpdate();
     }

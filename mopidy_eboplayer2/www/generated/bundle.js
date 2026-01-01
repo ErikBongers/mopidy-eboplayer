@@ -714,7 +714,7 @@ let Views = /* @__PURE__ */ function(Views$1) {
 //#region mopidy_eboplayer2/www/typescript/events.ts
 let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
-	EboplayerEvents$1["addAlbumClicked"] = "eboplayer.addAlbumClicked";
+	EboplayerEvents$1["addItemListClicked"] = "eboplayer.addItemListClicked";
 	EboplayerEvents$1["addTrackClicked"] = "eboplayer.addTrackClicked";
 	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
 	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
@@ -732,7 +732,7 @@ let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
 	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
 	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
-	EboplayerEvents$1["playListClicked"] = "eboplayer.playListClicked";
+	EboplayerEvents$1["playItemListClicked"] = "eboplayer.playItemListClicked";
 	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
 	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
 	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
@@ -3069,11 +3069,11 @@ var MainView = class extends View {
 			this.onAlbumClick();
 		});
 		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEventListener(EboplayerEvents.playListClicked, () => {
-			this.onAlbumPlayClick();
+		albumComp.addEventListener(EboplayerEvents.playItemListClicked, (ev) => {
+			this.onPlayItemListClick(ev);
 		});
-		albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {
-			this.onAlbumAddClick();
+		albumComp.addEventListener(EboplayerEvents.addItemListClicked, () => {
+			this.onAddItemListClick();
 		});
 		albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev) => {
 			this.onPlayTrackClicked(ev.detail.uri);
@@ -3197,11 +3197,13 @@ var MainView = class extends View {
 		albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 		albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
 	}
-	onAlbumPlayClick() {
-		let albumComp = document.getElementById("bigAlbumView");
-		playerState_default().getController().playUri(albumComp.dataset.albumUri);
+	onPlayItemListClick(ev) {
+		if (ev.detail.source == "albumView") {
+			let albumComp = document.getElementById("bigAlbumView");
+			playerState_default().getController().playUri(albumComp.dataset.albumUri);
+		}
 	}
-	onAlbumAddClick() {
+	onAddItemListClick() {
 		let albumComp = document.getElementById("bigAlbumView");
 		playerState_default().getController().addUri(albumComp.dataset.albumUri);
 	}
@@ -3462,7 +3464,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
 		btn.setAttribute("pressed", this._browseFilter[propName].toString());
-		btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
+		if (this.results) btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
@@ -4213,10 +4215,10 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playListClicked));
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playItemListClicked, { source: "albumView" }));
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addAlbumClicked));
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addItemListClicked, { source: "albumView" }));
 		});
 		this.requestUpdate();
 	}

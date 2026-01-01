@@ -2,7 +2,7 @@ import {AllUris} from "./modelTypes";
 
 export enum EboplayerEvents {
     activeStreamLinesChanged =      "eboplayer.activeStreamLinesChanged",
-    addAlbumClicked =               "eboplayer.addAlbumClicked",
+    addItemListClicked =            "eboplayer.addItemListClicked",
     addTrackClicked =               "eboplayer.addTrackClicked",
     albumToViewChanged =            "eboplayer.albumToViewChanged",
     breadCrumbClick =               "eboplayer.breadCrumbClick",
@@ -20,7 +20,7 @@ export enum EboplayerEvents {
     longPress =                     "eboplayer.longPress",
     messageChanged =                "eboplayer.messageChanged",
     pausePressed =                  "eboplayer.pausePressed",
-    playListClicked =               "eboplayer.playListClicked",
+    playItemListClicked =           "eboplayer.playItemListClicked",
     playPressed =                   "eboplayer.playPressed",
     playStateChanged =              "eboplayer.playbackStateChanged",
     playTrackClicked =              "eboplayer.playTrackClicked",
@@ -32,8 +32,10 @@ export enum EboplayerEvents {
     volumeChanged =                 "eboplayer.volumeChanged",
 }
 
+//todo typescript can map events to args via a global map: https://dev.to/stuffbreaker/creating-strongly-typed-events-for-web-components-1jem
+
 export class EboplayerEvent<T extends EboEventArgs> extends CustomEvent<T> {
-    constructor(event: EboplayerEvents, detail?: T) {
+    constructor(event: EboplayerEvents, detail?: T) { //todo: make detail mandatory! (but allow undefined or null.
         super(event, {detail, bubbles: true, composed: true, cancelable: true});
     }
 }
@@ -49,4 +51,9 @@ export interface BrowseResultArgs extends EboEventArgs {
     "label": string,
     "uri": AllUris,
     "type": string,
+}
+
+export type GuiSource = "albumView" | "todo...";
+export interface GuiSourceArgs extends EboEventArgs {
+    "source": GuiSource
 }

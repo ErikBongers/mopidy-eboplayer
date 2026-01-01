@@ -5,7 +5,7 @@ import {AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedSt
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
-import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs} from "../events";
+import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEvent, GuiSourceArgs} from "../events";
 
 export class MainView extends View {
     bind() {
@@ -51,11 +51,11 @@ export class MainView extends View {
             this.onAlbumClick();
         });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEventListener(EboplayerEvents.playListClicked, () => {
-            this.onAlbumPlayClick();
+        albumComp.addEventListener(EboplayerEvents.playItemListClicked, (ev: EboplayerEvent<GuiSourceArgs>) => {
+            this.onPlayItemListClick(ev);
         });
-        albumComp.addEventListener(EboplayerEvents.addAlbumClicked, () => {
-            this.onAlbumAddClick();
+        albumComp.addEventListener(EboplayerEvents.addItemListClicked, () => {
+            this.onAddItemListClick();
         });
         albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev: CustomEvent<UriArgs>) => {
             this.onPlayTrackClicked(ev.detail.uri);
@@ -186,13 +186,14 @@ export class MainView extends View {
         albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
     }
 
-    private onAlbumPlayClick() {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        getState().getController().playUri(albumComp.dataset.albumUri);
-
+    private onPlayItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
+        if(ev.detail.source == "albumView") {
+            let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+            getState().getController().playUri(albumComp.dataset.albumUri);
+        }
     }
 
-    private onAlbumAddClick() {
+    private onAddItemListClick() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         getState().getController().addUri(albumComp.dataset.albumUri);
     }
