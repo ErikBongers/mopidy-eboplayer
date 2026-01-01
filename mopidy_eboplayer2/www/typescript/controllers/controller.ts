@@ -495,7 +495,6 @@ export class Controller extends Commands implements DataRequester{
     async addCurrentSearchResultsToPlayer() {
         let results = getState()?.getModel()?.getCurrentSearchResults() ?? { refs: [], availableRefTypes: new Set()}; //todo: the empty result set should not be initialized here but in model.
         let trackList = await this.player.add(results.refs.map(r => r.ref.ref.uri));
-        await this.player.play(trackList[0].tlid);
     }
 
 }
