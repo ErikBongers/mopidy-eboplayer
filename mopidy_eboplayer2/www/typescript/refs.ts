@@ -21,6 +21,8 @@ export interface SearchResults {
     availableRefTypes: Set<RefType>;
 }
 
+export const EmptySearchResults: SearchResults = {refs: [], availableRefTypes: new Set()};
+
 export abstract class Refs {
     searchResults: SearchResults;
 

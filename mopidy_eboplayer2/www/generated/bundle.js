@@ -572,6 +572,164 @@ const getState = () => state;
 var playerState_default = getState;
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/refs.ts
+const EmptySearchResults = {
+	refs: [],
+	availableRefTypes: /* @__PURE__ */ new Set()
+};
+var Refs = class {
+	searchResults;
+	get browseFilter() {
+		return this._browseFilter;
+	}
+	constructor() {
+		this.searchResults = {
+			refs: [],
+			availableRefTypes: /* @__PURE__ */ new Set()
+		};
+	}
+	set browseFilter(value) {
+		this._browseFilter = value;
+	}
+	_browseFilter;
+	calculateWeight(result, browseFilter) {
+		if (result.ref.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.ref.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (!browseFilter.searchText) result.weight += 1;
+	}
+	setFilter(browseFilter) {
+		this._browseFilter = browseFilter;
+	}
+	applyFilter(searchResults) {
+		searchResults.forEach((result) => {
+			this.calculateWeight(result, this.browseFilter);
+		});
+		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
+			if (b.weight === a.weight) return a.ref.ref.name.localeCompare(b.ref.ref.name);
+			return b.weight - a.weight;
+		});
+	}
+	getSearchResults() {
+		return this.searchResults;
+	}
+	getAvailableRefTypes(refs) {
+		let distinctTypes = refs.map((r) => r.type).reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
+		console.log(distinctTypes);
+		return distinctTypes;
+	}
+};
+var AllRefs = class extends Refs {
+	roots;
+	sub;
+	tracks;
+	albums;
+	artists;
+	genres;
+	radios;
+	playlists;
+	availableRefTypes;
+	constructor(roots, sub, tracks, albums, artists, genres, radios, playlists) {
+		super();
+		this.roots = roots;
+		this.sub = sub;
+		this.tracks = tracks.map((track) => ({
+			type: "track",
+			ref: track
+		}));
+		this.albums = albums.map((album) => ({
+			type: "album",
+			ref: album
+		}));
+		this.artists = artists.map((artist) => ({
+			type: "artist",
+			ref: artist
+		}));
+		this.genres = genres.map((genre) => ({
+			type: "genre",
+			ref: genre
+		}));
+		this.radios = radios.map((radio) => ({
+			type: "radio",
+			ref: radio
+		}));
+		this.playlists = playlists.map((album) => ({
+			type: "playlist",
+			ref: album
+		}));
+		this.availableRefTypes = /* @__PURE__ */ new Set();
+		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.artists).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.genres).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.radios).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.playlists).forEach((type) => this.availableRefTypes.add(type));
+	}
+	filter() {
+		this.searchResults = {
+			refs: this.applyFilter(this.prefillWithTypes(this.browseFilter)),
+			availableRefTypes: this.availableRefTypes
+		};
+	}
+	prefillWithTypes(browseFilter) {
+		let refs = [];
+		if (browseFilter.album || browseFilter.isNoTypeSelected()) refs.push(...this.albums.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.artist || browseFilter.isNoTypeSelected()) refs.push(...this.artists.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.track || browseFilter.isNoTypeSelected()) refs.push(...this.tracks.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.genre || browseFilter.isNoTypeSelected()) refs.push(...this.genres.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.radio || browseFilter.isNoTypeSelected()) refs.push(...this.radios.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) refs.push(...this.playlists.map((ref) => ({
+			ref,
+			weight: 0
+		})));
+		return refs;
+	}
+};
+var SomeRefs = class SomeRefs extends Refs {
+	refs;
+	availableRefTypes;
+	constructor(refs) {
+		super();
+		this.refs = refs.map((r) => {
+			return {
+				ref: r,
+				type: SomeRefs.toRefType(r)
+			};
+		});
+		this.availableRefTypes = this.getAvailableRefTypes(this.refs);
+	}
+	static toRefType(ref) {
+		if (!["directory", "track"].includes(ref.type)) return ref.type;
+		if (ref.uri.startsWith("eboback:stream:")) return "radio";
+		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
+		return ref.type;
+	}
+	filter() {
+		this.searchResults = {
+			refs: this.applyFilter(this.refs.map((ref) => ({
+				ref,
+				weight: 0
+			}))),
+			availableRefTypes: this.availableRefTypes
+		};
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/util/idStack.ts
 var IdStack = class extends Array {
 	resetTo(id) {
@@ -813,10 +971,7 @@ var Model = class extends EventTarget {
 		this.allRefs = refs;
 	}
 	getCurrentSearchResults() {
-		return this.currentRefs?.getSearchResults() ?? {
-			refs: [],
-			availableRefTypes: /* @__PURE__ */ new Set()
-		};
+		return this.currentRefs?.getSearchResults() ?? EmptySearchResults;
 	}
 	getAllRefs = () => this.allRefs;
 	filterCurrentRefs() {
@@ -1454,160 +1609,6 @@ function console_yellow(msg) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/refs.ts
-var Refs = class {
-	searchResults;
-	get browseFilter() {
-		return this._browseFilter;
-	}
-	constructor() {
-		this.searchResults = {
-			refs: [],
-			availableRefTypes: /* @__PURE__ */ new Set()
-		};
-	}
-	set browseFilter(value) {
-		this._browseFilter = value;
-	}
-	_browseFilter;
-	calculateWeight(result, browseFilter) {
-		if (result.ref.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
-		if (result.ref.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
-		if (!browseFilter.searchText) result.weight += 1;
-	}
-	setFilter(browseFilter) {
-		this._browseFilter = browseFilter;
-	}
-	applyFilter(searchResults) {
-		searchResults.forEach((result) => {
-			this.calculateWeight(result, this.browseFilter);
-		});
-		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
-			if (b.weight === a.weight) return a.ref.ref.name.localeCompare(b.ref.ref.name);
-			return b.weight - a.weight;
-		});
-	}
-	getSearchResults() {
-		return this.searchResults;
-	}
-	getAvailableRefTypes(refs) {
-		let distinctTypes = refs.map((r) => r.type).reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
-		console.log(distinctTypes);
-		return distinctTypes;
-	}
-};
-var AllRefs = class extends Refs {
-	roots;
-	sub;
-	tracks;
-	albums;
-	artists;
-	genres;
-	radios;
-	playlists;
-	availableRefTypes;
-	constructor(roots, sub, tracks, albums, artists, genres, radios, playlists) {
-		super();
-		this.roots = roots;
-		this.sub = sub;
-		this.tracks = tracks.map((track) => ({
-			type: "track",
-			ref: track
-		}));
-		this.albums = albums.map((album) => ({
-			type: "album",
-			ref: album
-		}));
-		this.artists = artists.map((artist) => ({
-			type: "artist",
-			ref: artist
-		}));
-		this.genres = genres.map((genre) => ({
-			type: "genre",
-			ref: genre
-		}));
-		this.radios = radios.map((radio) => ({
-			type: "radio",
-			ref: radio
-		}));
-		this.playlists = playlists.map((album) => ({
-			type: "playlist",
-			ref: album
-		}));
-		this.availableRefTypes = /* @__PURE__ */ new Set();
-		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
-		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
-		this.getAvailableRefTypes(this.artists).forEach((type) => this.availableRefTypes.add(type));
-		this.getAvailableRefTypes(this.genres).forEach((type) => this.availableRefTypes.add(type));
-		this.getAvailableRefTypes(this.radios).forEach((type) => this.availableRefTypes.add(type));
-		this.getAvailableRefTypes(this.playlists).forEach((type) => this.availableRefTypes.add(type));
-	}
-	filter() {
-		this.searchResults = {
-			refs: this.applyFilter(this.prefillWithTypes(this.browseFilter)),
-			availableRefTypes: this.availableRefTypes
-		};
-	}
-	prefillWithTypes(browseFilter) {
-		let refs = [];
-		if (browseFilter.album || browseFilter.isNoTypeSelected()) refs.push(...this.albums.map((ref) => ({
-			ref,
-			weight: 0
-		})));
-		if (browseFilter.artist || browseFilter.isNoTypeSelected()) refs.push(...this.artists.map((ref) => ({
-			ref,
-			weight: 0
-		})));
-		if (browseFilter.track || browseFilter.isNoTypeSelected()) refs.push(...this.tracks.map((ref) => ({
-			ref,
-			weight: 0
-		})));
-		if (browseFilter.genre || browseFilter.isNoTypeSelected()) refs.push(...this.genres.map((ref) => ({
-			ref,
-			weight: 0
-		})));
-		if (browseFilter.radio || browseFilter.isNoTypeSelected()) refs.push(...this.radios.map((ref) => ({
-			ref,
-			weight: 0
-		})));
-		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) refs.push(...this.playlists.map((ref) => ({
-			ref,
-			weight: 0
-		})));
-		return refs;
-	}
-};
-var SomeRefs = class SomeRefs extends Refs {
-	refs;
-	availableRefTypes;
-	constructor(refs) {
-		super();
-		this.refs = refs.map((r) => {
-			return {
-				ref: r,
-				type: SomeRefs.toRefType(r)
-			};
-		});
-		this.availableRefTypes = this.getAvailableRefTypes(this.refs);
-	}
-	static toRefType(ref) {
-		if (!["directory", "track"].includes(ref.type)) return ref.type;
-		if (ref.uri.startsWith("eboback:stream:")) return "radio";
-		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
-		return ref.type;
-	}
-	filter() {
-		this.searchResults = {
-			refs: this.applyFilter(this.refs.map((ref) => ({
-				ref,
-				weight: 0
-			}))),
-			availableRefTypes: this.availableRefTypes
-		};
-	}
-};
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
 var WebProxy = class {
 	model;
@@ -2016,14 +2017,9 @@ var Controller = class extends Commands {
 		let albums = await Promise.all(albumsPromises);
 		console.log(albums);
 	}
-	async playCurrentSearchResults() {
-		let results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
-			refs: [],
-			availableRefTypes: /* @__PURE__ */ new Set()
-		};
-		await this.mopidyProxy.clearTrackList();
-		let trackList = await this.player.add(results.refs.map((r) => r.ref.ref.uri));
-		await this.player.play(trackList[0].tlid);
+	async addCurrentSearchResultsToPlayer() {
+		let results = playerState_default()?.getModel()?.getCurrentSearchResults();
+		await this.player.add(results.refs.map((r) => r.ref.ref.uri));
 	}
 };
 
@@ -2897,7 +2893,7 @@ var MainView = class extends View {
 			this.onBrowseButtonClick();
 		});
 		let browseComp = document.getElementById("browseView");
-		browseComp.addEventListener("browseFilterChanged", (ev) => {
+		browseComp.addEventListener("browseFilterChanged", () => {
 			playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
 		});
 		browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev) => {
@@ -2930,21 +2926,21 @@ var MainView = class extends View {
 		playerState_default().getModel().addEventListener(EboplayerEvents.albumToViewChanged, async () => {
 			await this.onAlbumToViewChanged();
 		});
-		document.getElementById("currentTrackBigView").addEventListener("albumClick", async (e) => {
+		document.getElementById("currentTrackBigView").addEventListener("albumClick", async () => {
 			this.onAlbumClick();
 		});
-		document.body.addEventListener(EboplayerEvents.playItemListClicked, (ev) => {
-			this.onPlayItemListClick(ev);
+		document.body.addEventListener(EboplayerEvents.playItemListClicked, async (ev) => {
+			await this.onPlayItemListClick(ev);
 		});
-		document.body.addEventListener(EboplayerEvents.addItemListClicked, () => {
-			this.onAddItemListClick();
+		document.body.addEventListener(EboplayerEvents.addItemListClicked, async (ev) => {
+			await this.onAddItemListClick(ev);
 		});
 		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEventListener(EboplayerEvents.playTrackClicked, (ev) => {
-			this.onPlayTrackClicked(ev.detail.uri);
+		albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev) => {
+			await this.onPlayTrackClicked(ev.detail.uri);
 		});
-		albumComp.addEventListener(EboplayerEvents.addTrackClicked, (ev) => {
-			this.onAddTrackClicked(ev.detail.uri);
+		albumComp.addEventListener(EboplayerEvents.addTrackClicked, async (ev) => {
+			await this.onAddTrackClicked(ev.detail.uri);
 		});
 	}
 	onRefsFiltered() {
@@ -3064,15 +3060,23 @@ var MainView = class extends View {
 	}
 	async onPlayItemListClick(ev) {
 		if (ev.detail.source == "albumView") {
-			let albumComp = document.getElementById("bigAlbumView");
-			await playerState_default().getPlayer().clearAndPlay([albumComp.dataset.albumUri]);
+			let albumUri = playerState_default().getModel().getAlbumToView();
+			let album = await playerState_default().getController().lookupAlbumCached(albumUri);
+			await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
 			return;
 		}
-		if (ev.detail.source == "browseView") await playerState_default().getController().playCurrentSearchResults();
+		if (ev.detail.source == "browseView") {
+			await playerState_default().getPlayer().clear();
+			await playerState_default().getController().addCurrentSearchResultsToPlayer();
+			await playerState_default().getPlayer().play();
+		}
 	}
-	async onAddItemListClick() {
-		let albumComp = document.getElementById("bigAlbumView");
-		await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
+	async onAddItemListClick(ev) {
+		if (ev.detail.source == "albumView") {
+			let albumComp = document.getElementById("bigAlbumView");
+			await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
+		}
+		if (ev.detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
 	}
 	async onBrowseResultDblClick(uri) {
 		await playerState_default().getPlayer().clearAndPlay([uri]);
@@ -3115,7 +3119,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this._results = value;
 		this.renderResults();
 	}
-	_results;
+	_results = EmptySearchResults;
 	get browseFilter() {
 		return this._browseFilter;
 	}
@@ -4110,22 +4114,24 @@ var PlayController = class {
 		this.model = model;
 		this.mopidyProxy = mopidyProxy;
 	}
+	async clear() {
+		await this.mopidyProxy.clearTrackList();
+		this.model.setTrackList([]);
+	}
 	async clearAndPlay(uris) {
 		await this.mopidyProxy.clearTrackList();
 		let trackList = await this.add(uris);
-		this.play(trackList[0].tlid);
+		await this.play(trackList[0].tlid);
 	}
-	async play(tlid) {
-		this.mopidyProxy.playTracklistItem(tlid);
+	async play(tlid = void 0) {
+		tlid = tlid ?? this.model.getTrackList()[0].tlid;
+		await this.mopidyProxy.playTracklistItem(tlid);
 	}
 	async add(uris) {
 		let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
 		let trackList = numberedDictToArray(tracks);
-		this.setTracklist(trackList);
-		return trackList;
-	}
-	setTracklist(trackList) {
 		this.model.setTrackList(trackList);
+		return trackList;
 	}
 };
 

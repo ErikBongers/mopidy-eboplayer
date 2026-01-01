@@ -3,7 +3,7 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
 import {LIBRARY_PROTOCOL} from "../controllers/controller";
-import {RefType, SearchResults} from "../refs";
+import {EmptySearchResults, RefType, SearchResults} from "../refs";
 import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs, UriArgs} from "../events";
 import models from "../../js/mopidy";
 import ModelType = models.ModelType;
@@ -32,7 +32,7 @@ export class EboBrowseComp extends EboComponent {
         this.renderResults(); // don't render all, as user may be typing a search text.
     }
 
-    private _results: SearchResults;
+    private _results: SearchResults = EmptySearchResults;
 
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
