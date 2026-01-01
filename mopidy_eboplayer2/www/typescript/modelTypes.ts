@@ -103,7 +103,6 @@ export interface StreamTrackModel {
     type: "stream";
     track: models.Track;
     name: string,
-    infoLines: string[],
     imageUrl: string,
 }
 

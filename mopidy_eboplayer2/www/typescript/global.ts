@@ -62,7 +62,6 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
             type: "stream",
             track,
             name: track.name,
-            infoLines: [],
             imageUrl: undefined
         };
         return model;

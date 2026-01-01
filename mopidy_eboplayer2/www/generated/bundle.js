@@ -1574,7 +1574,6 @@ function transformTrackDataToModel(track) {
 		type: "stream",
 		track,
 		name: track.name,
-		infoLines: [],
 		imageUrl: void 0
 	};
 	let model = {
