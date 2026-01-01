@@ -161,7 +161,7 @@ export class EboButtonBar extends EboComponent {
         });
         let imgTag = shadow.getElementById("buttonBarImg") as HTMLImageElement;
         imgTag.addEventListener("click", (ev) => {
-            this.dispatchEvent(new Event(EboplayerEvents.albumClicked));
+            this.dispatchEvent(new Event(EboplayerEvents.buttonBarAlbumImgClicked));
         });
     }
 
