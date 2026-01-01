@@ -188,19 +188,27 @@ export class MainView extends View {
 
     private async onPlayItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
         if(ev.detail.source == "albumView") {
-            let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-            await getState().getPlayer().clearAndPlay([albumComp.dataset.albumUri]); //todo: don't get data from ui but from state.
+            let model = getState().getModel();
+            let albumUri = model.getAlbumToView();
+            let album = await getState().getController().lookupAlbumCached(albumUri);
+            await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
             return;
         }
         if(ev.detail.source == "browseView") {
-            await getState().getController().playCurrentSearchResults();
-
+            await getState().getPlayer().clear();
+            await getState().getController().addCurrentSearchResultsToPlayer();
+            await getState().getPlayer().play();
         }
     }
 
-    private async onAddItemListClick() {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        await getState().getPlayer().add([albumComp.dataset.albumUri]);
+    private async onAddItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
+        if(ev.detail.source == "albumView") {
+            let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+            await getState().getPlayer().add([albumComp.dataset.albumUri]);
+        }
+        if(ev.detail.source == "browseView") {
+            await getState().getController().addCurrentSearchResultsToPlayer();
+        }
     }
 
     private async onBrowseResultDblClick(uri: string) {

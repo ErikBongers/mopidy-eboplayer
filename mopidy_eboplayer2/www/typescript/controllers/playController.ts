@@ -14,27 +14,25 @@ export class PlayController {
         this.mopidyProxy = mopidyProxy;
     }
 
+    async clear() {
+        await this.mopidyProxy.clearTrackList();
+        this.model.setTrackList([]);
+    }
     async clearAndPlay(uris: string[]) {
         await this.mopidyProxy.clearTrackList();
         let trackList = await this.add(uris);
-        // noinspection ES6MissingAwait
-        this.play(trackList[0].tlid); //todo: await?
+        await this.play(trackList[0].tlid);
     }
 
-    async play(tlid: TlId) {
-        // noinspection ES6MissingAwait
-        this.mopidyProxy.playTracklistItem(tlid); //todo: await?
+    async play(tlid: TlId | undefined = undefined) {
+        tlid = tlid ?? this.model.getTrackList()[0].tlid;
+        await this.mopidyProxy.playTracklistItem(tlid);
     }
 
     async add(uris: string[]) {
         let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
         let trackList = numberedDictToArray(tracks) as models.TlTrack[];
-        this.setTracklist(trackList);
+        this.model.setTrackList(trackList);
         return trackList;
     }
-
-    private setTracklist(trackList: TlTrack[]) {
-        this.model.setTrackList(trackList);
-    }
-
 }
