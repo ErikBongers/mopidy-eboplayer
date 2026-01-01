@@ -3,7 +3,7 @@ import {SyncedProgressTimer} from "./synced_timer";
 import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
-import {Controller} from "./controller";
+import {Controller} from "./controllers/controller";
 import {ButtonBarView} from "./views/buttonBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
@@ -21,6 +21,9 @@ import {EboButtonBar} from "./components/eboButtonBarComp";
 import {Views} from "./modelTypes";
 import {EboMenuButton} from "./components/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
+import {PlayController} from "./controllers/playController";
+import {Commands} from "./commands";
+import {MopidyProxy} from "./proxies/mopidyProxy";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl;
@@ -62,12 +65,13 @@ function setupStuff() {
     let eboWebSocketCtrl = new JsonRpcController(wsUrl, 1000, 64000);
     let timer = new SyncedProgressTimer(8, mopidy);
     let model = new Model();
-
-    let controller = new Controller(model, mopidy, eboWebSocketCtrl);
+    let mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+    let player = new PlayController(model, mopidyProxy)
+    let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
 
     controller.initSocketevents();
 
-    let state = new State(mopidy, timer, model, controller);
+    let state = new State(mopidy, timer, model, controller, player);
     setState(state);
 
     let mainView = new MainView();

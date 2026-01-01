@@ -2,7 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
-import {LIBRARY_PROTOCOL} from "../controller";
+import {LIBRARY_PROTOCOL} from "../controllers/controller";
 import {RefType, SearchResults} from "../refs";
 import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs, UriArgs} from "../events";
 import models from "../../js/mopidy";

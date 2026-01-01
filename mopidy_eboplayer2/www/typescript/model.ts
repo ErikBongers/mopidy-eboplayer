@@ -49,7 +49,7 @@ export class Model extends EventTarget implements ViewModel {
         consume: false,
         single: false
     }
-    private playState: PlayState = PlayState.unknown;
+    private playState: PlayState = "unknown";
     private activeStreamLines: StreamTitles;
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];

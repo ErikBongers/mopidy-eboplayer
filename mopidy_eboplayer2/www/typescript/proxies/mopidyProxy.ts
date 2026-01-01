@@ -2,7 +2,7 @@ import {Model} from "../model";
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
 import {EboPlayerDataType} from "../views/view";
-import {Controller} from "../controller";
+import {Controller} from "../controllers/controller";
 import {numberedDictToArray, quadratic100} from "../global";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
@@ -33,8 +33,8 @@ export class MopidyProxy {
         await this.commands.core.playback.play(null, tlid);
     }
 
-    async addTrackToTracklist(uri: string) {
-        return await this.commands.core.tracklist.add(null, null, [uri]);
+    async addTracksToTracklist(uris: string[]) {
+        return await this.commands.core.tracklist.add(null, null, uris);
     }
 
     async clearTrackList() {
@@ -63,26 +63,6 @@ export class MopidyProxy {
 
     async search(uri: string) {
         return await this.commands.core.library.search({uri}, [], true) as SearchResult[];
-    }
-
-    async fetchRequiredData(dataType: EboPlayerDataType) {
-        switch (dataType) {
-            case EboPlayerDataType.Volume:
-                let volume = await this.commands.core.mixer.getVolume() as number;
-                this.controller.setVolume(volume);
-                break;
-            case  EboPlayerDataType.CurrentTrack:
-                let track = await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
-                await this.controller.setCurrentTrackAndFetchDetails(track);
-                break;
-            case  EboPlayerDataType.PlayState:
-                let state = await this.commands.core.playback.getState() as string;
-                this.controller.setPlayState(state);
-                break;
-            case  EboPlayerDataType.TrackList:
-                await this.fetchTracklistAndDetails();
-                break;
-        }
     }
 
     async fetchTracks(uris: string | string[]) {
@@ -162,5 +142,17 @@ export class MopidyProxy {
 
     async fetchImages(uris: string[]) {
         return await this.commands.core.library.getImages(uris) as ImageLookup;
+    }
+
+    async fetchVolume() {
+        return await this.commands.core.mixer.getVolume() as number;
+    }
+
+    async fetchCurrentTlTrack() {
+        return await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
+    }
+
+    async fetchPlayState() {
+        return await this.commands.core.playback.getState() as string;
     }
 }

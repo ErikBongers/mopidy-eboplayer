@@ -1,8 +1,10 @@
 // Type definitions for js v1.2.0, Mopidy v3.0.2 WebSocket API
 
 import {JsonRpcController} from "../typescript/jsonRpcController";
-import MopidyEventName = core.MopidyEventName;
 import {AlbumUri, AllUris} from "../typescript/modelTypes";
+import MopidyEventName = core.MopidyEventName;
+
+export type Branded<T, Brand> = T & { __brand: Brand };
 
 export interface Options {
     /**
@@ -39,12 +41,12 @@ export interface Options {
 }
 
 type URI = string;
-
+export type TlId = Branded<number, "TlId">;
 namespace models {
     export type ModelType = "album" | "artist" | "directory" | "playlist" | "track";
 
     export class TlTrack {
-        readonly tlid: number;
+        readonly tlid: TlId;
         readonly track: Track;
     }
     export class Track {
@@ -214,4 +216,3 @@ export class Mopidy {
     this.rpcController.emit("state:online");
   }
 }
-

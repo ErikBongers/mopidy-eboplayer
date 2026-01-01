@@ -530,15 +530,18 @@ var State = class {
 	customTracklists = [];
 	model;
 	controller;
-	constructor(mopidy, syncedProgressTimer, model, controller) {
+	player;
+	constructor(mopidy, syncedProgressTimer, model, controller, player) {
 		this.mopidy = mopidy;
 		this.syncedProgressTimer = syncedProgressTimer;
 		this.model = model;
 		this.controller = controller;
+		this.player = player;
 	}
 	views = [];
 	getModel = () => this.model;
 	getController = () => this.controller;
+	getPlayer = () => this.player;
 	addViews(...views) {
 		this.views.push(...views);
 		views.forEach((v) => v.bindRecursive());
@@ -550,7 +553,7 @@ var State = class {
 		});
 		this.controller.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
 		for (const dataType of requiredData) {
-			await this.controller.mopidyProxy.fetchRequiredData(dataType);
+			await this.controller.fetchRequiredData(dataType);
 			await this.controller.webProxy.fetchRequiredData(dataType);
 		}
 		await this.controller.fetchAllAlbums();
@@ -684,13 +687,6 @@ let MessageType = /* @__PURE__ */ function(MessageType$1) {
 	MessageType$1[MessageType$1["Error"] = 3] = "Error";
 	return MessageType$1;
 }({});
-let PlayState = /* @__PURE__ */ function(PlayState$1) {
-	PlayState$1["stopped"] = "stopped";
-	PlayState$1["playing"] = "playing";
-	PlayState$1["paused"] = "paused";
-	PlayState$1["unknown"] = "unknown";
-	return PlayState$1;
-}({});
 const NoStreamTitles = {
 	uri: "",
 	active_titles: []
@@ -774,7 +770,7 @@ var Model = class extends EventTarget {
 		consume: false,
 		single: false
 	};
-	playState = PlayState.unknown;
+	playState = "unknown";
 	activeStreamLines;
 	history;
 	trackList = [];
@@ -1333,6 +1329,60 @@ var Commands = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/proxies/localStorageProxy.ts
+const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
+const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
+var LocalStorageProxy = class {
+	model;
+	constructor(model) {
+		this.model = model;
+	}
+	loadCurrentBrowseFilter() {
+		let browseFilterString = localStorage.getItem(CURRENT_BROWSE_FILTERS__KEY);
+		if (browseFilterString) {
+			let browseFilterObject = jsonParse(browseFilterString, this.model.getCurrentBrowseFilter());
+			let browseFilter = new BrowseFilter();
+			Object.assign(browseFilter, browseFilterObject);
+			this.model.setCurrentBrowseFilter(browseFilter);
+			return;
+		}
+		console.error("Could not load or parse browse filter bread crumbs from local storage. Using default bread crumbs.");
+	}
+	loadBrowseFiltersBreadCrumbs() {
+		let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
+		if (breadCrumbsString) {
+			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs());
+			let breadCrumbs = new BrowseFilterBreadCrumbStack();
+			breadCrumbsArray.map((crumb) => {
+				switch (crumb.type) {
+					case "browseFilter":
+						let browseFilter = new BrowseFilter();
+						Object.assign(browseFilter, crumb.data);
+						return new BreadCrumbBrowseFilter(crumb.label, browseFilter);
+					case "ref": return new BreadCrumbRef(crumb.label, crumb.data);
+					case "home": return new BreadCrumbHome();
+				}
+			}).forEach((crumb) => breadCrumbs.push(crumb));
+			if (breadCrumbs.length == 0) breadCrumbs.push(new BreadCrumbHome());
+			else if (breadCrumbs[0].type != "home") breadCrumbs.unshift(new BreadCrumbHome());
+			this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
+			return;
+		}
+		console.error("Could not load or parse browse filters from local storage. Using default filters.");
+	}
+	saveCurrentBrowseFilter(browseFilter) {
+		let obj = JSON.stringify(browseFilter);
+		console.log(obj);
+		localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
+	}
+	saveBrowseFilterBreadCrumbs(breadCrumbs) {
+		let obj = JSON.stringify(breadCrumbs);
+		console.log(obj);
+		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/global.ts
 function stretchLeft(x, min, max) {
 	return x * (max + min) / max - min;
@@ -1402,185 +1452,6 @@ function transformTrackDataToModel(track) {
 function console_yellow(msg) {
 	console.log(`%c${msg}`, "background-color: yellow");
 }
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
-var MopidyProxy = class {
-	controller;
-	model;
-	commands;
-	constructor(controller, model, commands) {
-		this.controller = controller;
-		this.model = model;
-		this.commands = commands;
-	}
-	async fetchRootDirs() {
-		return this.browse(null);
-	}
-	async fetchTracksforArtist() {
-		return await this.commands.core.library.search({ artist: ["Sting"] }, null);
-	}
-	async playTracklistItem(tlid) {
-		await this.commands.core.playback.play(null, tlid);
-	}
-	async addTrackToTracklist(uri) {
-		return await this.commands.core.tracklist.add(null, null, [uri]);
-	}
-	async clearTrackList() {
-		await this.commands.core.tracklist.clear();
-	}
-	async browse(uri) {
-		return await this.commands.core.library.browse(uri);
-	}
-	async sendVolume(value) {
-		await this.commands.core.mixer.setVolume(value);
-	}
-	async sendStop() {
-		return this.commands.core.playback.stop();
-	}
-	async sendPause() {
-		return this.commands.core.playback.pause();
-	}
-	async sendPlay() {
-		return this.commands.core.playback.play();
-	}
-	async search(uri) {
-		return await this.commands.core.library.search({ uri }, [], true);
-	}
-	async fetchRequiredData(dataType) {
-		switch (dataType) {
-			case EboPlayerDataType.Volume:
-				let volume = await this.commands.core.mixer.getVolume();
-				this.controller.setVolume(volume);
-				break;
-			case EboPlayerDataType.CurrentTrack:
-				let track = await this.commands.core.playback.getCurrentTlTrack();
-				await this.controller.setCurrentTrackAndFetchDetails(track);
-				break;
-			case EboPlayerDataType.PlayState:
-				let state$1 = await this.commands.core.playback.getState();
-				this.controller.setPlayState(state$1);
-				break;
-			case EboPlayerDataType.TrackList:
-				await this.fetchTracklistAndDetails();
-				break;
-		}
-	}
-	async fetchTracks(uris) {
-		if (typeof uris == "string") uris = [uris];
-		return await this.commands.core.library.lookup(uris);
-	}
-	async fetchTracklistAndDetails() {
-		let tracks = await this.commands.core.tracklist.getTlTracks();
-		this.model.setTrackList(tracks);
-	}
-	async fetchHistory() {
-		let historyObject = await this.commands.core.history.getHistory();
-		let historyLines = numberedDictToArray(historyObject, (line) => {
-			return {
-				timestamp: line["0"],
-				ref: line["1"]
-			};
-		});
-		let foundStreams = /* @__PURE__ */ new Set();
-		let filtered = historyLines.filter((line) => {
-			if (!line.ref.uri.startsWith("http:")) return true;
-			if (foundStreams.has(line.ref.uri)) return false;
-			foundStreams.add(line.ref.uri);
-			return true;
-		});
-		let prev = { ref: { uri: "" } };
-		let dedupLines = filtered.filter((line) => {
-			if (line.ref.uri == prev.ref.uri) return false;
-			prev = line;
-			return true;
-		});
-		this.model.setHistory(dedupLines);
-	}
-	fetchPlaybackOptions() {
-		let promises = [
-			this.commands.core.tracklist.getRepeat(),
-			this.commands.core.tracklist.getRandom(),
-			this.commands.core.tracklist.getConsume(),
-			this.commands.core.tracklist.getSingle()
-		];
-		Promise.all(promises).then((results) => {
-			this.model.setPlaybackState({
-				repeat: results[0],
-				random: results[1],
-				consume: results[2],
-				single: results[3]
-			});
-		});
-	}
-	async fetchCurrentTrackAndDetails() {
-		let currentTrack = await this.commands.core.playback.getCurrentTlTrack();
-		await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
-	}
-	async fetchPlayLists() {
-		return await this.commands.core.playlists.asList();
-	}
-	async fetchPlaylistItems(uri) {
-		return await this.commands.core.playlists.getItems(uri);
-	}
-	async fetchImages(uris) {
-		return await this.commands.core.library.getImages(uris);
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/proxies/localStorageProxy.ts
-const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
-const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
-var LocalStorageProxy = class {
-	model;
-	constructor(model) {
-		this.model = model;
-	}
-	loadCurrentBrowseFilter() {
-		let browseFilterString = localStorage.getItem(CURRENT_BROWSE_FILTERS__KEY);
-		if (browseFilterString) {
-			let browseFilterObject = jsonParse(browseFilterString, this.model.getCurrentBrowseFilter());
-			let browseFilter = new BrowseFilter();
-			Object.assign(browseFilter, browseFilterObject);
-			this.model.setCurrentBrowseFilter(browseFilter);
-			return;
-		}
-		console.error("Could not load or parse browse filter bread crumbs from local storage. Using default bread crumbs.");
-	}
-	loadBrowseFiltersBreadCrumbs() {
-		let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
-		if (breadCrumbsString) {
-			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs());
-			let breadCrumbs = new BrowseFilterBreadCrumbStack();
-			breadCrumbsArray.map((crumb) => {
-				switch (crumb.type) {
-					case "browseFilter":
-						let browseFilter = new BrowseFilter();
-						Object.assign(browseFilter, crumb.data);
-						return new BreadCrumbBrowseFilter(crumb.label, browseFilter);
-					case "ref": return new BreadCrumbRef(crumb.label, crumb.data);
-					case "home": return new BreadCrumbHome();
-				}
-			}).forEach((crumb) => breadCrumbs.push(crumb));
-			if (breadCrumbs.length == 0) breadCrumbs.push(new BreadCrumbHome());
-			else if (breadCrumbs[0].type != "home") breadCrumbs.unshift(new BreadCrumbHome());
-			this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
-			return;
-		}
-		console.error("Could not load or parse browse filters from local storage. Using default filters.");
-	}
-	saveCurrentBrowseFilter(browseFilter) {
-		let obj = JSON.stringify(browseFilter);
-		console.log(obj);
-		localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
-	}
-	saveBrowseFilterBreadCrumbs(breadCrumbs) {
-		let obj = JSON.stringify(breadCrumbs);
-		console.log(obj);
-		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
-	}
-};
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/refs.ts
@@ -1775,7 +1646,7 @@ var WebProxy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/controller.ts
+//#region mopidy_eboplayer2/www/typescript/controllers/controller.ts
 const LIBRARY_PROTOCOL = "eboback:";
 var Controller = class extends Commands {
 	model;
@@ -1785,10 +1656,12 @@ var Controller = class extends Commands {
 	eboWebSocketCtrl;
 	baseUrl;
 	DEFAULT_IMG_URL = "images/default_cover.png";
-	constructor(model, mopidy, eboWebSocketCtrl) {
+	player;
+	constructor(model, mopidy, eboWebSocketCtrl, mopdyProxy, player) {
 		super(mopidy);
 		this.model = model;
-		this.mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+		this.player = player;
+		this.mopidyProxy = mopdyProxy;
 		this.webProxy = new WebProxy(model);
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWebSocketCtrl = eboWebSocketCtrl;
@@ -1817,7 +1690,7 @@ var Controller = class extends Commands {
 		});
 		this.mopidy.on("event:trackPlaybackEnded", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
-			this.setPlayState("stopped");
+			this.model.setPlayState("stopped");
 		});
 		this.mopidy.on("event:trackPlaybackResumed", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
@@ -1868,8 +1741,27 @@ var Controller = class extends Commands {
 			await this.updateStreamLines();
 		});
 	}
+	async fetchRequiredData(dataType) {
+		switch (dataType) {
+			case EboPlayerDataType.Volume:
+				let volume = await this.mopidyProxy.fetchVolume();
+				this.model.setVolume(volume);
+				break;
+			case EboPlayerDataType.CurrentTrack:
+				let track = await this.mopidyProxy.fetchCurrentTlTrack();
+				await this.setCurrentTrackAndFetchDetails(track);
+				break;
+			case EboPlayerDataType.PlayState:
+				let state$1 = await this.mopidyProxy.fetchPlayState();
+				this.model.setPlayState(state$1);
+				break;
+			case EboPlayerDataType.TrackList:
+				await this.mopidyProxy.fetchTracklistAndDetails();
+				break;
+		}
+	}
 	async onPlaybackStateChanged(data) {
-		playerState_default().getController().setPlayState(data.new_state);
+		this.model.setPlayState(data.new_state);
 		await this.updateStreamLines();
 	}
 	async setCurrentTrackAndFetchDetails(data) {
@@ -1893,15 +1785,6 @@ var Controller = class extends Commands {
 		let imageUrl = arr.pop().uri;
 		if (imageUrl == "") imageUrl = this.DEFAULT_IMG_URL;
 		return this.baseUrl + imageUrl;
-	}
-	setVolume(volume) {
-		this.model.setVolume(volume);
-	}
-	setPlayState(state$1) {
-		this.model.setPlayState(state$1);
-	}
-	setTracklist(trackList) {
-		this.model.setTrackList(trackList);
 	}
 	setAndSaveBrowseFilter(filter) {
 		this.localStorageProxy.saveCurrentBrowseFilter(filter);
@@ -2048,20 +1931,6 @@ var Controller = class extends Commands {
 		this.model.addToMetaCache(albumUri, meta);
 		return meta;
 	}
-	async clearListAndPlay(uri) {
-		await this.mopidyProxy.clearTrackList();
-		let trackList = await this.addToPlaylist(uri);
-		this.play(trackList[0].tlid);
-	}
-	async play(tlid) {
-		this.mopidyProxy.playTracklistItem(tlid);
-	}
-	async addToPlaylist(uri) {
-		let tracks = await this.mopidyProxy.addTrackToTracklist(uri);
-		let trackList = numberedDictToArray(tracks);
-		this.setTracklist(trackList);
-		return trackList;
-	}
 	setSelectedTrack(uri) {
 		this.model.setSelectedTrack(uri);
 	}
@@ -2125,19 +1994,6 @@ var Controller = class extends Commands {
 		}
 		this.model.setCurrentRefs(this.model.getAllRefs());
 	}
-	playUri(uri) {
-		this.clearListAndPlay(uri);
-	}
-	addUri(uri) {
-		this.addToPlaylist(uri);
-	}
-	async fetchAlbumDataForTrack(track) {
-		switch (track.type) {
-			case ItemType.File:
-				let albumUri = track.track.album.uri;
-				return await this.lookupAlbumCached(albumUri);
-		}
-	}
 	async fetchStreamLines(streamUri) {
 		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
 		let groupLines = function(grouped, line) {
@@ -2159,6 +2015,15 @@ var Controller = class extends Commands {
 		});
 		let albums = await Promise.all(albumsPromises);
 		console.log(albums);
+	}
+	async playCurrentSearchResults() {
+		let results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
+			refs: [],
+			availableRefTypes: /* @__PURE__ */ new Set()
+		};
+		await this.mopidyProxy.clearTrackList();
+		let trackList = await this.player.add(results.refs.map((r) => r.ref.ref.uri));
+		await this.player.play(trackList[0].tlid);
 	}
 };
 
@@ -2552,8 +2417,8 @@ var TimelineView = class extends View {
 	}
 	async onRowDoubleClicked(ev) {
 		this.clickedRow = ev.currentTarget;
-		if (this.clickedRow.dataset.tlid) await playerState_default().getController().play(parseInt(this.clickedRow.dataset.tlid));
-		else await playerState_default().getController().clearListAndPlay(this.clickedRow.dataset.uri);
+		if (this.clickedRow.dataset.tlid) await playerState_default().getPlayer().play(parseInt(this.clickedRow.dataset.tlid));
+		else await playerState_default().getPlayer().clearAndPlay([this.clickedRow.dataset.uri]);
 	}
 	setRowsClass(rowOrSelector, classes) {
 		document.getElementById("timelineTable").querySelectorAll(`tr`).forEach((tr) => tr.classList.remove(...classes));
@@ -3197,18 +3062,20 @@ var MainView = class extends View {
 		albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 		albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
 	}
-	onPlayItemListClick(ev) {
+	async onPlayItemListClick(ev) {
 		if (ev.detail.source == "albumView") {
 			let albumComp = document.getElementById("bigAlbumView");
-			playerState_default().getController().playUri(albumComp.dataset.albumUri);
+			await playerState_default().getPlayer().clearAndPlay([albumComp.dataset.albumUri]);
+			return;
 		}
+		if (ev.detail.source == "browseView") await playerState_default().getController().playCurrentSearchResults();
 	}
-	onAddItemListClick() {
+	async onAddItemListClick() {
 		let albumComp = document.getElementById("bigAlbumView");
-		playerState_default().getController().addUri(albumComp.dataset.albumUri);
+		await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
 	}
 	async onBrowseResultDblClick(uri) {
-		await playerState_default().getController().clearListAndPlay(uri);
+		await playerState_default().getPlayer().clearAndPlay([uri]);
 	}
 	onBrowseResultClick(label, uri, type) {
 		playerState_default().getController().diveIntoBrowseResult(label, uri, type, true);
@@ -3216,8 +3083,8 @@ var MainView = class extends View {
 	onBreadcrumbClick(breadcrumbId) {
 		playerState_default().getController().resetToBreadCrumb(breadcrumbId);
 	}
-	onPlayTrackClicked(uri) {
-		playerState_default().getController().playUri(uri);
+	async onPlayTrackClicked(uri) {
+		await playerState_default().getPlayer().clearAndPlay([uri]);
 	}
 	async onAddTrackClicked(uri) {
 		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
@@ -4235,6 +4102,149 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/controllers/playController.ts
+var PlayController = class {
+	model;
+	mopidyProxy;
+	constructor(model, mopidyProxy) {
+		this.model = model;
+		this.mopidyProxy = mopidyProxy;
+	}
+	async clearAndPlay(uris) {
+		await this.mopidyProxy.clearTrackList();
+		let trackList = await this.add(uris);
+		this.play(trackList[0].tlid);
+	}
+	async play(tlid) {
+		this.mopidyProxy.playTracklistItem(tlid);
+	}
+	async add(uris) {
+		let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
+		let trackList = numberedDictToArray(tracks);
+		this.setTracklist(trackList);
+		return trackList;
+	}
+	setTracklist(trackList) {
+		this.model.setTrackList(trackList);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
+var MopidyProxy = class {
+	controller;
+	model;
+	commands;
+	constructor(controller, model, commands) {
+		this.controller = controller;
+		this.model = model;
+		this.commands = commands;
+	}
+	async fetchRootDirs() {
+		return this.browse(null);
+	}
+	async fetchTracksforArtist() {
+		return await this.commands.core.library.search({ artist: ["Sting"] }, null);
+	}
+	async playTracklistItem(tlid) {
+		await this.commands.core.playback.play(null, tlid);
+	}
+	async addTracksToTracklist(uris) {
+		return await this.commands.core.tracklist.add(null, null, uris);
+	}
+	async clearTrackList() {
+		await this.commands.core.tracklist.clear();
+	}
+	async browse(uri) {
+		return await this.commands.core.library.browse(uri);
+	}
+	async sendVolume(value) {
+		await this.commands.core.mixer.setVolume(value);
+	}
+	async sendStop() {
+		return this.commands.core.playback.stop();
+	}
+	async sendPause() {
+		return this.commands.core.playback.pause();
+	}
+	async sendPlay() {
+		return this.commands.core.playback.play();
+	}
+	async search(uri) {
+		return await this.commands.core.library.search({ uri }, [], true);
+	}
+	async fetchTracks(uris) {
+		if (typeof uris == "string") uris = [uris];
+		return await this.commands.core.library.lookup(uris);
+	}
+	async fetchTracklistAndDetails() {
+		let tracks = await this.commands.core.tracklist.getTlTracks();
+		this.model.setTrackList(tracks);
+	}
+	async fetchHistory() {
+		let historyObject = await this.commands.core.history.getHistory();
+		let historyLines = numberedDictToArray(historyObject, (line) => {
+			return {
+				timestamp: line["0"],
+				ref: line["1"]
+			};
+		});
+		let foundStreams = /* @__PURE__ */ new Set();
+		let filtered = historyLines.filter((line) => {
+			if (!line.ref.uri.startsWith("http:")) return true;
+			if (foundStreams.has(line.ref.uri)) return false;
+			foundStreams.add(line.ref.uri);
+			return true;
+		});
+		let prev = { ref: { uri: "" } };
+		let dedupLines = filtered.filter((line) => {
+			if (line.ref.uri == prev.ref.uri) return false;
+			prev = line;
+			return true;
+		});
+		this.model.setHistory(dedupLines);
+	}
+	fetchPlaybackOptions() {
+		let promises = [
+			this.commands.core.tracklist.getRepeat(),
+			this.commands.core.tracklist.getRandom(),
+			this.commands.core.tracklist.getConsume(),
+			this.commands.core.tracklist.getSingle()
+		];
+		Promise.all(promises).then((results) => {
+			this.model.setPlaybackState({
+				repeat: results[0],
+				random: results[1],
+				consume: results[2],
+				single: results[3]
+			});
+		});
+	}
+	async fetchCurrentTrackAndDetails() {
+		let currentTrack = await this.commands.core.playback.getCurrentTlTrack();
+		await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
+	}
+	async fetchPlayLists() {
+		return await this.commands.core.playlists.asList();
+	}
+	async fetchPlaylistItems(uri) {
+		return await this.commands.core.playlists.getItems(uri);
+	}
+	async fetchImages(uris) {
+		return await this.commands.core.library.getImages(uris);
+	}
+	async fetchVolume() {
+		return await this.commands.core.mixer.getVolume();
+	}
+	async fetchCurrentTlTrack() {
+		return await this.commands.core.playback.getCurrentTlTrack();
+	}
+	async fetchPlayState() {
+		return await this.commands.core.playback.getState();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl;
@@ -4265,9 +4275,11 @@ function setupStuff() {
 	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
 	let timer = new SyncedProgressTimer(8, mopidy);
 	let model = new Model();
-	let controller = new Controller(model, mopidy, eboWebSocketCtrl);
+	let mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+	let player = new PlayController(model, mopidyProxy);
+	let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
 	controller.initSocketevents();
-	let state$1 = new State(mopidy, timer, model, controller);
+	let state$1 = new State(mopidy, timer, model, controller, player);
 	setState(state$1);
 	let mainView = new MainView();
 	let headerView = new HeaderView();

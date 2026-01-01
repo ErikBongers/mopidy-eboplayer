@@ -186,24 +186,25 @@ export class MainView extends View {
         albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
     }
 
-    private onPlayItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
+    private async onPlayItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
         if(ev.detail.source == "albumView") {
             let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-            getState().getController().playUri(albumComp.dataset.albumUri);
+            await getState().getPlayer().clearAndPlay([albumComp.dataset.albumUri]); //todo: don't get data from ui but from state.
             return;
         }
         if(ev.detail.source == "browseView") {
-            //todo.
+            await getState().getController().playCurrentSearchResults();
+
         }
     }
 
-    private onAddItemListClick() {
+    private async onAddItemListClick() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        getState().getController().addUri(albumComp.dataset.albumUri);
+        await getState().getPlayer().add([albumComp.dataset.albumUri]);
     }
 
     private async onBrowseResultDblClick(uri: string) {
-        await getState().getController().clearListAndPlay(uri);
+        await getState().getPlayer().clearAndPlay([uri]);
     }
 
     private onBrowseResultClick(label: string, uri: AllUris, type: string) {
@@ -214,8 +215,8 @@ export class MainView extends View {
         getState().getController().resetToBreadCrumb(breadcrumbId);
     }
 
-    private onPlayTrackClicked(uri: string) {
-        getState().getController().playUri(uri);
+    private async onPlayTrackClicked(uri: string) {
+        await getState().getPlayer().clearAndPlay([uri]);
     }
 
     private async onAddTrackClicked(uri: string) {

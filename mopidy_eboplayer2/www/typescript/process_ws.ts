@@ -12,10 +12,6 @@ export function transformTlTrackDataToModel(tlTrack: TlTrack) {
     return transformTrackDataToModel(tlTrack?.track);
 }
 
-export function processVolume (data: number | null) {
-    getState().getController().setVolume(data);
-}
-
 export function processMute (data: boolean | null) {
     // controls.setMute(data);
 }

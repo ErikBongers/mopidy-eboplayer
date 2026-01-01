@@ -1,11 +1,10 @@
-import models from "../js/mopidy";
+import models, {Branded} from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
 import Image = models.Image;
 
 declare const __brand: unique symbol;
 
-export type Branded<T, Brand> = T & {__brand: Brand};
 export type AlbumUri = Branded<string, "AlbumUri">;
 export type TrackUri = Branded<string, "TrackUri">;
 export type RadioUri = Branded<string, "RadioUri">;
@@ -165,12 +164,7 @@ export interface PlaybackModesState {
     single: boolean
 }
 
-export enum PlayState {
-    stopped = "stopped",
-    playing = "playing",
-    paused = "paused",
-    unknown = "unknown"
-}
+export type PlayState = "stopped" | "playing" | "paused" | "unknown"; //todo: "unknown" is not a mopidy state but a local one. Split up type?
 
 export interface HistoryRef {
     __model__: string,

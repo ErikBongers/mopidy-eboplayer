@@ -1,6 +1,6 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import models from "../../js/mopidy";
+import models, {TlId} from "../../js/mopidy";
 import {transformTrackDataToModel} from "../global";
 import {FileTrackModel, HistoryLine, StreamTrackModel, ItemType} from "../modelTypes";
 import {EboplayerEvents} from "../events";
@@ -67,9 +67,9 @@ export class TimelineView extends View {
     private async onRowDoubleClicked(ev: MouseEvent) {
         this.clickedRow = ev.currentTarget as HTMLTableRowElement;
         if(this.clickedRow.dataset.tlid)
-            await getState().getController().play(parseInt(this.clickedRow.dataset.tlid));
+            await getState().getPlayer().play(parseInt(this.clickedRow.dataset.tlid) as TlId);
         else
-            await getState().getController().clearListAndPlay(this.clickedRow.dataset.uri);
+            await getState().getPlayer().clearAndPlay([this.clickedRow.dataset.uri]);
     }
 
     private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {

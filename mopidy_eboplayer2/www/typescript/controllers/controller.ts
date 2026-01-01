@@ -1,20 +1,20 @@
-import getState from "./playerState";
-import {showLoading} from "./functionsvars";
-import {library} from "./library";
-import {transformTlTrackDataToModel} from "./process_ws";
-import {Model} from "./model";
-import {Commands} from "./commands";
-import models, {Mopidy} from "../js/mopidy";
-import {EboPlayerDataType} from "./views/view";
-import {DataRequester} from "./views/dataRequester";
-import {MopidyProxy} from "./proxies/mopidyProxy";
-import {LocalStorageProxy} from "./proxies/localStorageProxy";
-import {getHostAndPortDefs, numberedDictToArray, transformTrackDataToModel} from "./global";
-import {AllRefs, SomeRefs} from "./refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "./modelTypes";
-import {JsonRpcController} from "./jsonRpcController";
-import {WebProxy} from "./proxies/webProxy";
-import {EboplayerEvents} from "./events";
+import getState from "../playerState";
+import {showLoading} from "../functionsvars";
+import {library} from "../library";
+import {Model} from "../model";
+import {Commands} from "../commands";
+import models, {Mopidy} from "../../js/mopidy";
+import {EboPlayerDataType} from "../views/view";
+import {DataRequester} from "../views/dataRequester";
+import {MopidyProxy} from "../proxies/mopidyProxy";
+import {LocalStorageProxy} from "../proxies/localStorageProxy";
+import {getHostAndPortDefs, transformTrackDataToModel} from "../global";
+import {AllRefs, SomeRefs} from "../refs";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {JsonRpcController} from "../jsonRpcController";
+import {WebProxy} from "../proxies/webProxy";
+import {EboplayerEvents} from "../events";
+import {PlayController} from "./playController";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 
@@ -31,11 +31,13 @@ export class Controller extends Commands implements DataRequester{
     private eboWebSocketCtrl: JsonRpcController;
     readonly baseUrl: string;
     readonly DEFAULT_IMG_URL = "images/default_cover.png";
+    protected player: PlayController;
 
-    constructor(model: Model, mopidy: Mopidy, eboWebSocketCtrl: JsonRpcController) {
+    constructor(model: Model, mopidy: Mopidy, eboWebSocketCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController) {
         super(mopidy);
         this.model  = model;
-        this.mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+        this.player = player;
+        this.mopidyProxy = mopdyProxy;
         this.webProxy = new WebProxy(model);
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWebSocketCtrl = eboWebSocketCtrl;
@@ -71,7 +73,7 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:trackPlaybackEnded', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
-            this.setPlayState("stopped"); //don't rely solely on the state changes!
+            this.model.setPlayState("stopped"); //don't rely solely on the state changes!
         });
 
         this.mopidy.on('event:trackPlaybackResumed', async (data) => {
@@ -145,8 +147,28 @@ export class Controller extends Commands implements DataRequester{
 
     }
 
+    async fetchRequiredData(dataType: EboPlayerDataType) {
+        switch (dataType) {
+            case EboPlayerDataType.Volume:
+                let volume = await this.mopidyProxy.fetchVolume();
+                this.model.setVolume(volume);
+                break;
+            case  EboPlayerDataType.CurrentTrack:
+                let track = await this.mopidyProxy.fetchCurrentTlTrack();
+                await this.setCurrentTrackAndFetchDetails(track);
+                break;
+            case  EboPlayerDataType.PlayState:
+                let state = await this.mopidyProxy.fetchPlayState();
+                this.model.setPlayState(state as PlayState);
+                break;
+            case  EboPlayerDataType.TrackList:
+                await this.mopidyProxy.fetchTracklistAndDetails();
+                break;
+        }
+    }
+
     private async onPlaybackStateChanged(data) {
-        getState().getController().setPlayState(data.new_state);
+        this.model.setPlayState(data.new_state);
         await this.updateStreamLines();
     }
 
@@ -184,18 +206,6 @@ export class Controller extends Commands implements DataRequester{
         if(imageUrl == "")
              imageUrl = this.DEFAULT_IMG_URL;
         return this.baseUrl + imageUrl;
-    }
-
-    setVolume(volume: number) {
-        this.model.setVolume(volume);
-    }
-
-    setPlayState(state: string) {
-        this.model.setPlayState(state as PlayState);
-    }
-
-    setTracklist(trackList: TlTrack[]) {
-        this.model.setTrackList(trackList);
     }
 
     setAndSaveBrowseFilter(filter: BrowseFilter) {
@@ -366,25 +376,6 @@ export class Controller extends Commands implements DataRequester{
         return meta;
     }
 
-    async clearListAndPlay(uri: string) {
-        await this.mopidyProxy.clearTrackList();
-        let trackList = await this.addToPlaylist(uri);
-        // noinspection ES6MissingAwait
-        this.play(trackList[0].tlid);
-    }
-
-    async play(tlid: number) {
-        // noinspection ES6MissingAwait
-        this.mopidyProxy.playTracklistItem(tlid);
-    }
-
-    private async addToPlaylist(uri: string) {
-        let tracks = await this.mopidyProxy.addTrackToTracklist(uri);
-        let trackList = numberedDictToArray(tracks) as models.TlTrack[];
-        this.setTracklist(trackList);
-        return trackList;
-    }
-
     setSelectedTrack(uri: string) {
         this.model.setSelectedTrack(uri);
     }
@@ -469,22 +460,6 @@ export class Controller extends Commands implements DataRequester{
         this.model.setCurrentRefs(this.model.getAllRefs());
     }
 
-    playUri(uri: string) {
-        this.clearListAndPlay(uri);
-    }
-
-    addUri(uri: string) {
-        this.addToPlaylist(uri);
-    }
-
-    async fetchAlbumDataForTrack(track: TrackModel) {
-        switch (track.type) {
-            case ItemType.File:
-                let albumUri = track.track.album.uri;
-                return await this.lookupAlbumCached(albumUri);
-        }
-    }
-
     async fetchStreamLines(streamUri: string) {
         let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
         let groupLines = function (grouped: string[][], line: string){ //todo: normal function declaration?
@@ -515,6 +490,13 @@ export class Controller extends Commands implements DataRequester{
         let albums = await Promise.all(albumsPromises);
 
         console.log(albums);
+    }
+
+    async playCurrentSearchResults() {
+        let results = getState()?.getModel()?.getCurrentSearchResults() ?? { refs: [], availableRefTypes: new Set()}; //todo: the empty result set should not be initialized here but in model.
+        await this.mopidyProxy.clearTrackList();
+        let trackList = await this.player.add(results.refs.map(r => r.ref.ref.uri));
+        await this.player.play(trackList[0].tlid);
     }
 }
 

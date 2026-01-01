@@ -2,9 +2,10 @@ import models, {Mopidy} from "../js/mopidy";
 import {SyncedProgressTimer} from "./synced_timer";
 import {ViewModel} from "./model";
 import {EboPlayerDataType, View} from "./views/view";
-import {Controller} from "./controller";
+import {Controller} from "./controllers/controller";
 
 import {DeepReadonly} from "./modelTypes";
+import {PlayController} from "./controllers/playController";
 
 export class State {
     mopidy: Mopidy;
@@ -29,16 +30,19 @@ export class State {
 
     private readonly model: ViewModel;
     private readonly controller: Controller;
+    private readonly player: PlayController;
 
-    constructor(mopidy: Mopidy, syncedProgressTimer: SyncedProgressTimer, model: ViewModel, controller: Controller) {
+    constructor(mopidy: Mopidy, syncedProgressTimer: SyncedProgressTimer, model: ViewModel, controller: Controller, player: PlayController) {
         this.mopidy = mopidy;
         this.syncedProgressTimer = syncedProgressTimer;
         this.model = model;
         this.controller = controller;
+        this.player = player;
     }
     views: View[] = [];
     getModel = (): DeepReadonly<ViewModel> => this.model;
     getController = () => this.controller;
+    getPlayer = () => this.player;
 
     addViews(...views:View[]) {
         this.views.push(...views);
@@ -53,7 +57,7 @@ export class State {
         this.controller.getRequiredDataTypesRecursive().forEach((dataType => requiredData.add(dataType)));
 
         for (const dataType of requiredData) {
-            await this.controller.mopidyProxy.fetchRequiredData(dataType);
+            await this.controller.fetchRequiredData(dataType);
             await this.controller.webProxy.fetchRequiredData(dataType);
         }
 
