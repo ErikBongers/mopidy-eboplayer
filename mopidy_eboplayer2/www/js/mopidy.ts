@@ -109,6 +109,10 @@ namespace models {
         name?: string;
         readonly type: ModelType;
     }
+
+    export type Dict<T> =
+        { length: number }
+        & { [k: string]: T };
 }
 export default models
 

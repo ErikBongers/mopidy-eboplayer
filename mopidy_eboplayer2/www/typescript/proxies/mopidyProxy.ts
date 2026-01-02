@@ -1,6 +1,6 @@
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {MopidyDict, numberedDictToArray} from "../global";
+import {numberedDictToArray} from "../global";
 import {AllUris, HistoryLine, ImageLookup, LibraryDict, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
@@ -64,7 +64,7 @@ export class MopidyProxy {
     }
 
     async fetchHistory() {
-        let historyObject = await this.commands.core.history.getHistory() as MopidyDict<HistoryLine>;
+        let historyObject = await this.commands.core.history.getHistory() as models.Dict<HistoryLine>;
         let historyLines = numberedDictToArray(historyObject, line => {
             return {
                 timestamp: line["0"],

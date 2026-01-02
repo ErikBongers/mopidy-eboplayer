@@ -1,7 +1,5 @@
 import models from "../js/mopidy";
-import {validUri} from "./functionsvars";
-import getState from "./playerState";
-import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, ItemType, PartialStreamTrackModel} from "./modelTypes";
+import {FileTrackModel, PartialStreamTrackModel} from "./modelTypes";
 
 // Stretch a value, e.g., between (0, 100), to a new range e.g., (-5, 100)
 function stretchLeft(x: number, min: number, max: number) {
@@ -23,12 +21,8 @@ export function cubic100(x: number) {
     return (x * x * x) / 10000;
 }
 
-export type MopidyDict<T> = {
-    [k: string|number]: T
-}
-
-export function numberedDictToArray<T>(dict: MopidyDict<T>, converter?: (object: any) => T): T[] {
-    let length = dict["length"] as number; //todo: try to add length to MopidyDict type
+export function numberedDictToArray<T>(dict: models.Dict<T>, converter?: (object: any) => T): T[] {
+    let length = dict.length;
     let array: any[] = [];
     for (let index = 0; index < length; index++) {
         let line = dict[index.toString()];

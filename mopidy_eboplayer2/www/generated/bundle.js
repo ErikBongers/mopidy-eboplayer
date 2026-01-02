@@ -1362,7 +1362,7 @@ function inverseQuadratic100(y) {
 	return stretchLeft(x, 5, 100);
 }
 function numberedDictToArray(dict, converter) {
-	let length = dict["length"];
+	let length = dict.length;
 	let array = [];
 	for (let index = 0; index < length; index++) {
 		let line = dict[index.toString()];
