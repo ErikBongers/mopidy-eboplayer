@@ -1,7 +1,7 @@
 import models from "../js/mopidy";
 import {validUri} from "./functionsvars";
 import getState from "./playerState";
-import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, ItemType} from "./modelTypes";
+import {FileTrackModel, LibraryItem, NoneTrackModel, StreamTrackModel, TrackModel, ItemType, PartialStreamTrackModel} from "./modelTypes";
 
 // Stretch a value, e.g., between (0, 100), to a new range e.g., (-5, 100)
 function stretchLeft(x: number, min: number, max: number) {
@@ -55,14 +55,13 @@ export function isStream(track: models.Track) {
     return track?.track_no == undefined; //todo: this isn't waterproof. A track may NOT belong to an album and thus have no track_no
 }
 
-export function transformTrackDataToModel(track: (models.Track)): FileTrackModel | StreamTrackModel {
+export function transformTrackDataToModel(track: (models.Track)): FileTrackModel | PartialStreamTrackModel {
     if (isStream(track)) {
         // noinspection UnnecessaryLocalVariableJS
-        let model: StreamTrackModel = {
+        let model: PartialStreamTrackModel = {
             type: "stream",
             track,
             name: track.name,
-            imageUrl: undefined
         };
         return model;
     }

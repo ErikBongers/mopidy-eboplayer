@@ -83,10 +83,13 @@ export class BrowseFilter {
     }
 }
 
-export interface AlbumModel {
+export interface PartialAlbumModel {
     type: "album";
     tracks: string[];
     albumInfo: models.Album;
+}
+
+export interface AlbumModel extends PartialAlbumModel {
     imageUrl: string;
 }
 
@@ -99,10 +102,13 @@ export interface FileTrackModel {
     songlenght: number,
 }
 
-export interface StreamTrackModel {
+export interface PartialStreamTrackModel {
     type: "stream";
     track: models.Track;
     name: string,
+}
+
+export interface StreamTrackModel extends PartialStreamTrackModel {
     imageUrl: string,
 }
 

@@ -926,6 +926,7 @@ var Model = class extends EventTarget {
 	history;
 	trackList = [];
 	libraryCache = /* @__PURE__ */ new Map();
+	imageCache = /* @__PURE__ */ new Map();
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
@@ -972,6 +973,15 @@ var Model = class extends EventTarget {
 		this.currentRefs.browseFilter = this.currentBrowseFilter;
 		this.currentRefs.filter();
 		this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
+	}
+	getImageFromCache(uri) {
+		return this.imageCache.get(uri);
+	}
+	addImageToCache(uri, image) {
+		this.imageCache.set(uri, image);
+	}
+	addImagesToCache(map) {
+		for (let [uri, image] of map) this.addImageToCache(uri, image);
 	}
 	setConnectionState(state$1) {
 		this.connectionState = state$1;
@@ -1573,8 +1583,7 @@ function transformTrackDataToModel(track) {
 	if (isStream(track)) return {
 		type: "stream",
 		track,
-		name: track.name,
-		imageUrl: void 0
+		name: track.name
 	};
 	let model = {
 		type: "file",
@@ -1888,27 +1897,68 @@ var Controller = class Controller extends Commands {
 		let dict = await this.mopidyProxy.lookup(albumUris);
 		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
 			let trackList = dict[albumUri];
-			let albumModel = {
+			return {
 				type: "album",
 				albumInfo: trackList[0].album,
-				tracks: trackList.map((track) => track.uri),
-				imageUrl: void 0
+				tracks: trackList.map((track) => track.uri)
 			};
-			this.model.addItemsToLibraryCache([albumModel]);
-			return albumModel;
 		});
-		let albumModels = await Promise.all(albumModelsPending);
-		let images = await this.fetchLargestImagesOrDefault(albumModels.map((album) => album.albumInfo.uri));
-		albumModels.forEach((album) => album.imageUrl = images.get(album.albumInfo.uri));
+		let partialAlbumModels = await Promise.all(albumModelsPending);
+		let images = await this.fetchLargestImagesOrDefault(partialAlbumModels.map((album) => album.albumInfo.uri));
+		this.model.addImagesToCache(images);
+		let albumModels = partialAlbumModels.map((m) => {
+			return {
+				...m,
+				imageUrl: this.model.getImageFromCache(m.albumInfo.uri)
+			};
+		});
+		this.model.addItemsToLibraryCache(albumModels);
 		return albumModels;
+	}
+	async lookupAllTracks(uris) {
+		let results = await this.mopidyProxy.lookup(uris);
+		let partialModels = Object.keys(results).map((trackUri) => {
+			let track = results[trackUri][0];
+			return transformTrackDataToModel(track);
+		});
+		let fileModels = partialModels.filter((m) => m.type == "file");
+		let partialStreamModels = partialModels.filter((m) => m.type == "stream");
+		let streamUris = partialStreamModels.map((stream) => stream.track.uri);
+		let images = await this.fetchLargestImagesOrDefault(streamUris);
+		this.model.addImagesToCache(images);
+		let streamModels = partialStreamModels.map((m) => {
+			return {
+				...m,
+				imageUrl: this.model.getImageFromCache(m.track.uri)
+			};
+		});
+		this.model.addItemsToLibraryCache(fileModels);
+		this.model.addItemsToLibraryCache(streamModels);
+	}
+	async lookupImageCached(uri) {
+		let imgUrl = this.model.getImageFromCache(uri);
+		if (imgUrl) return imgUrl;
+		let images = await this.mopidyProxy.fetchImages([uri]);
+		if (images[uri].length == 0) {
+			this.model.addImageToCache(uri, Controller.DEFAULT_IMG_URL);
+			return Controller.DEFAULT_IMG_URL;
+		}
+		let img = images[uri][0];
+		this.model.addImageToCache(uri, img.uri);
+		return img.uri;
 	}
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => {
 			let model = transformTrackDataToModel(track);
 			if (model.type == "stream") {
 				let images = await this.mopidyProxy.fetchImages([track.uri]);
-				if (images[track.uri].length > 0) model.imageUrl = this.baseUrl + images[track.uri][0].uri;
-				else model.imageUrl = Controller.DEFAULT_IMG_URL;
+				let imageUrl = "";
+				if (images[track.uri].length > 0) imageUrl = this.baseUrl + images[track.uri][0].uri;
+				else imageUrl = Controller.DEFAULT_IMG_URL;
+				return {
+					...model,
+					imageUrl
+				};
 			}
 			return model;
 		});
@@ -2032,13 +2082,6 @@ var Controller = class Controller extends Commands {
 	async addCurrentSearchResultsToPlayer() {
 		let results = playerState_default()?.getModel()?.getCurrentSearchResults();
 		await this.player.add(results.refs.map((r) => r.ref.ref.uri));
-	}
-	async lookupAllTracks(uris) {
-		let results = await this.mopidyProxy.lookup(uris);
-		Object.keys(results).forEach((trackUri) => {
-			let track = results[trackUri][0];
-			this.model.addItemsToLibraryCache([transformTrackDataToModel(track)]);
-		});
 	}
 };
 

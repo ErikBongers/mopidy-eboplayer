@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {EmptySearchResults, Refs, SearchResult, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
 import {EboplayerEvents} from "./events";
@@ -54,6 +54,7 @@ export class Model extends EventTarget implements ViewModel {
     private history: HistoryLine[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, (FileTrackModel | StreamTrackModel | AlbumModel)> = new Map();
+    private imageCache: Map<string, string> = new Map();
     private metaCache: Map<string, CachedAlbumMetaData> = new Map();
     private currentBrowseFilter= new BrowseFilter();
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
@@ -115,6 +116,21 @@ export class Model extends EventTarget implements ViewModel {
         this.currentRefs.filter();
         this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
     }
+
+    getImageFromCache(uri: AllUris): string | undefined {
+        return this.imageCache.get(uri);
+    }
+
+    addImageToCache(uri: AllUris, image: string) {
+        this.imageCache.set(uri, image);
+    }
+
+    addImagesToCache(map: Map<AllUris, string>) {
+        for(let [uri, image] of map) {
+            this.addImageToCache(uri, image);
+        }
+    }
+
     setConnectionState(state: ConnectionState) {
         this.connectionState  = state;
         if(this.connectionState == ConnectionState.Online)

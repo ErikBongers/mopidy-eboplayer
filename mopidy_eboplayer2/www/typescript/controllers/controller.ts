@@ -10,7 +10,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PartialAlbumModel, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {EboplayerEvents} from "../events";
@@ -208,9 +208,9 @@ export class Controller extends Commands implements DataRequester{
             return baseUrl + imageUrl;
         }
         let images = await this.mopidyProxy.fetchImages(uris);
-        let mappedImage: [string, string][] = uris.map(uri => {
+        let mappedImage: [AllUris, string][] = uris.map(uri => {
             let imageUrl = getImageUrl(uri, this.baseUrl);
-            return [uri as string, imageUrl];
+            return [uri as AllUris, imageUrl];
         });
         return new Map(mappedImage);
     }
@@ -337,20 +337,55 @@ export class Controller extends Commands implements DataRequester{
         let dict = await this.mopidyProxy.lookup(albumUris);
         let albumModelsPending = Object.keys(dict).map(async albumUri => {
             let trackList = dict[albumUri] as models.Track[];
-            let albumModel: AlbumModel = {
+            let albumModel: PartialAlbumModel = {
                 type: "album",
                 albumInfo: trackList[0].album,
                 tracks: trackList.map(track => track.uri),
-                imageUrl: undefined,
             }
-            this.model.addItemsToLibraryCache([albumModel]);
             return albumModel;
         });
-        let albumModels = await Promise.all(albumModelsPending);
+        let partialAlbumModels = await Promise.all(albumModelsPending);
 
-        let images = await this.fetchLargestImagesOrDefault(albumModels.map(album => album.albumInfo.uri));
-        albumModels.forEach(album => album.imageUrl = images.get(album.albumInfo.uri));
+        let images = await this.fetchLargestImagesOrDefault(partialAlbumModels.map(album => album.albumInfo.uri));
+        this.model.addImagesToCache(images);
+        let albumModels = partialAlbumModels.map(m => {
+            return {...m, imageUrl:this.model.getImageFromCache(m.albumInfo.uri)} as AlbumModel;
+        });
+        this.model.addItemsToLibraryCache(albumModels);
         return albumModels;
+    }
+
+    async lookupAllTracks(uris: AllUris[]) {
+        let results = await this.mopidyProxy.lookup(uris);
+        let partialModels = Object.keys(results).map(trackUri => {
+            let track = results[trackUri][0];
+            return transformTrackDataToModel(track)
+        });
+        let fileModels = partialModels.filter(m => m.type == "file");
+        let partialStreamModels = partialModels.filter(m => m.type == "stream");
+        let streamUris = partialStreamModels.map(stream => stream.track.uri) as TrackUri[];
+        let images = await this.fetchLargestImagesOrDefault(streamUris);
+        this.model.addImagesToCache(images);
+        let streamModels = partialStreamModels
+            .map(m => {
+                return {...m, imageUrl:this.model.getImageFromCache(m.track.uri as TrackUri)} as StreamTrackModel;
+            });
+        this.model.addItemsToLibraryCache(fileModels);
+        this.model.addItemsToLibraryCache(streamModels);
+    }
+
+    async lookupImageCached(uri: AllUris) {
+        let imgUrl = this.model.getImageFromCache(uri);
+        if(imgUrl)
+            return imgUrl;
+        let images = await this.mopidyProxy.fetchImages([uri]);
+        if(images[uri].length == 0) {
+            this.model.addImageToCache(uri, Controller.DEFAULT_IMG_URL);
+            return Controller.DEFAULT_IMG_URL;
+        }
+        let img = images[uri][0];
+        this.model.addImageToCache(uri, img.uri);
+        return img.uri;
     }
 
     private async fetchAndConvertTracks(uri: string) {
@@ -360,10 +395,12 @@ export class Controller extends Commands implements DataRequester{
             let model = transformTrackDataToModel(track);
             if(model.type == "stream") {
                 let images = await this.mopidyProxy.fetchImages([track.uri]);
+                let imageUrl = "";
                 if(images[track.uri].length > 0)
-                    model.imageUrl = this.baseUrl + images[track.uri][0].uri;
+                    imageUrl = this.baseUrl + images[track.uri][0].uri;
                 else
-                    model.imageUrl = Controller.DEFAULT_IMG_URL;
+                    imageUrl = Controller.DEFAULT_IMG_URL;
+                return {...model, imageUrl} as StreamTrackModel;
             }
             return model;
         });
@@ -513,14 +550,6 @@ export class Controller extends Commands implements DataRequester{
     async addCurrentSearchResultsToPlayer() {
         let results = getState()?.getModel()?.getCurrentSearchResults();
         let trackList = await this.player.add(results.refs.map(r => r.ref.ref.uri));
-    }
-
-    async lookupAllTracks(uris: AllUris[]) {
-        let results = await this.mopidyProxy.lookup(uris);
-        Object.keys(results).forEach(trackUri => {
-            let track = results[trackUri][0];
-            this.model.addItemsToLibraryCache([transformTrackDataToModel(track)]);
-        })
     }
 }
 
