@@ -1,4 +1,7 @@
 import {EventEmitter} from "./eventEmitter";
+import {JsonRpc} from "./jsonrpc";
+import isSuccess = JsonRpc.isSuccess;
+import isFailure = JsonRpc.isFailure;
 
 function snakeToCamel(name: string) {
     return name.replace(/(_[a-z])/g, (match) =>
@@ -147,10 +150,8 @@ export class JsonRpcController extends EventEmitter {
         }
     }
 
-    private handleRpcResponse(responseMessage: { id: string | number; result: unknown; error: { message: any; code: any; data: any; }; }) { //todo: wow, cleanup this type!
-        if (
-            !Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)
-        ) {
+    private handleRpcResponse(responseMessage: JsonRpc.ResponseWithId<any>) {
+        if (!Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)) {
             console.warn(
                 "Unexpected response received. Message was:",
                 responseMessage
@@ -159,9 +160,9 @@ export class JsonRpcController extends EventEmitter {
         }
         const {resolve, reject} = this._pendingRequests[responseMessage.id];
         delete this._pendingRequests[responseMessage.id];
-        if (Object.hasOwnProperty.call(responseMessage, "result")) {
+        if (isSuccess(responseMessage)) {
             resolve(responseMessage.result);
-        } else if (Object.hasOwnProperty.call(responseMessage, "error")) {
+        } else if (isFailure(responseMessage)) {
             const error = new ServerError(responseMessage.error.message);
             error.code = responseMessage.error.code;
             error.data = responseMessage.error.data;

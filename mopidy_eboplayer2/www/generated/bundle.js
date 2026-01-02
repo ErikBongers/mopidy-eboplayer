@@ -39,7 +39,35 @@ var EventEmitter = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/jsonrpc.ts
+let JsonRpc;
+(function(_JsonRpc) {
+	function isSuccess$1(response) {
+		return Object.hasOwnProperty.call(response, "result");
+	}
+	_JsonRpc.isSuccess = isSuccess$1;
+	function isFailure$1(response) {
+		return Object.hasOwnProperty.call(response, "error");
+	}
+	_JsonRpc.isFailure = isFailure$1;
+	function isJsonRpcId(input) {
+		switch (typeof input) {
+			case "string": return true;
+			case "number": return input % 1 != 0;
+			case "object": if (input === null) {
+				console.warn("Use of null ID in JSONRPC 2.0 is discouraged.");
+				return true;
+			} else return false;
+			default: return false;
+		}
+	}
+	_JsonRpc.isJsonRpcId = isJsonRpcId;
+})(JsonRpc || (JsonRpc = {}));
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/jsonRpcController.ts
+var isSuccess = JsonRpc.isSuccess;
+var isFailure = JsonRpc.isFailure;
 function snakeToCamel(name) {
 	return name.replace(/(_[a-z])/g, (match) => match.toUpperCase().replace("_", ""));
 }
@@ -151,8 +179,8 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 		}
 		const { resolve, reject } = this._pendingRequests[responseMessage.id];
 		delete this._pendingRequests[responseMessage.id];
-		if (Object.hasOwnProperty.call(responseMessage, "result")) resolve(responseMessage.result);
-		else if (Object.hasOwnProperty.call(responseMessage, "error")) {
+		if (isSuccess(responseMessage)) resolve(responseMessage.result);
+		else if (isFailure(responseMessage)) {
 			const error = new ServerError(responseMessage.error.message);
 			error.code = responseMessage.error.code;
 			error.data = responseMessage.error.data;
