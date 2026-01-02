@@ -391,10 +391,7 @@ var State = class {
 			v.getRequiredDataTypesRecursive().forEach((dataType) => requiredData.add(dataType));
 		});
 		this.controller.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
-		for (const dataType of requiredData) {
-			await this.controller.fetchRequiredData(dataType);
-			await this.controller.webProxy.fetchRequiredData(dataType);
-		}
+		for (const dataType of requiredData) await this.controller.fetchRequiredData(dataType);
 		await this.controller.fetchAllAlbums();
 		this.controller.localStorageProxy.loadCurrentBrowseFilter();
 		this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
@@ -983,8 +980,7 @@ let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
 	EboPlayerDataType$1[EboPlayerDataType$1["Volume"] = 0] = "Volume";
 	EboPlayerDataType$1[EboPlayerDataType$1["CurrentTrack"] = 1] = "CurrentTrack";
 	EboPlayerDataType$1[EboPlayerDataType$1["PlayState"] = 2] = "PlayState";
-	EboPlayerDataType$1[EboPlayerDataType$1["StreamLines"] = 3] = "StreamLines";
-	EboPlayerDataType$1[EboPlayerDataType$1["TrackList"] = 4] = "TrackList";
+	EboPlayerDataType$1[EboPlayerDataType$1["TrackList"] = 3] = "TrackList";
 	return EboPlayerDataType$1;
 }({});
 var View = class extends NestedDataRequester {
@@ -1417,26 +1413,11 @@ function assertUnreachable(x) {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
 var WebProxy = class {
-	model;
-	constructor(model) {
-		this.model = model;
-	}
-	async fetchRequiredData(dataType) {
-		switch (dataType) {
-			case EboPlayerDataType.StreamLines:
-				await this.fetchActiveStreamLines();
-				break;
-		}
-	}
-	async fetchActiveStreamLines() {
-		if (!this.model.currentTrack) {
-			this.model.setActiveStreamLinesHistory(NoStreamTitles);
-			return;
-		}
+	constructor() {}
+	async fetchActiveStreamLines(uri) {
 		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
-		url.searchParams.set("uri", this.model.currentTrack);
-		let lines = await (await fetch(url)).json();
-		this.model.setActiveStreamLinesHistory(lines);
+		url.searchParams.set("uri", uri);
+		return await (await fetch(url)).json();
 	}
 	async fetchAllStreamLines(uri) {
 		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
@@ -1469,7 +1450,7 @@ var Controller = class Controller extends Commands {
 		this.model = model;
 		this.player = player;
 		this.mopidyProxy = mopdyProxy;
-		this.webProxy = new WebProxy(model);
+		this.webProxy = new WebProxy();
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWebSocketCtrl = eboWebSocketCtrl;
 		let portDefs = getHostAndPortDefs();
@@ -1573,8 +1554,14 @@ var Controller = class Controller extends Commands {
 		await this.updateStreamLines();
 	}
 	async updateStreamLines() {
-		if (this.model.getPlayState() == "playing") await this.webProxy.fetchActiveStreamLines();
-		else this.model.setActiveStreamLinesHistory(NoStreamTitles);
+		if (this.model.getPlayState() == "playing") {
+			if (!this.model.currentTrack) {
+				this.model.setActiveStreamLinesHistory(NoStreamTitles);
+				return;
+			}
+			let lines = await this.webProxy.fetchActiveStreamLines(this.model.currentTrack);
+			this.model.setActiveStreamLinesHistory(lines);
+		} else this.model.setActiveStreamLinesHistory(NoStreamTitles);
 	}
 	async fetchLargestImagesOrDefault(uris) {
 		function getImageUrl(uri, baseUrl) {
@@ -2574,7 +2561,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		return [
 			EboPlayerDataType.CurrentTrack,
 			EboPlayerDataType.TrackList,
-			EboPlayerDataType.StreamLines,
 			...super.getRequiredDataTypes()
 		];
 	}
@@ -2891,7 +2877,7 @@ var MainView = class extends View {
 		}
 	}
 	getRequiredDataTypes() {
-		return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines];
+		return [EboPlayerDataType.TrackList];
 	}
 	onAlbumClick() {
 		this.showView(Views.Album);

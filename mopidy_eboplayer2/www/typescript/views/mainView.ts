@@ -141,7 +141,7 @@ export class MainView extends View {
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines];
+        return [EboPlayerDataType.TrackList];
     }
 
     private onAlbumClick() {

@@ -33,7 +33,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     }
 
     override getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.CurrentTrack, EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines, ...super.getRequiredDataTypes()];
+        return [EboPlayerDataType.CurrentTrack, EboPlayerDataType.TrackList, ...super.getRequiredDataTypes()];
     }
 
     protected onStreamLinesChanged() {

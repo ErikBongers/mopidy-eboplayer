@@ -4,7 +4,6 @@ export enum EboPlayerDataType {
     Volume,
     CurrentTrack,
     PlayState,
-    StreamLines,
     TrackList,
 }
 

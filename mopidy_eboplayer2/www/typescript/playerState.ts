@@ -44,7 +44,6 @@ export class State {
 
         for (const dataType of requiredData) {
             await this.controller.fetchRequiredData(dataType);
-            await this.controller.webProxy.fetchRequiredData(dataType);
         }
 
         await this.controller.fetchAllAlbums();

@@ -1,34 +1,18 @@
 import {Model} from "../model";
 import {EboPlayerDataType} from "../views/view";
 import {getHostAndPort} from "../global";
-import {AlbumMetaData, NoStreamTitles} from "../modelTypes";
+import {AlbumMetaData, NoStreamTitles, StreamTitles, TrackUri} from "../modelTypes";
 
 export class WebProxy {
-    private model: Model;
 
-    constructor(model: Model) {
-        this.model = model;
+    constructor() {
     }
 
-    async fetchRequiredData(dataType: EboPlayerDataType) {
-        switch (dataType) {
-            case  EboPlayerDataType.StreamLines:
-                await this.fetchActiveStreamLines();
-                break;
-        }
-    }
-
-    async fetchActiveStreamLines() {
-        if (!this.model.currentTrack) {
-            this.model.setActiveStreamLinesHistory(NoStreamTitles);
-            return;
-        }
-
+    async fetchActiveStreamLines(uri: TrackUri) {
         let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
-        url.searchParams.set("uri", this.model.currentTrack);
+        url.searchParams.set("uri", uri);
         let res = await fetch(url);
-        let lines = await res.json();
-        this.model.setActiveStreamLinesHistory(lines);
+        return await res.json() as StreamTitles;
     }
 
     async fetchAllStreamLines(uri: string) {
