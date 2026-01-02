@@ -56,6 +56,9 @@ export class MainView extends View {
         document.body.addEventListener(EboplayerEvents.addItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
             await this.onAddItemListClick(ev);
         });
+        document.body.addEventListener(EboplayerEvents.replaceItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
+            await this.onReplaceItemListClick(ev);
+        });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev: CustomEvent<UriArgs>) => {
             await this.onPlayTrackClicked(ev.detail.uri);
@@ -209,6 +212,11 @@ export class MainView extends View {
         if(ev.detail.source == "browseView") {
             await getState().getController().addCurrentSearchResultsToPlayer();
         }
+    }
+
+    private async onReplaceItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
+        await getState().getPlayer().clear();
+        await this.onAddItemListClick(ev);
     }
 
     private async onBrowseResultDblClick(uri: string) {

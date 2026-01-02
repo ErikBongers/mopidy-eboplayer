@@ -862,6 +862,7 @@ let Views = /* @__PURE__ */ function(Views$1) {
 let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
 	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
 	EboplayerEvents$1["addItemListClicked"] = "eboplayer.addItemListClicked";
+	EboplayerEvents$1["replaceItemListClicked"] = "eboplayer.replaceItemListClicked";
 	EboplayerEvents$1["addTrackClicked"] = "eboplayer.addTrackClicked";
 	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
 	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
@@ -2983,6 +2984,9 @@ var MainView = class extends View {
 		document.body.addEventListener(EboplayerEvents.addItemListClicked, async (ev) => {
 			await this.onAddItemListClick(ev);
 		});
+		document.body.addEventListener(EboplayerEvents.replaceItemListClicked, async (ev) => {
+			await this.onReplaceItemListClick(ev);
+		});
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev) => {
 			await this.onPlayTrackClicked(ev.detail.uri);
@@ -3125,6 +3129,10 @@ var MainView = class extends View {
 			await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
 		}
 		if (ev.detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
+	}
+	async onReplaceItemListClick(ev) {
+		await playerState_default().getPlayer().clear();
+		await this.onAddItemListClick(ev);
 	}
 	async onBrowseResultDblClick(uri) {
 		await playerState_default().getPlayer().clearAndPlay([uri]);
@@ -4121,6 +4129,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
         <div id="buttons">
             <button id="btnPlay" class="roundBorder">Play</button>
             <button id="btnAdd" class="roundBorder">Add</button>
+            <button id="btnReplace" class="roundBorder">Replace</button>
         </div>                   
     `;
 	constructor() {
@@ -4144,6 +4153,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
 			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addItemListClicked, { source: this.list_source }));
+		});
+		this.addShadowEventListener("btnReplace", "click", (ev) => {
+			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.replaceItemListClicked, { source: this.list_source }));
 		});
 		this.requestUpdate();
 	}

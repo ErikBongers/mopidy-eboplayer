@@ -21,6 +21,7 @@ export class EboListButtonBar extends EboComponent {
         <div id="buttons">
             <button id="btnPlay" class="roundBorder">Play</button>
             <button id="btnAdd" class="roundBorder">Add</button>
+            <button id="btnReplace" class="roundBorder">Replace</button>
         </div>                   
     `;
 
@@ -48,6 +49,9 @@ export class EboListButtonBar extends EboComponent {
         });
         this.addShadowEventListener("btnAdd", "click", (ev) => {
             this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.addItemListClicked, {source: this.list_source}));
+        });
+        this.addShadowEventListener("btnReplace", "click", (ev) => {
+            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.replaceItemListClicked, {source: this.list_source}));
         });
         this.requestUpdate();
     }

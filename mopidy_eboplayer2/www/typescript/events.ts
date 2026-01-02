@@ -3,6 +3,7 @@ import {AllUris} from "./modelTypes";
 export enum EboplayerEvents {
     activeStreamLinesChanged =      "eboplayer.activeStreamLinesChanged",
     addItemListClicked =            "eboplayer.addItemListClicked",
+    replaceItemListClicked =        "eboplayer.replaceItemListClicked",
     addTrackClicked =               "eboplayer.addTrackClicked",
     albumToViewChanged =            "eboplayer.albumToViewChanged",
     breadCrumbClick =               "eboplayer.breadCrumbClick",
