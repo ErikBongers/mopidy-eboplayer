@@ -1,6 +1,5 @@
 import getState from "../playerState";
 import {showLoading} from "../functionsvars";
-import {library} from "../library";
 import {Model} from "../model";
 import {Commands} from "../commands";
 import models, {Mopidy} from "../../js/mopidy";
@@ -10,7 +9,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, ItemType, NoStreamTitles, PartialAlbumModel, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {EboplayerEvents} from "../events";
@@ -82,17 +81,17 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:playlistsLoaded', ()  => {
             showLoading(true);
-            library.getPlaylists();
+            // library.getPlaylists();
         });
 
         this.mopidy.on('event:playlistChanged', (data) => {
             delete getState().playlists[data.playlist.uri];
-            library.getPlaylists();
+            // library.getPlaylists();
         });
 
         this.mopidy.on('event:playlistDeleted', (data) => {
             delete getState().playlists[data.uri];
-            library.getPlaylists();
+            // library.getPlaylists();
         });
 
         this.mopidy.on('event:volumeChanged', (data) => {

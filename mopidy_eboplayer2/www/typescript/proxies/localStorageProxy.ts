@@ -35,7 +35,7 @@ export class LocalStorageProxy {
             breadCrumbsArray
                 .map(crumb => {
                     switch (crumb.type) {
-                        case "browseFilter": //todo: make this a const in BreadCrumbBrowseFilter
+                        case "browseFilter":
                             let browseFilter = new BrowseFilter();
                             Object.assign(browseFilter, crumb.data);
                             return new BreadCrumbBrowseFilter(crumb.label, browseFilter);

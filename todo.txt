@@ -20,7 +20,7 @@
             > who decides what the playlist name is?
               > I think the player - this is not backend related.
                 > can a config contain square brackets?
-                  > toml format: todo: check it.
+                  > toml format: check it.
       > web client should be able to get that root
         > via http of...player or backend.
 

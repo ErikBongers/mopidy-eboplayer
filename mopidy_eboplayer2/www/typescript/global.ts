@@ -94,9 +94,6 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
         model.songlenght = getState().songlength = track.length;
     }
 
-    //todo: fetch the image, set it in the model and the model should send an event: eboplayer:imageLoaded with the id of the track
-    // images.fetchAlbumImage(track.uri, ['infocover', 'albumCoverImg'], getState().mopidy);
-
     return model;
 }
 

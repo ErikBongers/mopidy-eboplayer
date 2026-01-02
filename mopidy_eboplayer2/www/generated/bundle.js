@@ -1186,7 +1186,6 @@ var HeaderView = class extends View {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/functionsvars.ts
-const HOSTNAME = document.body.dataset.hostname;
 /** ****************
 * Modal dialogs  *
 ******************/
@@ -1202,29 +1201,6 @@ function jsonParse(data, defaultValue) {
 		return defaultValue;
 	}
 }
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/library.ts
-let library = {
-	searchPressed: function(key) {
-		return true;
-	},
-	initSearch: function() {},
-	processSearchResults: function(resultArr) {},
-	getPlaylists: function() {},
-	getBrowseDir: function(rootdir) {},
-	togglePlaylists: function() {
-		return true;
-	},
-	showTracklist: function(uri) {
-		return false;
-	},
-	showArtist: function(nwuri, mopidy) {
-		return false;
-	},
-	showAlbum: function(uri, mopidy) {},
-	getSearchSchemes: function(searchBlacklist, mopidy) {}
-};
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/commands.ts
@@ -1699,15 +1675,12 @@ var Controller = class Controller extends Commands {
 		});
 		this.mopidy.on("event:playlistsLoaded", () => {
 			/* @__PURE__ */ showLoading(true);
-			library.getPlaylists();
 		});
 		this.mopidy.on("event:playlistChanged", (data) => {
 			delete playerState_default().playlists[data.playlist.uri];
-			library.getPlaylists();
 		});
 		this.mopidy.on("event:playlistDeleted", (data) => {
 			delete playerState_default().playlists[data.uri];
-			library.getPlaylists();
 		});
 		this.mopidy.on("event:volumeChanged", (data) => {
 			this.model.setVolume(data.volume);
@@ -4217,9 +4190,6 @@ var MopidyProxy = class {
 	}
 	async fetchRootDirs() {
 		return this.browse(null);
-	}
-	async fetchTracksforArtist() {
-		return await this.commands.core.library.search({ artist: ["Sting"] }, null);
 	}
 	async playTracklistItem(tlid) {
 		await this.commands.core.playback.play(null, tlid);

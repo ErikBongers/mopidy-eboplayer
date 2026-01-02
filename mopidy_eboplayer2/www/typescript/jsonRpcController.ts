@@ -9,7 +9,7 @@ function snakeToCamel(name: string) {
 export class JsonRpcController extends EventEmitter {
     private readonly _pendingRequests: {}; //this initialization gets stripped by rolldown!
     private _webSocket: WebSocket;
-    private _backoffDelay: number; //todo: rename to currentDelay
+    private currentDelay: number;
     private readonly webSocketUrl: string;
     private backoffDelayMin: number;
     private backoffDelayMax: number;
@@ -19,7 +19,7 @@ export class JsonRpcController extends EventEmitter {
         this.webSocketUrl = webSocketUrl;
         this._pendingRequests = {};
         this._webSocket = null;
-        this._backoffDelay = backoffDelayMin;
+        this.currentDelay = backoffDelayMin;
         this.backoffDelayMin = backoffDelayMin;
         this.backoffDelayMax = backoffDelayMax;
         this.hookUpEvents();
@@ -50,7 +50,7 @@ export class JsonRpcController extends EventEmitter {
         };
         this._webSocket.onopen = () => {
             this.emit("websocket:open");
-            this._backoffDelay = this.backoffDelayMin;
+            this.currentDelay = this.backoffDelayMin;
 
         };
         this._webSocket.onmessage = (message) => {
@@ -196,19 +196,19 @@ export class JsonRpcController extends EventEmitter {
         setTimeout(() => {
             this.emit("state", [
                 "reconnectionPending",
-                { timeToAttempt: this._backoffDelay}
+                { timeToAttempt: this.currentDelay}
             ]);
             this.emit("reconnectionPending", {
-                timeToAttempt: this._backoffDelay,
+                timeToAttempt: this.currentDelay,
             });
             setTimeout(() => {
                 this.emit("state", "reconnecting");
                 this.emit("reconnecting");
                 this.connect();
-            }, this._backoffDelay);
-            this._backoffDelay *= 2;
-            if (this._backoffDelay > this.backoffDelayMax) {
-                this._backoffDelay = this.backoffDelayMax;
+            }, this.currentDelay);
+            this.currentDelay *= 2;
+            if (this.currentDelay > this.backoffDelayMax) {
+                this.currentDelay = this.backoffDelayMax;
             }
         }, 0);
     }

@@ -3,57 +3,8 @@ import getState from "./playerState";
 import models from "../js/mopidy";
 import TlTrack = models.TlTrack;
 
-// interface ArtistInfo {
-//     name: string;
-//     uri: string;
-// }
-//
-// interface AlbumInfo {
-//     name: string;
-//     uri: string;
-// }
-//
-// interface TrackInfo {
-//     name: string;
-//     artists: ArtistInfo[];
-//     length: number;
-//     uri: string;
-//     album: AlbumInfo;
-// }
 
-interface StreamInfo {
-    tlid: number;
-    track: TlTrack;
-    stream: string;
-}
-
-
-// constants
-export const STREAMS_PLAYLIST_NAME = '[Radio Streams]'; //todo: put in config of...see todo.txt
-export const STREAMS_PLAYLIST_SCHEME = 'm3u';
-export const HOSTNAME = document.body.dataset.hostname;
-export const ARTIST_TABLE = '#artiststable';
-export const ALBUM_TABLE = '#albumstable';
-export const BROWSE_TABLE = '#browsetable';
-export const PLAYLIST_TABLE = '#playlisttracks';
 export const CURRENT_PLAYLIST_TABLE = '#currenttable';
-export const SEARCH_ALL_TABLE = '#allresulttable';
-export const SEARCH_ALBUM_TABLE = '#albumresulttable';
-export const SEARCH_ARTIST_TABLE = '#artistresulttable';
-export const SEARCH_TRACK_TABLE = '#trackresulttable';
-
-const URI_SCHEME = 'mbw';
-
-export enum TRACK_ACTIONS {
-    UNDEFINED = -1,
-    PLAY_NOW = 0,
-    PLAY_NEXT = 1,
-    ADD_THIS_BOTTOM = 2,
-    ADD_ALL_BOTTOM = 3,
-    PLAY_ALL = 4,
-    DYNAMIC = 5,
-    INSERT_AT_INDEX = 6,
-}
 
 // the first part of Mopidy extensions which serve radio streams
 let radioExtensionsList = ['somafm', 'tunein', 'dirble', 'audioaddict']
@@ -146,76 +97,6 @@ const VALID_AUDIO_EXT = [
     'webm'  // HTML5 video
 ]
 
-function scrollToTop () {
-    //todo
-    // $('body,html').animate({
-    //     scrollTop: 0
-    // }, 250)
-}
-
-export function scrollToTracklist () {
-    //todo
-    // let divtop = $('#playlisttracksdiv').offset().top - 120
-    // $('body,html').animate({
-    //     scrollTop: divtop
-    // }, 250)
-}
-
-// A hack to find the name of the first artist of a playlist. this is not yet returned by mopidy
-// does not work wel with multiple artists of course
-export function getArtist (pl) {
-    for (let i = 0; i < pl.length; i++) {
-        for (let j = 0; j < pl[i].artists.length; j++) {
-            if (pl[i].artists[j].name !== '') {
-                return pl[i].artists[j].name
-            }
-        }
-    }
-}
-
-// A hack to find the first album of a playlist. this is not yet returned by mopidy
-export function getAlbum (pl) {
-    for (let i = 0; i < pl.length; i++) {
-        if (pl[i].album.name !== '') {
-            return pl[i].album.name
-        }
-    }
-}
-
-export function artistsToString (artists, max = 3) {
-    let result = '';
-    if (artists && artists.length > 0) {
-        for (let i = 0; i < artists.length && i < max; i++) {
-            if (artists[i].name) {
-                if (i > 0) {
-                    result += ', ';
-                }
-                result += artists[i].name;
-            }
-        }
-    }
-    return result;
-}
-
-/** ******************************************************
- * break up results and put them in album tables
- *********************************************************/
-export function albumTracksToTable (pl, target, uri) {
-    let track, previousTrack, nextTrack;
-    let html = '';
-    document.querySelector(target).innerHTML = "";
-    document.querySelector(target).attr('data', uri);
-    for (let i = 0; i < pl.length; i++) {
-        previousTrack = track || undefined;
-        nextTrack = i < pl.length - 1 ? pl[i + 1] : undefined;
-        track = pl[i];
-        getState().popupData[track.uri] = track;
-        html += renderSongLi(previousTrack, track, nextTrack, uri, '', target, i, pl.length);
-    }
-    document.querySelector(target).append(html);
-    // updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction());
-}
-
 export function renderSongLi (previousTrack, track, nextTrack, uri, tlid, target, currentIndex, listLength) {
     let tlidParameter = '';
     let onClick = '';
@@ -279,52 +160,6 @@ function renderSongLiTrackArtists (track) {
     return html
 }
 
-/* Tracklist renderer to insert dividers between albums. */
-export function renderSongLiDivider (previousTrack, track, nextTrack, target) {
-    // let html = ''
-    // let imageID
-    // // Render differently if part of an album.
-    // if (!hasSameAlbum(previousTrack, track) && hasSameAlbum(track, nextTrack)) {
-    //     // Large divider with album cover.
-    //     let showAlbum = '';
-    //     if (typeof track.album.uri !== 'undefined') {
-    //         showAlbum = 'onclick="return library.showAlbum(\'' + track.album.uri + '\', mopidy);"'
-    //     }
-    //     html +=
-    //         '<li class="albumdivider"><a href="#" ' + showAlbum + '>' +
-    //         '<img id="' + getUniqueId(target + '-cover', track.uri) + '" class="artistcover" width="30" height="30"/>' +
-    //         '<h1>' + track.album.name + '</h1><p>' +
-    //         renderSongLiTrackArtists(track) + '</p></a></li>'
-    //     // The element ID to populate with an album cover.
-    //     imageID = getUniqueId(target + '-cover', track.uri, true)
-    // } else if (previousTrack && !hasSameAlbum(previousTrack, track)) {
-    //     // Small divider
-    //     html += '<li class="smalldivider"> &nbsp;</li>'
-    // }
-    // if (html.length > 0 && typeof target !== 'undefined' && target.length > 0) {
-    //     target = getUniqueId(target, track.uri, true)
-    //     document.querySelector(target).before(html);
-    // }
-    // return [html, imageID];
-}
-
-export function renderSongLiBackButton (results, target, onClick, optional = undefined) {
-    if (onClick && onClick.length > 0) {
-        if (!results || results.length === 0) {
-            document.querySelector(target).innerHTML= "";
-            document.querySelector(target).append(
-                '<li class="song albumli"><a href="#" onclick="' + onClick + '"><h1><i></i>No tracks found...</h1></a></li>'
-            );
-        }
-        let opt = '';
-        if (optional) {
-            opt = ' backnav-optional';
-        }
-        document.querySelector(target).prepend(
-            '<li class="backnav' + opt + '"><a href="#" onclick="' + onClick + '"><h1><i class="fa fa-arrow-circle-left"></i> Back</h1></a></li>'
-        );
-    }
-}
 
 export function hasSameAlbum (track1, track2) {
     // 'true' if album for each track exists and has the same name
@@ -343,89 +178,6 @@ function validateTrackName (track, trackNumber) {
         name = track.name
     }
     return name
-}
-
-export function resultsToTables (results, target: string, uri: string = undefined, onClickBack = undefined, backIsOptional = undefined) {
-    // document.querySelector(target).innerHTML = "";
-    // renderSongLiBackButton(results, target, onClickBack, backIsOptional)
-    // if (!results || results.length === 0) {
-    //     return;
-    // }
-    // document.querySelector(target).setAttribute('data', uri);
-    //
-    // let track, previousTrack, nextTrack, tlid;
-    // let html = '';
-    // let requiredImages = {};
-    //
-    // // Break into albums and put in tables
-    // for (let i = 0; i < results.length; i++) {
-    //     previousTrack = track || undefined;
-    //     nextTrack = i < results.length - 1 ? results[i + 1] : undefined;
-    //     track = results[i];
-    //     if (track) {
-    //         if ('tlid' in track) {
-    //             // Get track information from TlTrack instance
-    //             tlid = track.tlid;
-    //             track = track.track;
-    //             nextTrack = nextTrack ? nextTrack.track : undefined;
-    //         }
-    //         getState().popupData[track.uri] = track;
-    //         let divider = renderSongLiDivider(previousTrack, track, nextTrack, target);
-    //         html += divider[0] + renderSongLi(previousTrack, track, nextTrack, uri, tlid, target, i, results.length);
-    //         requiredImages[track.uri] = divider[1];
-    //     }
-    // }
-    // document.querySelector(target).append(html);
-    // updatePlayIcons(getState().songdata.track.uri, getState().songdata.tlid, controls.getIconForAction())
-    // images.setImages(requiredImages, getState().mopidy, 'small');
-}
-
-function getUris (tracks) {
-    let results = []
-    for (let i = 0; i < tracks.length; i++) {
-        results.push(tracks[i].uri)
-    }
-    return results
-}
-
-export function getTracksFromUri (uri, full_track_data) {
-    let returnTracksOrUris = function (tracks) {
-        return full_track_data ? tracks : getUris(tracks)
-    }
-    if (getState().customTracklists[uri]) {
-        return returnTracksOrUris(getState().customTracklists[uri])
-    } else if (getState().playlists[uri] && getState().playlists[uri].tracks) {
-        return returnTracksOrUris(getState().playlists[uri].tracks)
-    }
-    return []
-}
-
-// convert time to human readable format
-function timeFromSeconds (length) {
-    let d = Number(length);
-    let h = Math.floor(d / 3600);
-    let m = Math.floor(d % 3600 / 60);
-    let s = Math.floor(d % 3600 % 60);
-    return ((h > 0 ? h + ':' : '') + (m > 0 ? (h > 0 && m < 10 ? '0' : '') + m + ':' : '0:') + (s < 10 ? '0' : '') + s);
-}
-
-/** ***** Toast ***/
-function toast (message, delay, textOnly) {
-    //todo
-    // let textOnl = textOnly || false;
-    // message = message || 'Loading...'
-    // delay = delay || 1000
-    // $.mobile.loading('show', {
-    //     text: message,
-    //     textVisible: true,
-    //     theme: 'a',
-    //     textonly: textOnl
-    // })
-    // if (delay > 0) {
-    //     setTimeout(function () {
-    //         $.mobile.loading('hide')
-    //     }, delay)
-    // }
 }
 
 /** ****************
@@ -450,10 +202,6 @@ export function showLoading (on) {
 export function validUri (uri: string) {
     let regexp = /^(http|https|mms|rtmp|rtmps|rtsp):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/;
     return regexp.test(uri);
-}
-
-function validServiceUri (str: string) {
-    return validUri(str) || isServiceUri(str);
 }
 
 export function getScheme (uri: string) {
@@ -508,44 +256,6 @@ export function getMediaClass (track) {
     return ''
 }
 
-function getMediaHuman (uri) {
-    let scheme = getScheme(uri)
-    for (let i = 0; i < uriHumanList.length; i++) {
-        if (scheme.toLowerCase() === uriHumanList[i][0].toLowerCase()) {
-            return uriHumanList[i][1]
-        }
-    }
-    return ''
-}
-
-function isServiceUri (uri) {
-    let scheme = getScheme(uri)
-    let i = 0
-    for (i = 0; i < uriClassList.length; i++) {
-        if (scheme === uriClassList[i][0]) {
-            return true
-        }
-    }
-    for (i = 0; i < radioExtensionsList.length; i++) {
-        if (scheme === radioExtensionsList[i]) {
-            return true
-        }
-    }
-    return false
-}
-
-export function isFavouritesPlaylist (playlist) {
-    return (playlist.name === STREAMS_PLAYLIST_NAME &&
-            getScheme(playlist.uri) === STREAMS_PLAYLIST_SCHEME)
-}
-
-// Returns a string where {x} in template is replaced by tokens[x].
-function stringFromTemplate (template, tokens) {
-    return template.replace(/{[^}]+}/g, function (match) {
-        return tokens[match.slice(1, -1)]
-    })
-}
-
 /**
  * Converts a URI to a jQuery-safe identifier. jQuery identifiers need to be
  * unique per page and cannot contain special characters.
@@ -577,54 +287,6 @@ function fixedEncodeURIComponent (str) {
     return encodeURIComponent(str).replace(/[!'()*]/g, function (c) {
         return '%' + c.charCodeAt(0).toString(16)
     })
-}
-
-export function updatePlayIcons(uri: string, tlid: number, popupMenuIcon) {
-    // Update styles of listviews
-    let listviews = [PLAYLIST_TABLE, SEARCH_TRACK_TABLE, ARTIST_TABLE, ALBUM_TABLE, BROWSE_TABLE];
-    let target = CURRENT_PLAYLIST_TABLE.substring(1);
-    if (uri && typeof tlid === 'number' && tlid >= 0) {
-        document.querySelector(CURRENT_PLAYLIST_TABLE).querySelectorAll('li.song.albumli').forEach((el) => {
-            let eachTlid = parseInt(el.getAttribute('tlid'));
-            if (this.id === getUniqueId(target, uri) && eachTlid === tlid) {
-                if (!el.classList.contains('currenttrack')) {
-                    el.classList.add('currenttrack');
-                }
-            } else if (el.classList.contains('currenttrack')) {
-                el.classList.remove('currenttrack');
-            }
-        })
-    }
-
-    let popupElement;
-
-    for (let i = 0; i < listviews.length; i++) {
-        target = listviews[i].substring(1)
-        document.querySelector(listviews[i]).querySelectorAll('li.song.albumli').forEach((el) => {
-            if (uri) {
-                if (this.id === getUniqueId(target, uri)) {
-                    el.classList.add('currenttrack2');
-                } else {
-                    el.classList.remove('currenttrack2');
-                }
-            }
-            if (popupMenuIcon) {
-                popupElement = el.querySelector('a.moreBtn').querySelectorAll('i').item(0);
-                if (!popupElement.hasClass(popupMenuIcon)) {
-                    popupElement.removeClass()
-                    popupElement.addClass(popupMenuIcon)
-                }
-            }
-        })
-    }
-}
-
-export function switchContent(divid: string, uri: string = undefined) {
-    let hash = divid;
-    if (uri) {
-        hash += '?' + uri
-    }
-    location.hash = '#' + hash
 }
 
 export function jsonParse<T>(data: string, defaultValue: T): T {
