@@ -12,6 +12,7 @@
     "incremental": false,
     "moduleResolution": "bundler",
     "noImplicitOverride": true,
+      "noImplicitThis": true,
     "paths": {
     },
     "typeRoots": ["node_modules/@types"]

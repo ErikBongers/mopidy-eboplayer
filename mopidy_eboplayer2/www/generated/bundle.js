@@ -4195,7 +4195,7 @@ var PlayController = class {
 //#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
 var MopidyProxy = class {
 	commands;
-	constructor(controller, model, commands) {
+	constructor(commands) {
 		this.commands = commands;
 	}
 	async fetchRootDirs() {
@@ -4326,7 +4326,7 @@ function setupStuff() {
 	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
 	let timer = new SyncedProgressTimer(8, mopidy);
 	let model = new Model();
-	let mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);
 	let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
 	controller.initSocketevents();

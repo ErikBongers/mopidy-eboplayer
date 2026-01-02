@@ -1,7 +1,5 @@
-import {Model} from "../model";
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {Controller} from "../controllers/controller";
 import {numberedDictToArray} from "../global";
 import {AllUris, HistoryLine, ImageLookup, LibraryDict, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
@@ -11,7 +9,7 @@ import Ref = models.Ref;
 export class MopidyProxy {
     private commands: Commands;
 
-    constructor(controller: Controller, model: Model, commands: Commands) {
+    constructor(commands: Commands) {
         this.commands = commands;
     }
 
@@ -58,12 +56,11 @@ export class MopidyProxy {
     async lookup(uris: string | string[]) {
         if (typeof uris == "string")
             uris = [uris];
-        let dict: LibraryDict = await this.commands.core.library.lookup(uris);
-        return dict;
+        return await this.commands.core.library.lookup(uris) as LibraryDict;
     }
 
     async fetchTracklist(): Promise< TlTrack[]> {
-        return await this.commands.core.tracklist.getTlTracks();
+        return await this.commands.core.tracklist.getTlTracks() as TlTrack[];
     }
 
     async fetchHistory() {
@@ -100,22 +97,22 @@ export class MopidyProxy {
 
     async fetchPlaybackOptions() {
         let promises = [
-            await this.commands.core.tracklist.getRepeat(),
-            await this.commands.core.tracklist.getRandom(),
-            await this.commands.core.tracklist.getConsume(),
-            await this.commands.core.tracklist.getSingle(),
+            await this.commands.core.tracklist.getRepeat() as Promise<boolean>,
+            await this.commands.core.tracklist.getRandom() as Promise<boolean>,
+            await this.commands.core.tracklist.getConsume() as Promise<boolean>,
+            await this.commands.core.tracklist.getSingle() as Promise<boolean>,
         ];
         let results = await Promise.all(promises);
         return {
                 repeat: results[0],
                 random: results[1],
                 consume: results[2],
-                single: results[3]
+                single: results[3],
             };
     }
 
     async fetchCurrentTrack() {
-        return await this.commands.core.playback.getCurrentTlTrack();
+        return await this.commands.core.playback.getCurrentTlTrack() as TlTrack | undefined;
     }
 
     async fetchPlayLists() {

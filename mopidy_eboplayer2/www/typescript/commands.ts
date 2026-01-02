@@ -19,7 +19,7 @@ export class Commands {
 
     }
     
-    send(method: string, params: Object) {
+    send(method: string, params?: Object) {
         if(params)
             return this.mopidy.send({method, params});
         else

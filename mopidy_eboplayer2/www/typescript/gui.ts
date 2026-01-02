@@ -65,7 +65,7 @@ function setupStuff() {
     let eboWebSocketCtrl = new JsonRpcController(wsUrl, 1000, 64000);
     let timer = new SyncedProgressTimer(8, mopidy);
     let model = new Model();
-    let mopidyProxy = new MopidyProxy(this, model, new Commands(mopidy));
+    let mopidyProxy = new MopidyProxy(new Commands(mopidy));
     let player = new PlayController(model, mopidyProxy)
     let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
 
