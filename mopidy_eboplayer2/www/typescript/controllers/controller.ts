@@ -134,8 +134,8 @@ export class Controller extends Commands implements DataRequester{
             }
             console.log(data);
         });
-        this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data: {data: StreamTitles}) => { //todo: replace data.data with data.stream_titles.
-            let streamTitles: StreamTitles = data.data;
+        this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
+            let streamTitles: StreamTitles = data.stream_titles;
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
         this.model.addEventListener(EboplayerEvents.playStateChanged, async () => {

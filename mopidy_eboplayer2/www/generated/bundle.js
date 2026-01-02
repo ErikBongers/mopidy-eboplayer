@@ -1532,7 +1532,7 @@ var Controller = class Controller extends Commands {
 			console.log(data);
 		});
 		this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data) => {
-			let streamTitles = data.data;
+			let streamTitles = data.stream_titles;
 			this.model.setActiveStreamLinesHistory(streamTitles);
 		});
 		this.model.addEventListener(EboplayerEvents.playStateChanged, async () => {
