@@ -52,7 +52,7 @@ export function getHostAndPortDefs() {
 }
 
 export function isStream(track: models.Track) {
-    return track?.track_no == undefined; //todo: this isn't waterproof. A track may NOT belong to an album and thus have no track_no
+    return (track?.length ?? 0) == 0;
 }
 
 export function transformTrackDataToModel(track: (models.Track)): FileTrackModel | PartialStreamTrackModel {
