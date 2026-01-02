@@ -312,7 +312,7 @@ export class EboBrowseComp extends EboComponent {
 
     private renderBreadcrumb(crumb: FilterBreadCrumb) {
         if(crumb instanceof BreadCrumbRef)
-            return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`; //todo: have the type of uri and add a little icon?
+            return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`;
         else if(crumb instanceof BreadCrumbBrowseFilter) {
             let selectedFilters = crumb.data.getSelectedFilters();
             let imgTags = "";
