@@ -7,6 +7,7 @@ import {EmptySearchResults, RefType, SearchResults} from "../refs";
 import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs, UriArgs} from "../events";
 import models from "../../js/mopidy";
 import ModelType = models.ModelType;
+import {assertUnreachable} from "../global";
 
 export class EboBrowseComp extends EboComponent {
     static override readonly tagName=  "ebo-browse-view";
@@ -324,6 +325,7 @@ export class EboBrowseComp extends EboComponent {
         }
         else if(crumb instanceof BreadCrumbHome)
             return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
+        return assertUnreachable(crumb);
     }
 
     private filterToImg(filter: string) {

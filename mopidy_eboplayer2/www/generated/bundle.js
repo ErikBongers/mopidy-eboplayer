@@ -1585,6 +1585,9 @@ function transformTrackDataToModel(track) {
 function console_yellow(msg) {
 	console.log(`%c${msg}`, "background-color: yellow");
 }
+function assertUnreachable(x) {
+	throw new Error("Didn't expect to get here");
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
@@ -3419,6 +3422,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			if (crumb.data.searchText) filterText = `"${crumb.data.searchText}"`;
 			return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTags}${filterText}</button>`;
 		} else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
+		return assertUnreachable(crumb);
 	}
 	filterToImg(filter) {
 		let imgUrl = "";

@@ -13,6 +13,7 @@
         "moduleResolution": "bundler",
         "noImplicitOverride": true,
         "noImplicitThis": true,
+        "noImplicitReturns": true,
         "paths": {
         },
         "typeRoots": ["node_modules/@types"]
