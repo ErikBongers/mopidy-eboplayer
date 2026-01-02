@@ -32,10 +32,9 @@ class Storage:
 
     def get_active_titles_dict(self, titles = None):
         active_titles = self.get_active_titles(titles)
-        lines_dict = {index: value for index, value in enumerate(active_titles)}
         stream_titles = {
             "uri": self.current_track_uri,
-            "active_titles": lines_dict
+            "active_titles": active_titles
         }
         return stream_titles
 

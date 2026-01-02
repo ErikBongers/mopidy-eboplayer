@@ -1437,6 +1437,7 @@ var WebProxy = class {
 		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
 		url.searchParams.set("uri", this.model.currentTrack);
 		let lines = await (await fetch(url)).json();
+		debugger;
 		this.model.setActiveStreamLinesHistory(lines);
 	}
 	async fetchAllStreamLines(uri) {

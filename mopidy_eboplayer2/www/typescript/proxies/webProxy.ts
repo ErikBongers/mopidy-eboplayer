@@ -28,6 +28,7 @@ export class WebProxy {
         url.searchParams.set("uri", this.model.currentTrack);
         let res = await fetch(url);
         let lines = await res.json();
+        debugger;
         this.model.setActiveStreamLinesHistory(lines);
     }
 
