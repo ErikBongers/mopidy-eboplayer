@@ -4,10 +4,6 @@ export class EboMenuButton extends EboComponent {
     static readonly tagName=  "ebo-menu-button";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [];
-    //todo: put all global css files in the same cache as the local ones<
-    // make sure they aren't added twice: once from the global specs and once from the indivicual components.
-    // noinspection JSUnusedGlobalSymbols
-    // cssNeeded = ["vendors/font_awesome/css/font-awesome.css"];
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `

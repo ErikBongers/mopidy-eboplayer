@@ -42,9 +42,6 @@ export class EboButton extends EboComponent {
             }
         </style>
     `;
-    //todo: make a html (or style) template literal function to inject opacity and such.
-    // > This function does NOT return a string, but the list of string fragments and placeholders.
-    // > The template is rendered later with `this` as the context.
 
     static htmlText = `
         <button>

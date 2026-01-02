@@ -146,7 +146,7 @@ export class EboBigTrackComp extends EboComponent {
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         //todo: try casting to EboProgressBar class and set attributes directly? Without re-rendering?
         EboBigTrackComp.progressBarAttributes.forEach(attName => {
-            progressBarElement.setAttribute(attName, this[attName]);//todo: check if each of these causes a re-rendering.
+            progressBarElement.setAttribute(attName, this[attName]);
         });
         let img = shadow.getElementById("image") as HTMLImageElement;
         img.src = this.img;

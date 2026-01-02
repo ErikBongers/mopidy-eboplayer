@@ -1577,7 +1577,7 @@ function getHostAndPortDefs() {
 	};
 }
 function isStream(track) {
-	return track?.track_no == void 0;
+	return (track?.length ?? 0) == 0;
 }
 function transformTrackDataToModel(track) {
 	if (isStream(track)) return {
@@ -2325,6 +2325,10 @@ var EboComponent = class EboComponent extends HTMLElement {
 	setClassFromBoolAttribute(el, attName) {
 		if (this[attName] == true) el.classList.add(attName);
 		else el.classList.remove(attName);
+	}
+	updateBoolAtrribute(newValue, name) {
+		if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+		this[name] = newValue == "true";
 	}
 	static define(comp) {
 		if (comp.tagName == EboComponent.NO_TAG_NAME) throw "Component class should have tagName defined.";
@@ -4158,10 +4162,6 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 				break;
 		}
 		this.requestRender();
-	}
-	updateBoolAtrribute(newValue, name) {
-		if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-		this[name] = newValue == "true";
 	}
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {

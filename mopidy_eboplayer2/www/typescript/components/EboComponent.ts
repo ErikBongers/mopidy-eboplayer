@@ -1,6 +1,4 @@
 import {Batching} from "../Batching";
-import {console_yellow} from "../global";
-import {debug} from "node:util";
 
 export interface HasName {
     tagName: string;
@@ -12,7 +10,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     }
     static globalCss: CSSStyleSheet[] = [];
     static cssCache: Map<string, CSSStyleSheet> = new Map();
-    private shadow: ShadowRoot; //todo: make private and expose only in renderPrepared and updateWhenConnected.
+    private shadow: ShadowRoot;
     protected styleTemplate?: HTMLTemplateElement;
     protected divTemplate?: HTMLTemplateElement;
     private connected = false;
