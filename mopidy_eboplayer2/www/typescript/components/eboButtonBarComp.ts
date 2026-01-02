@@ -127,9 +127,7 @@ export class EboButtonBar extends EboComponent {
             case "allow_play":
             case "allow_prev":
             case "allow_next":
-                if (!["true", "false"].includes(newValue))
-                    throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-                this[name] = newValue == "true";
+                this.updateBoolAtrribute(newValue, name);
                 break;
         }
         this.requestUpdate();

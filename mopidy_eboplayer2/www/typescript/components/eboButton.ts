@@ -67,9 +67,7 @@ export class EboButton extends EboComponent {
                 break;
             case "pressed":
             case "disabled":
-                if (!["true", "false"].includes(newValue))
-                    throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-                this[name] = newValue == "true";
+                this.updateBoolAtrribute(newValue, name);
                 break;
         }
         this.requestRender();

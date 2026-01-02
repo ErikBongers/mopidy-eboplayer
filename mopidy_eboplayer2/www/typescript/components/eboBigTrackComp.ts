@@ -131,9 +131,7 @@ export class EboBigTrackComp extends EboComponent {
                 this[name] = newValue;
                 break;
             case "enabled":
-                if (!["true", "false"].includes(newValue))
-                    throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-                this[name] = newValue == "true";
+                this.updateBoolAtrribute(newValue, name);
                 break;
         }
         this.requestRender();

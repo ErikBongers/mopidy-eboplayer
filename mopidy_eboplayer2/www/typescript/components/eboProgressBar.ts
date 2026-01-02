@@ -77,9 +77,7 @@ export class EboProgressBar extends EboComponent {
                 break;
             case "active":
             case "button":
-                if (!["true", "false"].includes(newValue))
-                    throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-                this[name] = newValue == "true";
+                this.updateBoolAtrribute(newValue, name);
                 break;
         }
         if(!(this.min <= this.position && this.position <= this.max))

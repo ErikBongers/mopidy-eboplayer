@@ -2199,8 +2199,7 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 				break;
 			case "active":
 			case "button":
-				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-				this[name] = newValue == "true";
+				this.updateBoolAtrribute(newValue, name);
 				break;
 		}
 		if (!(this.min <= this.position && this.position <= this.max)) throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
@@ -2483,8 +2482,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 				this[name] = newValue;
 				break;
 			case "enabled":
-				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-				this[name] = newValue == "true";
+				this.updateBoolAtrribute(newValue, name);
 				break;
 		}
 		this.requestRender();
@@ -3125,8 +3123,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 				break;
 			case "enabled":
 			case "show_back":
-				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-				this[name] = newValue == "true";
+				this.updateBoolAtrribute(newValue, name);
 				break;
 		}
 		this.requestRender();
@@ -3408,8 +3405,7 @@ var EboButton = class EboButton extends EboComponent {
 				break;
 			case "pressed":
 			case "disabled":
-				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-				this[name] = newValue == "true";
+				this.updateBoolAtrribute(newValue, name);
 				break;
 		}
 		this.requestRender();
@@ -3750,8 +3746,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			case "allow_play":
 			case "allow_prev":
 			case "allow_next":
-				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-				this[name] = newValue == "true";
+				this.updateBoolAtrribute(newValue, name);
 				break;
 		}
 		this.requestUpdate();
@@ -3899,8 +3894,7 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 				this[name] = newValue;
 				break;
 			case "pressed":
-				if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-				this[name] = newValue == "true";
+				this.updateBoolAtrribute(newValue, name);
 				break;
 		}
 		this.requestRender();
