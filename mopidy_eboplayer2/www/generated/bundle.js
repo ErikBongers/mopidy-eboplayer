@@ -46,7 +46,7 @@ function snakeToCamel(name) {
 var JsonRpcController = class JsonRpcController extends EventEmitter {
 	_pendingRequests;
 	_webSocket;
-	_backoffDelay;
+	currentDelay;
 	webSocketUrl;
 	backoffDelayMin;
 	backoffDelayMax;
@@ -55,7 +55,7 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 		this.webSocketUrl = webSocketUrl;
 		this._pendingRequests = {};
 		this._webSocket = null;
-		this._backoffDelay = backoffDelayMin;
+		this.currentDelay = backoffDelayMin;
 		this.backoffDelayMin = backoffDelayMin;
 		this.backoffDelayMax = backoffDelayMax;
 		this.hookUpEvents();
@@ -79,7 +79,7 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 		};
 		this._webSocket.onopen = () => {
 			this.emit("websocket:open");
-			this._backoffDelay = this.backoffDelayMin;
+			this.currentDelay = this.backoffDelayMin;
 		};
 		this._webSocket.onmessage = (message) => {
 			this.emit("websocket:incomingMessage", message);
@@ -178,15 +178,15 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 	}
 	_reconnect() {
 		setTimeout(() => {
-			this.emit("state", ["reconnectionPending", { timeToAttempt: this._backoffDelay }]);
-			this.emit("reconnectionPending", { timeToAttempt: this._backoffDelay });
+			this.emit("state", ["reconnectionPending", { timeToAttempt: this.currentDelay }]);
+			this.emit("reconnectionPending", { timeToAttempt: this.currentDelay });
 			setTimeout(() => {
 				this.emit("state", "reconnecting");
 				this.emit("reconnecting");
 				this.connect();
-			}, this._backoffDelay);
-			this._backoffDelay *= 2;
-			if (this._backoffDelay > this.backoffDelayMax) this._backoffDelay = this.backoffDelayMax;
+			}, this.currentDelay);
+			this.currentDelay *= 2;
+			if (this.currentDelay > this.backoffDelayMax) this.currentDelay = this.backoffDelayMax;
 		}, 0);
 	}
 };
@@ -2035,14 +2035,14 @@ var Controller = class Controller extends Commands {
 	}
 	async fetchStreamLines(streamUri) {
 		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
-		let groupLines = function(grouped, line) {
+		function groupLines(grouped, line) {
 			if (line == "---") {
 				grouped.push([]);
 				return grouped;
 			}
 			grouped[grouped.length - 1].push(line);
 			return grouped;
-		};
+		}
 		return stream_lines.reduce(groupLines, new Array([])).filter((lineGroup) => lineGroup.length);
 	}
 	setView(view) {

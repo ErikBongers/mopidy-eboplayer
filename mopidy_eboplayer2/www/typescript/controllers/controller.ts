@@ -523,7 +523,7 @@ export class Controller extends Commands implements DataRequester{
 
     async fetchStreamLines(streamUri: string) {
         let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
-        let groupLines = function (grouped: string[][], line: string){ //todo: normal function declaration?
+        function groupLines (grouped: string[][], line: string) {
             if(line == "---") {
                 grouped.push([]);
                 return grouped;
