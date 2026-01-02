@@ -908,7 +908,6 @@ var Model = class extends EventTarget {
 	}
 	setActiveStreamLinesHistory(streamTitles) {
 		if (!streamTitles) return;
-		streamTitles.active_titles = Object.values(streamTitles.active_titles);
 		this.activeStreamLines = streamTitles;
 		this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
 	}

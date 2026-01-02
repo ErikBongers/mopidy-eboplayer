@@ -20,7 +20,7 @@ class ActiveStreamLinesHandler(tornado.web.RequestHandler):
         if all_or_active == "all":
             return self.write(json.dumps(self.storage.get_all_titles()))
         else:
-            return self.write(json.dumps(self.storage.get_active_titles_dict(self.storage.get_all_titles())))
+            return self.write(json.dumps(self.storage.get_active_titles_object(self.storage.get_all_titles())))
 
     @staticmethod
     def setup():

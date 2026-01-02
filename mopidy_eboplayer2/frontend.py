@@ -44,7 +44,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
 
     def stream_title_changed(self, title: str) -> None:
         if self.storage.write_title(title):
-            stream_titles = self.storage.get_active_titles_dict()
+            stream_titles = self.storage.get_active_titles_object()
             the_event = {
                 "event" : "stream_history_changed",
                 "data" : stream_titles

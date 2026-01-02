@@ -30,7 +30,7 @@ class Storage:
             lines = tail(file, 100)
         return lines
 
-    def get_active_titles_dict(self, titles = None):
+    def get_active_titles_object(self, titles = None):
         active_titles = self.get_active_titles(titles)
         stream_titles = {
             "uri": self.current_track_uri,
