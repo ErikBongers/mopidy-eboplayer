@@ -1,21 +1,22 @@
 import getState from "../playerState";
-import {showLoading} from "../functionsvars";
 import {Model} from "../model";
 import {Commands} from "../commands";
-import models, {Mopidy} from "../../js/mopidy";
+import models, {core, Mopidy} from "../../js/mopidy";
 import {EboPlayerDataType} from "../views/view";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {EboplayerEvents} from "../events";
 import {PlayController} from "./playController";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
+import Playlist = models.Playlist;
+import PlaybackState = core.PlaybackState;
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -68,42 +69,41 @@ export class Controller extends Commands implements DataRequester{
             this.model.setPlaybackState(await this.mopidyProxy.fetchPlaybackOptions());
         });
 
-        this.mopidy.on('event:trackPlaybackStarted', async (data) => {
+        this.mopidy.on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: try to link `name` argument to `data` type automatically.
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.mopidy.on('event:trackPlaybackEnded', async (data) => {
+        this.mopidy.on('event:trackPlaybackEnded', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
             this.model.setPlayState("stopped"); //don't rely solely on the state changes!
         });
 
-        this.mopidy.on('event:trackPlaybackResumed', async (data) => {
+        this.mopidy.on('event:trackPlaybackResumed', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
         this.mopidy.on('event:playlistsLoaded', ()  => {
-            showLoading(true);
             // library.getPlaylists();
         });
 
-        this.mopidy.on('event:playlistChanged', (data) => {
-            delete getState().playlists[data.playlist.uri];
+        this.mopidy.on('event:playlistChanged', (data: {playlist: Playlist}) => {
+            // delete getState().playlists[data.playlist.uri];
             // library.getPlaylists();
         });
 
-        this.mopidy.on('event:playlistDeleted', (data) => {
-            delete getState().playlists[data.uri];
+        this.mopidy.on('event:playlistDeleted', (data: {uir: PlaylistUri}) => {
+            // delete getState().playlists[data.uri];
             // library.getPlaylists();
         });
 
-        this.mopidy.on('event:volumeChanged', (data) => {
+        this.mopidy.on('event:volumeChanged', (data: {volume: number}) => {
             this.model.setVolume(data.volume);
         });
 
-        this.mopidy.on('event:muteChanged', (_data) => {
+        this.mopidy.on('event:muteChanged', (_data: any) => {
         });
 
-        this.mopidy.on('event:playbackStateChanged', async (data) => {
+        this.mopidy.on('event:playbackStateChanged', async (data: {new_state: PlaybackState}) => {
             await this.onPlaybackStateChanged(data);
         });
 
@@ -113,14 +113,10 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:seeked', () => {
-            // controls.setPosition(data.time_position);
-            if (getState().play) {
-                getState().syncedProgressTimer.start();
-            }
         });
 
         //log all events:
-        this.mopidy.on((data) => {
+        this.mopidy.on((data: any) => {
             if(data instanceof MessageEvent) {
                 try {
                     let dataObject = JSON.parse(data.data);
@@ -138,7 +134,7 @@ export class Controller extends Commands implements DataRequester{
             }
             console.log(data);
         });
-        this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data) => {
+        this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data: {data: StreamTitles}) => { //todo: replace data.data with data.stream_titles.
             let streamTitles: StreamTitles = data.data;
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
@@ -168,7 +164,7 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    private async onPlaybackStateChanged(data) {
+    private async onPlaybackStateChanged(data: { new_state: PlaybackState; }) {
         this.model.setPlayState(data.new_state);
         await this.updateStreamLines();
     }
@@ -197,7 +193,7 @@ export class Controller extends Commands implements DataRequester{
     }
 
     private async fetchLargestImagesOrDefault(uris: AllUris[]) {
-        function getImageUrl(uri: string, baseUrl: string) {
+        function getImageUrl(uri: AllUris, baseUrl: string) {
             let arr = images[uri];
             arr.sort((imgA, imgB) => (imgA.width * imgA.height) - (imgB.width * imgB.height));
             if (arr.length == 0)
@@ -205,12 +201,12 @@ export class Controller extends Commands implements DataRequester{
             let imageUrl = arr.pop().uri;
             if (imageUrl == "")
                 imageUrl = Controller.DEFAULT_IMG_URL;
-            return baseUrl + imageUrl;
+            return baseUrl + imageUrl as ImageUri;
         }
         let images = await this.mopidyProxy.fetchImages(uris);
-        let mappedImage: [AllUris, string][] = uris.map(uri => {
+        let mappedImage: [ImageUri, string][] = uris.map(uri => {
             let imageUrl = getImageUrl(uri, this.baseUrl);
-            return [uri as AllUris, imageUrl];
+            return [uri as ImageUri, imageUrl];
         });
         return new Map(mappedImage);
     }
@@ -304,7 +300,7 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    async lookupTrackCached(trackUri: string) {
+    async lookupTrackCached(trackUri: TrackUri) {
         let item = this.model.getFromLibraryCache(trackUri);
         if(item)
             return item as FileTrackModel | StreamTrackModel;
@@ -388,7 +384,7 @@ export class Controller extends Commands implements DataRequester{
         return img.uri;
     }
 
-    private async fetchAndConvertTracks(uri: string) {
+    private async fetchAndConvertTracks(uri: TrackUri) {
         let dict = await this.mopidyProxy.lookup(uri);
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => {
@@ -407,7 +403,7 @@ export class Controller extends Commands implements DataRequester{
         return await Promise.all(newListPromises);
     }
 
-    async getExpandedTrackModel(trackUri: string): Promise<ExpandedStreamModel | ExpandedFileTrackModel>{
+    async getExpandedTrackModel(trackUri: TrackUri): Promise<ExpandedStreamModel | ExpandedFileTrackModel>{
         let track = await this.lookupTrackCached(trackUri);
         if(track.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
@@ -439,7 +435,7 @@ export class Controller extends Commands implements DataRequester{
         return meta;
     }
 
-    setSelectedTrack(uri: string) {
+    setSelectedTrack(uri: TrackUri) {
         this.model.setSelectedTrack(uri);
     }
 

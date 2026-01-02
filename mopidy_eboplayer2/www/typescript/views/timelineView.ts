@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {TlId} from "../../js/mopidy";
-import {AllUris, FileTrackModel, HistoryLine, ItemType, StreamTrackModel} from "../modelTypes";
+import {AllUris, FileTrackModel, HistoryLine, ItemType, StreamTrackModel, TrackUri} from "../modelTypes";
 import {EboplayerEvents} from "../events";
 
 export class TimelineView extends View {
@@ -45,8 +45,8 @@ export class TimelineView extends View {
             this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid);
         }
 
-        let uris = trackList.map(tl => tl.track.uri) as AllUris[];
-        uris = [...uris, ...history.map(h => h.ref.uri)] as AllUris[];
+        let uris = trackList.map(tl => tl.track.uri) as TrackUri[];
+        uris = [...uris, ...history.map(h => h.ref.uri)] as TrackUri[];
         uris = [...new Set(uris)];
         await this.lookupAllTracksAndUpdateRows(uris);
 
@@ -62,7 +62,7 @@ export class TimelineView extends View {
         let row = ev.currentTarget as HTMLTableRowElement;
         this.setRowsClass(row, ["clicked"]);
 
-        getState().getController().setSelectedTrack(row.dataset.uri);
+        getState().getController().setSelectedTrack(row.dataset.uri as TrackUri);
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
@@ -70,7 +70,7 @@ export class TimelineView extends View {
         if(this.clickedRow.dataset.tlid)
             await getState().getPlayer().play(parseInt(this.clickedRow.dataset.tlid) as TlId);
         else
-            await getState().getPlayer().clearAndPlay([this.clickedRow.dataset.uri]);
+            await getState().getPlayer().clearAndPlay([this.clickedRow.dataset.uri as TrackUri]);
     }
 
     private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {
@@ -139,7 +139,7 @@ export class TimelineView extends View {
 
     }
 
-    async lookupAllTracksAndUpdateRows(uris: AllUris[]) {
+    async lookupAllTracksAndUpdateRows(uris: TrackUri[]) {
         await getState().getController().lookupAllTracks(uris);
         for (const uri of uris) {
             const track = await getState().getController().lookupTrackCached(uri);

@@ -334,206 +334,17 @@ var Mopidy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/timer.ts
-let now = function() {
-	return (/* @__PURE__ */ new Date()).getTime();
-};
-var ProgressTimer = class {
-	callback;
-	fallbackTargetFrameRate = 30;
-	disableRequestAnimationFrame = false;
-	_updateId = null;
-	_state = null;
-	_schedule;
-	_cancel;
-	constructor(options) {
-		if (typeof options === "function") this.callback = options;
-		else {
-			this.callback = options.callback;
-			this.fallbackTargetFrameRate = options.fallbackTargetFrameRate;
-			this.disableRequestAnimationFrame = options.disableRequestAnimationFrame;
-		}
-		this._updateId = null;
-		this._state = null;
-		let frameDuration = 1e3 / this.fallbackTargetFrameRate;
-		let useFallback = typeof window.requestAnimationFrame === "undefined" || typeof window.cancelAnimationFrame === "undefined" || options["disableRequestAnimationFrame"] || false;
-		let update = this._update.bind(this);
-		if (useFallback) {
-			this._schedule = function(timestamp) {
-				let timeout = Math.max(timestamp + frameDuration - now(), 0);
-				return window.setTimeout(update, Math.floor(timeout));
-			};
-			this._cancel = window.clearTimeout.bind(window);
-		} else {
-			this._schedule = window.requestAnimationFrame.bind(window, update);
-			this._cancel = window.cancelAnimationFrame.bind(window);
-		}
-		this.reset();
-	}
-	set(position, duration = void 0) {
-		if (!duration) duration = this._state.duration;
-		duration = Math.floor(Math.max(duration === null ? Infinity : duration || Infinity, 0));
-		position = Math.floor(Math.min(Math.max(position || 0, 0), duration));
-		this._state = {
-			initialTimestamp: null,
-			initialPosition: position,
-			position,
-			duration
-		};
-		if (this._updateId === null) this.callback(position, duration);
-		return this;
-	}
-	start() {
-		if (this._updateId === null) this._updateId = this._schedule(0);
-		return this;
-	}
-	stop() {
-		if (this._updateId !== null) {
-			this._cancel(this._updateId);
-			this.set(this._state.position, this._state.duration);
-			this._updateId = null;
-		}
-		return this;
-	}
-	reset() {
-		return this.stop().set(0, Infinity);
-	}
-	_update(timestamp) {
-		let state$1 = this._state;
-		timestamp = timestamp || now();
-		state$1.initialTimestamp = state$1.initialTimestamp || timestamp;
-		state$1.position = state$1.initialPosition + timestamp - state$1.initialTimestamp;
-		let userPosisition = Math.min(Math.floor(state$1.position), state$1.duration);
-		this.callback(userPosisition, state$1.duration);
-		this._updateId = this._schedule(timestamp);
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/synced_timer.ts
-var SYNC_STATE = /* @__PURE__ */ function(SYNC_STATE$1) {
-	SYNC_STATE$1[SYNC_STATE$1["NOT_SYNCED"] = 0] = "NOT_SYNCED";
-	SYNC_STATE$1[SYNC_STATE$1["SYNCING"] = 1] = "SYNCING";
-	SYNC_STATE$1[SYNC_STATE$1["SYNCED"] = 2] = "SYNCED";
-	return SYNC_STATE$1;
-}(SYNC_STATE || {});
-var SyncedProgressTimer = class SyncedProgressTimer {
-	_maxAttempts;
-	_mopidy;
-	syncState = SYNC_STATE.NOT_SYNCED;
-	_isSyncScheduled = false;
-	_scheduleID = null;
-	_syncAttemptsRemaining;
-	_previousSyncPosition = null;
-	_duration = null;
-	_isConnected = false;
-	positionNode;
-	durationNode;
-	_progressTimer;
-	constructor(maxAttempts, mopidy) {
-		this._maxAttempts = maxAttempts;
-		this._mopidy = mopidy;
-		this._syncAttemptsRemaining = this._maxAttempts;
-		this.positionNode = document.createTextNode("");
-		this.durationNode = document.createTextNode("");
-		this._progressTimer = new ProgressTimer((position, duration) => {
-			this.timerCallback(position, duration);
-		});
-	}
-	static format(milliseconds) {
-		if (milliseconds === Infinity) return "";
-		else if (milliseconds === 0) return "0:00";
-		let seconds = Math.floor(milliseconds / 1e3);
-		const minutes = Math.floor(seconds / 60);
-		seconds = seconds % 60;
-		let secondString = seconds < 10 ? "0" + seconds : seconds.toString();
-		return minutes + ":" + secondString;
-	}
-	timerCallback(position, duration) {
-		this._update(position);
-		if (this._isSyncScheduled && this._isConnected) this._doSync(position, duration);
-	}
-	_update(position) {
-		switch (this.syncState) {
-			case SYNC_STATE.NOT_SYNCED:
-				this.positionNode.nodeValue = "(wait)";
-				break;
-			case SYNC_STATE.SYNCING:
-				this.positionNode.nodeValue = "(sync)";
-				break;
-			case SYNC_STATE.SYNCED:
-				this._previousSyncPosition = position;
-				this.positionNode.nodeValue = SyncedProgressTimer.format(position);
-				break;
-		}
-	}
-	_scheduleSync(milliseconds) {
-		clearTimeout(this._scheduleID);
-		this._isSyncScheduled = false;
-		if (milliseconds >= 0) this._scheduleID = setTimeout(() => {
-			this._isSyncScheduled = true;
-		}, milliseconds);
-	}
-	_doSync(position, duration) {}
-	set(position, duration = void 0) {
-		this.syncState = SYNC_STATE.NOT_SYNCED;
-		this._syncAttemptsRemaining = this._maxAttempts;
-		if (this._duration && this._duration < position) position = this._duration - 1;
-		if (arguments.length === 1) this._progressTimer.set(position);
-		else {
-			this._duration = duration;
-			this._progressTimer.set(position, duration);
-			this.durationNode.nodeValue = SyncedProgressTimer.format(duration);
-		}
-		this.updatePosition(position);
-		return this;
-	}
-	start() {
-		this.syncState = SYNC_STATE.NOT_SYNCED;
-		this._scheduleSync(0);
-		this._progressTimer.start();
-		return this;
-	}
-	stop() {
-		this._progressTimer.stop();
-		this._scheduleSync(-1);
-		if (this.syncState !== SYNC_STATE.SYNCED && this._previousSyncPosition) this.positionNode.nodeValue = SyncedProgressTimer.format(this._previousSyncPosition);
-		return this;
-	}
-	reset() {
-		this.stop();
-		this.set(0, Infinity);
-		return this;
-	}
-	updatePosition(position) {
-		if (!(this._duration === Infinity && position === 0)) this.positionNode.nodeValue = SyncedProgressTimer.format(position);
-		else this.positionNode.nodeValue = "";
-	}
-};
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/playerState.ts
 var State = class {
 	mopidy;
-	syncedProgressTimer;
 	play = false;
 	random = false;
 	repeat = false;
-	consume = false;
-	single = false;
-	mute = false;
-	positionChanging = false;
-	popupData = {};
-	songlength = 0;
-	streamUris = {};
-	playlists = {};
-	customTracklists = [];
 	model;
 	controller;
 	player;
-	constructor(mopidy, syncedProgressTimer, model, controller, player) {
+	constructor(mopidy, model, controller, player) {
 		this.mopidy = mopidy;
-		this.syncedProgressTimer = syncedProgressTimer;
 		this.model = model;
 		this.controller = controller;
 		this.player = player;
@@ -1186,24 +997,6 @@ var HeaderView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/functionsvars.ts
-/** ****************
-* Modal dialogs  *
-******************/
-function showLoading(on) {}
-function validUri(uri) {
-	return /^(http|https|mms|rtmp|rtmps|rtsp):\/\/(\w+:{0,1}\w*@)?(\S+)(:[0-9]+)?(\/|\/([\w#!:.?+=&%@!\-\/]))?/.test(uri);
-}
-function jsonParse(data, defaultValue) {
-	try {
-		return JSON.parse(data);
-	} catch (e) {
-		console.error(e);
-		return defaultValue;
-	}
-}
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/commands.ts
 var Commands = class {
 	mopidy;
@@ -1464,6 +1257,17 @@ var Commands = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/functionsvars.ts
+function jsonParse(data, defaultValue) {
+	try {
+		return JSON.parse(data);
+	} catch (e) {
+		console.error(e);
+		return defaultValue;
+	}
+}
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/localStorageProxy.ts
 const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
 const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
@@ -1574,12 +1378,6 @@ function transformTrackDataToModel(track) {
 		let parts = track.uri.split("/");
 		model.title = decodeURI(parts[parts.length - 1]);
 	}
-	if (validUri(track.name)) for (let key in playerState_default().streamUris) {
-		let rs = playerState_default().streamUris[key];
-		if (rs && rs[1] === track.name) model.title = rs[0] || rs[1];
-	}
-	if (!track.length || track.length === 0) model.songlenght = playerState_default().songlength = Infinity;
-	else model.songlenght = playerState_default().songlength = track.length;
 	return model;
 }
 function console_yellow(msg) {
@@ -1679,15 +1477,9 @@ var Controller = class Controller extends Commands {
 		this.mopidy.on("event:trackPlaybackResumed", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
-		this.mopidy.on("event:playlistsLoaded", () => {
-			/* @__PURE__ */ showLoading(true);
-		});
-		this.mopidy.on("event:playlistChanged", (data) => {
-			delete playerState_default().playlists[data.playlist.uri];
-		});
-		this.mopidy.on("event:playlistDeleted", (data) => {
-			delete playerState_default().playlists[data.uri];
-		});
+		this.mopidy.on("event:playlistsLoaded", () => {});
+		this.mopidy.on("event:playlistChanged", (data) => {});
+		this.mopidy.on("event:playlistDeleted", (data) => {});
 		this.mopidy.on("event:volumeChanged", (data) => {
 			this.model.setVolume(data.volume);
 		});
@@ -1699,9 +1491,7 @@ var Controller = class Controller extends Commands {
 			this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 			await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTrack());
 		});
-		this.mopidy.on("event:seeked", () => {
-			if (playerState_default().play) playerState_default().syncedProgressTimer.start();
-		});
+		this.mopidy.on("event:seeked", () => {});
 		this.mopidy.on((data) => {
 			if (data instanceof MessageEvent) try {
 				if ((JSON.parse(data.data).event ?? "") == "stream_title_changed") return;
@@ -2748,10 +2538,10 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 			this.onStreamLinesChanged();
 		});
 	}
-	onCurrentOrSelectedChanged() {
+	async onCurrentOrSelectedChanged() {
 		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
 		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
-		this.setUri(selectedTrackUri ?? currentTrackUri);
+		await this.setUri(selectedTrackUri ?? currentTrackUri);
 	}
 	getRequiredDataTypes() {
 		return [
@@ -4328,13 +4118,12 @@ function setupStuff() {
 	};
 	let mopidy = new Mopidy(connectOptions);
 	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
-	let timer = new SyncedProgressTimer(8, mopidy);
 	let model = new Model();
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);
 	let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
 	controller.initSocketevents();
-	let state$1 = new State(mopidy, timer, model, controller, player);
+	let state$1 = new State(mopidy, model, controller, player);
 	setState(state$1);
 	let mainView = new MainView();
 	let headerView = new HeaderView();

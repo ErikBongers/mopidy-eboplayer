@@ -1,8 +1,8 @@
 import {Model} from "../model";
 import {MopidyProxy} from "../proxies/mopidyProxy";
-import {numberedDictToArray} from "../global";
+import {MopidyDict, numberedDictToArray} from "../global";
 import models, {TlId} from "../../js/mopidy";
-import {PlayState} from "../modelTypes";
+import {AllUris, PlayState} from "../modelTypes";
 import TlTrack = models.TlTrack;
 
 export class PlayController {
@@ -18,7 +18,7 @@ export class PlayController {
         await this.mopidyProxy.clearTrackList();
         this.model.setTrackList([]);
     }
-    async clearAndPlay(uris: string[]) {
+    async clearAndPlay(uris: AllUris[]) {
         await this.mopidyProxy.clearTrackList();
         let trackList = await this.add(uris);
         await this.play(trackList[0].tlid);
@@ -29,9 +29,9 @@ export class PlayController {
         await this.mopidyProxy.playTracklistItem(tlid);
     }
 
-    async add(uris: string[]) {
-        let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
-        let trackList = numberedDictToArray(tracks) as models.TlTrack[];
+    async add(uris: AllUris[]) {
+        let tracks = await this.mopidyProxy.addTracksToTracklist(uris) as MopidyDict<TlTrack>;
+        let trackList = numberedDictToArray(tracks);
         this.model.setTrackList(trackList);
         return trackList;
     }

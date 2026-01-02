@@ -1,7 +1,7 @@
 // Type definitions for js v1.2.0, Mopidy v3.0.2 WebSocket API
 
 import {JsonRpcController} from "../typescript/jsonRpcController";
-import {AlbumUri, AllUris} from "../typescript/modelTypes";
+import {AlbumUri, AllUris, TrackUri} from "../typescript/modelTypes";
 import MopidyEventName = core.MopidyEventName;
 
 export type Branded<T, Brand> = T & { __brand: Brand };
@@ -50,7 +50,7 @@ namespace models {
         readonly track: Track;
     }
     export class Track {
-        readonly uri: URI;
+        readonly uri: TrackUri;
         readonly name: string;
         readonly artists: Artist[];
         readonly album: Album;
@@ -196,7 +196,7 @@ export class Mopidy {
     this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
   }
 
-  onWebSocketClose(closeEvent) {
+  onWebSocketClose(closeEvent: any) {
     this.rpcController.emit("state", "state:offline");
     this.rpcController.emit("state:offline");
   }

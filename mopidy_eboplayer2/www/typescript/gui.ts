@@ -1,5 +1,4 @@
 import {Mopidy, Options} from "../js/mopidy";
-import {SyncedProgressTimer} from "./synced_timer";
 import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
@@ -63,7 +62,6 @@ function setupStuff() {
     let mopidy = new Mopidy(connectOptions);
     let wsUrl = "ws://192.168.1.111:6680/eboplayer2/ws/"; //iris socket: ws://192.168.1.111:6680/iris/ws/
     let eboWebSocketCtrl = new JsonRpcController(wsUrl, 1000, 64000);
-    let timer = new SyncedProgressTimer(8, mopidy);
     let model = new Model();
     let mopidyProxy = new MopidyProxy(new Commands(mopidy));
     let player = new PlayController(model, mopidyProxy)
@@ -71,7 +69,7 @@ function setupStuff() {
 
     controller.initSocketevents();
 
-    let state = new State(mopidy, timer, model, controller, player);
+    let state = new State(mopidy, model, controller, player);
     setState(state);
 
     let mainView = new MainView();
@@ -90,7 +88,7 @@ function setupStuff() {
     eboWebSocketCtrl.connect();
 }
 
-function updateDocumentTitle (headline) {
+function updateDocumentTitle (headline: string) {
     headline = headline || document.getElementById('contentHeadline').textContent;
     document.title = headline + ' | ' + document.body.dataset.title;
 }

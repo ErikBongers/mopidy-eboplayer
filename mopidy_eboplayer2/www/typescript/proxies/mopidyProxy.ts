@@ -1,6 +1,6 @@
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {numberedDictToArray} from "../global";
+import {MopidyDict, numberedDictToArray} from "../global";
 import {AllUris, HistoryLine, ImageLookup, LibraryDict, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
@@ -21,7 +21,7 @@ export class MopidyProxy {
         await this.commands.core.playback.play(null, tlid);
     }
 
-    async addTracksToTracklist(uris: string[]) {
+    async addTracksToTracklist(uris: AllUris[]) {
         return await this.commands.core.tracklist.add(null, null, uris);
     }
 
@@ -64,12 +64,12 @@ export class MopidyProxy {
     }
 
     async fetchHistory() {
-        let historyObject: Object = await this.commands.core.history.getHistory();
-        let historyLines = numberedDictToArray<HistoryLine>(historyObject, line => {
+        let historyObject = await this.commands.core.history.getHistory() as MopidyDict<HistoryLine>;
+        let historyLines = numberedDictToArray(historyObject, line => {
             return {
                 timestamp: line["0"],
                 ref: line["1"]
-            };
+            } as HistoryLine;
         });
 
 
@@ -123,7 +123,7 @@ export class MopidyProxy {
         return await this.commands.core.playlists.getItems(uri) as Ref<AllUris>[];
     }
 
-    async fetchImages(uris: string[]) {
+    async fetchImages(uris: AllUris[]) {
         return await this.commands.core.library.getImages(uris) as ImageLookup;
     }
 

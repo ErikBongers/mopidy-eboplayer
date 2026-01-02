@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {EmptySearchResults, Refs, SearchResult, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
 import TlTrack = models.TlTrack;
 import {EboplayerEvents} from "./events";
@@ -10,8 +10,8 @@ import {WithId} from "./util/idStack";
 
 export interface ViewModel extends EventTarget {
     getConnectionState: () => ConnectionState;
-    getCurrentTrack: () => string;
-    getSelectedTrack: () => string | undefined;
+    getCurrentTrack: () => TrackUri;
+    getSelectedTrack: () => TrackUri | undefined;
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
@@ -32,10 +32,10 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 // Views should not update the model directly. See ViewModel for that.
 export class Model extends EventTarget implements ViewModel {
     static NoTrack: TrackModel = { type: "none" } as NoneTrackModel;
-    currentTrack: string;
+    currentTrack: TrackUri;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
-    selectedTrack?: string;
+    selectedTrack?: TrackUri;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -158,7 +158,7 @@ export class Model extends EventTarget implements ViewModel {
         this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
     }
 
-    getCurrentTrack(): string {
+    getCurrentTrack(): TrackUri {
         return this.currentTrack;
     }
 
@@ -174,7 +174,7 @@ export class Model extends EventTarget implements ViewModel {
 
     getSelectedTrack = () => this.selectedTrack;
 
-    setSelectedTrack(uri?: string) {
+    setSelectedTrack(uri?: TrackUri) {
         if(uri == "")
             this.selectedTrack = undefined;
         else

@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
-import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel} from "../modelTypes";
+import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, TrackUri} from "../modelTypes";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
 import {EboplayerEvents} from "../events";
 
@@ -26,10 +26,10 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         });
     }
 
-    private onCurrentOrSelectedChanged() {
+    private async onCurrentOrSelectedChanged() {
         let currentTrackUri = getState().getModel().getCurrentTrack();
         let selectedTrackUri = getState().getModel().getSelectedTrack();
-        this.setUri(selectedTrackUri ?? currentTrackUri);
+        await this.setUri(selectedTrackUri ?? currentTrackUri);
     }
 
     override getRequiredDataTypes(): EboPlayerDataType[] {
@@ -48,7 +48,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
     }
 
-    async setUri(uri: string) {
+    async setUri(uri: TrackUri) {
         this.uri = uri;
         let track = await getState().getController().getExpandedTrackModel(uri);
         this.setComponentData(track);

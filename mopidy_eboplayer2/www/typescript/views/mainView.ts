@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 
-import {AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, Views} from "../modelTypes";
+import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
@@ -23,7 +23,7 @@ export class MainView extends View {
             this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
         });
         browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev: CustomEvent<UriArgs>) => {
-            await this.onBrowseResultDblClick(ev.detail.uri);
+            await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
         getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
             this.onRefsFiltered();
@@ -61,10 +61,10 @@ export class MainView extends View {
         });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev: CustomEvent<UriArgs>) => {
-            await this.onPlayTrackClicked(ev.detail.uri);
+            await this.onPlayTrackClicked(ev.detail.uri as TrackUri);
         });
         albumComp.addEventListener(EboplayerEvents.addTrackClicked, async (ev: CustomEvent<UriArgs>) => {
-            await this.onAddTrackClicked(ev.detail.uri);
+            await this.onAddTrackClicked(ev.detail.uri as TrackUri);
         });
     }
 
@@ -207,7 +207,7 @@ export class MainView extends View {
     private async onAddItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
         if(ev.detail.source == "albumView") {
             let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-            await getState().getPlayer().add([albumComp.dataset.albumUri]);
+            await getState().getPlayer().add([albumComp.dataset.albumUri as AlbumUri]);
         }
         if(ev.detail.source == "browseView") {
             await getState().getController().addCurrentSearchResultsToPlayer();
@@ -219,7 +219,7 @@ export class MainView extends View {
         await this.onAddItemListClick(ev);
     }
 
-    private async onBrowseResultDblClick(uri: string) {
+    private async onBrowseResultDblClick(uri: AllUris) {
         await getState().getPlayer().clearAndPlay([uri]);
     }
 
@@ -231,11 +231,11 @@ export class MainView extends View {
         getState().getController().resetToBreadCrumb(breadcrumbId);
     }
 
-    private async onPlayTrackClicked(uri: string) {
+    private async onPlayTrackClicked(uri: TrackUri) {
         await getState().getPlayer().clearAndPlay([uri]);
     }
 
-    private async onAddTrackClicked(uri: string) {
+    private async onAddTrackClicked(uri: TrackUri) {
         let trackModel = await getState().getController().getExpandedTrackModel(uri);
         if(!isInstanceOfExpandedStreamModel(trackModel)) {
             let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);

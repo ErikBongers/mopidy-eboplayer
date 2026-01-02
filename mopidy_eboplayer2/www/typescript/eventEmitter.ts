@@ -1,10 +1,12 @@
+export type EventListenerCallback = any;
+
 //todo: use this one instead?
 // https://javascript.plainenglish.io/building-a-simple-event-emitter-in-javascript-f82f68c214ad
 export class EventEmitter {
-    listeners = [];
-    supervisors = [];
+    listeners: EventListenerCallback[] = [];
+    supervisors: EventListenerCallback[] = [];
 
-    emit(eventName: string, ...data) {
+    emit(eventName: string, ...data: any) { //todo: make data a generic type T?
         this.listeners.filter(({name}) => name === eventName)
             .forEach(({callback}) => {
                 setTimeout(() => callback.call(this, ...data), 0);

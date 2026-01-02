@@ -56,6 +56,7 @@ export function isBreadCrumbForArtist(breadCrumb: BreadCrumbRef<AllUris>): bread
 export type ImageLookup = {[string: AllUris]: Image[]}
 
 export class BrowseFilter {
+    [k: string]: any;
     searchText: string;
     album: boolean;
     track: boolean;
@@ -85,7 +86,7 @@ export class BrowseFilter {
 
 export interface PartialAlbumModel {
     type: "album";
-    tracks: string[];
+    tracks: TrackUri[];
     albumInfo: models.Album;
 }
 

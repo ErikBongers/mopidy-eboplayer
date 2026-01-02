@@ -6,8 +6,12 @@ function snakeToCamel(name: string) {
     );
 }
 
+type PendingRequest = {resolve: (value: unknown) => void, reject: (reason?:any) => void};
+
+type PendingRequests = { [k: string]: PendingRequest};
+
 export class JsonRpcController extends EventEmitter {
-    private readonly _pendingRequests: {}; //this initialization gets stripped by rolldown!
+    private readonly _pendingRequests: PendingRequests;
     private _webSocket: WebSocket;
     private currentDelay: number;
     private readonly webSocketUrl: string;
@@ -120,7 +124,7 @@ export class JsonRpcController extends EventEmitter {
         }
     }
 
-    private handleMessage(message) {
+    private handleMessage(message: {data: string}) {
         try {
             const data = JSON.parse(message.data);
             if (Object.hasOwnProperty.call(data, "id")) {
@@ -143,7 +147,7 @@ export class JsonRpcController extends EventEmitter {
         }
     }
 
-    private handleRpcResponse(responseMessage) {
+    private handleRpcResponse(responseMessage: { id: string | number; result: unknown; error: { message: any; code: any; data: any; }; }) { //todo: wow, cleanup this type!
         if (
             !Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)
         ) {
@@ -174,7 +178,7 @@ export class JsonRpcController extends EventEmitter {
         }
     }
 
-    private handleEvent(eventMessage) {
+    private handleEvent(eventMessage: { event: string; }) {
         const data = {...eventMessage};
         delete data.event;
         const eventName = `event:${snakeToCamel(eventMessage.event)}`;
@@ -217,7 +221,7 @@ export class JsonRpcController extends EventEmitter {
 class ConnectionError extends Error {
     closeEvent?: any;
 
-    constructor(message) {
+    constructor(message: string) {
         super(message);
         this.name = "ConnectionError";
     }
@@ -227,7 +231,7 @@ class ServerError extends Error {
     code: any;
     data: any;
 
-    constructor(message) {
+    constructor(message: string) {
         super(message);
         this.name = "ServerError";
     }
@@ -236,7 +240,7 @@ class ServerError extends Error {
 class OtherError extends Error {
     data: any;
 
-    constructor(message) {
+    constructor(message: string) {
         super(message);
         this.name = "OtherError";
     }

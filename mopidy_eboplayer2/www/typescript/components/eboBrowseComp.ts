@@ -49,7 +49,7 @@ export class EboBrowseComp extends EboComponent {
     private _browseFilter: BrowseFilter;
 
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [];
+    static observedAttributes: string[] = [];
 
     private readonly browseFilterChangedEvent: CustomEvent<unknown>;
 

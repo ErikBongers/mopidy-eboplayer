@@ -3,7 +3,7 @@ import {EboComponent} from "./EboComponent";
 export class EboMenuButton extends EboComponent {
     static override readonly tagName=  "ebo-menu-button";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [];
+    static observedAttributes: string[] = [];
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `

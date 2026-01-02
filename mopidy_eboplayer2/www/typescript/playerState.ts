@@ -1,40 +1,26 @@
-import models, {Mopidy} from "../js/mopidy";
-import {SyncedProgressTimer} from "./synced_timer";
+import {Mopidy} from "../js/mopidy";
 import {ViewModel} from "./model";
 import {EboPlayerDataType, View} from "./views/view";
 import {Controller} from "./controllers/controller";
-
 import {DeepReadonly} from "./modelTypes";
 import {PlayController} from "./controllers/playController";
 
 export class State {
     mopidy: Mopidy;
-    syncedProgressTimer: SyncedProgressTimer;
 
     // values for controls
     play: boolean = false;
     random: boolean = false;
     repeat: boolean = false;
-    consume: boolean = false;
-    single: boolean = false;
-    mute: boolean = false;
-    positionChanging: boolean = false;
-    popupData = {};  // TODO: Refactor into one shared cache,
-    songlength: number = 0;
-
-    streamUris = {}; //TODO: EBO added this to make gui.ts compile.
 
     // array of cached playlists (not only user-playlists, also search, artist, album-playlists)
-    playlists = {};  // TODO: Refactor into one shared cache,
-    customTracklists =  [];  // TODO: Refactor into one shared cache,
 
     private readonly model: ViewModel;
     private readonly controller: Controller;
     private readonly player: PlayController;
 
-    constructor(mopidy: Mopidy, syncedProgressTimer: SyncedProgressTimer, model: ViewModel, controller: Controller, player: PlayController) {
+    constructor(mopidy: Mopidy, model: ViewModel, controller: Controller, player: PlayController) {
         this.mopidy = mopidy;
-        this.syncedProgressTimer = syncedProgressTimer;
         this.model = model;
         this.controller = controller;
         this.player = player;

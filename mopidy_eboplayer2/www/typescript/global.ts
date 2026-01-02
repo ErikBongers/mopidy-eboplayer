@@ -23,8 +23,12 @@ export function cubic100(x: number) {
     return (x * x * x) / 10000;
 }
 
-export function numberedDictToArray<T>(dict: Object, converter?: (object: any) => T): T[] {
-    let length = dict["length"];
+export type MopidyDict<T> = {
+    [k: string|number]: T
+}
+
+export function numberedDictToArray<T>(dict: MopidyDict<T>, converter?: (object: any) => T): T[] {
+    let length = dict["length"] as number; //todo: try to add length to MopidyDict type
     let array: any[] = [];
     for (let index = 0; index < length; index++) {
         let line = dict[index.toString()];
@@ -79,6 +83,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
         model.title = decodeURI(parts[parts.length - 1])
     }
 
+/*
     if (validUri(track.name)) {
         for (let key in getState().streamUris) {
             let rs = getState().streamUris[key]
@@ -93,6 +98,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
     } else {
         model.songlenght = getState().songlength = track.length;
     }
+*/
 
     return model;
 }

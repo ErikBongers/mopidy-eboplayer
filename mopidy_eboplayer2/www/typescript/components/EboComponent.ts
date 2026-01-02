@@ -5,6 +5,7 @@ export interface HasName {
 }
 
 export abstract class EboComponent extends HTMLElement implements HasName {
+    [k: string]: any;
     get rendered(): boolean {
         return this._rendered;
     }
@@ -122,6 +123,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
     }
 
     setClassFromBoolAttribute(el: HTMLElement, attName: string) {
+        // @ts-ignore
         if (this[attName] == true)
             el.classList.add(attName);
         else
