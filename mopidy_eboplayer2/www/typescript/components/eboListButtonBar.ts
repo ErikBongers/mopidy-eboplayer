@@ -2,7 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs} from "../events";
 
 export class EboListButtonBar extends EboComponent {
-    static readonly tagName=  "ebo-list-button-bar";
+    static override readonly tagName=  "ebo-list-button-bar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["show_add_btn", "show_play_btn", "list_source"];
     show_add_btn: boolean;

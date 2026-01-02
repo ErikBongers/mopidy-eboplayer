@@ -83,7 +83,7 @@ export abstract class EboComponent extends HTMLElement implements HasName {
         // noinspection JSIgnoredPromiseFromCall
         this.updateBatching.schedule();
     }
-    private doUpdate() { //todo: aad TS option `noImplicitOverride` and set `override` modifier where needed.
+    private doUpdate() {
         if (!this.connected)
             return;
         if (!this._rendered)

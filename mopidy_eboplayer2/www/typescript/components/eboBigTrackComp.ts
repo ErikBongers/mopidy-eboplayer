@@ -12,7 +12,7 @@ export class EboBigTrackComp extends EboComponent {
         this.requestRender();
     }
 
-    static readonly tagName=  "ebo-big-track-view";
+    static override readonly tagName=  "ebo-big-track-view";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [

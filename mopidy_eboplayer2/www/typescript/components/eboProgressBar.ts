@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 
 export class EboProgressBar extends EboComponent {
-    static readonly tagName=  "ebo-progressbar";
+    static override readonly tagName=  "ebo-progressbar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["position", "min", "max", "button", "active"];
     private position: number = 51;
@@ -88,7 +88,7 @@ export class EboProgressBar extends EboComponent {
         }
 
     // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
+    override connectedCallback() {
     }
 
     render(shadow:ShadowRoot) {

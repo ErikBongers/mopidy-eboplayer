@@ -16,7 +16,7 @@ export class PressedChangeEvent extends Event {
 }
 
 export class EboButton extends EboComponent {
-    static readonly tagName=  "ebo-button";
+    static override readonly tagName=  "ebo-button";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["toggle", "img", "img_pressed", "pressed", "opacity_off", "click", "disabled"];
     private pressed: boolean = false;

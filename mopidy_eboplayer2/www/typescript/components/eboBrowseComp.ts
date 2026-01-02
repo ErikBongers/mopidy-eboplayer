@@ -9,7 +9,7 @@ import models from "../../js/mopidy";
 import ModelType = models.ModelType;
 
 export class EboBrowseComp extends EboComponent {
-    static readonly tagName=  "ebo-browse-view";
+    static override readonly tagName=  "ebo-browse-view";
     private static listSource: GuiSource = "browseView";
 
     get breadCrumbs(): FilterBreadCrumb[] {
@@ -197,7 +197,7 @@ export class EboBrowseComp extends EboComponent {
         this.requestRender();
         }
 
-    onConnected() {
+    override onConnected() {
     }
 
     setFocusAndSelect() {
@@ -271,7 +271,7 @@ export class EboBrowseComp extends EboComponent {
         this.dispatchEvent(this.browseFilterChangedEvent);
     }
 
-    update(shadow:ShadowRoot) {
+    override update(shadow:ShadowRoot) {
         [...shadow.querySelectorAll("ebo-button")]
             .filter(el => el.id.startsWith("filter"))
             .forEach(btn =>

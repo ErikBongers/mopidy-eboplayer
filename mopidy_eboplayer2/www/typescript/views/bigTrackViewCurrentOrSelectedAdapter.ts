@@ -13,7 +13,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         super(id);
     }
 
-    bind() {
+    override bind() {
         super.bind();
         getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
             this.onCurrentOrSelectedChanged();
@@ -32,7 +32,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         this.setUri(selectedTrackUri ?? currentTrackUri);
     }
 
-    getRequiredDataTypes(): EboPlayerDataType[] {
+    override getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.CurrentTrack, EboPlayerDataType.TrackList, EboPlayerDataType.StreamLines, ...super.getRequiredDataTypes()];
     }
 

@@ -28,7 +28,7 @@ export class EboAlbumTracksComp extends EboComponent {
 
     private _activeTrackUri: string | null = null;
 
-    static readonly tagName=  "ebo-album-tracks-view";
+    static override readonly tagName=  "ebo-album-tracks-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
         "img",

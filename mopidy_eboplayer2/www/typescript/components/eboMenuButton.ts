@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 
 export class EboMenuButton extends EboComponent {
-    static readonly tagName=  "ebo-menu-button";
+    static override readonly tagName=  "ebo-menu-button";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [];
 
@@ -59,7 +59,7 @@ export class EboMenuButton extends EboComponent {
         super(EboMenuButton.styleText, EboMenuButton.htmlText);
     }
 
-    onConnected() {
+    override onConnected() {
         super.onConnected();
         this.requestRender();
     }

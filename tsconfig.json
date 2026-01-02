@@ -11,6 +11,7 @@
     "noEmit": true,
     "incremental": false,
     "moduleResolution": "bundler",
+    "noImplicitOverride": true,
     "paths": {
     },
     "typeRoots": ["node_modules/@types"]

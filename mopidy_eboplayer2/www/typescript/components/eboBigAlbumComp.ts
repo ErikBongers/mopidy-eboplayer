@@ -31,7 +31,7 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     private _activeTrackUri: string | null = null;
-    static readonly tagName=  "ebo-big-album-view";
+    static override readonly tagName=  "ebo-big-album-view";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [

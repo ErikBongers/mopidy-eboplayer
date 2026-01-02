@@ -4,7 +4,7 @@ import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
 import {EboplayerEvents} from "../events";
 
 export class EboButtonBar extends EboComponent {
-    static readonly tagName=  "ebo-button-bar";
+    static override readonly tagName=  "ebo-button-bar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text", "stop_or_pause"];
     private play_state: string;
@@ -162,7 +162,7 @@ export class EboButtonBar extends EboComponent {
         });
     }
 
-    update(shadow:ShadowRoot) {
+    override update(shadow:ShadowRoot) {
         switch(this.play_state) {
             case "playing":
                 if(this.stop_or_pause == "pause")
