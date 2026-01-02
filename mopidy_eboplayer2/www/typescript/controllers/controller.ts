@@ -57,14 +57,16 @@ export class Controller extends Commands implements DataRequester{
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await getState().getRequiredData();
-            await this.mopidyProxy.fetchHistory();
+            this.model.setHistory(await this.mopidyProxy.fetchHistory());
         });
 
         this.mopidy.on('state:offline', () => {
             this.model.setConnectionState(ConnectionState.Offline);
         });
 
-        this.mopidy.on('event:optionsChanged', this.mopidyProxy.fetchPlaybackOptions);
+        this.mopidy.on('event:optionsChanged', async () =>{
+            this.model.setPlaybackState(await this.mopidyProxy.fetchPlaybackOptions());
+        });
 
         this.mopidy.on('event:trackPlaybackStarted', async (data) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
@@ -106,7 +108,7 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:tracklistChanged', async () => {
-            await this.mopidyProxy.fetchTracklistAndDetails();
+            this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
             await this.mopidyProxy.fetchCurrentTrackAndDetails();
         });
 
@@ -161,7 +163,7 @@ export class Controller extends Commands implements DataRequester{
                 this.model.setPlayState(state as PlayState);
                 break;
             case  EboPlayerDataType.TrackList:
-                await this.mopidyProxy.fetchTracklistAndDetails();
+                this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
                 break;
         }
     }

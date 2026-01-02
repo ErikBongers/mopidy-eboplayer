@@ -1657,12 +1657,14 @@ var Controller = class Controller extends Commands {
 		this.mopidy.on("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
 			await playerState_default().getRequiredData();
-			await this.mopidyProxy.fetchHistory();
+			this.model.setHistory(await this.mopidyProxy.fetchHistory());
 		});
 		this.mopidy.on("state:offline", () => {
 			this.model.setConnectionState(ConnectionState.Offline);
 		});
-		this.mopidy.on("event:optionsChanged", this.mopidyProxy.fetchPlaybackOptions);
+		this.mopidy.on("event:optionsChanged", async () => {
+			this.model.setPlaybackState(await this.mopidyProxy.fetchPlaybackOptions());
+		});
 		this.mopidy.on("event:trackPlaybackStarted", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
@@ -1690,7 +1692,7 @@ var Controller = class Controller extends Commands {
 			await this.onPlaybackStateChanged(data);
 		});
 		this.mopidy.on("event:tracklistChanged", async () => {
-			await this.mopidyProxy.fetchTracklistAndDetails();
+			this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 			await this.mopidyProxy.fetchCurrentTrackAndDetails();
 		});
 		this.mopidy.on("event:seeked", () => {
@@ -1731,7 +1733,7 @@ var Controller = class Controller extends Commands {
 				this.model.setPlayState(state$1);
 				break;
 			case EboPlayerDataType.TrackList:
-				await this.mopidyProxy.fetchTracklistAndDetails();
+				this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 				break;
 		}
 	}
@@ -4181,11 +4183,9 @@ var PlayController = class {
 //#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
 var MopidyProxy = class {
 	controller;
-	model;
 	commands;
 	constructor(controller, model, commands) {
 		this.controller = controller;
-		this.model = model;
 		this.commands = commands;
 	}
 	async fetchRootDirs() {
@@ -4222,9 +4222,8 @@ var MopidyProxy = class {
 		if (typeof uris == "string") uris = [uris];
 		return await this.commands.core.library.lookup(uris);
 	}
-	async fetchTracklistAndDetails() {
-		let tracks = await this.commands.core.tracklist.getTlTracks();
-		this.model.setTrackList(tracks);
+	async fetchTracklist() {
+		return await this.commands.core.tracklist.getTlTracks();
 	}
 	async fetchHistory() {
 		let historyObject = await this.commands.core.history.getHistory();
@@ -4242,28 +4241,26 @@ var MopidyProxy = class {
 			return true;
 		});
 		let prev = { ref: { uri: "" } };
-		let dedupLines = filtered.filter((line) => {
+		return filtered.filter((line) => {
 			if (line.ref.uri == prev.ref.uri) return false;
 			prev = line;
 			return true;
 		});
-		this.model.setHistory(dedupLines);
 	}
-	fetchPlaybackOptions() {
+	async fetchPlaybackOptions() {
 		let promises = [
-			this.commands.core.tracklist.getRepeat(),
-			this.commands.core.tracklist.getRandom(),
-			this.commands.core.tracklist.getConsume(),
-			this.commands.core.tracklist.getSingle()
+			await this.commands.core.tracklist.getRepeat(),
+			await this.commands.core.tracklist.getRandom(),
+			await this.commands.core.tracklist.getConsume(),
+			await this.commands.core.tracklist.getSingle()
 		];
-		Promise.all(promises).then((results) => {
-			this.model.setPlaybackState({
-				repeat: results[0],
-				random: results[1],
-				consume: results[2],
-				single: results[3]
-			});
-		});
+		let results = await Promise.all(promises);
+		return {
+			repeat: results[0],
+			random: results[1],
+			consume: results[2],
+			single: results[3]
+		};
 	}
 	async fetchCurrentTrackAndDetails() {
 		let currentTrack = await this.commands.core.playback.getCurrentTlTrack();

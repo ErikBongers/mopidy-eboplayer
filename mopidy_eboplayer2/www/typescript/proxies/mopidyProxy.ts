@@ -1,22 +1,19 @@
 import {Model} from "../model";
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {EboPlayerDataType} from "../views/view";
 import {Controller} from "../controllers/controller";
-import {numberedDictToArray, quadratic100} from "../global";
-import TlTrack = models.TlTrack;
-import Ref = models.Ref;
+import {numberedDictToArray} from "../global";
 import {AllUris, HistoryLine, ImageLookup, LibraryDict, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
+import TlTrack = models.TlTrack;
+import Ref = models.Ref;
 
 export class MopidyProxy {
     private controller: Controller;
-    private model: Model;
     private commands: Commands;
 
     constructor(controller: Controller, model: Model, commands: Commands) {
         this.controller = controller;
-        this.model = model;
         this.commands = commands;
     }
 
@@ -67,9 +64,8 @@ export class MopidyProxy {
         return dict;
     }
 
-    async fetchTracklistAndDetails() {
-        let tracks = await this.commands.core.tracklist.getTlTracks();
-        this.model.setTrackList(tracks);
+    async fetchTracklist(): Promise< TlTrack[]> {
+        return await this.commands.core.tracklist.getTlTracks();
     }
 
     async fetchHistory() {
@@ -101,25 +97,23 @@ export class MopidyProxy {
             prev = line;
             return true;
         });
-
-        this.model.setHistory(dedupLines);
+        return dedupLines;
     }
 
-    fetchPlaybackOptions() {
+    async fetchPlaybackOptions() {
         let promises = [
-            this.commands.core.tracklist.getRepeat(),
-            this.commands.core.tracklist.getRandom(),
-            this.commands.core.tracklist.getConsume(),
-            this.commands.core.tracklist.getSingle(),
+            await this.commands.core.tracklist.getRepeat(),
+            await this.commands.core.tracklist.getRandom(),
+            await this.commands.core.tracklist.getConsume(),
+            await this.commands.core.tracklist.getSingle(),
         ];
-        Promise.all(promises).then((results) => {
-            this.model.setPlaybackState({
+        let results = await Promise.all(promises);
+        return {
                 repeat: results[0],
                 random: results[1],
                 consume: results[2],
                 single: results[3]
-            });
-        })
+            };
     }
 
     async fetchCurrentTrackAndDetails() {
