@@ -1,22 +1,22 @@
 {
-//  "include": ["mopidy_eboplayer2/www/typescript/**/*"],
-  "files": [
-    "mopidy_eboplayer2/www/typescript/gui.ts"
-  ],
-  "exclude": [],
-  "compilerOptions": {
-   "outDir": "./mopidy_eboplayer2/www/generated",
-    "target": "es2021",
-    "sourceMap": true,
-    "noEmit": true,
-    "incremental": false,
-    "moduleResolution": "bundler",
-    "noImplicitOverride": true,
-      "noImplicitThis": true,
-    "paths": {
+    //  "include": ["mopidy_eboplayer2/www/typescript/**/*"],
+    "files": [
+        "mopidy_eboplayer2/www/typescript/gui.ts"
+    ],
+    "exclude": [],
+    "compilerOptions": {
+        "outDir": "./mopidy_eboplayer2/www/generated",
+        "target": "es2021",
+        "sourceMap": true,
+        "noEmit": true,
+        "incremental": false,
+        "moduleResolution": "bundler",
+        "noImplicitOverride": true,
+        "noImplicitThis": true,
+        "paths": {
+        },
+        "typeRoots": ["node_modules/@types"]
     },
-    "typeRoots": ["node_modules/@types"]
-  },
-  "types": [
-  ]
+    "types": [
+    ]
 }
