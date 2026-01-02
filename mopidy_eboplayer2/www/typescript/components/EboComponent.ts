@@ -130,6 +130,12 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             el.classList.remove(attName);
     }
 
+    protected updateBoolAtrribute(newValue: string, name: string) {
+        if (!["true", "false"].includes(newValue))
+            throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+        this[name] = newValue == "true";
+    }
+
     static define(comp: new (...args: any[]) => EboComponent) {
         // @ts-ignore
         if((comp as typeof EboComponent).tagName == EboComponent.NO_TAG_NAME)

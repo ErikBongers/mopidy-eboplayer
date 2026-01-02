@@ -44,12 +44,6 @@ export class EboListButtonBar extends EboComponent {
         this.requestRender();
         }
 
-    private updateBoolAtrribute(newValue: string, name: string) { //todo: move to base class. Perhaps return true if value actually changed, so a re-render or update could be avoided.
-        if (!["true", "false"].includes(newValue))
-            throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
-        this[name] = newValue == "true";
-    }
-
     render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
             this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.playItemListClicked, {source: this.list_source})); //todo: override dispatchEvent to make it tied to EboplayerEvent?
