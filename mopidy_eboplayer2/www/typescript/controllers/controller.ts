@@ -109,7 +109,7 @@ export class Controller extends Commands implements DataRequester{
 
         this.mopidy.on('event:tracklistChanged', async () => {
             this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
-            await this.mopidyProxy.fetchCurrentTrackAndDetails();
+            await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTrack());
         });
 
         this.mopidy.on('event:seeked', () => {

@@ -1693,7 +1693,7 @@ var Controller = class Controller extends Commands {
 		});
 		this.mopidy.on("event:tracklistChanged", async () => {
 			this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
-			await this.mopidyProxy.fetchCurrentTrackAndDetails();
+			await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTrack());
 		});
 		this.mopidy.on("event:seeked", () => {
 			if (playerState_default().play) playerState_default().syncedProgressTimer.start();
@@ -4182,10 +4182,8 @@ var PlayController = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
 var MopidyProxy = class {
-	controller;
 	commands;
 	constructor(controller, model, commands) {
-		this.controller = controller;
 		this.commands = commands;
 	}
 	async fetchRootDirs() {
@@ -4262,9 +4260,8 @@ var MopidyProxy = class {
 			single: results[3]
 		};
 	}
-	async fetchCurrentTrackAndDetails() {
-		let currentTrack = await this.commands.core.playback.getCurrentTlTrack();
-		await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
+	async fetchCurrentTrack() {
+		return await this.commands.core.playback.getCurrentTlTrack();
 	}
 	async fetchPlayLists() {
 		return await this.commands.core.playlists.asList();

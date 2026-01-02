@@ -9,11 +9,9 @@ import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 
 export class MopidyProxy {
-    private controller: Controller;
     private commands: Commands;
 
     constructor(controller: Controller, model: Model, commands: Commands) {
-        this.controller = controller;
         this.commands = commands;
     }
 
@@ -116,9 +114,8 @@ export class MopidyProxy {
             };
     }
 
-    async fetchCurrentTrackAndDetails() {
-        let currentTrack = await this.commands.core.playback.getCurrentTlTrack(); //todo: likely to result in null, as the track probably hasn't been started yet. Remoove this line?
-        await this.controller.setCurrentTrackAndFetchDetails(currentTrack);
+    async fetchCurrentTrack() {
+        return await this.commands.core.playback.getCurrentTlTrack();
     }
 
     async fetchPlayLists() {
