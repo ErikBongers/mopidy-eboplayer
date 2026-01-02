@@ -19,7 +19,6 @@ class StaticHandler(tornado.web.StaticFileHandler):
             logger.debug("Get static resource for %s", path)
         return super().get(path, *args, **kwargs)
 
-    # todo: remove in production!
     def set_extra_headers(self, path):
         # Disable cache
         self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
@@ -68,9 +67,7 @@ class IndexHandler(tornado.web.RequestHandler):
     def get_template_path(self):
         return self.__path
 
-    # todo: remove in production!
     def set_extra_headers(self, path):
-        logger.info("CACHE OFF")
         # Disable cache
         self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
 
