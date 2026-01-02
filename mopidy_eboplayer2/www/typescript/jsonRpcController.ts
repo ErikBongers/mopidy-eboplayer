@@ -30,7 +30,6 @@ export class JsonRpcController extends EventEmitter {
         this.backoffDelayMin = backoffDelayMin;
         this.backoffDelayMax = backoffDelayMax;
         this.hookUpEvents();
-        //this.connect(); //todo: connect AFTER construction!  > To allow for other events to hook up.
     }
 
     private hookUpEvents() {
