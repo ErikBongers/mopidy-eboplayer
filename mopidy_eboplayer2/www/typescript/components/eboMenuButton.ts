@@ -19,7 +19,6 @@ export class EboMenuButton extends EboComponent {
             .popupMenu {
                 border: solid white 1px;
                 border-radius: 20px 20px 0px 20px;
-                xposition: absolute;
                 position-anchor: --popup-button;
                 margin: 0;
                 inset: auto;
@@ -30,7 +29,6 @@ export class EboMenuButton extends EboComponent {
                 background-color: var(--body-background);
                 
                 &:popover-open {
-                    xdisplay: grid;
                     opacity: 1;
                 }
             }
@@ -66,14 +64,6 @@ export class EboMenuButton extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        switch (name) {
-            case "img":
-                this[name] = newValue;
-                break;
-            case "pressed": //todo: generalize capture of attributes.
-                this.updateBoolAtrribute(newValue, name);
-                break;
-        }
         this.requestRender();
         }
 

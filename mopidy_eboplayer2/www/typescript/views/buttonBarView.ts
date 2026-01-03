@@ -3,8 +3,6 @@ import {EboPlayerDataType, View} from "./view";
 import {isInstanceOfExpandedStreamModel, Views} from "../modelTypes";
 import {MainView} from "./mainView";
 import {EboButtonBar} from "../components/eboButtonBarComp";
-import {console_yellow} from "../global";
-import {EboplayerEvents} from "../events";
 
 export class ButtonBarView extends View {
     private componentId: string;
@@ -17,41 +15,40 @@ export class ButtonBarView extends View {
     }
 
     bind() {
-        getState().getModel().addEventListener(EboplayerEvents.playStateChanged, () => {
-            this.onPlaybackStateChangegd();
+        getState().getModel().addEboEventListener("playbackStateChanged [eboplayer]", async () => {
+            await this.onPlaybackStateChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
-            this.onCurrentTrackChanged();
+        getState().getModel().addEboEventListener("currentTrackChanged [eboplayer]", async () => {
+            await this.onCurrentTrackChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
-            this.onSelectedTrackChanged();
+        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
+            await this.onSelectedTrackChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+        getState().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", () => {
             this.onActiveStreamLinesChanged();
         });
 
         let comp = document.getElementById(this.componentId) as EboButtonBar;
-        comp.addEventListener(EboplayerEvents.playPressed, () => {
-            this.playOrStopOrPause(EboplayerEvents.playPressed).then(r => {});
+        comp.addEboEventListener("playPressed [eboplayer]", async () => {
+            await getState().getController().mopidyProxy.sendPlay();
         });
-        comp.addEventListener(EboplayerEvents.stopPressed, () => {
-            this.playOrStopOrPause(EboplayerEvents.stopPressed).then(r => {});
+        comp.addEboEventListener("stopPressed [eboplayer]", async () => {
+            await getState().getController().mopidyProxy.sendStop();
         });
-        comp.addEventListener(EboplayerEvents.pausePressed, () => {
-            this.playOrStopOrPause(EboplayerEvents.pausePressed).then(r => {});
+        comp.addEboEventListener("pausePressed [eboplayer]", async () => {
+            await getState().getController().mopidyProxy.sendPause();
         });
-        comp.addEventListener(EboplayerEvents.buttonBarAlbumImgClicked, () => {
+        comp.addEboEventListener("buttonBarAlbumImgClicked [eboplayer]", () => {
             this.onButtonBarImgClicked();
         });
-        getState().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
+        getState().getModel().addEboEventListener("volumeChanged [eboplayer]", () => {
             this.onVolumeChanged();
         });
-        comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
-            let value = parseInt((ev as CustomEvent).detail.volume);
+        comp.addEboEventListener("changingVolume [eboplayer]", async (ev) => {
+            let value = ev.detail.volume;
             await getState().getController().mopidyProxy.sendVolume(value);
-
         });
-        getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+        getState().getModel().addEboEventListener("viewChanged [eboplayer]", () => {
             this.showHideInfo();
         });
     }
@@ -63,7 +60,7 @@ export class ButtonBarView extends View {
 
     }
 
-    private async onPlaybackStateChangegd() {
+    private async onPlaybackStateChanged() {
         let playState = getState().getModel().getPlayState();
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         comp.setAttribute("play_state", playState);
@@ -125,21 +122,6 @@ export class ButtonBarView extends View {
         let comp = document.getElementById(this.componentId) as EboButtonBar;
         comp.setAttribute("show_info", show_info.toString());
     }
-
-    private async playOrStopOrPause(event: EboplayerEvents) {
-        switch(event) {
-            case EboplayerEvents.playPressed:
-                await getState().getController().mopidyProxy.sendPlay();
-                break;
-            case EboplayerEvents.stopPressed:
-                await getState().getController().mopidyProxy.sendStop();
-                break;
-            case EboplayerEvents.pausePressed:
-                await getState().getController().mopidyProxy.sendPause();
-                break;
-        }
-    }
-
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];

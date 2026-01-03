@@ -1,7 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {ExpandedFileTrackModel, ItemType, TrackModel} from "../modelTypes";
-import {console_yellow, inverseQuadratic100, quadratic100} from "../global";
-import {EboplayerEvents} from "../events";
+import {inverseQuadratic100, quadratic100} from "../global";
 
 export class EboButtonBar extends EboComponent {
     static override readonly tagName=  "ebo-button-bar";
@@ -138,7 +136,7 @@ export class EboButtonBar extends EboComponent {
         slider.oninput = (ev) => {
             this.isVolumeSliding = true;
             this.volume = quadratic100(parseInt(slider.value));
-            this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {bubbles: true, composed: true, detail: {volume: this.volume}}));
+            this.dispatchEboEvent("changingVolume [eboplayer]", {volume: this.volume});
         };
         slider.onmousedown = slider.ontouchstart = () => { this.isVolumeSliding = true;};
         slider.onmouseup = slider.ontouchend = () => { this.isVolumeSliding = false;};
@@ -146,17 +144,15 @@ export class EboButtonBar extends EboComponent {
         let btnPlay = shadow.getElementById('btnPlay');
         btnPlay.addEventListener("click", (ev) => {
             let title = btnPlay.querySelector('i').title;
-            let eventName: EboplayerEvents;
             switch (title) {
-                case "Play": eventName = EboplayerEvents.playPressed; break;
-                case "Pause": eventName = EboplayerEvents.pausePressed; break;
-                case "Stop": eventName = EboplayerEvents.stopPressed; break;
+                case "Play": this.dispatchEboEvent("playPressed [eboplayer]", {}); break;
+                case "Pause": this.dispatchEboEvent("pausePressed [eboplayer]", {}); break;
+                case "Stop": this.dispatchEboEvent("stopPressed [eboplayer]", {}); break;
             }
-            this.dispatchEvent(new CustomEvent(eventName, {bubbles: true, composed: true}));
         });
         let imgTag = shadow.getElementById("buttonBarImg") as HTMLImageElement;
         imgTag.addEventListener("click", (ev) => {
-            this.dispatchEvent(new Event(EboplayerEvents.buttonBarAlbumImgClicked));
+            this.dispatchEboEvent("buttonBarAlbumImgClicked [eboplayer]", {});
         });
     }
 

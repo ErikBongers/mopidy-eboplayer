@@ -1,7 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
-import {EboplayerEvents} from "../events";
 
 
 export class EboBigAlbumComp extends EboComponent {

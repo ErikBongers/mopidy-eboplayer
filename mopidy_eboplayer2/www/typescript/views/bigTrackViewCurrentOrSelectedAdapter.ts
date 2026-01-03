@@ -3,7 +3,6 @@ import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
 import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, TrackUri} from "../modelTypes";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
-import {EboplayerEvents} from "../events";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     private streamLines: string;
@@ -15,13 +14,13 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
 
     override bind() {
         super.bind();
-        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
+        getState().getModel().addEventListener("currentTrackChanged", async () => {
             this.onCurrentOrSelectedChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+        getState().getModel().addEventListener("selectedTrackChanged", async () => {
             this.onCurrentOrSelectedChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+        getState().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", (ev) => {
             this.onStreamLinesChanged();
         });
     }

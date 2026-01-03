@@ -1,6 +1,5 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
-import {EboplayerEvents} from "../events";
 
 export class PressedChangeEvent extends Event {
     private _pressed: boolean;
@@ -101,7 +100,7 @@ export class EboButton extends EboComponent {
     }
 
     onFilterButtonTimeOut(source: EboButton) {
-        this.dispatchEvent(new Event(EboplayerEvents.longPress, {bubbles: true, composed: true}));
+        this.dispatchEboEvent("longPress [eboplayer]", {});
     }
 
     private onMultiClick(eboButton: EboButton, clickCount: number) {

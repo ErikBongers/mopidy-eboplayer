@@ -1,10 +1,11 @@
 import {Batching} from "../Batching";
+import EboEventTarget, {createEvent, EboEventHandlersEventMap, EboplayerEvent} from "../events";
 
 export interface HasName {
     tagName: string;
 }
 
-export abstract class EboComponent extends HTMLElement implements HasName {
+export abstract class EboComponent extends HTMLElement implements HasName, EboEventTarget {
     [k: string]: any;
     get rendered(): boolean {
         return this._rendered;
@@ -50,6 +51,17 @@ export abstract class EboComponent extends HTMLElement implements HasName {
             css.replaceSync(text);
             return css;
         });
+    }
+
+    addEboEventListener<K extends keyof EboEventHandlersEventMap>(
+        type: K,
+        listener: (this: EboEventTarget, ev: EboplayerEvent<K, EboEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void {
+    // @ts-ignore
+        super.addEventListener(type, listener, options);
+    }
+
+    dispatchEboEvent<K extends keyof EboEventHandlersEventMap>(key: K, args: EboEventHandlersEventMap[K]): boolean {
+        return super.dispatchEvent(createEvent(key, args));
     }
 
     // noinspection JSUnusedGlobalSymbols

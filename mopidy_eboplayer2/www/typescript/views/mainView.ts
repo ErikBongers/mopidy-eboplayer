@@ -1,11 +1,10 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-
 import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
-import {EboplayerEvents, BreadcrumbArgs, BrowseResultArgs, UriArgs, EboplayerEvent, GuiSourceArgs} from "../events";
+import {addEboEventListener, GuiSourceArgs} from "../events";
 
 export class MainView extends View {
     bind() {
@@ -16,55 +15,55 @@ export class MainView extends View {
         browseComp.addEventListener("browseFilterChanged", () => {
             getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
         });
-        browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev: CustomEvent<BreadcrumbArgs>) => {
+        browseComp.addEboEventListener("breadCrumbClick [eboplayer]", (ev) => {
             this.onBreadcrumbClick(ev.detail.breadcrumbId);
         });
-        browseComp.addEventListener(EboplayerEvents.browseResultClick, (ev: CustomEvent<BrowseResultArgs>) => {
+        browseComp.addEboEventListener("browseResultClick [eboplayer]", (ev) => {
             this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
         });
-        browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev: CustomEvent<UriArgs>) => {
+        browseComp.addEboEventListener("browseResultDblClick [eboplayer]", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
-        getState().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
+        getState().getModel().addEboEventListener("refsFiltered [eboplayer]", () => {
             this.onRefsFiltered();
         });
-        getState().getModel().addEventListener(EboplayerEvents.breadCrumbsChanged, () => {
+        getState().getModel().addEboEventListener("breadCrumbsChanged [eboplayer]", () => {
             this.onBreadCrumbsChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
+        getState().getModel().addEboEventListener("browseFilterChanged [eboplayer]", () => {
             this.onBrowseFilterChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
             await this.onSelectedTrackChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.trackListChanged, async () => {
+        getState().getModel().addEboEventListener("trackListChanged [eboplayer]", async () => {
             await this.onTrackListChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+        getState().getModel().addEboEventListener("viewChanged [eboplayer]", () => {
             this.setCurrentView();
         });
-        getState().getModel().addEventListener(EboplayerEvents.albumToViewChanged, async () => {
+        getState().getModel().addEboEventListener("albumToViewChanged [eboplayer]", async () => {
             await this.onAlbumToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEventListener("albumClick", async () => {
             this.onAlbumClick();
         });
-        document.body.addEventListener(EboplayerEvents.playItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
-            await this.onPlayItemListClick(ev);
+        addEboEventListener(document.body, "playItemListClicked [eboplayer]", async (ev) => {
+            await this.onPlayItemListClick(ev.detail);
         });
-        document.body.addEventListener(EboplayerEvents.addItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
-            await this.onAddItemListClick(ev);
+        addEboEventListener(document.body, "addItemListClicked [eboplayer]", async (ev) => {
+            await this.onAddItemListClick(ev.detail);
         });
-        document.body.addEventListener(EboplayerEvents.replaceItemListClicked, async (ev: EboplayerEvent<GuiSourceArgs>) => {
-            await this.onReplaceItemListClick(ev);
+        addEboEventListener(document.body, "replaceItemListClicked [eboplayer]", async (ev) => {
+            await this.onReplaceItemListClick(ev.detail);
         });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev: CustomEvent<UriArgs>) => {
-            await this.onPlayTrackClicked(ev.detail.uri as TrackUri);
+        albumComp.addEboEventListener("playTrackClicked [eboplayer]", async (ev) => {
+            await this.onPlayTrackClicked(ev.detail.uri);
         });
-        albumComp.addEventListener(EboplayerEvents.addTrackClicked, async (ev: CustomEvent<UriArgs>) => {
-            await this.onAddTrackClicked(ev.detail.uri as TrackUri);
+        albumComp.addEboEventListener("addTrackClicked [eboplayer]", async (ev) => {
+            await this.onAddTrackClicked(ev.detail.uri);
         });
     }
 
@@ -189,34 +188,34 @@ export class MainView extends View {
         albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
     }
 
-    private async onPlayItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
-        if(ev.detail.source == "albumView") {
+    private async onPlayItemListClick(detail: GuiSourceArgs) {
+        if(detail.source == "albumView") {
             let model = getState().getModel();
             let albumUri = model.getAlbumToView();
             let album = (await getState().getController().lookupAlbumsCached([albumUri]))[0];
             await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
             return;
         }
-        if(ev.detail.source == "browseView") {
+        if(detail.source == "browseView") {
             await getState().getPlayer().clear();
             await getState().getController().addCurrentSearchResultsToPlayer();
             await getState().getPlayer().play();
         }
     }
 
-    private async onAddItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
-        if(ev.detail.source == "albumView") {
+    private async onAddItemListClick(detail: GuiSourceArgs) {
+        if(detail.source == "albumView") {
             let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
             await getState().getPlayer().add([albumComp.dataset.albumUri as AlbumUri]);
         }
-        if(ev.detail.source == "browseView") {
+        if(detail.source == "browseView") {
             await getState().getController().addCurrentSearchResultsToPlayer();
         }
     }
 
-    private async onReplaceItemListClick(ev: EboplayerEvent<GuiSourceArgs>) {
+    private async onReplaceItemListClick(detail: GuiSourceArgs) {
         await getState().getPlayer().clear();
-        await this.onAddItemListClick(ev);
+        await this.onAddItemListClick(detail);
     }
 
     private async onBrowseResultDblClick(uri: AllUris) {

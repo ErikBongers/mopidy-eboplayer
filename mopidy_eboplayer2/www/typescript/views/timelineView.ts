@@ -1,22 +1,21 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {TlId} from "../../js/mopidy";
-import {AllUris, FileTrackModel, HistoryLine, ItemType, StreamTrackModel, TrackUri} from "../modelTypes";
-import {EboplayerEvents} from "../events";
+import {FileTrackModel, HistoryLine, StreamTrackModel, TrackUri} from "../modelTypes";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
     bind() {
-        getState().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
+        getState().getModel().addEboEventListener("historyChanged [eboplayer]", () => {
             this.rebuildTimeline().then(r => {});
         });
-        getState().getModel().addEventListener(EboplayerEvents.trackListChanged, () => {
+        getState().getModel().addEboEventListener("trackListChanged [eboplayer]", () => {
             this.rebuildTimeline().then(r => {});
         });
-        getState().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+        getState().getModel().addEboEventListener("currentTrackChanged [eboplayer]", () => {
             this.onCurrentTrackChanged();
         });
-        getState().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", () => {
             this.onSelectedTrackChanged();
         });
     }

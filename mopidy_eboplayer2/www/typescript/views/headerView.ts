@@ -1,11 +1,10 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {MessageType} from "../modelTypes";
-import {EboplayerEvents} from "../events";
 
 export class HeaderView extends View {
     bind() {
-        getState().getModel().addEventListener(EboplayerEvents.messageChanged, () => {
+        getState().getModel().addEboEventListener("messageChanged [eboplayer]", () => {
             this.onMessageChanged();
         });
     }

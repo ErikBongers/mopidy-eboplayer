@@ -1,14 +1,12 @@
 import models from "../js/mopidy";
-import {EmptySearchResults, Refs, SearchResult, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, ItemType, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackUri, Views} from "./modelTypes";
-import {BreadCrumb, BreadCrumbStack} from "./breadCrumb";
+import {EmptySearchResults, Refs, SearchResults} from "./refs";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackUri, Views} from "./modelTypes";
+import {BreadCrumbStack} from "./breadCrumb";
+import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
-import {EboplayerEvents} from "./events";
-import {WithId} from "./util/idStack";
 
 
-
-export interface ViewModel extends EventTarget {
+export interface ViewModel extends EboEventTargetClass {
     getConnectionState: () => ConnectionState;
     getCurrentTrack: () => TrackUri;
     getSelectedTrack: () => TrackUri | undefined;
@@ -30,7 +28,7 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
-export class Model extends EventTarget implements ViewModel {
+export class Model extends EboEventTargetClass implements ViewModel {
     static NoTrack: TrackModel = { type: "none" } as NoneTrackModel;
     currentTrack: TrackUri;
     //note that selectedTrack is not part of the mopidy server.
@@ -74,11 +72,11 @@ export class Model extends EventTarget implements ViewModel {
 
     pushBreadCrumb(crumb: FilterBreadCrumb) {
         this.filterBreadCrumbStack.push(crumb);
-        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+        this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
     }
     popBreadCrumb() {
         let crumb = this.filterBreadCrumbStack.pop();
-        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+        this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
         return crumb;
     }
 
@@ -86,7 +84,7 @@ export class Model extends EventTarget implements ViewModel {
 
     resetBreadCrumbsTo(id: number) {
         this.filterBreadCrumbStack.resetTo(id);
-        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+        this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
     }
 
     private initializeBreadcrumbStack() {
@@ -96,7 +94,7 @@ export class Model extends EventTarget implements ViewModel {
 
     clearBreadCrumbs() {
         this.initializeBreadcrumbStack();
-        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+        this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
     }
 
     setAllRefs(refs: Refs) {
@@ -114,7 +112,7 @@ export class Model extends EventTarget implements ViewModel {
             return;
         this.currentRefs.browseFilter = this.currentBrowseFilter;
         this.currentRefs.filter();
-        this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
+        this.dispatchEboEvent("refsFiltered [eboplayer]", {});
     }
 
     getImageFromCache(uri: AllUris): string | undefined {
@@ -137,7 +135,7 @@ export class Model extends EventTarget implements ViewModel {
             this.clearMessage();
         else
             this.setErrorMessage("Offline");
-        this.dispatchEvent(new Event(EboplayerEvents.connectionChanged));
+        this.dispatchEboEvent("connectionChanged [eboplayer]", {});
     }
 
     getConnectionState = () => this.connectionState;
@@ -149,13 +147,13 @@ export class Model extends EventTarget implements ViewModel {
     getCurrentBrowseFilter = () => this.currentBrowseFilter;
     setCurrentBrowseFilter(browseFilter: BrowseFilter) {
         this.currentBrowseFilter = browseFilter;
-        this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
+        this.dispatchEboEvent("browseFilterChanged [eboplayer]", {});
     }
 
     setBrowseFilterBreadCrumbs(breadCrumbStack: BrowseFilterBreadCrumbStack) {
         this.filterBreadCrumbStack.length = 0;
         this.filterBreadCrumbStack.push(...breadCrumbStack);
-        this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+        this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
     }
 
     getCurrentTrack(): TrackUri {
@@ -169,7 +167,7 @@ export class Model extends EventTarget implements ViewModel {
         }
         this.currentTrack = track.track.uri;
         this.addToLibraryCache(this.currentTrack, track);
-        this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
+        this.dispatchEboEvent("currentTrackChanged [eboplayer]", {});
     }
 
     getSelectedTrack = () => this.selectedTrack;
@@ -179,17 +177,17 @@ export class Model extends EventTarget implements ViewModel {
             this.selectedTrack = undefined;
         else
             this.selectedTrack = uri;
-        this.dispatchEvent(new Event(EboplayerEvents.selectedTrackChanged));
+        this.dispatchEboEvent("selectedTrackChanged [eboplayer]", {});
     }
 
     setVolume(volume: number) {
         this.volume = volume;
-        this.dispatchEvent(new Event(EboplayerEvents.volumeChanged));
+        this.dispatchEboEvent("volumeChanged [eboplayer]", {});
     }
 
     private setMessage(message: Message) {
         this.currentMessage = message;
-        this.dispatchEvent(new Event(EboplayerEvents.messageChanged));
+        this.dispatchEboEvent("messageChanged [eboplayer]", {});
     }
 
     getCurrentMessage = () => this.currentMessage;
@@ -209,7 +207,7 @@ export class Model extends EventTarget implements ViewModel {
 
     setPlaybackState(state: PlaybackModesState) {
         this.playbackModesState = {...state};
-        this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
+        this.dispatchEboEvent("playbackStateChanged [eboplayer]", {});
     }
 
     getVolume = () => this.volume;
@@ -220,28 +218,28 @@ export class Model extends EventTarget implements ViewModel {
 
     setPlayState(state: PlayState) {
         this.playState = state;
-        this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
+        this.dispatchEboEvent("playbackStateChanged [eboplayer]", {});
     }
 
     setActiveStreamLinesHistory(streamTitles: StreamTitles) {
         if(!streamTitles) //todo: why can this be empty (at PC startup?)
             return;
         this.activeStreamLines = streamTitles;
-        this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
+        this.dispatchEboEvent("activeStreamLinesChanged [eboplayer]", {});
     }
 
     getActiveStreamLines = () => this.activeStreamLines;
 
     setHistory(history: HistoryLine[]) {
         this.history = history;
-        this.dispatchEvent(new Event(EboplayerEvents.historyChanged));
+        this.dispatchEboEvent("historyChanged [eboplayer]", {});
     }
 
     getHistory = () => this.history;
 
     setTrackList(trackList: TlTrack[]) {
         this.trackList = trackList;
-        this.dispatchEvent(new Event(EboplayerEvents.trackListChanged));
+        this.dispatchEboEvent("trackListChanged [eboplayer]", {});
     }
     getTrackList = () => this.trackList;
 
@@ -281,24 +279,24 @@ export class Model extends EventTarget implements ViewModel {
 
     setCurrentRefs(refs: Refs) {
         this.currentRefs = refs;
-        this.dispatchEvent(new Event(EboplayerEvents.currentRefsLoaded));
+        this.dispatchEboEvent("currentRefsLoaded [eboplayer]", {});
     }
 
     setView(view: Views) {
         this.view = view;
-        this.dispatchEvent(new Event(EboplayerEvents.viewChanged));
+        this.dispatchEboEvent("viewChanged [eboplayer]", {});
     }
     getView = () => this.view;
 
     setAlbumToView(uri: AlbumUri) {
         this.albumToViewUri = uri;
-        this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
+        this.dispatchEboEvent("albumToViewChanged [eboplayer]", {});
     }
     getAlbumToView = () => this.albumToViewUri;
 
     setCurrentImage(uri: string) {
         this.currentImage = uri;
-        this.dispatchEvent(new Event(EboplayerEvents.currentImageSet));
+        this.dispatchEboEvent("currentImageSet [eboplayer]", {});
     }
 
     getCurrentImage = () => this.currentImage;

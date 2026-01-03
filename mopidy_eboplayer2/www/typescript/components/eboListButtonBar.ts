@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs} from "../events";
+import {GuiSource} from "../events";
 
 export class EboListButtonBar extends EboComponent {
     static override readonly tagName=  "ebo-list-button-bar";
@@ -45,13 +45,13 @@ export class EboListButtonBar extends EboComponent {
 
     render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.playItemListClicked, {source: this.list_source})); //todo: override dispatchEvent to make it tied to EboplayerEvent?
+            this.dispatchEboEvent("playItemListClicked [eboplayer]", {source: this.list_source});
         });
         this.addShadowEventListener("btnAdd", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.addItemListClicked, {source: this.list_source}));
+            this.dispatchEboEvent("addItemListClicked [eboplayer]", {source: this.list_source});
         });
         this.addShadowEventListener("btnReplace", "click", (ev) => {
-            this.dispatchEvent(new EboplayerEvent<GuiSourceArgs>(EboplayerEvents.replaceItemListClicked, {source: this.list_source}));
+            this.dispatchEboEvent("replaceItemListClicked [eboplayer]", {source: this.list_source});
         });
         this.requestUpdate();
     }

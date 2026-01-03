@@ -695,54 +695,30 @@ let Views = /* @__PURE__ */ function(Views$1) {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/events.ts
-let EboplayerEvents = /* @__PURE__ */ function(EboplayerEvents$1) {
-	EboplayerEvents$1["activeStreamLinesChanged"] = "eboplayer.activeStreamLinesChanged";
-	EboplayerEvents$1["addItemListClicked"] = "eboplayer.addItemListClicked";
-	EboplayerEvents$1["replaceItemListClicked"] = "eboplayer.replaceItemListClicked";
-	EboplayerEvents$1["addTrackClicked"] = "eboplayer.addTrackClicked";
-	EboplayerEvents$1["albumToViewChanged"] = "eboplayer.albumToViewChanged";
-	EboplayerEvents$1["breadCrumbClick"] = "eboplayer.breadCrumbClick";
-	EboplayerEvents$1["breadCrumbsChanged"] = "eboplayer.breadCrumbsChanged";
-	EboplayerEvents$1["browseFilterChanged"] = "eboplayer.browseFilterChanged";
-	EboplayerEvents$1["browseResultClick"] = "eboplayer.browseResultClick";
-	EboplayerEvents$1["browseResultDblClick"] = "eboplayer.browseResultDblClick";
-	EboplayerEvents$1["buttonBarAlbumImgClicked"] = "eboplayer.buttonBarAlbumImgClicked";
-	EboplayerEvents$1["changingVolume"] = "eboplayer.changingVolume";
-	EboplayerEvents$1["connectionChanged"] = "eboplayer.connectionChanged";
-	EboplayerEvents$1["currentImageSet"] = "eboplayer.currentImageSet";
-	EboplayerEvents$1["currentRefsLoaded"] = "eboplayer.currentRefsLoaded";
-	EboplayerEvents$1["currentTrackChanged"] = "eboplayer.currentTrackChanged";
-	EboplayerEvents$1["historyChanged"] = "eboplayer.historyChanged";
-	EboplayerEvents$1["longPress"] = "eboplayer.longPress";
-	EboplayerEvents$1["messageChanged"] = "eboplayer.messageChanged";
-	EboplayerEvents$1["pausePressed"] = "eboplayer.pausePressed";
-	EboplayerEvents$1["playItemListClicked"] = "eboplayer.playItemListClicked";
-	EboplayerEvents$1["playPressed"] = "eboplayer.playPressed";
-	EboplayerEvents$1["playStateChanged"] = "eboplayer.playbackStateChanged";
-	EboplayerEvents$1["playTrackClicked"] = "eboplayer.playTrackClicked";
-	EboplayerEvents$1["refsFiltered"] = "eboplayer.refsFiltered";
-	EboplayerEvents$1["selectedTrackChanged"] = "eboplayer.selectedTrackChanged";
-	EboplayerEvents$1["stopPressed"] = "eboplayer.stopPressed";
-	EboplayerEvents$1["trackListChanged"] = "eboplayer.trackListChanged";
-	EboplayerEvents$1["viewChanged"] = "eboplayer.viewChanged";
-	EboplayerEvents$1["volumeChanged"] = "eboplayer.volumeChanged";
-	return EboplayerEvents$1;
-}({});
-var EboplayerEvent = class extends CustomEvent {
-	constructor(event, detail) {
-		super(event, {
-			detail,
-			bubbles: true,
-			composed: true,
-			cancelable: true
-		});
+function createEvent(event, detail) {
+	return new CustomEvent(event, {
+		detail,
+		bubbles: true,
+		composed: true,
+		cancelable: true
+	});
+}
+var EboEventTargetClass = class extends EventTarget {
+	dispatchEboEvent(key, args) {
+		return super.dispatchEvent(createEvent(key, args));
+	}
+	addEboEventListener(type, listener, options) {
+		super.addEventListener(type, listener, options);
 	}
 };
+function addEboEventListener(target, type, listener, options) {
+	target.addEventListener(type, listener, options);
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/model.ts
 var BrowseFilterBreadCrumbStack = class extends BreadCrumbStack {};
-var Model = class extends EventTarget {
+var Model = class extends EboEventTargetClass {
 	static NoTrack = { type: "none" };
 	currentTrack;
 	selectedTrack;
@@ -778,17 +754,17 @@ var Model = class extends EventTarget {
 	}
 	pushBreadCrumb(crumb) {
 		this.filterBreadCrumbStack.push(crumb);
-		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+		this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
 	}
 	popBreadCrumb() {
 		let crumb = this.filterBreadCrumbStack.pop();
-		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+		this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
 		return crumb;
 	}
 	getBreadCrumbs = () => this.filterBreadCrumbStack;
 	resetBreadCrumbsTo(id) {
 		this.filterBreadCrumbStack.resetTo(id);
-		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+		this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
 	}
 	initializeBreadcrumbStack() {
 		this.filterBreadCrumbStack.length = 0;
@@ -796,7 +772,7 @@ var Model = class extends EventTarget {
 	}
 	clearBreadCrumbs() {
 		this.initializeBreadcrumbStack();
-		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+		this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
 	}
 	setAllRefs(refs) {
 		this.allRefs = refs;
@@ -809,7 +785,7 @@ var Model = class extends EventTarget {
 		if (!this.currentRefs) return;
 		this.currentRefs.browseFilter = this.currentBrowseFilter;
 		this.currentRefs.filter();
-		this.dispatchEvent(new Event(EboplayerEvents.refsFiltered));
+		this.dispatchEboEvent("refsFiltered [eboplayer]", {});
 	}
 	getImageFromCache(uri) {
 		return this.imageCache.get(uri);
@@ -824,7 +800,7 @@ var Model = class extends EventTarget {
 		this.connectionState = state$1;
 		if (this.connectionState == ConnectionState.Online) this.clearMessage();
 		else this.setErrorMessage("Offline");
-		this.dispatchEvent(new Event(EboplayerEvents.connectionChanged));
+		this.dispatchEboEvent("connectionChanged [eboplayer]", {});
 	}
 	getConnectionState = () => this.connectionState;
 	getCachedInfo(uri) {
@@ -833,12 +809,12 @@ var Model = class extends EventTarget {
 	getCurrentBrowseFilter = () => this.currentBrowseFilter;
 	setCurrentBrowseFilter(browseFilter) {
 		this.currentBrowseFilter = browseFilter;
-		this.dispatchEvent(new Event(EboplayerEvents.browseFilterChanged));
+		this.dispatchEboEvent("browseFilterChanged [eboplayer]", {});
 	}
 	setBrowseFilterBreadCrumbs(breadCrumbStack) {
 		this.filterBreadCrumbStack.length = 0;
 		this.filterBreadCrumbStack.push(...breadCrumbStack);
-		this.dispatchEvent(new Event(EboplayerEvents.breadCrumbsChanged));
+		this.dispatchEboEvent("breadCrumbsChanged [eboplayer]", {});
 	}
 	getCurrentTrack() {
 		return this.currentTrack;
@@ -850,21 +826,21 @@ var Model = class extends EventTarget {
 		}
 		this.currentTrack = track.track.uri;
 		this.addToLibraryCache(this.currentTrack, track);
-		this.dispatchEvent(new Event(EboplayerEvents.currentTrackChanged));
+		this.dispatchEboEvent("currentTrackChanged [eboplayer]", {});
 	}
 	getSelectedTrack = () => this.selectedTrack;
 	setSelectedTrack(uri) {
 		if (uri == "") this.selectedTrack = void 0;
 		else this.selectedTrack = uri;
-		this.dispatchEvent(new Event(EboplayerEvents.selectedTrackChanged));
+		this.dispatchEboEvent("selectedTrackChanged [eboplayer]", {});
 	}
 	setVolume(volume) {
 		this.volume = volume;
-		this.dispatchEvent(new Event(EboplayerEvents.volumeChanged));
+		this.dispatchEboEvent("volumeChanged [eboplayer]", {});
 	}
 	setMessage(message) {
 		this.currentMessage = message;
-		this.dispatchEvent(new Event(EboplayerEvents.messageChanged));
+		this.dispatchEboEvent("messageChanged [eboplayer]", {});
 	}
 	getCurrentMessage = () => this.currentMessage;
 	clearMessage() {
@@ -893,7 +869,7 @@ var Model = class extends EventTarget {
 	}
 	setPlaybackState(state$1) {
 		this.playbackModesState = { ...state$1 };
-		this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
+		this.dispatchEboEvent("playbackStateChanged [eboplayer]", {});
 	}
 	getVolume = () => this.volume;
 	getPlayState() {
@@ -901,22 +877,22 @@ var Model = class extends EventTarget {
 	}
 	setPlayState(state$1) {
 		this.playState = state$1;
-		this.dispatchEvent(new Event(EboplayerEvents.playStateChanged));
+		this.dispatchEboEvent("playbackStateChanged [eboplayer]", {});
 	}
 	setActiveStreamLinesHistory(streamTitles) {
 		if (!streamTitles) return;
 		this.activeStreamLines = streamTitles;
-		this.dispatchEvent(new Event(EboplayerEvents.activeStreamLinesChanged));
+		this.dispatchEboEvent("activeStreamLinesChanged [eboplayer]", {});
 	}
 	getActiveStreamLines = () => this.activeStreamLines;
 	setHistory(history) {
 		this.history = history;
-		this.dispatchEvent(new Event(EboplayerEvents.historyChanged));
+		this.dispatchEboEvent("historyChanged [eboplayer]", {});
 	}
 	getHistory = () => this.history;
 	setTrackList(trackList) {
 		this.trackList = trackList;
-		this.dispatchEvent(new Event(EboplayerEvents.trackListChanged));
+		this.dispatchEboEvent("trackListChanged [eboplayer]", {});
 	}
 	getTrackList = () => this.trackList;
 	addToLibraryCache(uri, item) {
@@ -940,21 +916,21 @@ var Model = class extends EventTarget {
 	}
 	setCurrentRefs(refs) {
 		this.currentRefs = refs;
-		this.dispatchEvent(new Event(EboplayerEvents.currentRefsLoaded));
+		this.dispatchEboEvent("currentRefsLoaded [eboplayer]", {});
 	}
 	setView(view) {
 		this.view = view;
-		this.dispatchEvent(new Event(EboplayerEvents.viewChanged));
+		this.dispatchEboEvent("viewChanged [eboplayer]", {});
 	}
 	getView = () => this.view;
 	setAlbumToView(uri) {
 		this.albumToViewUri = uri;
-		this.dispatchEvent(new Event(EboplayerEvents.albumToViewChanged));
+		this.dispatchEboEvent("albumToViewChanged [eboplayer]", {});
 	}
 	getAlbumToView = () => this.albumToViewUri;
 	setCurrentImage(uri) {
 		this.currentImage = uri;
-		this.dispatchEvent(new Event(EboplayerEvents.currentImageSet));
+		this.dispatchEboEvent("currentImageSet [eboplayer]", {});
 	}
 	getCurrentImage = () => this.currentImage;
 };
@@ -997,7 +973,7 @@ var View = class extends NestedDataRequester {
 //#region mopidy_eboplayer2/www/typescript/views/headerView.ts
 var HeaderView = class extends View {
 	bind() {
-		playerState_default().getModel().addEventListener(EboplayerEvents.messageChanged, () => {
+		playerState_default().getModel().addEboEventListener("messageChanged [eboplayer]", () => {
 			this.onMessageChanged();
 		});
 	}
@@ -1516,7 +1492,7 @@ var Controller = class Controller extends Commands {
 			let streamTitles = data.stream_titles;
 			this.model.setActiveStreamLinesHistory(streamTitles);
 		});
-		this.model.addEventListener(EboplayerEvents.playStateChanged, async () => {
+		this.model.addEboEventListener("playbackStateChanged [eboplayer]", async () => {
 			await this.updateStreamLines();
 		});
 	}
@@ -1879,39 +1855,39 @@ var ButtonBarView = class extends View {
 		this.componentId = containerId;
 	}
 	bind() {
-		playerState_default().getModel().addEventListener(EboplayerEvents.playStateChanged, () => {
-			this.onPlaybackStateChangegd();
+		playerState_default().getModel().addEboEventListener("playbackStateChanged [eboplayer]", async () => {
+			await this.onPlaybackStateChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
-			this.onCurrentTrackChanged();
+		playerState_default().getModel().addEboEventListener("currentTrackChanged [eboplayer]", async () => {
+			await this.onCurrentTrackChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
-			this.onSelectedTrackChanged();
+		playerState_default().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
+			await this.onSelectedTrackChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+		playerState_default().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", () => {
 			this.onActiveStreamLinesChanged();
 		});
 		let comp = document.getElementById(this.componentId);
-		comp.addEventListener(EboplayerEvents.playPressed, () => {
-			this.playOrStopOrPause(EboplayerEvents.playPressed).then((r) => {});
+		comp.addEboEventListener("playPressed [eboplayer]", async () => {
+			await playerState_default().getController().mopidyProxy.sendPlay();
 		});
-		comp.addEventListener(EboplayerEvents.stopPressed, () => {
-			this.playOrStopOrPause(EboplayerEvents.stopPressed).then((r) => {});
+		comp.addEboEventListener("stopPressed [eboplayer]", async () => {
+			await playerState_default().getController().mopidyProxy.sendStop();
 		});
-		comp.addEventListener(EboplayerEvents.pausePressed, () => {
-			this.playOrStopOrPause(EboplayerEvents.pausePressed).then((r) => {});
+		comp.addEboEventListener("pausePressed [eboplayer]", async () => {
+			await playerState_default().getController().mopidyProxy.sendPause();
 		});
-		comp.addEventListener(EboplayerEvents.buttonBarAlbumImgClicked, () => {
+		comp.addEboEventListener("buttonBarAlbumImgClicked [eboplayer]", () => {
 			this.onButtonBarImgClicked();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.volumeChanged, () => {
+		playerState_default().getModel().addEboEventListener("volumeChanged [eboplayer]", () => {
 			this.onVolumeChanged();
 		});
-		comp.addEventListener(EboplayerEvents.changingVolume, async (ev) => {
-			let value = parseInt(ev.detail.volume);
+		comp.addEboEventListener("changingVolume [eboplayer]", async (ev) => {
+			let value = ev.detail.volume;
 			await playerState_default().getController().mopidyProxy.sendVolume(value);
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+		playerState_default().getModel().addEboEventListener("viewChanged [eboplayer]", () => {
 			this.showHideInfo();
 		});
 	}
@@ -1919,7 +1895,7 @@ var ButtonBarView = class extends View {
 		let volume = playerState_default().getModel().getVolume();
 		document.getElementById(this.componentId).setAttribute("volume", volume.toString());
 	}
-	async onPlaybackStateChangegd() {
+	async onPlaybackStateChanged() {
 		let playState = playerState_default().getModel().getPlayState();
 		document.getElementById(this.componentId).setAttribute("play_state", playState);
 		await this.updateComponent();
@@ -1971,19 +1947,6 @@ var ButtonBarView = class extends View {
 		if (selectedTrack && currentTrack != selectedTrack) show_info = true;
 		if (currentView != Views.NowPlaying) show_info = true;
 		document.getElementById(this.componentId).setAttribute("show_info", show_info.toString());
-	}
-	async playOrStopOrPause(event) {
-		switch (event) {
-			case EboplayerEvents.playPressed:
-				await playerState_default().getController().mopidyProxy.sendPlay();
-				break;
-			case EboplayerEvents.stopPressed:
-				await playerState_default().getController().mopidyProxy.sendStop();
-				break;
-			case EboplayerEvents.pausePressed:
-				await playerState_default().getController().mopidyProxy.sendPause();
-				break;
-		}
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];
@@ -2058,6 +2021,12 @@ var EboComponent = class EboComponent extends HTMLElement {
 			css.replaceSync(text$1);
 			return css;
 		});
+	}
+	addEboEventListener(type, listener, options) {
+		super.addEventListener(type, listener, options);
+	}
+	dispatchEboEvent(key, args) {
+		return super.dispatchEvent(createEvent(key, args));
 	}
 	connectedCallback() {
 		this.shadow = this.attachShadow({ mode: "open" });
@@ -2220,16 +2189,16 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 var TimelineView = class extends View {
 	clickedRow;
 	bind() {
-		playerState_default().getModel().addEventListener(EboplayerEvents.historyChanged, () => {
+		playerState_default().getModel().addEboEventListener("historyChanged [eboplayer]", () => {
 			this.rebuildTimeline().then((r) => {});
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.trackListChanged, () => {
+		playerState_default().getModel().addEboEventListener("trackListChanged [eboplayer]", () => {
 			this.rebuildTimeline().then((r) => {});
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, () => {
+		playerState_default().getModel().addEboEventListener("currentTrackChanged [eboplayer]", () => {
 			this.onCurrentTrackChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, () => {
+		playerState_default().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", () => {
 			this.onSelectedTrackChanged();
 		});
 	}
@@ -2540,13 +2509,13 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	}
 	bind() {
 		super.bind();
-		playerState_default().getModel().addEventListener(EboplayerEvents.currentTrackChanged, async () => {
+		playerState_default().getModel().addEventListener("currentTrackChanged", async () => {
 			this.onCurrentOrSelectedChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+		playerState_default().getModel().addEventListener("selectedTrackChanged", async () => {
 			this.onCurrentOrSelectedChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.activeStreamLinesChanged, () => {
+		playerState_default().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", (ev) => {
 			this.onStreamLinesChanged();
 		});
 	}
@@ -2717,11 +2686,11 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                     </ebo-menu-button>`;
 			tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {
 				ev.target.closest("ebo-menu-button").closeMenu();
-				this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addTrackClicked, { uri: track.track.uri }));
+				this.dispatchEboEvent("addTrackClicked [eboplayer]", { uri: track.track.uri });
 			});
 			tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
 				ev.target.closest("ebo-menu-button").closeMenu();
-				this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playTrackClicked, { uri: track.track.uri }));
+				this.dispatchEboEvent("playTrackClicked [eboplayer]", { uri: track.track.uri });
 			});
 		});
 		if (this.streamInfo) this.streamInfo.historyLines.forEach((lineGroup) => {
@@ -2749,53 +2718,53 @@ var MainView = class extends View {
 		browseComp.addEventListener("browseFilterChanged", () => {
 			playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
 		});
-		browseComp.addEventListener(EboplayerEvents.breadCrumbClick, (ev) => {
+		browseComp.addEboEventListener("breadCrumbClick [eboplayer]", (ev) => {
 			this.onBreadcrumbClick(ev.detail.breadcrumbId);
 		});
-		browseComp.addEventListener(EboplayerEvents.browseResultClick, (ev) => {
+		browseComp.addEboEventListener("browseResultClick [eboplayer]", (ev) => {
 			this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
 		});
-		browseComp.addEventListener(EboplayerEvents.browseResultDblClick, async (ev) => {
+		browseComp.addEboEventListener("browseResultDblClick [eboplayer]", async (ev) => {
 			await this.onBrowseResultDblClick(ev.detail.uri);
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.refsFiltered, () => {
+		playerState_default().getModel().addEboEventListener("refsFiltered [eboplayer]", () => {
 			this.onRefsFiltered();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.breadCrumbsChanged, () => {
+		playerState_default().getModel().addEboEventListener("breadCrumbsChanged [eboplayer]", () => {
 			this.onBreadCrumbsChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.browseFilterChanged, () => {
+		playerState_default().getModel().addEboEventListener("browseFilterChanged [eboplayer]", () => {
 			this.onBrowseFilterChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.selectedTrackChanged, async () => {
+		playerState_default().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
 			await this.onSelectedTrackChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.trackListChanged, async () => {
+		playerState_default().getModel().addEboEventListener("trackListChanged [eboplayer]", async () => {
 			await this.onTrackListChanged();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.viewChanged, () => {
+		playerState_default().getModel().addEboEventListener("viewChanged [eboplayer]", () => {
 			this.setCurrentView();
 		});
-		playerState_default().getModel().addEventListener(EboplayerEvents.albumToViewChanged, async () => {
+		playerState_default().getModel().addEboEventListener("albumToViewChanged [eboplayer]", async () => {
 			await this.onAlbumToViewChanged();
 		});
 		document.getElementById("currentTrackBigView").addEventListener("albumClick", async () => {
 			this.onAlbumClick();
 		});
-		document.body.addEventListener(EboplayerEvents.playItemListClicked, async (ev) => {
-			await this.onPlayItemListClick(ev);
+		addEboEventListener(document.body, "playItemListClicked [eboplayer]", async (ev) => {
+			await this.onPlayItemListClick(ev.detail);
 		});
-		document.body.addEventListener(EboplayerEvents.addItemListClicked, async (ev) => {
-			await this.onAddItemListClick(ev);
+		addEboEventListener(document.body, "addItemListClicked [eboplayer]", async (ev) => {
+			await this.onAddItemListClick(ev.detail);
 		});
-		document.body.addEventListener(EboplayerEvents.replaceItemListClicked, async (ev) => {
-			await this.onReplaceItemListClick(ev);
+		addEboEventListener(document.body, "replaceItemListClicked [eboplayer]", async (ev) => {
+			await this.onReplaceItemListClick(ev.detail);
 		});
 		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEventListener(EboplayerEvents.playTrackClicked, async (ev) => {
+		albumComp.addEboEventListener("playTrackClicked [eboplayer]", async (ev) => {
 			await this.onPlayTrackClicked(ev.detail.uri);
 		});
-		albumComp.addEventListener(EboplayerEvents.addTrackClicked, async (ev) => {
+		albumComp.addEboEventListener("addTrackClicked [eboplayer]", async (ev) => {
 			await this.onAddTrackClicked(ev.detail.uri);
 		});
 	}
@@ -2914,29 +2883,29 @@ var MainView = class extends View {
 		albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 		albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
 	}
-	async onPlayItemListClick(ev) {
-		if (ev.detail.source == "albumView") {
+	async onPlayItemListClick(detail) {
+		if (detail.source == "albumView") {
 			let albumUri = playerState_default().getModel().getAlbumToView();
 			let album = (await playerState_default().getController().lookupAlbumsCached([albumUri]))[0];
 			await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
 			return;
 		}
-		if (ev.detail.source == "browseView") {
+		if (detail.source == "browseView") {
 			await playerState_default().getPlayer().clear();
 			await playerState_default().getController().addCurrentSearchResultsToPlayer();
 			await playerState_default().getPlayer().play();
 		}
 	}
-	async onAddItemListClick(ev) {
-		if (ev.detail.source == "albumView") {
+	async onAddItemListClick(detail) {
+		if (detail.source == "albumView") {
 			let albumComp = document.getElementById("bigAlbumView");
 			await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
 		}
-		if (ev.detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
+		if (detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
 	}
-	async onReplaceItemListClick(ev) {
+	async onReplaceItemListClick(detail) {
 		await playerState_default().getPlayer().clear();
-		await this.onAddItemListClick(ev);
+		await this.onAddItemListClick(detail);
 	}
 	async onBrowseResultDblClick(uri) {
 		await playerState_default().getPlayer().clearAndPlay([uri]);
@@ -2990,7 +2959,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	_browseFilter;
 	static observedAttributes = [];
-	browseFilterChangedEvent;
 	static styleText = `
         <style>
             :host { 
@@ -3151,7 +3119,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			btn.addEventListener("pressedChange", async (ev) => {
 				this.onFilterButtonPress(ev);
 			});
-			btn.addEventListener(EboplayerEvents.longPress, (ev) => {
+			btn.addEboEventListener("longPress [eboplayer]", (ev) => {
 				this.onFilterButtonLongPress(ev);
 			});
 			btn.addEventListener("dblclick", (ev) => {
@@ -3186,7 +3154,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		let propName = btn.id.replace("filter", "");
 		propName = propName.charAt(0).toLowerCase() + propName.slice(1);
 		this.browseFilter[propName] = !this.browseFilter[propName];
-		this.dispatchEvent(this.browseFilterChangedEvent);
+		this.dispatchEboEvent("browseFilterChanged [eboplayer]", {});
 	}
 	update(shadow) {
 		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
@@ -3274,19 +3242,19 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	onRowClicked(ev) {
 		let row = ev.currentTarget;
-		this.dispatchEvent(new CustomEvent(EboplayerEvents.browseResultClick, { detail: {
+		this.dispatchEboEvent("browseResultClick [eboplayer]", {
 			"label": row.cells[0].innerText,
 			"uri": row.dataset.uri,
 			"type": row.dataset.type
-		} }));
+		});
 	}
 	async onRowDoubleClicked(ev) {
 		let row = ev.currentTarget;
-		this.dispatchEvent(new EboplayerEvent(EboplayerEvents.browseResultDblClick, { uri: row.dataset.uri }));
+		this.dispatchEboEvent("browseResultDblClick [eboplayer]", { uri: row.dataset.uri });
 	}
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
-		this.dispatchEvent(new EboplayerEvent(EboplayerEvents.breadCrumbClick, { breadcrumbId: parseInt(btn.dataset.id) }));
+		this.dispatchEboEvent("breadCrumbClick [eboplayer]", { breadcrumbId: parseInt(btn.dataset.id) });
 	}
 };
 
@@ -3436,10 +3404,7 @@ var EboButton = class EboButton extends EboComponent {
 		this.dispatchEvent(event);
 	}
 	onFilterButtonTimeOut(source) {
-		this.dispatchEvent(new Event(EboplayerEvents.longPress, {
-			bubbles: true,
-			composed: true
-		}));
+		this.dispatchEboEvent("longPress [eboplayer]", {});
 	}
 	onMultiClick(eboButton, clickCount) {
 		if (this.disabled) return;
@@ -3756,11 +3721,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		slider.oninput = (ev) => {
 			this.isVolumeSliding = true;
 			this.volume = quadratic100(parseInt(slider.value));
-			this.dispatchEvent(new CustomEvent(EboplayerEvents.changingVolume, {
-				bubbles: true,
-				composed: true,
-				detail: { volume: this.volume }
-			}));
+			this.dispatchEboEvent("changingVolume [eboplayer]", { volume: this.volume });
 		};
 		slider.onmousedown = slider.ontouchstart = () => {
 			this.isVolumeSliding = true;
@@ -3770,26 +3731,20 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		};
 		let btnPlay = shadow.getElementById("btnPlay");
 		btnPlay.addEventListener("click", (ev) => {
-			let title = btnPlay.querySelector("i").title;
-			let eventName;
-			switch (title) {
+			switch (btnPlay.querySelector("i").title) {
 				case "Play":
-					eventName = EboplayerEvents.playPressed;
+					this.dispatchEboEvent("playPressed [eboplayer]", {});
 					break;
 				case "Pause":
-					eventName = EboplayerEvents.pausePressed;
+					this.dispatchEboEvent("pausePressed [eboplayer]", {});
 					break;
 				case "Stop":
-					eventName = EboplayerEvents.stopPressed;
+					this.dispatchEboEvent("stopPressed [eboplayer]", {});
 					break;
 			}
-			this.dispatchEvent(new CustomEvent(eventName, {
-				bubbles: true,
-				composed: true
-			}));
 		});
 		shadow.getElementById("buttonBarImg").addEventListener("click", (ev) => {
-			this.dispatchEvent(new Event(EboplayerEvents.buttonBarAlbumImgClicked));
+			this.dispatchEboEvent("buttonBarAlbumImgClicked [eboplayer]", {});
 		});
 	}
 	update(shadow) {
@@ -3847,7 +3802,6 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
             .popupMenu {
                 border: solid white 1px;
                 border-radius: 20px 20px 0px 20px;
-                xposition: absolute;
                 position-anchor: --popup-button;
                 margin: 0;
                 inset: auto;
@@ -3858,7 +3812,6 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
                 background-color: var(--body-background);
                 
                 &:popover-open {
-                    xdisplay: grid;
                     opacity: 1;
                 }
             }
@@ -3889,14 +3842,6 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 		this.requestRender();
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		switch (name) {
-			case "img":
-				this[name] = newValue;
-				break;
-			case "pressed":
-				this.updateBoolAtrribute(newValue, name);
-				break;
-		}
 		this.requestRender();
 	}
 	render() {}
@@ -3950,13 +3895,13 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.playItemListClicked, { source: this.list_source }));
+			this.dispatchEboEvent("playItemListClicked [eboplayer]", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.addItemListClicked, { source: this.list_source }));
+			this.dispatchEboEvent("addItemListClicked [eboplayer]", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnReplace", "click", (ev) => {
-			this.dispatchEvent(new EboplayerEvent(EboplayerEvents.replaceItemListClicked, { source: this.list_source }));
+			this.dispatchEboEvent("replaceItemListClicked [eboplayer]", { source: this.list_source });
 		});
 		this.requestUpdate();
 	}

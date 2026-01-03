@@ -6,12 +6,11 @@ import {EboPlayerDataType} from "../views/view";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
+import {getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
-import {EboplayerEvents} from "../events";
 import {PlayController} from "./playController";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
@@ -138,10 +137,9 @@ export class Controller extends Commands implements DataRequester{
             let streamTitles: StreamTitles = data.stream_titles;
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
-        this.model.addEventListener(EboplayerEvents.playStateChanged, async () => {
+        this.model.addEboEventListener("playbackStateChanged [eboplayer]", async () => {
             await this.updateStreamLines();
         });
-
     }
 
     async fetchRequiredData(dataType: EboPlayerDataType) {

@@ -1,12 +1,8 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
-
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
-import {LIBRARY_PROTOCOL} from "../controllers/controller";
 import {EmptySearchResults, RefType, SearchResults} from "../refs";
-import {BreadcrumbArgs, BrowseResultArgs, EboplayerEvent, EboplayerEvents, GuiSource, GuiSourceArgs, UriArgs} from "../events";
-import models from "../../js/mopidy";
-import ModelType = models.ModelType;
+import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
 
 export class EboBrowseComp extends EboComponent {
@@ -50,8 +46,6 @@ export class EboBrowseComp extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
-
-    private readonly browseFilterChangedEvent: CustomEvent<unknown>;
 
     static styleText= `
         <style>
@@ -222,11 +216,11 @@ export class EboBrowseComp extends EboComponent {
             this.dispatchEvent(this.browseFilterChangedEvent);
         });
         shadow.querySelectorAll("ebo-button")
-            .forEach(btn => {
+            .forEach((btn: EboButton) => {
                 btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
                     this.onFilterButtonPress(ev);
                 });
-                btn.addEventListener(EboplayerEvents.longPress, (ev) => {
+                btn.addEboEventListener("longPress [eboplayer]", (ev) => {
                     this.onFilterButtonLongPress(ev);
                 });
                 btn.addEventListener("dblclick", (ev) => {
@@ -267,7 +261,7 @@ export class EboBrowseComp extends EboComponent {
         let propName = btn.id.replace("filter", "");
         propName = propName.charAt(0).toLowerCase() + propName.slice(1);
         this.browseFilter[propName] = !this.browseFilter[propName];
-        this.dispatchEvent(this.browseFilterChangedEvent);
+        this.dispatchEboEvent("browseFilterChanged [eboplayer]", {});
     }
 
     override update(shadow:ShadowRoot) {
@@ -369,17 +363,17 @@ export class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEvent(new CustomEvent<BrowseResultArgs>(EboplayerEvents.browseResultClick, {detail: {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": row.dataset.type}}));
+        this.dispatchEboEvent("browseResultClick [eboplayer]", {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": row.dataset.type});
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEvent(new EboplayerEvent<UriArgs>(EboplayerEvents.browseResultDblClick, {uri: row.dataset.uri}));
+        this.dispatchEboEvent("browseResultDblClick [eboplayer]", {uri: row.dataset.uri as AllUris});
     }
 
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
-        this.dispatchEvent(new EboplayerEvent<BreadcrumbArgs>(EboplayerEvents.breadCrumbClick, {breadcrumbId: parseInt(btn.dataset.id)}));
+        this.dispatchEboEvent("breadCrumbClick [eboplayer]", {breadcrumbId: parseInt(btn.dataset.id)});
     }
 
 }
