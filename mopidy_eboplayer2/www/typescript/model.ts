@@ -63,7 +63,6 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private view: Views = Views.NowPlaying;
     private albumToViewUri: AlbumUri;
     // private albumCache: Set<LibraryItem> = new Map();
-    private currentImage: string;
 
     constructor() {
         super();
@@ -293,12 +292,5 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
     }
     getAlbumToView = () => this.albumToViewUri;
-
-    setCurrentImage(uri: string) {
-        this.currentImage = uri;
-        this.dispatchEboEvent("currentImageSet.eboplayer", {});
-    }
-
-    getCurrentImage = () => this.currentImage;
 
 }

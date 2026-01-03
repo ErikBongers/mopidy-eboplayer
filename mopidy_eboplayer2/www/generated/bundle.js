@@ -747,7 +747,6 @@ var Model = class extends EboEventTargetClass {
 	currentRefs;
 	view = Views.NowPlaying;
 	albumToViewUri;
-	currentImage;
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -928,11 +927,6 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
 	}
 	getAlbumToView = () => this.albumToViewUri;
-	setCurrentImage(uri) {
-		this.currentImage = uri;
-		this.dispatchEboEvent("currentImageSet.eboplayer", {});
-	}
-	getCurrentImage = () => this.currentImage;
 };
 
 //#endregion
