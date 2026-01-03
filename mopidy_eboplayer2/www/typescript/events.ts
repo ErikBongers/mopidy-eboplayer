@@ -1,6 +1,6 @@
 import {AllUris, TrackUri} from "./modelTypes";
 
-export interface EboEventHandlersEventMap extends HTMLElementEventMap {
+export interface EboEventHandlersEventMap {
     "activeStreamLinesChanged.eboplayer"  : VoidArgs,
     "addItemListClicked.eboplayer"        : GuiSourceArgs,
     "replaceItemListClicked.eboplayer"    : GuiSourceArgs,
