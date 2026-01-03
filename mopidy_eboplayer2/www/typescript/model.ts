@@ -240,6 +240,10 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.trackList = trackList;
         this.dispatchEboEvent("trackListChanged.eboplayer", {});
     }
+    addToTrackList(trackList: TlTrack[]) {
+        this.trackList.push(...trackList);
+        this.dispatchEboEvent("trackListChanged.eboplayer", {});
+    }
     getTrackList = () => this.trackList;
 
     //Doesn't overwrite

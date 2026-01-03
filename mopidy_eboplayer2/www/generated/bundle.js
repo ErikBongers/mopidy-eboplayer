@@ -893,6 +893,10 @@ var Model = class extends EboEventTargetClass {
 		this.trackList = trackList;
 		this.dispatchEboEvent("trackListChanged.eboplayer", {});
 	}
+	addToTrackList(trackList) {
+		this.trackList.push(...trackList);
+		this.dispatchEboEvent("trackListChanged.eboplayer", {});
+	}
 	getTrackList = () => this.trackList;
 	addToLibraryCache(uri, item) {
 		if (!this.libraryCache.has(uri)) this.libraryCache.set(uri, item);
@@ -1326,16 +1330,6 @@ function quadratic100(x) {
 function inverseQuadratic100(y) {
 	let x = Math.floor(Math.sqrt(y * 100));
 	return stretchLeft(x, 5, 100);
-}
-function numberedDictToArray(dict, converter) {
-	let length = dict.length;
-	let array = [];
-	for (let index = 0; index < length; index++) {
-		let line = dict[index.toString()];
-		array.push(line);
-	}
-	if (!converter) return array;
-	return array.map(converter);
 }
 function getHostAndPort() {
 	let hostDefs = getHostAndPortDefs();
@@ -3940,9 +3934,8 @@ var PlayController = class {
 	}
 	async add(uris) {
 		let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
-		let trackList = numberedDictToArray(tracks);
-		this.model.setTrackList(trackList);
-		return trackList;
+		this.model.addToTrackList(tracks);
+		return tracks;
 	}
 };
 
@@ -3991,11 +3984,10 @@ var MopidyProxy = class {
 		return await this.commands.core.tracklist.getTlTracks();
 	}
 	async fetchHistory() {
-		let historyObject = await this.commands.core.history.getHistory();
-		let historyLines = numberedDictToArray(historyObject, (line) => {
+		let historyLines = (await this.commands.core.history.getHistory()).map((line) => {
 			return {
-				timestamp: line["0"],
-				ref: line["1"]
+				timestamp: line[0],
+				ref: line[1]
 			};
 		});
 		let foundStreams = /* @__PURE__ */ new Set();

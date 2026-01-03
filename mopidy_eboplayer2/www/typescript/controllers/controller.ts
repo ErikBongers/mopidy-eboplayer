@@ -332,7 +332,7 @@ export class Controller extends Commands implements DataRequester{
         return albums;
     }
 
-    private async fetchAlbums(albumUris: string[]): Promise<AlbumModel[]> {
+    private async fetchAlbums(albumUris: AlbumUri[]): Promise<AlbumModel[]> {
         let dict = await this.mopidyProxy.lookup(albumUris);
         let albumModelsPending = Object.keys(dict).map(async albumUri => {
             let trackList = dict[albumUri] as models.Track[];

@@ -21,18 +21,6 @@ export function cubic100(x: number) {
     return (x * x * x) / 10000;
 }
 
-export function numberedDictToArray<T>(dict: models.Dict<T>, converter?: (object: any) => T): T[] {
-    let length = dict.length;
-    let array: any[] = [];
-    for (let index = 0; index < length; index++) {
-        let line = dict[index.toString()];
-        array.push(line);
-    }
-    if (!converter)
-        return array;
-    return array.map(converter);
-}
-
 export function getHostAndPort() {
     let hostDefs = getHostAndPortDefs();
     return hostDefs.altHost ?? hostDefs.host;

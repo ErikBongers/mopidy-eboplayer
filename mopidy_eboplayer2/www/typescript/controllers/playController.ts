@@ -1,9 +1,7 @@
 import {Model} from "../model";
 import {MopidyProxy} from "../proxies/mopidyProxy";
-import {numberedDictToArray} from "../global";
 import models, {TlId} from "../../js/mopidy";
-import {AllUris, PlayState} from "../modelTypes";
-import TlTrack = models.TlTrack;
+import {AllUris} from "../modelTypes";
 
 export class PlayController {
     protected model: Model;
@@ -30,9 +28,8 @@ export class PlayController {
     }
 
     async add(uris: AllUris[]) {
-        let tracks = await this.mopidyProxy.addTracksToTracklist(uris) as models.Dict<TlTrack>;
-        let trackList = numberedDictToArray(tracks);
-        this.model.setTrackList(trackList);
-        return trackList;
+        let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
+        this.model.addToTrackList(tracks);
+        return tracks;
     }
 }

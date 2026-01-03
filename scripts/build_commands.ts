@@ -67,6 +67,10 @@ import models, {core, Mopidy} from "../js/mopidy";
 import TlTrack = models.TlTrack;
 import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
+import Track = models.Track;
+import {SearchResult} from "./refs";
+import Ref = models.Ref;
+import {AllUris, LibraryDict} from "./modelTypes";
 
 export class Commands {
     protected mopidy: Mopidy;
@@ -80,8 +84,8 @@ export class Commands {
             writeLine(`this.core.${key}.commands = this;`,8);
     });
 
-    writeLine(`
-    }
+    writeLine(
+ `    }
     
     send(method: string, params?: Object) {
         if(params)
@@ -123,6 +127,35 @@ function writeComments(funcDef: FuncDef, indent: number) {
     });
 }
 
+function extractReturnType(funcDef: FuncDef) {
+    let rxReturnType = /\s*:rtype:(.*)/gm;
+    let typeLine = rxReturnType.exec(funcDef.description)?.[1] ?? "";
+    if (typeLine) {
+        if(typeLine.includes("{uri: list of :class:`mopidy.models.Track`}"))
+            return `Promise<LibraryDict>`;
+        let optional = typeLine.includes(" or :class:`None`");
+        let rxListOf = /\s*list\s+of\s+(.*)/gm;
+        let listOf = rxListOf.exec(typeLine)?.[1] ?? "";
+        listOf = stripOrNoneAndModuleName(listOf);
+        if (listOf) {
+            let rxClass = new RegExp("^:class:`(.*?)`", "gm");
+            let classType = rxClass.exec(listOf)?.[1] ?? "";
+            if (classType) {
+                if(classType == "Ref")
+                    classType = "Ref<AllUris>";
+                return `Promise<${classType}[]>`;
+            }
+            let rxString = /^\s*(string)(?=\s|$)/gm;
+            let stringType = rxString.exec(listOf)?.[1] ?? "";
+            if (stringType) {
+                return `Promise<${stringType}[]>`;
+            }
+            console.log(`Todo: Unknown returntype: "${listOf}"`);
+        }
+    }
+    return "Promise<any>";
+}
+
 function writeFunction(funcDef: FuncDef, indent: number) {
     if(includeComments)
         writeComments(funcDef, indent);
@@ -134,9 +167,11 @@ function writeFunction(funcDef: FuncDef, indent: number) {
     if(funcDef.params.length) {
         paramsObject = `, {${funcDef.params.map(p => p.name).join(", ")}}`;
     }
-    
-    writeLine(`) {`,0);
-    writeLine(`return this.commands.send("${funcDef.key}"${paramsObject});`, indent+4);
+
+    // get return type from description.
+    let returnType = extractReturnType(funcDef);
+    writeLine(`): ${returnType} {`,0);
+    writeLine(`return this.commands.send("${funcDef.key}"${paramsObject}) as ${returnType};`, indent+4);
     writeLine("},", indent);
 }
 
@@ -184,6 +219,11 @@ type Result<T, E> = { success: true, value: T } | { success: false, error: E };
 function Success<T>(value: T): Result<T, never> { return { success: true, value }; }
 function Failure<E>(error: E): Result<never, E> { return { success: false, error }; }
 
+function stripOrNoneAndModuleName(type: string) {
+    type = type.replace(" or :class:`None`", "");
+    return type.replace("mopidy.models.", "");
+}
+
 function findParamTypeInDescription(funcDef: FuncDef, param: Param): Result<string, undefined> {
     let result = findTypeExceptions(funcDef, param);
     if(result.success)
@@ -195,8 +235,7 @@ function findParamTypeInDescription(funcDef: FuncDef, param: Param): Result<stri
     let type = "";
     if (paramLine) {
         type = paramLine.replace(`:type ${param.name}: `, "");
-        type = type.replace(" or :class:`None`", "");
-        type = type.replace("mopidy.models.", "");
+        type = stripOrNoneAndModuleName(type);
         let rxClass = new RegExp(":class:`(.*?)`", "gm");
         type = rxClass.exec(type)?.[1] ?? type;
     } else {
