@@ -248,26 +248,37 @@ export class MainView extends View {
 
     private async onSaveClicked(detail: SaveUriArgs) {
         if (detail.source == "albumView") {
-            // saving album to playlist. Ask for a name.
-            showDialog(async (dialog: HTMLDialogElement) => {
+            let dialogContent = `
+                <label for="playListName">Name</label>
+                <input type="text" id="playListName">
+            `;
+            showDialog(dialogContent, "Save", (dialog) => {
                 let name = dialog.querySelector<HTMLInputElement>("#playListName").value;
-                let playlist = await getState().getController().createPlaylist(name);
-                //todo: save playlist items as separate tracks or just the album uri?
-                // let's try the album uri immediately, but not though mopidy, as this only knows playlists with tracks.
-                let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
-                console_yellow(res);
-                return true;
-            })
+                return this.saveAlbumAsPlaylist(name, detail);
+            });
         }
+    }
+
+    async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
+        let playlist = await getState().getController().createPlaylist(name);
+        let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
+        console_yellow(res);
+        return true;
     }
 }
 
-function showDialog(callback: (dialog: HTMLDialogElement) => boolean | Promise<boolean>) {
+function showDialog(contentHtml: string, okButtonText: string, callback: (dialog: HTMLDialogElement) => boolean | Promise<boolean>) {
     let dialog = document.getElementById("dialog") as HTMLDialogElement;
     let btnOk = dialog.querySelector('#dialogOkBtn') as HTMLButtonElement;
+    let btnCancel = dialog.querySelector('#dialogCancelBtn') as HTMLButtonElement;
+    dialog.querySelector('#content').innerHTML = contentHtml;
+    btnOk.textContent = okButtonText;
     btnOk.addEventListener('click', async () => {
         if(callback(dialog))
             dialog.close();
     });
+    btnCancel.addEventListener('click', () => {
+        dialog.close();
+    })
     dialog.showModal();
 }

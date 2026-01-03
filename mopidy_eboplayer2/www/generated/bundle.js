@@ -2947,19 +2947,33 @@ var MainView = class extends View {
 		}
 	}
 	async onSaveClicked(detail) {
-		if (detail.source == "albumView") showDialog(async (dialog) => {
+		if (detail.source == "albumView") showDialog(`
+                <label for="playListName">Name</label>
+                <input type="text" id="playListName">
+            `, "Save", (dialog) => {
 			let name = dialog.querySelector("#playListName").value;
-			let playlist = await playerState_default().getController().createPlaylist(name);
-			let res = await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
-			console_yellow(res);
-			return true;
+			return this.saveAlbumAsPlaylist(name, detail);
 		});
 	}
+	async saveAlbumAsPlaylist(name, detail) {
+		debugger;
+		let playlist = await playerState_default().getController().createPlaylist(name);
+		let res = await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
+		console_yellow(res);
+		return true;
+	}
 };
-function showDialog(callback) {
+function showDialog(contentHtml, okButtonText, callback) {
 	let dialog = document.getElementById("dialog");
-	dialog.querySelector("#dialogOkBtn").addEventListener("click", async () => {
+	let btnOk = dialog.querySelector("#dialogOkBtn");
+	let btnCancel = dialog.querySelector("#dialogCancelBtn");
+	dialog.querySelector("#content").innerHTML = contentHtml;
+	btnOk.textContent = okButtonText;
+	btnOk.addEventListener("click", async () => {
 		if (callback(dialog)) dialog.close();
+	});
+	btnCancel.addEventListener("click", () => {
+		dialog.close();
 	});
 	dialog.showModal();
 }
