@@ -1,6 +1,6 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, TrackUri, Views} from "../modelTypes";
+import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, PlaylistUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
@@ -249,7 +249,25 @@ export class MainView extends View {
     private async onSaveClicked(detail: SaveUriArgs) {
         if (detail.source == "albumView") {
             // saving album to playlist. Ask for a name.
+            showDialog(async (dialog: HTMLDialogElement) => {
+                let name = dialog.querySelector<HTMLInputElement>("#playListName").value;
+                let playlist = await getState().getController().createPlaylist(name);
+                //todo: save playlist items as separate tracks or just the album uri?
+                // let's try the album uri immediately, but not though mopidy, as this only knows playlists with tracks.
+                let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
+                console_yellow(res);
+                return true;
+            })
         }
     }
 }
 
+function showDialog(callback: (dialog: HTMLDialogElement) => boolean | Promise<boolean>) {
+    let dialog = document.getElementById("dialog") as HTMLDialogElement;
+    let btnOk = dialog.querySelector('#dialogOkBtn') as HTMLButtonElement;
+    btnOk.addEventListener('click', async () => {
+        if(callback(dialog))
+            dialog.close();
+    });
+    dialog.showModal();
+}

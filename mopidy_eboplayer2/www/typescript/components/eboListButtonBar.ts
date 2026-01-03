@@ -5,10 +5,11 @@ import {AllUris} from "../modelTypes";
 export class EboListButtonBar extends EboComponent {
     static override readonly tagName=  "ebo-list-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["show_add_btn", "show_play_btn", "list_source"];
+    static observedAttributes = ["show_add_btn", "show_play_btn", "list_source", "uri"];
     show_add_btn: boolean;
     show_play_btn: boolean;
     list_source: GuiSource;
+    uri: string;
     static styleText = `
         <style>
             #buttons {
@@ -42,6 +43,9 @@ export class EboListButtonBar extends EboComponent {
             case "list_source":
                 this.list_source = newValue as GuiSource;
                 break;
+            case "uri":
+                this[name] = newValue;
+                break;
         }
         this.requestRender();
         }
@@ -60,7 +64,7 @@ export class EboListButtonBar extends EboComponent {
         //     this.dispatchEboEvent("editClicked.eboplayer", {source: this.list_source});
         // });
         this.addShadowEventListener("btnSave", "click", (ev) => {
-            this.dispatchEboEvent("saveClicked.eboplayer", {source: this.list_source, uri: this.dataset.uri as AllUris});
+            this.dispatchEboEvent("saveClicked.eboplayer", {source: this.list_source, uri: this.uri as AllUris});
         });
         this.requestUpdate();
     }

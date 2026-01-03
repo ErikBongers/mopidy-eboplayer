@@ -4,6 +4,7 @@ import {AllUris, HistoryLine, HistoryRef, ImageLookup, PlaylistUri} from "../mod
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
+import Playlist = models.Playlist;
 
 export class MopidyProxy {
     private commands: Commands;
@@ -136,5 +137,13 @@ export class MopidyProxy {
 
     async fetchPlayState() {
         return await this.commands.core.playback.getState() as string;
+    }
+
+    createPlaylist(name: string) {
+        return this.commands.core.playlists.create(name, "eboback");
+    }
+
+    savePlaylist(playlist: Playlist) {
+        return this.commands.core.playlists.save(playlist);
     }
 }

@@ -165,6 +165,10 @@ export class EboBigAlbumComp extends EboComponent {
             img.src = this.img;
         } else
             img.style.visibility = "hidden";
+        if(this.albumInfo) {
+            let buttonBar = shadow.querySelector("ebo-list-button-bar") as HTMLElement;
+            buttonBar.setAttribute("uri", this.albumInfo.album.albumInfo.uri);
+        }
     }
 
     override render(shadow:ShadowRoot) {

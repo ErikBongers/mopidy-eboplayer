@@ -550,5 +550,13 @@ export class Controller extends Commands implements DataRequester{
         let results = getState()?.getModel()?.getCurrentSearchResults();
         let trackList = await this.player.add(results.refs.map(r => r.ref.ref.uri));
     }
+
+    async createPlaylist(name: string) {
+        return this.mopidyProxy.createPlaylist(name)
+    }
+
+    async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {
+        return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
+    }
 }
 

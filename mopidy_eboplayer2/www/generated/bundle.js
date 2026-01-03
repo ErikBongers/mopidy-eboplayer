@@ -1395,6 +1395,18 @@ var WebProxy = class {
 		if (text) return JSON.parse(text);
 		return null;
 	}
+	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
+		let url = new URL(`http://${getHostAndPort()}/eboback/data/add_ref_to_playlist`);
+		let data = new FormData();
+		data.append("playlist_uri", playlistUri);
+		data.append("item_uri", itemUri);
+		data.append("ref_type", refType);
+		data.append("sequence", sequence.toString());
+		return await (await fetch(url, {
+			method: "POST",
+			body: data
+		})).json();
+	}
 };
 
 //#endregion
@@ -1829,6 +1841,12 @@ var Controller = class Controller extends Commands {
 	async addCurrentSearchResultsToPlayer() {
 		let results = playerState_default()?.getModel()?.getCurrentSearchResults();
 		await this.player.add(results.refs.map((r) => r.ref.ref.uri));
+	}
+	async createPlaylist(name) {
+		return this.mopidyProxy.createPlaylist(name);
+	}
+	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
+		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
 	}
 };
 
@@ -2918,9 +2936,22 @@ var MainView = class extends View {
 		}
 	}
 	async onSaveClicked(detail) {
-		if (detail.source == "albumView") {}
+		if (detail.source == "albumView") showDialog(async (dialog) => {
+			let name = dialog.querySelector("#playListName").value;
+			let playlist = await playerState_default().getController().createPlaylist(name);
+			let res = await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
+			console_yellow(res);
+			return true;
+		});
 	}
 };
+function showDialog(callback) {
+	let dialog = document.getElementById("dialog");
+	dialog.querySelector("#dialogOkBtn").addEventListener("click", async () => {
+		if (callback(dialog)) dialog.close();
+	});
+	dialog.showModal();
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
@@ -3569,6 +3600,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			img.style.visibility = "";
 			img.src = this.img;
 		} else img.style.visibility = "hidden";
+		if (this.albumInfo) shadow.querySelector("ebo-list-button-bar").setAttribute("uri", this.albumInfo.album.albumInfo.uri);
 	}
 	render(shadow) {}
 	onActiveTrackChanged() {
@@ -3852,11 +3884,13 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	static observedAttributes = [
 		"show_add_btn",
 		"show_play_btn",
-		"list_source"
+		"list_source",
+		"uri"
 	];
 	show_add_btn;
 	show_play_btn;
 	list_source;
+	uri;
 	static styleText = `
         <style>
             #buttons {
@@ -3887,6 +3921,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			case "list_source":
 				this.list_source = newValue;
 				break;
+			case "uri":
+				this[name] = newValue;
+				break;
 		}
 		this.requestRender();
 	}
@@ -3903,7 +3940,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		this.addShadowEventListener("btnSave", "click", (ev) => {
 			this.dispatchEboEvent("saveClicked.eboplayer", {
 				source: this.list_source,
-				uri: this.dataset.uri
+				uri: this.uri
 			});
 		});
 		this.requestUpdate();
@@ -4039,6 +4076,12 @@ var MopidyProxy = class {
 	}
 	async fetchPlayState() {
 		return await this.commands.core.playback.getState();
+	}
+	createPlaylist(name) {
+		return this.commands.core.playlists.create(name, "eboback");
+	}
+	savePlaylist(playlist) {
+		return this.commands.core.playlists.save(playlist);
 	}
 };
 
