@@ -14,11 +14,11 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
 
     override bind() {
         super.bind();
-        getState().getModel().addEventListener("currentTrackChanged", async () => {
-            this.onCurrentOrSelectedChanged();
+        getState().getModel().addEboEventListener("currentTrackChanged [eboplayer]", async () => {
+            await this.onCurrentOrSelectedChanged();
         });
-        getState().getModel().addEventListener("selectedTrackChanged", async () => {
-            this.onCurrentOrSelectedChanged();
+        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
+            await this.onCurrentOrSelectedChanged();
         });
         getState().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", (ev) => {
             this.onStreamLinesChanged();

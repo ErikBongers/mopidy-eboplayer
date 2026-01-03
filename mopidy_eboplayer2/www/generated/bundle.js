@@ -2509,11 +2509,11 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	}
 	bind() {
 		super.bind();
-		playerState_default().getModel().addEventListener("currentTrackChanged", async () => {
-			this.onCurrentOrSelectedChanged();
+		playerState_default().getModel().addEboEventListener("currentTrackChanged [eboplayer]", async () => {
+			await this.onCurrentOrSelectedChanged();
 		});
-		playerState_default().getModel().addEventListener("selectedTrackChanged", async () => {
-			this.onCurrentOrSelectedChanged();
+		playerState_default().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
+			await this.onCurrentOrSelectedChanged();
 		});
 		playerState_default().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", (ev) => {
 			this.onStreamLinesChanged();
@@ -2715,7 +2715,7 @@ var MainView = class extends View {
 			this.onBrowseButtonClick();
 		});
 		let browseComp = document.getElementById("browseView");
-		browseComp.addEventListener("browseFilterChanged", () => {
+		browseComp.addEboEventListener("browseFilterChanged [eboplayer]", () => {
 			playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
 		});
 		browseComp.addEboEventListener("breadCrumbClick [eboplayer]", (ev) => {

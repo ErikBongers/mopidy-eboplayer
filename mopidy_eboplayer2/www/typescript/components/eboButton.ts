@@ -5,7 +5,7 @@ export class PressedChangeEvent extends Event {
     private _pressed: boolean;
 
     constructor(pressed: boolean) {
-        super("pressedChange");
+        super("pressedChange"); //todo: make ebo event.
         this._pressed = pressed;
     }
 
