@@ -1,4 +1,11 @@
+* create a (generic) dialog with a slot content.
+
 * Start playlist creation by allowing to safe a browse filter as a playlist.
+  > popup:
+    - save tracks as fixed playlist
+      > prompt for name.
+    - save filter as generic playlist.
+      > got prefilled playlist editor.
 * create table playlist_filters
   - fields: search_text, album, track,..., fk_playlist.
 * use the existing playlist table

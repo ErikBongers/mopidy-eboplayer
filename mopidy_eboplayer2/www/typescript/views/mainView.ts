@@ -4,7 +4,7 @@ import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOf
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
-import {addEboEventListener, GuiSourceArgs} from "../events";
+import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 
 export class MainView extends View {
     bind() {
@@ -64,6 +64,9 @@ export class MainView extends View {
         });
         albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
             await this.onAddTrackClicked(ev.detail.uri);
+        });
+        albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+            await this.onSaveClicked(ev.detail);
         });
     }
 
@@ -240,6 +243,12 @@ export class MainView extends View {
             let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
             let text = await res.text();
             console_yellow(text);
+        }
+    }
+
+    private async onSaveClicked(detail: SaveUriArgs) {
+        if (detail.source == "albumView") {
+            // saving album to playlist. Ask for a name.
         }
     }
 }

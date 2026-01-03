@@ -2761,6 +2761,9 @@ var MainView = class extends View {
 		albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
 			await this.onAddTrackClicked(ev.detail.uri);
 		});
+		albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+			await this.onSaveClicked(ev.detail);
+		});
 	}
 	onRefsFiltered() {
 		let browseComp = document.getElementById("browseView");
@@ -2919,6 +2922,9 @@ var MainView = class extends View {
 			let text = await (await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri)).text();
 			console_yellow(text);
 		}
+	}
+	async onSaveClicked(detail) {
+		if (detail.source == "albumView") {}
 	}
 };
 
@@ -3510,6 +3516,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 }
             </style>
         `;
+	static list_source = "albumView";
 	static htmlText = `
             <div id="wrapper" class="front">
                 <div id="top">
@@ -3523,7 +3530,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar></ebo-list-button-bar>
+                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
@@ -3871,6 +3878,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
             <button id="btnAdd" class="roundBorder"><i class="fa fa-plus"></i></button>
             <button id="btnReplace" class="roundBorder">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
+            <button id="btnSave" class="roundBorder"><i class="fa fa-save"></i></button>
         </div>                   
     `;
 	constructor() {
@@ -3897,6 +3905,12 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		});
 		this.addShadowEventListener("btnReplace", "click", (ev) => {
 			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
+		});
+		this.addShadowEventListener("btnSave", "click", (ev) => {
+			this.dispatchEboEvent("saveClicked.eboplayer", {
+				source: this.list_source,
+				uri: this.dataset.uri
+			});
 		});
 		this.requestUpdate();
 	}

@@ -31,6 +31,8 @@ export interface EboEventHandlersEventMap {
     "trackListChanged.eboplayer"          : VoidArgs,
     "viewChanged.eboplayer"               : VoidArgs,
     "volumeChanged.eboplayer"             : VoidArgs,
+    "editClicked.eboplayer"               : VoidArgs,
+    "saveClicked.eboplayer"               : SaveUriArgs,
 }
 
 export default interface EboEventTarget {
@@ -66,6 +68,11 @@ export interface UriArgs extends EboEventArgs {
 
 export interface TrackUriArgs extends EboEventArgs {
     uri: TrackUri
+}
+
+export interface SaveUriArgs extends EboEventArgs {
+    source: GuiSource,
+    uri: AllUris
 }
 
 export interface BreadcrumbArgs extends EboEventArgs {

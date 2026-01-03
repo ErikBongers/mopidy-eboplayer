@@ -1,5 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {GuiSource} from "../events";
+import {AllUris} from "../modelTypes";
 
 export class EboListButtonBar extends EboComponent {
     static override readonly tagName=  "ebo-list-button-bar";
@@ -23,6 +24,7 @@ export class EboListButtonBar extends EboComponent {
             <button id="btnAdd" class="roundBorder"><i class="fa fa-plus"></i></button>
             <button id="btnReplace" class="roundBorder">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
+            <button id="btnSave" class="roundBorder"><i class="fa fa-save"></i></button>
         </div>                   
     `;
 
@@ -53,6 +55,12 @@ export class EboListButtonBar extends EboComponent {
         });
         this.addShadowEventListener("btnReplace", "click", (ev) => {
             this.dispatchEboEvent("replaceItemListClicked.eboplayer", {source: this.list_source});
+        });
+        // this.addShadowEventListener("btnEdit", "click", (ev) => {
+        //     this.dispatchEboEvent("editClicked.eboplayer", {source: this.list_source});
+        // });
+        this.addShadowEventListener("btnSave", "click", (ev) => {
+            this.dispatchEboEvent("saveClicked.eboplayer", {source: this.list_source, uri: this.dataset.uri as AllUris});
         });
         this.requestUpdate();
     }

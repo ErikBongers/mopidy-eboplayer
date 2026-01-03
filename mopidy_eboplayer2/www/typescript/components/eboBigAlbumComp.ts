@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {GuiSource} from "../events";
 
 
 export class EboBigAlbumComp extends EboComponent {
@@ -99,6 +100,7 @@ export class EboBigAlbumComp extends EboComponent {
             </style>
         `;
 
+    private static readonly list_source: GuiSource = "albumView";
     // noinspection HtmlUnknownTarget
     static htmlText = `
             <div id="wrapper" class="front">
@@ -113,7 +115,7 @@ export class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar></ebo-list-button-bar>
+                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
