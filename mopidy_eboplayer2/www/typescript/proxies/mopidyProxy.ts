@@ -34,7 +34,7 @@ export class MopidyProxy {
     }
 
     async sendVolume(value: number) {
-        await this.commands.core.mixer.setVolume(value);
+        await this.commands.core.mixer.setVolume(Math.round(value));
     }
 
     async sendStop() {

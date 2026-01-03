@@ -3960,7 +3960,7 @@ var MopidyProxy = class {
 		return await this.commands.core.library.browse(uri);
 	}
 	async sendVolume(value) {
-		await this.commands.core.mixer.setVolume(value);
+		await this.commands.core.mixer.setVolume(Math.round(value));
 	}
 	async sendStop() {
 		return this.commands.core.playback.stop();
