@@ -307,8 +307,8 @@ export class Commands {
                 //:param time_position: time position in milliseconds
                 //:type time_position: int
                 //:rtype: :class:`True` if successful, else :class:`False`
-            seek(time_position: number): Promise<any> {
-                return this.commands.send("core.playback.seek", {time_position}) as Promise<any>;
+            seek(time_position: number): Promise<boolean> {
+                return this.commands.send("core.playback.seek", {time_position}) as Promise<boolean>;
             },
                 //Set the playback state.
                 //
@@ -362,8 +362,8 @@ export class Commands {
                 //:param uri_scheme: use the backend matching the URI scheme
                 //:type uri_scheme: string
                 //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-            create(name: string, uri_scheme: string): Promise<any> {
-                return this.commands.send("core.playlists.create", {name, uri_scheme}) as Promise<any>;
+            create(name: string, uri_scheme: string): Promise<Playlist> {
+                return this.commands.send("core.playlists.create", {name, uri_scheme}) as Promise<Playlist>;
             },
                 //Delete playlist identified by the URI.
                 //
@@ -378,8 +378,8 @@ export class Commands {
                 //
                 //.. versionchanged:: 2.2
                 //    Return type defined.
-            delete(uri: string): Promise<any> {
-                return this.commands.send("core.playlists.delete", {uri}) as Promise<any>;
+            delete(uri: string): Promise<boolean> {
+                return this.commands.send("core.playlists.delete", {uri}) as Promise<boolean>;
             },
                 //Get the items in a playlist specified by ``uri``.
                 //
@@ -409,8 +409,8 @@ export class Commands {
                 //:param uri: playlist URI
                 //:type uri: string
                 //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-            lookup(uri: string): Promise<any> {
-                return this.commands.send("core.playlists.lookup", {uri}) as Promise<any>;
+            lookup(uri: string): Promise<Playlist> {
+                return this.commands.send("core.playlists.lookup", {uri}) as Promise<Playlist>;
             },
                 //Refresh the playlists in :attr:`playlists`.
                 //
@@ -443,8 +443,8 @@ export class Commands {
                 //:param playlist: the playlist
                 //:type playlist: :class:`mopidy.models.Playlist`
                 //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-            save(playlist: Playlist): Promise<any> {
-                return this.commands.send("core.playlists.save", {playlist}) as Promise<any>;
+            save(playlist: Playlist): Promise<Playlist> {
+                return this.commands.send("core.playlists.save", {playlist}) as Promise<Playlist>;
             },
         },
         tracklist: {
@@ -493,8 +493,8 @@ export class Commands {
                 //:param tl_track: the reference track
                 //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
                 //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-            eotTrack(tl_track?: TlTrack): Promise<any> {
-                return this.commands.send("core.tracklist.eot_track", {tl_track}) as Promise<any>;
+            eotTrack(tl_track?: TlTrack): Promise<TlTrack> {
+                return this.commands.send("core.tracklist.eot_track", {tl_track}) as Promise<TlTrack>;
             },
                 //Filter the tracklist by the given criteria.
                 //
@@ -538,8 +538,8 @@ export class Commands {
                 //:rtype: :class:`int` or :class:`None`
                 //
                 //.. versionadded:: 1.1
-            getEotTlid(): Promise<any> {
-                return this.commands.send("core.tracklist.get_eot_tlid") as Promise<any>;
+            getEotTlid(): Promise<number> {
+                return this.commands.send("core.tracklist.get_eot_tlid") as Promise<number>;
             },
                 //Get length of the tracklist.
             getLength(): Promise<any> {
@@ -556,8 +556,8 @@ export class Commands {
                 //:rtype: :class:`int` or :class:`None`
                 //
                 //.. versionadded:: 1.1
-            getNextTlid(): Promise<any> {
-                return this.commands.send("core.tracklist.get_next_tlid") as Promise<any>;
+            getNextTlid(): Promise<number> {
+                return this.commands.send("core.tracklist.get_next_tlid") as Promise<number>;
             },
                 //Returns the TLID of the track that will be played if calling
                 //:meth:`mopidy.core.PlaybackController.previous()`.
@@ -569,8 +569,8 @@ export class Commands {
                 //:rtype: :class:`int` or :class:`None`
                 //
                 //.. versionadded:: 1.1
-            getPreviousTlid(): Promise<any> {
-                return this.commands.send("core.tracklist.get_previous_tlid") as Promise<any>;
+            getPreviousTlid(): Promise<number> {
+                return this.commands.send("core.tracklist.get_previous_tlid") as Promise<number>;
             },
                 //Get random mode.
                 //
@@ -627,8 +627,8 @@ export class Commands {
                 //
                 //.. versionadded:: 1.1
                 //    The *tlid* parameter
-            index(tl_track?: TlTrack, tlid?: number): Promise<any> {
-                return this.commands.send("core.tracklist.index", {tl_track, tlid}) as Promise<any>;
+            index(tl_track?: TlTrack, tlid?: number): Promise<number> {
+                return this.commands.send("core.tracklist.index", {tl_track, tlid}) as Promise<number>;
             },
                 //Move the tracks in the slice ``[start:end]`` to ``to_position``.
                 //
@@ -657,8 +657,8 @@ export class Commands {
                 //:param tl_track: the reference track
                 //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
                 //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-            nextTrack(tl_track?: TlTrack): Promise<any> {
-                return this.commands.send("core.tracklist.next_track", {tl_track}) as Promise<any>;
+            nextTrack(tl_track?: TlTrack): Promise<TlTrack> {
+                return this.commands.send("core.tracklist.next_track", {tl_track}) as Promise<TlTrack>;
             },
                 //Returns the track that will be played if calling
                 //:meth:`mopidy.core.PlaybackController.previous()`.
@@ -673,8 +673,8 @@ export class Commands {
                 //:param tl_track: the reference track
                 //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
                 //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-            previousTrack(tl_track?: TlTrack): Promise<any> {
-                return this.commands.send("core.tracklist.previous_track", {tl_track}) as Promise<any>;
+            previousTrack(tl_track?: TlTrack): Promise<TlTrack> {
+                return this.commands.send("core.tracklist.previous_track", {tl_track}) as Promise<TlTrack>;
             },
                 //Remove the matching tracks from the tracklist.
                 //
@@ -746,8 +746,8 @@ export class Commands {
                 //:param end: position after last track to include in slice
                 //:type end: int
                 //:rtype: :class:`mopidy.models.TlTrack`
-            slice(start: number, end: number): Promise<any> {
-                return this.commands.send("core.tracklist.slice", {start, end}) as Promise<any>;
+            slice(start: number, end: number): Promise<TlTrack> {
+                return this.commands.send("core.tracklist.slice", {start, end}) as Promise<TlTrack>;
             },
         },
     }

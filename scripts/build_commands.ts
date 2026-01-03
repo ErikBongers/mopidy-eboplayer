@@ -138,24 +138,46 @@ function extractReturnType(funcDef: FuncDef) {
         let listOf = rxListOf.exec(typeLine)?.[1] ?? "";
         listOf = stripOrNoneAndModuleName(listOf);
         if (listOf) {
-            let rxClass = new RegExp("^:class:`(.*?)`", "gm");
-            let classType = rxClass.exec(listOf)?.[1] ?? "";
-            if (classType) {
-                if(classType == "Ref")
-                    classType = "Ref<AllUris>";
-                return `Promise<${classType}[]>`;
-            }
-            let rxString = /^\s*(string)(?=\s|$)/gm;
-            let stringType = rxString.exec(listOf)?.[1] ?? "";
-            if (stringType) {
-                return `Promise<${stringType}[]>`;
-            }
-            console.log(`Todo: Unknown returntype: "${listOf}"`);
+            let baseType = extractBaseType(listOf);
+            if (baseType)
+                return `Promise<${baseType}[]>`;
+            //Ain't no list.
+            console.log(`Todo: Unknown list returntype: "${listOf}"`);
         }
+        typeLine = stripOrNoneAndModuleName(typeLine);
+        let baseType = extractBaseType(typeLine);
+        if (baseType)
+            return `Promise<${baseType}>`;
+        console.log(`Todo: Unknown returntype: "${typeLine}"`);
     }
     return "Promise<any>";
 }
 
+function extractBaseType(typeLine:string) {
+    let rxClass = /^\s*:class:`(.*?)`/gm;
+    let classType = rxClass.exec(typeLine)?.[1] ?? "";
+    if (classType) {
+        if(classType == "Ref")
+            classType = "Ref<AllUris>";
+        return convertBaseType(classType);
+    }
+    let rxString = /^\s*(string)(?=\s|$)/gm;
+    let stringType = rxString.exec(typeLine)?.[1] ?? "";
+    if (stringType) {
+        return stringType;
+    }
+    return "";
+}
+
+function convertBaseType(baseType: string) {
+    switch (baseType) {
+        case "bool" : return "boolean";
+        case "int" : return "number";
+        case "True" : return "boolean";
+        case "False" : return "boolean";
+        default: return baseType;
+    }
+}
 function writeFunction(funcDef: FuncDef, indent: number) {
     if(includeComments)
         writeComments(funcDef, indent);
