@@ -6,7 +6,7 @@ import {EboPlayerDataType} from "../views/view";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPortDefs, transformTrackDataToModel} from "../global";
+import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
@@ -37,7 +37,7 @@ export class Controller extends Commands implements DataRequester{
         this.model  = model;
         this.player = player;
         this.mopidyProxy = mopdyProxy;
-        this.webProxy = new WebProxy();
+        this.webProxy = new WebProxy(getHostAndPort());
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWebSocketCtrl = eboWebSocketCtrl;
         let portDefs = getHostAndPortDefs();

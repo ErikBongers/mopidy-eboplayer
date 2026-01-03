@@ -1377,26 +1377,37 @@ function assertUnreachable(x) {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
 var WebProxy = class {
-	constructor() {}
+	ebobackBase;
+	eboplayerBase;
+	constructor(hostAndPort) {
+		this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
+		this.eboplayerBase = `http://${hostAndPort}/eboplayer2/`;
+	}
+	playerUrl(relPath) {
+		return new URL(this.eboplayerBase + relPath);
+	}
+	ebobackUrl(relPath) {
+		return new URL(this.ebobackBase + relPath);
+	}
 	async fetchActiveStreamLines(uri) {
-		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
+		let url = this.playerUrl(`stream/activeLines`);
 		url.searchParams.set("uri", uri);
 		return await (await fetch(url)).json();
 	}
 	async fetchAllStreamLines(uri) {
-		let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
+		let url = this.playerUrl(`stream/allLines`);
 		url.searchParams.set("uri", uri);
 		return await (await fetch(url)).json();
 	}
 	async fetchMetaData(albumUri) {
-		let url = new URL(`http://${getHostAndPort()}/eboback/data/get_album_meta`);
+		let url = this.ebobackUrl(`get_album_meta`);
 		url.searchParams.set("uri", albumUri);
 		let text = await (await fetch(url)).text();
 		if (text) return JSON.parse(text);
 		return null;
 	}
 	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
-		let url = new URL(`http://${getHostAndPort()}/eboback/data/add_ref_to_playlist`);
+		let url = this.ebobackUrl(`add_ref_to_playlist`);
 		let data = new FormData();
 		data.append("playlist_uri", playlistUri);
 		data.append("item_uri", itemUri);
@@ -1426,7 +1437,7 @@ var Controller = class Controller extends Commands {
 		this.model = model;
 		this.player = player;
 		this.mopidyProxy = mopdyProxy;
-		this.webProxy = new WebProxy();
+		this.webProxy = new WebProxy(getHostAndPort());
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWebSocketCtrl = eboWebSocketCtrl;
 		let portDefs = getHostAndPortDefs();

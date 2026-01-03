@@ -4,26 +4,37 @@ import {getHostAndPort} from "../global";
 import {AlbumMetaData, AllUris, NoStreamTitles, StreamTitles, TrackUri} from "../modelTypes";
 
 export class WebProxy {
+    private ebobackBase: string;
+    private eboplayerBase: string;
 
-    constructor() {
+    constructor(hostAndPort: string) {
+        this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
+        this.eboplayerBase = `http://${hostAndPort}/eboplayer2/`;
+    }
+
+    playerUrl(relPath: string) {
+        return new URL(this.eboplayerBase+relPath);
+    }
+    ebobackUrl(relPath: string) {
+        return new URL(this.ebobackBase+relPath);
     }
 
     async fetchActiveStreamLines(uri: TrackUri) {
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/activeLines`);
+        let url = this.playerUrl(`stream/activeLines`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as StreamTitles;
     }
 
     async fetchAllStreamLines(uri: string) {
-        let url = new URL(`http://${getHostAndPort()}/eboplayer2/stream/allLines`);
+        let url = this.playerUrl(`stream/allLines`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as string[];
     }
 
     async fetchMetaData(albumUri: string) {
-        let url = new URL(`http://${getHostAndPort()}/eboback/data/get_album_meta`);
+        let url = this.ebobackUrl(`get_album_meta`);
         url.searchParams.set("uri", albumUri);
         let res = await fetch(url);
         let text = await res.text();
@@ -33,7 +44,7 @@ export class WebProxy {
     }
 
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {
-        let url = new URL(`http://${getHostAndPort()}/eboback/data/add_ref_to_playlist`); //todo: put full base in var in constructor or is this too early? Or inject it!!!
+        let url = this.ebobackUrl(`add_ref_to_playlist`); //todo: put full base in var in constructor or is this too early? Or inject it!!!
         //add params to body of post request
         let data = new FormData();
         data.append("playlist_uri", playlistUri);
