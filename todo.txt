@@ -1,3 +1,26 @@
+* Start playlist creation by allowing to safe a browse filter as a playlist.
+* create table playlist_filters
+  - fields: search_text, album, track,..., fk_playlist.
+* use the existing playlist table
+  > when querying a playlist, see if filters are defined and include those results.
+
+
+Playlists
+===========
+1. View
+--------
+* Add edit button to list button bar.
+
+2. Edit
+---------
+* Edit 'live', that is, show the results in real time.
+* allow AND and OR filters.
+
+3. Filter
+----------
+A playlist filter is like a browse filter
+  - search text + type buttons.
+
 * Create view for playlists
    > fetch expanded tracks
    > Similar to album view:
@@ -6,27 +29,6 @@
        > or a set of images behind each other?
        > clicking is browsing?
          > how about going to the album?
-
-* create meta for radio streams
-  > put where?
-    > perhaps create a meta file at the root of a media librart
-      > every root has it's own
-        : root.eboplayer
-      > which has a different structure than the media type.
-        > create a Type for it.
-      > on scan, load the streams in the [Radio...] playlist
-        > root.eboplayer should contain the name of the radio playlist.
-          > or...put in in config of...eboplayer or eboback?
-            > who decides what the playlist name is?
-              > I think the player - this is not backend related.
-                > can a config contain square brackets?
-                  > toml format: check it.
-      > web client should be able to get that root
-        > via http of...player or backend.
-
-* in scan command, check if there's a meta file for an album
-  > first just log it.
-  > then save the fields from the file in the db.
 
 * dblclick on album track > play
 

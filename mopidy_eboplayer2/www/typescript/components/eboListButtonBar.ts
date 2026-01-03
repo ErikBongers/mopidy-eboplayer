@@ -19,9 +19,10 @@ export class EboListButtonBar extends EboComponent {
     `;
     static htmlText = `
         <div id="buttons">
-            <button id="btnPlay" class="roundBorder">Play</button>
-            <button id="btnAdd" class="roundBorder">Add</button>
+            <button id="btnPlay" class="roundBorder"><i class="fa fa-play"></i></button>
+            <button id="btnAdd" class="roundBorder"><i class="fa fa-plus"></i></button>
             <button id="btnReplace" class="roundBorder">Replace</button>
+            <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
         </div>                   
     `;
 
