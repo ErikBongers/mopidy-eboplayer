@@ -45,13 +45,13 @@ export class EboListButtonBar extends EboComponent {
 
     render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
-            this.dispatchEboEvent("playItemListClicked [eboplayer]", {source: this.list_source});
+            this.dispatchEboEvent("playItemListClicked.eboplayer", {source: this.list_source});
         });
         this.addShadowEventListener("btnAdd", "click", (ev) => {
-            this.dispatchEboEvent("addItemListClicked [eboplayer]", {source: this.list_source});
+            this.dispatchEboEvent("addItemListClicked.eboplayer", {source: this.list_source});
         });
         this.addShadowEventListener("btnReplace", "click", (ev) => {
-            this.dispatchEboEvent("replaceItemListClicked [eboplayer]", {source: this.list_source});
+            this.dispatchEboEvent("replaceItemListClicked.eboplayer", {source: this.list_source});
         });
         this.requestUpdate();
     }

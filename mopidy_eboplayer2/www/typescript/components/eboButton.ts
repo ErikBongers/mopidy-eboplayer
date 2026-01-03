@@ -100,7 +100,7 @@ export class EboButton extends EboComponent {
     }
 
     onFilterButtonTimeOut(source: EboButton) {
-        this.dispatchEboEvent("longPress [eboplayer]", {});
+        this.dispatchEboEvent("longPress.eboplayer", {});
     }
 
     private onMultiClick(eboButton: EboButton, clickCount: number) {

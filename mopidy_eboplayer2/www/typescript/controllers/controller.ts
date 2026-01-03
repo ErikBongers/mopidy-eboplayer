@@ -137,7 +137,7 @@ export class Controller extends Commands implements DataRequester{
             let streamTitles: StreamTitles = data.stream_titles;
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
-        this.model.addEboEventListener("playbackStateChanged [eboplayer]", async () => {
+        this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
             await this.updateStreamLines();
         });
     }

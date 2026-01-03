@@ -12,57 +12,57 @@ export class MainView extends View {
             this.onBrowseButtonClick();
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        browseComp.addEboEventListener("browseFilterChanged [eboplayer]", () => {
+        browseComp.addEboEventListener("browseFilterChanged.eboplayer", () => {
             getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
         });
-        browseComp.addEboEventListener("breadCrumbClick [eboplayer]", (ev) => {
+        browseComp.addEboEventListener("breadCrumbClick.eboplayer", (ev) => {
             this.onBreadcrumbClick(ev.detail.breadcrumbId);
         });
-        browseComp.addEboEventListener("browseResultClick [eboplayer]", (ev) => {
+        browseComp.addEboEventListener("browseResultClick.eboplayer", (ev) => {
             this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
         });
-        browseComp.addEboEventListener("browseResultDblClick [eboplayer]", async (ev) => {
+        browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
-        getState().getModel().addEboEventListener("refsFiltered [eboplayer]", () => {
+        getState().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
             this.onRefsFiltered();
         });
-        getState().getModel().addEboEventListener("breadCrumbsChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
             this.onBreadCrumbsChanged();
         });
-        getState().getModel().addEboEventListener("browseFilterChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("browseFilterChanged.eboplayer", () => {
             this.onBrowseFilterChanged();
         });
-        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
+        getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
             await this.onSelectedTrackChanged();
         });
-        getState().getModel().addEboEventListener("trackListChanged [eboplayer]", async () => {
+        getState().getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
             await this.onTrackListChanged();
         });
-        getState().getModel().addEboEventListener("viewChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("viewChanged.eboplayer", () => {
             this.setCurrentView();
         });
-        getState().getModel().addEboEventListener("albumToViewChanged [eboplayer]", async () => {
+        getState().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
             await this.onAlbumToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEventListener("albumClick", async () => {
             this.onAlbumClick();
         });
-        addEboEventListener(document.body, "playItemListClicked [eboplayer]", async (ev) => {
+        addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
-        addEboEventListener(document.body, "addItemListClicked [eboplayer]", async (ev) => {
+        addEboEventListener(document.body, "addItemListClicked.eboplayer", async (ev) => {
             await this.onAddItemListClick(ev.detail);
         });
-        addEboEventListener(document.body, "replaceItemListClicked [eboplayer]", async (ev) => {
+        addEboEventListener(document.body, "replaceItemListClicked.eboplayer", async (ev) => {
             await this.onReplaceItemListClick(ev.detail);
         });
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEboEventListener("playTrackClicked [eboplayer]", async (ev) => {
+        albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
             await this.onPlayTrackClicked(ev.detail.uri);
         });
-        albumComp.addEboEventListener("addTrackClicked [eboplayer]", async (ev) => {
+        albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
             await this.onAddTrackClicked(ev.detail.uri);
         });
     }

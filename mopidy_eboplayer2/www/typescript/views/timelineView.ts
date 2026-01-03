@@ -6,16 +6,16 @@ import {FileTrackModel, HistoryLine, StreamTrackModel, TrackUri} from "../modelT
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
     bind() {
-        getState().getModel().addEboEventListener("historyChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("historyChanged.eboplayer", () => {
             this.rebuildTimeline().then(r => {});
         });
-        getState().getModel().addEboEventListener("trackListChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("trackListChanged.eboplayer", () => {
             this.rebuildTimeline().then(r => {});
         });
-        getState().getModel().addEboEventListener("currentTrackChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("currentTrackChanged.eboplayer", () => {
             this.onCurrentTrackChanged();
         });
-        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", () => {
             this.onSelectedTrackChanged();
         });
     }

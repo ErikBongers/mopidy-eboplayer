@@ -15,40 +15,40 @@ export class ButtonBarView extends View {
     }
 
     bind() {
-        getState().getModel().addEboEventListener("playbackStateChanged [eboplayer]", async () => {
+        getState().getModel().addEboEventListener("playbackStateChanged.eboplayer", async () => {
             await this.onPlaybackStateChanged();
         });
-        getState().getModel().addEboEventListener("currentTrackChanged [eboplayer]", async () => {
+        getState().getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
             await this.onCurrentTrackChanged();
         });
-        getState().getModel().addEboEventListener("selectedTrackChanged [eboplayer]", async () => {
+        getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
             await this.onSelectedTrackChanged();
         });
-        getState().getModel().addEboEventListener("activeStreamLinesChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", () => {
             this.onActiveStreamLinesChanged();
         });
 
         let comp = document.getElementById(this.componentId) as EboButtonBar;
-        comp.addEboEventListener("playPressed [eboplayer]", async () => {
+        comp.addEboEventListener("playPressed.eboplayer", async () => {
             await getState().getController().mopidyProxy.sendPlay();
         });
-        comp.addEboEventListener("stopPressed [eboplayer]", async () => {
+        comp.addEboEventListener("stopPressed.eboplayer", async () => {
             await getState().getController().mopidyProxy.sendStop();
         });
-        comp.addEboEventListener("pausePressed [eboplayer]", async () => {
+        comp.addEboEventListener("pausePressed.eboplayer", async () => {
             await getState().getController().mopidyProxy.sendPause();
         });
-        comp.addEboEventListener("buttonBarAlbumImgClicked [eboplayer]", () => {
+        comp.addEboEventListener("buttonBarAlbumImgClicked.eboplayer", () => {
             this.onButtonBarImgClicked();
         });
-        getState().getModel().addEboEventListener("volumeChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("volumeChanged.eboplayer", () => {
             this.onVolumeChanged();
         });
-        comp.addEboEventListener("changingVolume [eboplayer]", async (ev) => {
+        comp.addEboEventListener("changingVolume.eboplayer", async (ev) => {
             let value = ev.detail.volume;
             await getState().getController().mopidyProxy.sendVolume(value);
         });
-        getState().getModel().addEboEventListener("viewChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("viewChanged.eboplayer", () => {
             this.showHideInfo();
         });
     }

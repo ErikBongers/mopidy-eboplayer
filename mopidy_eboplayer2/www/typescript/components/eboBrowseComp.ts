@@ -220,7 +220,7 @@ export class EboBrowseComp extends EboComponent {
                 btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
                     this.onFilterButtonPress(ev);
                 });
-                btn.addEboEventListener("longPress [eboplayer]", (ev) => {
+                btn.addEboEventListener("longPress.eboplayer", (ev) => {
                     this.onFilterButtonLongPress(ev);
                 });
                 btn.addEventListener("dblclick", (ev) => {
@@ -261,7 +261,7 @@ export class EboBrowseComp extends EboComponent {
         let propName = btn.id.replace("filter", "");
         propName = propName.charAt(0).toLowerCase() + propName.slice(1);
         this.browseFilter[propName] = !this.browseFilter[propName];
-        this.dispatchEboEvent("browseFilterChanged [eboplayer]", {});
+        this.dispatchEboEvent("browseFilterChanged.eboplayer", {});
     }
 
     override update(shadow:ShadowRoot) {
@@ -363,17 +363,17 @@ export class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEboEvent("browseResultClick [eboplayer]", {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": row.dataset.type});
+        this.dispatchEboEvent("browseResultClick.eboplayer", {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": row.dataset.type});
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEboEvent("browseResultDblClick [eboplayer]", {uri: row.dataset.uri as AllUris});
+        this.dispatchEboEvent("browseResultDblClick.eboplayer", {uri: row.dataset.uri as AllUris});
     }
 
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
-        this.dispatchEboEvent("breadCrumbClick [eboplayer]", {breadcrumbId: parseInt(btn.dataset.id)});
+        this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(btn.dataset.id)});
     }
 
 }

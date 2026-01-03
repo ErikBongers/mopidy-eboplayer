@@ -4,7 +4,7 @@ import {MessageType} from "../modelTypes";
 
 export class HeaderView extends View {
     bind() {
-        getState().getModel().addEboEventListener("messageChanged [eboplayer]", () => {
+        getState().getModel().addEboEventListener("messageChanged.eboplayer", () => {
             this.onMessageChanged();
         });
     }

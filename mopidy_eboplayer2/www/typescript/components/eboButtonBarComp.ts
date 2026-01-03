@@ -136,7 +136,7 @@ export class EboButtonBar extends EboComponent {
         slider.oninput = (ev) => {
             this.isVolumeSliding = true;
             this.volume = quadratic100(parseInt(slider.value));
-            this.dispatchEboEvent("changingVolume [eboplayer]", {volume: this.volume});
+            this.dispatchEboEvent("changingVolume.eboplayer", {volume: this.volume});
         };
         slider.onmousedown = slider.ontouchstart = () => { this.isVolumeSliding = true;};
         slider.onmouseup = slider.ontouchend = () => { this.isVolumeSliding = false;};
@@ -145,14 +145,14 @@ export class EboButtonBar extends EboComponent {
         btnPlay.addEventListener("click", (ev) => {
             let title = btnPlay.querySelector('i').title;
             switch (title) {
-                case "Play": this.dispatchEboEvent("playPressed [eboplayer]", {}); break;
-                case "Pause": this.dispatchEboEvent("pausePressed [eboplayer]", {}); break;
-                case "Stop": this.dispatchEboEvent("stopPressed [eboplayer]", {}); break;
+                case "Play": this.dispatchEboEvent("playPressed.eboplayer", {}); break;
+                case "Pause": this.dispatchEboEvent("pausePressed.eboplayer", {}); break;
+                case "Stop": this.dispatchEboEvent("stopPressed.eboplayer", {}); break;
             }
         });
         let imgTag = shadow.getElementById("buttonBarImg") as HTMLImageElement;
         imgTag.addEventListener("click", (ev) => {
-            this.dispatchEboEvent("buttonBarAlbumImgClicked [eboplayer]", {});
+            this.dispatchEboEvent("buttonBarAlbumImgClicked.eboplayer", {});
         });
     }
 
