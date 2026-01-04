@@ -397,10 +397,3 @@ ebo-big-album-view {
     padding-right: 1em;
     box-sizing: border-box;
 }
-
-dialog {
-    background-color: var(--body-background);
-    & input {
-        background-color: var(--body-background);
-    }
-}

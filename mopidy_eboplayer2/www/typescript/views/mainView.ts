@@ -5,6 +5,7 @@ import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
+import {EboDialog} from "../components/eboDialog";
 
 export class MainView extends View {
     bind() {
@@ -268,17 +269,20 @@ export class MainView extends View {
 }
 
 function showDialog(contentHtml: string, okButtonText: string, callback: (dialog: HTMLDialogElement) => boolean | Promise<boolean>) {
-    let dialog = document.getElementById("dialog") as HTMLDialogElement;
-    let btnOk = dialog.querySelector('#dialogOkBtn') as HTMLButtonElement;
-    let btnCancel = dialog.querySelector('#dialogCancelBtn') as HTMLButtonElement;
-    dialog.querySelector('#content').innerHTML = contentHtml;
-    btnOk.textContent = okButtonText;
-    btnOk.addEventListener('click', async () => {
-        if(callback(dialog))
-            dialog.close();
-    });
-    btnCancel.addEventListener('click', () => {
-        dialog.close();
-    })
+    let dialog = document.getElementById("dialog") as EboDialog;
+    // let btnOk = dialog.querySelector('#dialogOkBtn') as HTMLButtonElement;
+    // let btnCancel = dialog.querySelector('#dialogCancelBtn') as HTMLButtonElement;
+    // dialog.querySelector('#content').innerHTML = contentHtml;
+    // btnOk.textContent = okButtonText;
+    // btnOk.addEventListener('click', async () => {
+    //     if(callback(dialog))
+    //         dialog.close();
+    // });
+    // btnCancel.addEventListener('click', () => {
+    //     dialog.close();
+    // })
+    dialog.innerHTML = contentHtml;
+    console_yellow("show dialog...");
     dialog.showModal();
+    dialog.setAttribute("ok_text", "Save");
 }

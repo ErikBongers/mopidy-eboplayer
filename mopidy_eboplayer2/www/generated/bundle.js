@@ -2956,7 +2956,6 @@ var MainView = class extends View {
 		});
 	}
 	async saveAlbumAsPlaylist(name, detail) {
-		debugger;
 		let playlist = await playerState_default().getController().createPlaylist(name);
 		let res = await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
 		console_yellow(res);
@@ -2965,17 +2964,10 @@ var MainView = class extends View {
 };
 function showDialog(contentHtml, okButtonText, callback) {
 	let dialog = document.getElementById("dialog");
-	let btnOk = dialog.querySelector("#dialogOkBtn");
-	let btnCancel = dialog.querySelector("#dialogCancelBtn");
-	dialog.querySelector("#content").innerHTML = contentHtml;
-	btnOk.textContent = okButtonText;
-	btnOk.addEventListener("click", async () => {
-		if (callback(dialog)) dialog.close();
-	});
-	btnCancel.addEventListener("click", () => {
-		dialog.close();
-	});
+	dialog.innerHTML = contentHtml;
+	console_yellow("show dialog...");
 	dialog.showModal();
+	dialog.setAttribute("ok_text", "Save");
 }
 
 //#endregion
@@ -4111,6 +4103,63 @@ var MopidyProxy = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboDialog.ts
+var EboDialog = class EboDialog extends EboComponent {
+	static tagName = "ebo-dialog";
+	static observedAttributes = ["ok_text"];
+	ok_text = "TODO";
+	static styleText = `
+        <style>
+            dialog {
+                background-color: var(--body-background);
+                & input {
+                    background-color: var(--body-background);
+                }
+            }        
+        </style>
+    `;
+	static htmlText = `
+        <dialog id="dialog">
+            <div id="content">
+                <slot></slot>
+            </div>
+            <div>
+                <button id="OkBtn">TODO</button>
+                <button id="CancelBtn">Cancel</button>
+            </div>
+        </dialog>
+        `;
+	constructor() {
+		super(EboDialog.styleText, EboDialog.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "ok_text":
+				this[name] = newValue;
+				break;
+		}
+		this.render(this.shadow);
+	}
+	render(shadow) {
+		let okButton = shadow.getElementById("OkBtn");
+		okButton.addEventListener("click", (ev) => {
+			this.onOkButtonClick(ev);
+		});
+		shadow.getElementById("CancelBtn").addEventListener("click", (ev) => {
+			this.getShadow().getElementById("dialog").close();
+		});
+		okButton.innerText = this.ok_text;
+	}
+	onOkButtonClick(ev) {
+		this.getShadow().getElementById("dialog").close();
+	}
+	showModal() {
+		console_yellow("EboDialog.showModal called.");
+		this.getShadow().getElementById("dialog").showModal();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl;
@@ -4129,6 +4178,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboButtonBar);
 		EboComponent.define(EboMenuButton);
 		EboComponent.define(EboListButtonBar);
+		EboComponent.define(EboDialog);
 		setupStuff();
 	});
 });

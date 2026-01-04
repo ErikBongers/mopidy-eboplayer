@@ -12,7 +12,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     }
     static globalCss: CSSStyleSheet[] = [];
     static cssCache: Map<string, CSSStyleSheet> = new Map();
-    private shadow: ShadowRoot;
+    protected shadow: ShadowRoot;
     protected styleTemplate?: HTMLTemplateElement;
     protected divTemplate?: HTMLTemplateElement;
     private connected = false;
