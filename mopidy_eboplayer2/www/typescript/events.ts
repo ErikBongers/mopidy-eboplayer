@@ -32,7 +32,7 @@ export interface EboEventHandlersEventMap {
     "trackListChanged.eboplayer"          : VoidArgs,
     "viewChanged.eboplayer"               : VoidArgs,
     "volumeChanged.eboplayer"             : VoidArgs,
-    "editClicked.eboplayer"               : VoidArgs,
+    "editClicked.eboplayer"               : GuiSourceArgs,
     "saveClicked.eboplayer"               : SaveUriArgs,
     "dialogOkClicked.eboplayer"          : DialogArgs,
 }

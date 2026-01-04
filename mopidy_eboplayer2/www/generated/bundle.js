@@ -2095,10 +2095,10 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (this[attName] == true) el.classList.add(attName);
 		else el.classList.remove(attName);
 	}
-	updateStringProperty(newValue, name) {
+	updateStringProperty(name, newValue) {
 		this[name] = newValue;
 	}
-	updateBoolProperty(newValue, name) {
+	updateBoolProperty(name, newValue) {
 		if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
 		this[name] = newValue == "true";
 	}
@@ -2188,7 +2188,7 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 				break;
 			case "active":
 			case "button":
-				this.updateBoolProperty(newValue, name);
+				this.updateBoolProperty(name, newValue);
 				break;
 		}
 		if (!(this.min <= this.position && this.position <= this.max)) throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
@@ -2459,7 +2459,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigTrackComp.progressBarAttributes.includes(name)) {
-			this.updateStringProperty(newValue, name);
+			this.updateStringProperty(name, newValue);
 			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
 			return;
 		}
@@ -2471,7 +2471,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 				this[name] = newValue;
 				break;
 			case "enabled":
-				this.updateBoolProperty(newValue, name);
+				this.updateBoolProperty(name, newValue);
 				break;
 		}
 		this.requestRender();
@@ -3139,7 +3139,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 				break;
 			case "enabled":
 			case "show_back":
-				this.updateBoolProperty(newValue, name);
+				this.updateBoolProperty(name, newValue);
 				break;
 		}
 		this.requestRender();
@@ -3421,7 +3421,7 @@ var EboButton = class EboButton extends EboComponent {
 				break;
 			case "pressed":
 			case "disabled":
-				this.updateBoolProperty(newValue, name);
+				this.updateBoolProperty(name, newValue);
 				break;
 		}
 		this.requestRender();
@@ -3599,7 +3599,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigAlbumComp.progressBarAttributes.includes(name)) {
-			this.updateStringProperty(newValue, name);
+			this.updateStringProperty(name, newValue);
 			return;
 		}
 		switch (name) {
@@ -3761,7 +3761,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			case "allow_play":
 			case "allow_prev":
 			case "allow_next":
-				this.updateBoolProperty(newValue, name);
+				this.updateBoolProperty(name, newValue);
 				break;
 		}
 		this.requestUpdate();
@@ -3907,11 +3907,17 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	static observedAttributes = [
 		"add_btn_state",
 		"play_btn_state",
+		"edit_btn_state",
+		"replace_btn_state",
+		"save_btn_state",
 		"list_source",
 		"uri"
 	];
 	add_btn_state;
 	play_btn_state;
+	edit_btn_state;
+	save_btn_state;
+	replace_btn_state;
 	list_source;
 	uri;
 	static styleText = `
@@ -3920,6 +3926,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                 display: flex;
                 flex-direction: row;
                 margin-bottom: .5em;
+                button.disabled {
+                    opacity: 0.2;
+                }
             }
         </style>
     `;
@@ -3939,7 +3948,10 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		switch (name) {
 			case "add_btn_state":
 			case "play_btn_state":
-				this.updateButtonState(newValue, name);
+			case "edit_btn_state":
+			case "replace_btn_state":
+			case "save_btn_state":
+				this.updateButtonStateProperty(name, newValue);
 				break;
 			case "list_source":
 				this.list_source = newValue;
@@ -3948,19 +3960,27 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 				this[name] = newValue;
 				break;
 		}
-		this.requestRender();
+		this.requestUpdate();
 	}
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
+			if (this.play_btn_state != "show") return;
 			this.dispatchEboEvent("playItemListClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
+			if (this.add_btn_state != "show") return;
 			this.dispatchEboEvent("addItemListClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnReplace", "click", (ev) => {
+			if (this.replace_btn_state != "show") return;
 			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
 		});
+		this.addShadowEventListener("btnEdit", "click", (ev) => {
+			if (this.edit_btn_state != "show") return;
+			this.dispatchEboEvent("editClicked.eboplayer", { source: this.list_source });
+		});
 		this.addShadowEventListener("btnSave", "click", (ev) => {
+			if (this.save_btn_state != "show") return;
 			this.dispatchEboEvent("saveClicked.eboplayer", {
 				source: this.list_source,
 				uri: this.uri
@@ -3968,8 +3988,31 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		});
 		this.requestUpdate();
 	}
-	updateButtonState(newValue, name) {
-		this.updateStringProperty(newValue, name);
+	updateButtonStateProperty(name, newValue) {
+		this.updateStringProperty(name, newValue);
+	}
+	update(shadow) {
+		this.updateButtonState("btnPlay", this.play_btn_state);
+		this.updateButtonState("btnAdd", this.add_btn_state);
+		this.updateButtonState("btnReplace", this.replace_btn_state);
+		this.updateButtonState("btnEdit", this.edit_btn_state);
+		this.updateButtonState("btnSave", this.save_btn_state);
+	}
+	updateButtonState(id, state$1) {
+		let btn = this.shadow.getElementById(id);
+		switch (state$1) {
+			case "show":
+				btn.style.display = "";
+				break;
+			case "hide":
+				btn.style.display = "none";
+				break;
+			case "disabled":
+				btn.disabled = true;
+				btn.classList.add("disabled");
+				break;
+			default: break;
+		}
 	}
 };
 
