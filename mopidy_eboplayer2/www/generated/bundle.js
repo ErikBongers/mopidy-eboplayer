@@ -2968,6 +2968,8 @@ var MainView = class extends View {
 	}
 	async saveAlbumAsPlaylist(name, detail) {
 		console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
+		let playlist = await playerState_default().getController().createPlaylist(name);
+		await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
 		return true;
 	}
 	showDialog(contentHtml, okButtonText, onOkClicked) {

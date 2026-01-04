@@ -276,8 +276,8 @@ export class MainView extends View {
 
     async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
         console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
-        // let playlist = await getState().getController().createPlaylist(name);
-        // let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
+        let playlist = await getState().getController().createPlaylist(name);
+        let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
         return true;
     }
 

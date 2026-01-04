@@ -1,3 +1,9 @@
+* create sql for generic playlists
+  > start with albums
+  > then include other refs
+
+* show playlist shows the tracks
+* edit playlists shows the criteria AND the resulting tracks.
 * create a (generic) dialog with a slot content.
 
 * Start playlist creation by allowing to safe a browse filter as a playlist.
