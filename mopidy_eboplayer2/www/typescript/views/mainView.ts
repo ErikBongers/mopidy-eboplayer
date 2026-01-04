@@ -8,6 +8,20 @@ import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 
 export class MainView extends View {
+    private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
+    private dialog: EboDialog;
+
+    constructor(dialog: EboDialog) {
+        super();
+        this.dialog = dialog;
+        this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+            console_yellow("dialogOkClicked.eboplayer");
+            let innnerDialog = ev.detail.dialog;
+            if(this.onDialogOkClickedCallback(innnerDialog))
+                innnerDialog.close();
+        });
+    }
+
     bind() {
         document.getElementById("headerSearchBtn").addEventListener("click", () => {
             this.onBrowseButtonClick();
@@ -253,7 +267,7 @@ export class MainView extends View {
                 <label for="playListName">Name</label>
                 <input type="text" id="playListName">
             `;
-            showDialog(dialogContent, "Save", (dialog) => {
+            this.showDialog(dialogContent, "Save", (dialog) => {
                 let name = dialog.querySelector<HTMLInputElement>("#playListName").value;
                 return this.saveAlbumAsPlaylist(name, detail);
             });
@@ -261,21 +275,17 @@ export class MainView extends View {
     }
 
     async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
+        console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
         // let playlist = await getState().getController().createPlaylist(name);
         // let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
         return true;
     }
+
+    showDialog(contentHtml: string, okButtonText: string, onOkClicked: (dialog: EboDialog) => boolean | Promise<boolean>) {
+        this.onDialogOkClickedCallback = onOkClicked;
+        this.dialog.innerHTML = contentHtml;
+        this.dialog.showModal();
+        this.dialog.setAttribute("ok_text", okButtonText);
+    }
 }
 
-function showDialog(contentHtml: string, okButtonText: string, onOkClicked: (dialog: EboDialog) => boolean | Promise<boolean>) {
-    let dialog = document.getElementById("dialog") as EboDialog;
-    dialog.innerHTML = contentHtml;
-    dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
-        console_yellow("dialogOkClicked.eboplayer");
-        let innnerDialog = ev.detail.dialog;
-        if(onOkClicked(innnerDialog))
-            innnerDialog.close();
-    });
-    dialog.showModal();
-    dialog.setAttribute("ok_text", okButtonText);
-}

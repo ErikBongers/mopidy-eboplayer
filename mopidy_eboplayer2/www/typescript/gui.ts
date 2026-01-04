@@ -74,7 +74,7 @@ function setupStuff() {
     let state = new State(mopidy, model, controller, player);
     setState(state);
 
-    let mainView = new MainView();
+    let mainView = new MainView(document.getElementById("dialog") as EboDialog);
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
     let buttonBarView = new ButtonBarView("buttonBar", mainView);

@@ -2727,6 +2727,17 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/mainView.ts
 var MainView = class extends View {
+	onDialogOkClickedCallback = () => true;
+	dialog;
+	constructor(dialog) {
+		super();
+		this.dialog = dialog;
+		this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+			console_yellow("dialogOkClicked.eboplayer");
+			let innnerDialog = ev.detail.dialog;
+			if (this.onDialogOkClickedCallback(innnerDialog)) innnerDialog.close();
+		});
+	}
 	bind() {
 		document.getElementById("headerSearchBtn").addEventListener("click", () => {
 			this.onBrowseButtonClick();
@@ -2947,7 +2958,7 @@ var MainView = class extends View {
 		}
 	}
 	async onSaveClicked(detail) {
-		if (detail.source == "albumView") showDialog(`
+		if (detail.source == "albumView") this.showDialog(`
                 <label for="playListName">Name</label>
                 <input type="text" id="playListName">
             `, "Save", (dialog) => {
@@ -2956,20 +2967,16 @@ var MainView = class extends View {
 		});
 	}
 	async saveAlbumAsPlaylist(name, detail) {
+		console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
 		return true;
 	}
+	showDialog(contentHtml, okButtonText, onOkClicked) {
+		this.onDialogOkClickedCallback = onOkClicked;
+		this.dialog.innerHTML = contentHtml;
+		this.dialog.showModal();
+		this.dialog.setAttribute("ok_text", okButtonText);
+	}
 };
-function showDialog(contentHtml, okButtonText, onOkClicked) {
-	let dialog = document.getElementById("dialog");
-	dialog.innerHTML = contentHtml;
-	dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
-		console_yellow("dialogOkClicked.eboplayer");
-		let innnerDialog = ev.detail.dialog;
-		if (onOkClicked(innnerDialog)) innnerDialog.close();
-	});
-	dialog.showModal();
-	dialog.setAttribute("ok_text", okButtonText);
-}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
@@ -4201,7 +4208,7 @@ function setupStuff() {
 	controller.initSocketevents();
 	let state$1 = new State(mopidy, model, controller, player);
 	setState(state$1);
-	let mainView = new MainView();
+	let mainView = new MainView(document.getElementById("dialog"));
 	let headerView = new HeaderView();
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
 	let buttonBarView = new ButtonBarView("buttonBar", mainView);
