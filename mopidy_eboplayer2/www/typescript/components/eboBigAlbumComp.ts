@@ -115,7 +115,14 @@ export class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
+                    <ebo-list-button-bar 
+                        list_source="${this.list_source}"
+                        add_btn_state="show"
+                        play_btn_state="show"
+                        replace_btn_state="show"
+                        edit_btn_state="show"
+                    >
+                    </ebo-list-button-bar>
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">

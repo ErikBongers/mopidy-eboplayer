@@ -95,14 +95,29 @@ export class MainView extends View {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? { refs: [], availableRefTypes: new Set()};
         browseComp.renderResults();
-        let refs = getState().getModel().getCurrentSearchResults().refs;
-        let uniqueRefTypes = [...new Set(refs.map(ref => ref.ref.type))];
-        this.setListButtonStates(uniqueRefTypes, browseComp);
+        this.setListButtonStates(browseComp);
     }
 
-    private setListButtonStates(refTypes: RefType[], browseComp: EboBrowseComp) {
+    private setListButtonStates(browseComp: EboBrowseComp) {
+        let currentView = getState().getModel().getView();
+        if(currentView == Views.NowPlaying) return;
+
+        if(currentView == Views.Browse) {
+            this.setBrowseViewListButtonStates(browseComp);
+            return;
+        }
+        if(currentView == Views.Album) {
+            this.showHideTrackAndAlbumButtons(browseComp, "show");
+            browseComp.setButtonState("new_playlist", "hide");
+        }
+    }
+
+    private setBrowseViewListButtonStates(browseComp: EboBrowseComp) {
+        let refs = getState().getModel().getCurrentSearchResults().refs;
+        let uniqueRefTypes = [...new Set(refs.map(ref => ref.ref.type))];
+
         //list ref types state 1
-        let onlyTracksAndAlbums = refTypes.filter(t => t == "track" || t == "album").length == refTypes.length;
+        let onlyTracksAndAlbums = uniqueRefTypes.filter(t => t == "track" || t == "album").length == uniqueRefTypes.length;
         if (onlyTracksAndAlbums) {
             this.showHideTrackAndAlbumButtons(browseComp, "show");
             browseComp.setButtonState("new_playlist", "hide");
@@ -110,7 +125,7 @@ export class MainView extends View {
         }
 
         //list ref types state 2
-        let onlyPlaylists = refTypes.filter(t => t == "playlist").length == refTypes.length;
+        let onlyPlaylists = uniqueRefTypes.filter(t => t == "playlist").length == uniqueRefTypes.length;
         if (onlyPlaylists) {
             browseComp.setButtonState("new_playlist", "show");
             this.showHideTrackAndAlbumButtons(browseComp, "hide");
@@ -164,6 +179,7 @@ export class MainView extends View {
         let browseBtn = document.getElementById("headerSearchBtn");
         let layout = document.getElementById("layout");
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
+        let browseComp = document.getElementById("browseView") as EboBrowseComp;
         layout.classList.remove("browse", "bigAlbum", "bigTrack");
         switch (view) {
             case Views.Browse:
@@ -171,7 +187,6 @@ export class MainView extends View {
                 location.hash = Views.Browse;
                 browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
-                let browseComp = document.getElementById("browseView") as EboBrowseComp;
                 browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
                 browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()};
                 browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
@@ -194,6 +209,7 @@ export class MainView extends View {
                     browseBtn.title = "Now playing";
                 }
         }
+        this.setListButtonStates(browseComp);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -201,7 +217,7 @@ export class MainView extends View {
     }
 
     private onAlbumClick() {
-        this.showView(Views.Album);
+        getState().getController().setView(Views.Album);
     }
 
     private async onTrackListChanged() {

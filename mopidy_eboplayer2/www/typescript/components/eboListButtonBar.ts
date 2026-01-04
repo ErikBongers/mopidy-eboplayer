@@ -35,7 +35,7 @@ export class EboListButtonBar extends EboComponent {
                     opacity: 0.2;
                 }
                 img {
-                    height: 1rem;
+                    height: 1.2rem;
                 }
             }
         </style>
@@ -46,7 +46,12 @@ export class EboListButtonBar extends EboComponent {
             <button id="btnAdd" class="roundBorder"><i class="fa fa-plus"></i></button>
             <button id="btnReplace" class="roundBorder">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
-            <button id="btnSave" class="roundBorder"><i class="fa fa-save"></i></button>
+            <button id="btnSave" class="roundBorder">
+                <div class="flexRow">
+                    >            
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">
+                </div>            
+            </button>
             <button id="btnNewPlaylist" class="roundBorder">
                 <div class="flexRow">
                     <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">

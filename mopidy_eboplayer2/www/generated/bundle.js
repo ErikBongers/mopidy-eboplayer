@@ -2812,17 +2812,29 @@ var MainView = class extends View {
 			availableRefTypes: /* @__PURE__ */ new Set()
 		};
 		browseComp.renderResults();
+		this.setListButtonStates(browseComp);
+	}
+	setListButtonStates(browseComp) {
+		let currentView = playerState_default().getModel().getView();
+		if (currentView == Views.NowPlaying) return;
+		if (currentView == Views.Browse) {
+			this.setBrowseViewListButtonStates(browseComp);
+			return;
+		}
+		if (currentView == Views.Album) {
+			this.showHideTrackAndAlbumButtons(browseComp, "show");
+			browseComp.setButtonState("new_playlist", "hide");
+		}
+	}
+	setBrowseViewListButtonStates(browseComp) {
 		let refs = playerState_default().getModel().getCurrentSearchResults().refs;
 		let uniqueRefTypes = [...new Set(refs.map((ref) => ref.ref.type))];
-		this.setListButtonStates(uniqueRefTypes, browseComp);
-	}
-	setListButtonStates(refTypes, browseComp) {
-		if (refTypes.filter((t) => t == "track" || t == "album").length == refTypes.length) {
+		if (uniqueRefTypes.filter((t) => t == "track" || t == "album").length == uniqueRefTypes.length) {
 			this.showHideTrackAndAlbumButtons(browseComp, "show");
 			browseComp.setButtonState("new_playlist", "hide");
 			return;
 		}
-		if (refTypes.filter((t) => t == "playlist").length == refTypes.length) {
+		if (uniqueRefTypes.filter((t) => t == "playlist").length == uniqueRefTypes.length) {
 			browseComp.setButtonState("new_playlist", "show");
 			this.showHideTrackAndAlbumButtons(browseComp, "hide");
 			return;
@@ -2870,6 +2882,7 @@ var MainView = class extends View {
 			"bigAlbum",
 			"bigTrack"
 		].includes(c))[0];
+		let browseComp = document.getElementById("browseView");
 		layout.classList.remove("browse", "bigAlbum", "bigTrack");
 		switch (view) {
 			case Views.Browse:
@@ -2877,7 +2890,6 @@ var MainView = class extends View {
 				location.hash = Views.Browse;
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
-				let browseComp = document.getElementById("browseView");
 				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
 				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
 					refs: [],
@@ -2903,12 +2915,13 @@ var MainView = class extends View {
 					browseBtn.title = "Now playing";
 				}
 		}
+		this.setListButtonStates(browseComp);
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.TrackList];
 	}
 	onAlbumClick() {
-		this.showView(Views.Album);
+		playerState_default().getController().setView(Views.Album);
 	}
 	async onTrackListChanged() {
 		if (!playerState_default().getModel().getCurrentTrack()) {
@@ -3608,7 +3621,14 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
+                    <ebo-list-button-bar 
+                    list_source="${this.list_source}"
+                    add_btn_state="show"
+                    play_btn_state="show"
+                    replace_btn_state="show"
+                    edit_btn_state="show"
+                    >
+                    </ebo-list-button-bar>
                 </div>
                 <div id="bottom">
                     <div id="albumTableWrapper">
@@ -3962,7 +3982,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     opacity: 0.2;
                 }
                 img {
-                    height: 1rem;
+                    height: 1.2rem;
                 }
             }
         </style>
@@ -3973,7 +3993,12 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
             <button id="btnAdd" class="roundBorder"><i class="fa fa-plus"></i></button>
             <button id="btnReplace" class="roundBorder">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
-            <button id="btnSave" class="roundBorder"><i class="fa fa-save"></i></button>
+            <button id="btnSave" class="roundBorder">
+                <div class="flexRow">
+                    >            
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">
+                </div>            
+            </button>
             <button id="btnNewPlaylist" class="roundBorder">
                 <div class="flexRow">
                     <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">
