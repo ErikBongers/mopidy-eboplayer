@@ -125,7 +125,7 @@ export class EboButtonBar extends EboComponent {
             case "allow_play":
             case "allow_prev":
             case "allow_next":
-                this.updateBoolAtrribute(newValue, name);
+                this.updateBoolProperty(name, newValue);
                 break;
         }
         this.requestUpdate();

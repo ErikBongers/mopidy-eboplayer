@@ -6,7 +6,6 @@ export interface HasName {
 }
 
 export abstract class EboComponent extends HTMLElement implements HasName, EboEventTarget {
-    [k: string]: any;
     get rendered(): boolean {
         return this._rendered;
     }
@@ -142,9 +141,15 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             el.classList.remove(attName);
     }
 
-    protected updateBoolAtrribute(newValue: string, name: string) {
+    protected updateStringProperty(name: string, newValue: string) {
+        // @ts-ignore
+        this[name] = newValue;
+
+    }
+    protected updateBoolProperty(name: string, newValue: string) {
         if (!["true", "false"].includes(newValue))
             throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
+        // @ts-ignore
         this[name] = newValue == "true";
     }
 

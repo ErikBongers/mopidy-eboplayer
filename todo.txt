@@ -1,3 +1,10 @@
+* list button bar - hide/show/disable for buttons
+
+* list button bar
+  > only show play/add/replace/edit/save for
+    - when text-filtering tracks+albums.
+  > when filtering only playlists:
+    - show "New (playlist)"
 * create sql for generic playlists
   > start with albums
   > then include other refs

@@ -66,7 +66,7 @@ export class EboButton extends EboComponent {
                 break;
             case "pressed":
             case "disabled":
-                this.updateBoolAtrribute(newValue, name);
+                this.updateBoolProperty(name, newValue);
                 break;
         }
         this.requestRender();

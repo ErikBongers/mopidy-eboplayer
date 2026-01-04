@@ -139,7 +139,7 @@ export class EboBigAlbumComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboBigAlbumComp.progressBarAttributes.includes(name)) {
-            this[name] = newValue;
+            this.updateStringProperty(name, newValue);
             return;
         }
         switch (name) {
@@ -154,6 +154,7 @@ export class EboBigAlbumComp extends EboComponent {
 
     override update(shadow:ShadowRoot) {
         ["name", "extra"].forEach(attName => {
+            // @ts-ignore
             shadow.getElementById(attName).innerHTML = this[attName];
         });
         let tracksComp = shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;

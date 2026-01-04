@@ -77,7 +77,7 @@ export class EboProgressBar extends EboComponent {
                 break;
             case "active":
             case "button":
-                this.updateBoolAtrribute(newValue, name);
+                this.updateBoolProperty(name, newValue);
                 break;
         }
         if(!(this.min <= this.position && this.position <= this.max))

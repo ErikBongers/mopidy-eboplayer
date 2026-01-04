@@ -173,11 +173,11 @@ export class EboBrowseComp extends EboComponent {
             case "name":
             case "stream_lines":
             case "extra":
-                this[name] = newValue;
+                this.updateStringProperty(name, newValue);
                 break;
             case "enabled":
             case "show_back":
-                this.updateBoolAtrribute(newValue, name);
+                this.updateBoolProperty(name, newValue);
                 break;
         }
         this.requestRender();

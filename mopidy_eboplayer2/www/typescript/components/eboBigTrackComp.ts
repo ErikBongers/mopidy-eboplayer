@@ -119,7 +119,7 @@ export class EboBigTrackComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboBigTrackComp.progressBarAttributes.includes(name)) {
-            this[name] = newValue;
+            this.updateStringProperty(name, newValue);
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
         }
@@ -131,7 +131,7 @@ export class EboBigTrackComp extends EboComponent {
                 this[name] = newValue;
                 break;
             case "enabled":
-                this.updateBoolAtrribute(newValue, name);
+                this.updateBoolProperty(name, newValue);
                 break;
         }
         this.requestRender();
@@ -139,10 +139,12 @@ export class EboBigTrackComp extends EboComponent {
 
     render(shadow:ShadowRoot) {
         ["name", "stream_lines", "extra"].forEach(attName => {
+            // @ts-ignore
             shadow.getElementById(attName).innerHTML = this[attName];
         });
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboBigTrackComp.progressBarAttributes.forEach(attName => {
+            // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });
         let img = shadow.getElementById("image") as HTMLImageElement;

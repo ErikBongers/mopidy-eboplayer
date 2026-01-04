@@ -2095,7 +2095,10 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (this[attName] == true) el.classList.add(attName);
 		else el.classList.remove(attName);
 	}
-	updateBoolAtrribute(newValue, name) {
+	updateStringProperty(newValue, name) {
+		this[name] = newValue;
+	}
+	updateBoolProperty(newValue, name) {
 		if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
 		this[name] = newValue == "true";
 	}
@@ -2185,7 +2188,7 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 				break;
 			case "active":
 			case "button":
-				this.updateBoolAtrribute(newValue, name);
+				this.updateBoolProperty(newValue, name);
 				break;
 		}
 		if (!(this.min <= this.position && this.position <= this.max)) throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
@@ -2456,7 +2459,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigTrackComp.progressBarAttributes.includes(name)) {
-			this[name] = newValue;
+			this.updateStringProperty(newValue, name);
 			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
 			return;
 		}
@@ -2468,7 +2471,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 				this[name] = newValue;
 				break;
 			case "enabled":
-				this.updateBoolAtrribute(newValue, name);
+				this.updateBoolProperty(newValue, name);
 				break;
 		}
 		this.requestRender();
@@ -3132,11 +3135,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			case "name":
 			case "stream_lines":
 			case "extra":
-				this[name] = newValue;
+				this.updateStringProperty(name, newValue);
 				break;
 			case "enabled":
 			case "show_back":
-				this.updateBoolAtrribute(newValue, name);
+				this.updateBoolProperty(newValue, name);
 				break;
 		}
 		this.requestRender();
@@ -3418,7 +3421,7 @@ var EboButton = class EboButton extends EboComponent {
 				break;
 			case "pressed":
 			case "disabled":
-				this.updateBoolAtrribute(newValue, name);
+				this.updateBoolProperty(newValue, name);
 				break;
 		}
 		this.requestRender();
@@ -3596,7 +3599,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigAlbumComp.progressBarAttributes.includes(name)) {
-			this[name] = newValue;
+			this.updateStringProperty(newValue, name);
 			return;
 		}
 		switch (name) {
@@ -3758,7 +3761,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 			case "allow_play":
 			case "allow_prev":
 			case "allow_next":
-				this.updateBoolAtrribute(newValue, name);
+				this.updateBoolProperty(newValue, name);
 				break;
 		}
 		this.requestUpdate();
@@ -3902,13 +3905,13 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	static tagName = "ebo-list-button-bar";
 	static observedAttributes = [
-		"show_add_btn",
-		"show_play_btn",
+		"add_btn_state",
+		"play_btn_state",
 		"list_source",
 		"uri"
 	];
-	show_add_btn;
-	show_play_btn;
+	add_btn_state;
+	play_btn_state;
 	list_source;
 	uri;
 	static styleText = `
@@ -3934,9 +3937,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
-			case "show_add_btn":
-			case "show_play_btn":
-				this.updateBoolAtrribute(newValue, name);
+			case "add_btn_state":
+			case "play_btn_state":
+				this.updateButtonState(newValue, name);
 				break;
 			case "list_source":
 				this.list_source = newValue;
@@ -3964,6 +3967,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			});
 		});
 		this.requestUpdate();
+	}
+	updateButtonState(newValue, name) {
+		this.updateStringProperty(newValue, name);
 	}
 };
 
