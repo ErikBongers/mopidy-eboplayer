@@ -57,8 +57,7 @@ export class EboDialog extends EboComponent {
                 this[name] = newValue;
                 break;
         }
-        //todo: can I use this.shadowRoot here? What's the difference?
-        this.render(this.shadow); //render immediately!
+        this.requestUpdate();//don't request render or the dialog may not show.
         }
 
     render(shadow:ShadowRoot) {
@@ -71,17 +70,25 @@ export class EboDialog extends EboComponent {
             let dialog = this.getShadow().getElementById("dialog") as HTMLDialogElement;
             dialog.close();
         });
-        okButton.innerText = this.ok_text;
     }
 
     private onOkButtonClick(ev: PointerEvent) {
         let dialog = this.getShadow().getElementById("dialog") as HTMLDialogElement;
-        dialog.close();
+        this.dispatchEboEvent("dialogOkClicked.eboplayer", { dialog: this });
     }
 
     showModal() {
-        console_yellow("EboDialog.showModal called.");
         let dialog = this.getShadow().getElementById("dialog") as HTMLDialogElement;
         dialog.showModal();
+    }
+
+    close() {
+        let dialog = this.getShadow().getElementById("dialog") as HTMLDialogElement;
+        dialog.close();
+    }
+
+    override update(shadow: ShadowRoot) {
+        let okButton = shadow.getElementById("OkBtn") as HTMLButtonElement;
+        okButton.innerText = this.ok_text;
     }
 }

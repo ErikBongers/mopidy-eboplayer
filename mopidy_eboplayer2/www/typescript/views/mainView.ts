@@ -261,28 +261,21 @@ export class MainView extends View {
     }
 
     async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
-        let playlist = await getState().getController().createPlaylist(name);
-        let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
-        console_yellow(res);
+        // let playlist = await getState().getController().createPlaylist(name);
+        // let res = await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
         return true;
     }
 }
 
-function showDialog(contentHtml: string, okButtonText: string, callback: (dialog: HTMLDialogElement) => boolean | Promise<boolean>) {
+function showDialog(contentHtml: string, okButtonText: string, onOkClicked: (dialog: EboDialog) => boolean | Promise<boolean>) {
     let dialog = document.getElementById("dialog") as EboDialog;
-    // let btnOk = dialog.querySelector('#dialogOkBtn') as HTMLButtonElement;
-    // let btnCancel = dialog.querySelector('#dialogCancelBtn') as HTMLButtonElement;
-    // dialog.querySelector('#content').innerHTML = contentHtml;
-    // btnOk.textContent = okButtonText;
-    // btnOk.addEventListener('click', async () => {
-    //     if(callback(dialog))
-    //         dialog.close();
-    // });
-    // btnCancel.addEventListener('click', () => {
-    //     dialog.close();
-    // })
     dialog.innerHTML = contentHtml;
-    console_yellow("show dialog...");
+    dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+        console_yellow("dialogOkClicked.eboplayer");
+        let innnerDialog = ev.detail.dialog;
+        if(onOkClicked(innnerDialog))
+            innnerDialog.close();
+    });
     dialog.showModal();
-    dialog.setAttribute("ok_text", "Save");
+    dialog.setAttribute("ok_text", okButtonText);
 }

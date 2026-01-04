@@ -1,4 +1,5 @@
 import {AllUris, TrackUri} from "./modelTypes";
+import {EboDialog} from "./components/eboDialog";
 
 export interface EboEventHandlersEventMap {
     "activeStreamLinesChanged.eboplayer"  : VoidArgs,
@@ -33,6 +34,7 @@ export interface EboEventHandlersEventMap {
     "volumeChanged.eboplayer"             : VoidArgs,
     "editClicked.eboplayer"               : VoidArgs,
     "saveClicked.eboplayer"               : SaveUriArgs,
+    "dialogOkClicked.eboplayer"          : DialogArgs,
 }
 
 export default interface EboEventTarget {
@@ -64,6 +66,10 @@ export type VoidArgs = {
 
 export interface UriArgs extends EboEventArgs {
     uri: AllUris
+}
+
+export interface DialogArgs extends EboEventArgs {
+    dialog: EboDialog
 }
 
 export interface TrackUriArgs extends EboEventArgs {

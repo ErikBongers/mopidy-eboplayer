@@ -2956,18 +2956,19 @@ var MainView = class extends View {
 		});
 	}
 	async saveAlbumAsPlaylist(name, detail) {
-		let playlist = await playerState_default().getController().createPlaylist(name);
-		let res = await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
-		console_yellow(res);
 		return true;
 	}
 };
-function showDialog(contentHtml, okButtonText, callback) {
+function showDialog(contentHtml, okButtonText, onOkClicked) {
 	let dialog = document.getElementById("dialog");
 	dialog.innerHTML = contentHtml;
-	console_yellow("show dialog...");
+	dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+		console_yellow("dialogOkClicked.eboplayer");
+		let innnerDialog = ev.detail.dialog;
+		if (onOkClicked(innnerDialog)) innnerDialog.close();
+	});
 	dialog.showModal();
-	dialog.setAttribute("ok_text", "Save");
+	dialog.setAttribute("ok_text", okButtonText);
 }
 
 //#endregion
@@ -3022,7 +3023,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 flex-direction: row;
                 & input {
                     flex-grow: 1;
-                    background-color: transparent;
                     color: white;
                     border: none;
                     &:focus {
@@ -3038,8 +3038,8 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 border-radius: .5rem;
             }
             .filterButton {
-                width: 2em;
-                height: 2em;
+                width: 1.5em;
+                height: 1.5em;
                 object-fit: contain;
                 margin-right: .5em;
             }
@@ -4138,24 +4138,29 @@ var EboDialog = class EboDialog extends EboComponent {
 				this[name] = newValue;
 				break;
 		}
-		this.render(this.shadow);
+		this.requestUpdate();
 	}
 	render(shadow) {
-		let okButton = shadow.getElementById("OkBtn");
-		okButton.addEventListener("click", (ev) => {
+		shadow.getElementById("OkBtn").addEventListener("click", (ev) => {
 			this.onOkButtonClick(ev);
 		});
 		shadow.getElementById("CancelBtn").addEventListener("click", (ev) => {
 			this.getShadow().getElementById("dialog").close();
 		});
-		okButton.innerText = this.ok_text;
 	}
 	onOkButtonClick(ev) {
-		this.getShadow().getElementById("dialog").close();
+		this.getShadow().getElementById("dialog");
+		this.dispatchEboEvent("dialogOkClicked.eboplayer", { dialog: this });
 	}
 	showModal() {
-		console_yellow("EboDialog.showModal called.");
 		this.getShadow().getElementById("dialog").showModal();
+	}
+	close() {
+		this.getShadow().getElementById("dialog").close();
+	}
+	update(shadow) {
+		let okButton = shadow.getElementById("OkBtn");
+		okButton.innerText = this.ok_text;
 	}
 };
 
