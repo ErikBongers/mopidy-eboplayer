@@ -14,11 +14,11 @@ export class EboListButtonBar extends EboComponent {
         "save_btn_state",
         "list_source", "uri"
     ];
-    add_btn_state: ListButtonState
-    play_btn_state: ListButtonState
-    edit_btn_state: ListButtonState
-    save_btn_state: ListButtonState
-    replace_btn_state: ListButtonState
+    add_btn_state: ListButtonState = "show";
+    play_btn_state: ListButtonState = "show";
+    edit_btn_state: ListButtonState = "show";
+    save_btn_state: ListButtonState = "show";
+    replace_btn_state: ListButtonState = "show";
     list_source: GuiSource;
     uri: string;
     static styleText = `
