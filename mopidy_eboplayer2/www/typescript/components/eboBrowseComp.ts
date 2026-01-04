@@ -164,12 +164,6 @@ export class EboBrowseComp extends EboComponent {
 
     constructor() {
         super(EboBrowseComp.styleText, EboBrowseComp.htmlText);
-        this.browseFilterChangedEvent = new CustomEvent("browseFilterChanged", {
-            bubbles: true,
-            cancelable: false,
-            composed: true, //needed to 'break' out of the shadow.
-            detail: "todo"
-        });
         this._browseFilter = new BrowseFilter();
     }
 
@@ -212,7 +206,7 @@ export class EboBrowseComp extends EboComponent {
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
             this._browseFilter.searchText = inputElement.value;
-            this.dispatchEvent(this.browseFilterChangedEvent);
+            this.dispatchEboEvent("browseFilterChanged.eboplayer", {});
         });
         shadow.querySelectorAll("ebo-button")
             .forEach((btn: EboButton) => {
