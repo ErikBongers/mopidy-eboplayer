@@ -9,7 +9,8 @@ export interface EboEventHandlersEventMap {
     "albumToViewChanged.eboplayer"        : VoidArgs,
     "breadCrumbClick.eboplayer"           : BreadcrumbArgs,
     "breadCrumbsChanged.eboplayer"        : VoidArgs,
-    "browseFilterChanged.eboplayer"       : VoidArgs,
+    "modelBrowseFilterChanged.eboplayer"  : VoidArgs,
+    "guiBrowseFilterChanged.eboplayer"    : VoidArgs,
     "browseResultClick.eboplayer"         : BrowseResultClickArgs,
     "browseResultDblClick.eboplayer"      : UriArgs,
     "buttonBarAlbumImgClicked.eboplayer"  : VoidArgs,
@@ -34,6 +35,7 @@ export interface EboEventHandlersEventMap {
     "volumeChanged.eboplayer"             : VoidArgs,
     "editClicked.eboplayer"               : GuiSourceArgs,
     "saveClicked.eboplayer"               : SaveUriArgs,
+    "newPlaylistClicked.eboplayer"        : GuiSourceArgs,
     "dialogOkClicked.eboplayer"          : DialogArgs,
 }
 

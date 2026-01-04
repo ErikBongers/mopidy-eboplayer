@@ -6,6 +6,8 @@ import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
+import {ListButtonState} from "../components/eboListButtonBar";
+import {RefType} from "../refs";
 
 export class MainView extends View {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -27,8 +29,8 @@ export class MainView extends View {
             this.onBrowseButtonClick();
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        browseComp.addEboEventListener("browseFilterChanged.eboplayer", () => {
-            getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
+        browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", () => {
+            this.onGuiBrowseFilterChanged(browseComp);
         });
         browseComp.addEboEventListener("breadCrumbClick.eboplayer", (ev) => {
             this.onBreadcrumbClick(ev.detail.breadcrumbId);
@@ -45,8 +47,8 @@ export class MainView extends View {
         getState().getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
             this.onBreadCrumbsChanged();
         });
-        getState().getModel().addEboEventListener("browseFilterChanged.eboplayer", () => {
-            this.onBrowseFilterChanged();
+        getState().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
+            this.onModelBrowseFilterChanged();
         });
         getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
             await this.onSelectedTrackChanged();
@@ -85,10 +87,47 @@ export class MainView extends View {
         });
     }
 
+    private onGuiBrowseFilterChanged(browseComp: EboBrowseComp) {
+        getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
+    }
+
     private onRefsFiltered() {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? { refs: [], availableRefTypes: new Set()};
         browseComp.renderResults();
+        let refs = getState().getModel().getCurrentSearchResults().refs;
+        let uniqueRefTypes = [...new Set(refs.map(ref => ref.ref.type))];
+        this.setListButtonStates(uniqueRefTypes, browseComp);
+    }
+
+    private setListButtonStates(refTypes: RefType[], browseComp: EboBrowseComp) {
+        //list ref types state 1
+        let onlyTracksAndAlbums = refTypes.filter(t => t == "track" || t == "album").length == refTypes.length;
+        if (onlyTracksAndAlbums) {
+            this.showHideTrackAndAlbumButtons(browseComp, "show");
+            browseComp.setButtonState("new_playlist", "hide");
+            return;
+        }
+
+        //list ref types state 2
+        let onlyPlaylists = refTypes.filter(t => t == "playlist").length == refTypes.length;
+        if (onlyPlaylists) {
+            browseComp.setButtonState("new_playlist", "show");
+            this.showHideTrackAndAlbumButtons(browseComp, "hide");
+            return;
+        }
+
+        //list ref types state 3
+        this.showHideTrackAndAlbumButtons(browseComp, "hide");
+        browseComp.setButtonState("new_playlist", "hide");
+    }
+
+    private showHideTrackAndAlbumButtons(browseComp: EboBrowseComp, state: ListButtonState) {
+        browseComp.setButtonState("add", state);
+        browseComp.setButtonState("replace", state);
+        browseComp.setButtonState("play", state);
+        browseComp.setButtonState("save", state);
+        browseComp.setButtonState("edit", state);
     }
 
     private onBreadCrumbsChanged() {
@@ -96,7 +135,7 @@ export class MainView extends View {
         browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
     }
 
-    private onBrowseFilterChanged() {
+    private onModelBrowseFilterChanged() {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
     }

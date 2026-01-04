@@ -2,7 +2,9 @@ import {EboComponent} from "./EboComponent";
 import {GuiSource} from "../events";
 import {AllUris} from "../modelTypes";
 
-type ListButtonState = "show" | "hide" | "disabled";
+export type ListButtonState = "show" | "hide" | "disabled";
+export type ListButtonName = "add" | "play" | "edit" | "replace" | "save" | "new_playlist";
+
 export class EboListButtonBar extends EboComponent {
     static override readonly tagName=  "ebo-list-button-bar";
     // noinspection JSUnusedGlobalSymbols
@@ -12,13 +14,15 @@ export class EboListButtonBar extends EboComponent {
         "edit_btn_state",
         "replace_btn_state",
         "save_btn_state",
+        "new_playlist_btn_state",
         "list_source", "uri"
     ];
-    add_btn_state: ListButtonState = "show";
-    play_btn_state: ListButtonState = "show";
-    edit_btn_state: ListButtonState = "show";
-    save_btn_state: ListButtonState = "show";
-    replace_btn_state: ListButtonState = "show";
+    add_btn_state: ListButtonState = "hide";
+    play_btn_state: ListButtonState = "hide";
+    edit_btn_state: ListButtonState = "hide";
+    save_btn_state: ListButtonState = "hide";
+    replace_btn_state: ListButtonState = "hide";
+    new_playlist_btn_state: ListButtonState = "hide";
     list_source: GuiSource;
     uri: string;
     static styleText = `
@@ -30,6 +34,9 @@ export class EboListButtonBar extends EboComponent {
                 button.disabled {
                     opacity: 0.2;
                 }
+                img {
+                    height: 1rem;
+                }
             }
         </style>
     `;
@@ -40,6 +47,12 @@ export class EboListButtonBar extends EboComponent {
             <button id="btnReplace" class="roundBorder">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
             <button id="btnSave" class="roundBorder"><i class="fa fa-save"></i></button>
+            <button id="btnNewPlaylist" class="roundBorder">
+                <div class="flexRow">
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">
+                    *            
+                </div>            
+            </button>
         </div>                   
     `;
 
@@ -54,6 +67,7 @@ export class EboListButtonBar extends EboComponent {
             case "edit_btn_state":
             case "replace_btn_state":
             case "save_btn_state":
+            case "new_playlist_btn_state":
                 this.updateButtonStateProperty(name, newValue);
                 break;
             case "list_source":
@@ -87,6 +101,10 @@ export class EboListButtonBar extends EboComponent {
             if(this.save_btn_state != "show") return;
             this.dispatchEboEvent("saveClicked.eboplayer", {source: this.list_source, uri: this.uri as AllUris});
         });
+        this.addShadowEventListener("btnNewPlaylist", "click", (ev) => {
+            if(this.new_playlist_btn_state != "show") return;
+            this.dispatchEboEvent("newPlaylistClicked.eboplayer", {source: this.list_source});
+        });
         this.requestUpdate();
     }
 
@@ -100,6 +118,7 @@ export class EboListButtonBar extends EboComponent {
         this.updateButtonState("btnReplace", this.replace_btn_state);
         this.updateButtonState("btnEdit", this.edit_btn_state);
         this.updateButtonState("btnSave", this.save_btn_state);
+        this.updateButtonState("btnNewPlaylist", this.new_playlist_btn_state);
     }
 
     private updateButtonState(id: string, state: ListButtonState) {

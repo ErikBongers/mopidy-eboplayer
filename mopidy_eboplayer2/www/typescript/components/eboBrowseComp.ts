@@ -4,6 +4,7 @@ import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFi
 import {EmptySearchResults, RefType, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
+import {EboListButtonBar, ListButtonName, ListButtonState} from "./eboListButtonBar";
 
 export class EboBrowseComp extends EboComponent {
     static override readonly tagName=  "ebo-browse-view";
@@ -206,7 +207,7 @@ export class EboBrowseComp extends EboComponent {
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
             this._browseFilter.searchText = inputElement.value;
-            this.dispatchEboEvent("browseFilterChanged.eboplayer", {});
+            this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
         });
         shadow.querySelectorAll("ebo-button")
             .forEach((btn: EboButton) => {
@@ -254,7 +255,7 @@ export class EboBrowseComp extends EboComponent {
         let propName = btn.id.replace("filter", "");
         propName = propName.charAt(0).toLowerCase() + propName.slice(1);
         this.browseFilter[propName] = !this.browseFilter[propName];
-        this.dispatchEboEvent("browseFilterChanged.eboplayer", {});
+        this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
     }
 
     override update(shadow:ShadowRoot) {
@@ -369,4 +370,8 @@ export class EboBrowseComp extends EboComponent {
         this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(btn.dataset.id)});
     }
 
+    setButtonState(listButton: ListButtonName, state: ListButtonState) {
+        let listButtonBar = this.getShadow().querySelector("ebo-list-button-bar") as EboListButtonBar;
+        listButtonBar.setAttribute(listButton+"_btn_state", state);
+    }
 }

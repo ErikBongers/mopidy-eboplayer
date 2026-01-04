@@ -146,7 +146,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     getCurrentBrowseFilter = () => this.currentBrowseFilter;
     setCurrentBrowseFilter(browseFilter: BrowseFilter) {
         this.currentBrowseFilter = browseFilter;
-        this.dispatchEboEvent("browseFilterChanged.eboplayer", {});
+        this.dispatchEboEvent("modelBrowseFilterChanged.eboplayer", {});
     }
 
     setBrowseFilterBreadCrumbs(breadCrumbStack: BrowseFilterBreadCrumbStack) {
