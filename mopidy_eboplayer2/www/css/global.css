@@ -20,6 +20,9 @@ input[type=text],
     user-select: text;
 }
 
+input {
+    background: rgba(255, 255, 255, .07);
+}
 button {
     background: none;
     color: inherit;

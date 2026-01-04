@@ -25,8 +25,8 @@ p {
     margin: 0;
 }
 
-button, input[type="submit"], input[type="reset"] {
-    background: none;
+button, input {
+    background: rgba(255,255,255,.07);
     color: inherit;
     border: none;
     padding: 0;

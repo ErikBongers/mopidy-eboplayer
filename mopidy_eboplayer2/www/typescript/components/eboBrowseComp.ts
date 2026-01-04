@@ -68,7 +68,6 @@ export class EboBrowseComp extends EboComponent {
                 flex-direction: row;
                 & input {
                     flex-grow: 1;
-                    background-color: transparent;
                     color: white;
                     border: none;
                     &:focus {
@@ -84,8 +83,8 @@ export class EboBrowseComp extends EboComponent {
                 border-radius: .5rem;
             }
             .filterButton {
-                width: 2em;
-                height: 2em;
+                width: 1.5em;
+                height: 1.5em;
                 object-fit: contain;
                 margin-right: .5em;
             }
