@@ -3136,16 +3136,16 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
     <div id="breadCrumbs"></div>
     <div id="filterBox">
         <div id="searchBox">
-            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIconFilter"></button>
+            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
             <input id="searchText" type="text" autofocus>
         </div>
         <div id="filterButtons">
-            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIconFilter"></ebo-button>
-            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIconFilter"></ebo-button>
-            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIconFilter"></ebo-button>
-            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIconFilter"></ebo-button>
-            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIconFilter"></ebo-button>
-            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIconFilter"></ebo-button>
+            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
             <button> ALL </button>
             <button> &nbsp;&nbsp;(?) </button>
         </div>
@@ -3622,11 +3622,11 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <div id="extra" class="selectable info"></div>
                     </div>
                     <ebo-list-button-bar 
-                    list_source="${this.list_source}"
-                    add_btn_state="show"
-                    play_btn_state="show"
-                    replace_btn_state="show"
-                    edit_btn_state="show"
+                        list_source="${this.list_source}"
+                        add_btn_state="show"
+                        play_btn_state="show"
+                        replace_btn_state="show"
+                        edit_btn_state="show"
                     >
                     </ebo-list-button-bar>
                 </div>
@@ -3996,12 +3996,12 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
             <button id="btnSave" class="roundBorder">
                 <div class="flexRow">
                     >            
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
                 </div>            
             </button>
             <button id="btnNewPlaylist" class="roundBorder">
                 <div class="flexRow">
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIconFilter">
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
                     *            
                 </div>            
             </button>

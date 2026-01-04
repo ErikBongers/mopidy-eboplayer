@@ -1,16 +1,5 @@
-* list button bar - hide/show/disable for buttons
-
-* list button bar
-  > only show play/add/replace/edit/save for
-    - when text-filtering tracks+albums.
-  > when filtering only playlists:
-    - show "New (playlist)"
-* create sql for generic playlists
-  > start with albums
-  > then include other refs
-
-* show playlist shows the tracks
-* edit playlists shows the criteria AND the resulting tracks.
+* start "scan" from gui -> settings.
+* "edit playlists" shows the criteria AND the resulting tracks.
 * create a (generic) dialog with a slot content.
 
 * Start playlist creation by allowing to safe a browse filter as a playlist.
