@@ -99,6 +99,9 @@ export class MainView extends View {
     }
 
     private setListButtonStates(browseComp: EboBrowseComp) {
+        let currentView = getState().getModel().getView();
+        if(currentView == Views.NowPlaying) return;
+
         let states: ListButtonStates = {
             add: "hide",
             replace: "hide",
@@ -107,50 +110,65 @@ export class MainView extends View {
             edit: "hide",
             new_playlist: "hide"
         };
-        let currentView = getState().getModel().getView();
-        if(currentView == Views.NowPlaying) return;
-
         if(currentView == Views.Browse) {
-            this.setBrowseViewListButtonStates(states);
+            browseComp.btn_states = this.setBrowseViewListButtonStates(states);
             return;
         }
         if(currentView == Views.Album) {
-            this.showHideTrackAndAlbumButtons(states, "show");
+            states = this.showHideTrackAndAlbumButtons(states, "show");
             states.new_playlist = "hide";
+            browseComp.btn_states = states;
         }
     }
 
-    private setBrowseViewListButtonStates(states: ListButtonStates) {
+    private setBrowseViewListButtonStates(states: ListButtonStates): ListButtonStates {
         let refs = getState().getModel().getCurrentSearchResults().refs;
         let uniqueRefTypes = [...new Set(refs.map(ref => ref.ref.type))];
+        let browseFilter = getState().getModel().getCurrentBrowseFilter();
 
         //list ref types state 1
-        let onlyTracksAndAlbums = uniqueRefTypes.filter(t => t == "track" || t == "album").length == uniqueRefTypes.length;
-        if (onlyTracksAndAlbums) {
-            this.showHideTrackAndAlbumButtons(states, "show");
+        if (refs.length == 0) {
+            this.showHideTrackAndAlbumButtons(states, "hide");
             states.new_playlist = "hide";
-            return;
+            return states;
         }
 
         //list ref types state 2
+        if(browseFilter.searchText == "") {
+            this.showHideTrackAndAlbumButtons(states, "show");
+            states.new_playlist = "hide";
+            return states;
+        }
+
+        //list ref types state 3
+        let onlyTracksAndAlbums = uniqueRefTypes.filter(t => t == "track" || t == "album").length == uniqueRefTypes.length;
+        if (onlyTracksAndAlbums) {
+            this.showHideTrackAndAlbumButtons(states, "show");
+            states.new_playlist = "show";
+            return states;
+        }
+
+        //list ref types state 4
         let onlyPlaylists = uniqueRefTypes.filter(t => t == "playlist").length == uniqueRefTypes.length;
         if (onlyPlaylists) {
             states.new_playlist = "show";
             this.showHideTrackAndAlbumButtons(states, "hide");
-            return;
+            return states;
         }
 
-        //list ref types state 3
+        //list ref types state 5
         this.showHideTrackAndAlbumButtons(states, "hide");
-        states.new_playlist = "hide";
+        states.new_playlist = "show";
+        return states;
     }
 
-    private showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState) {
+    private showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState): ListButtonStates {
         states.add = state;
         states.replace = state;
         states.play = state;
         states.save = state;
         states.edit = state;
+        return states;
     }
 
     private onBreadCrumbsChanged() {
@@ -351,4 +369,3 @@ export class MainView extends View {
         this.dialog.setAttribute("ok_text", okButtonText);
     }
 }
-

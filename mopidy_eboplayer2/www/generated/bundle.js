@@ -2814,6 +2814,8 @@ var MainView = class extends View {
 		this.setListButtonStates(browseComp);
 	}
 	setListButtonStates(browseComp) {
+		let currentView = playerState_default().getModel().getView();
+		if (currentView == Views.NowPlaying) return;
 		let states = {
 			add: "hide",
 			replace: "hide",
@@ -2822,32 +2824,43 @@ var MainView = class extends View {
 			edit: "hide",
 			new_playlist: "hide"
 		};
-		let currentView = playerState_default().getModel().getView();
-		if (currentView == Views.NowPlaying) return;
 		if (currentView == Views.Browse) {
-			this.setBrowseViewListButtonStates(states);
+			browseComp.btn_states = this.setBrowseViewListButtonStates(states);
 			return;
 		}
 		if (currentView == Views.Album) {
-			this.showHideTrackAndAlbumButtons(states, "show");
+			states = this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "hide";
+			browseComp.btn_states = states;
 		}
 	}
 	setBrowseViewListButtonStates(states) {
 		let refs = playerState_default().getModel().getCurrentSearchResults().refs;
 		let uniqueRefTypes = [...new Set(refs.map((ref) => ref.ref.type))];
-		if (uniqueRefTypes.filter((t) => t == "track" || t == "album").length == uniqueRefTypes.length) {
+		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		if (refs.length == 0) {
+			this.showHideTrackAndAlbumButtons(states, "hide");
+			states.new_playlist = "hide";
+			return states;
+		}
+		if (browseFilter.searchText == "") {
 			this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "hide";
-			return;
+			return states;
+		}
+		if (uniqueRefTypes.filter((t) => t == "track" || t == "album").length == uniqueRefTypes.length) {
+			this.showHideTrackAndAlbumButtons(states, "show");
+			states.new_playlist = "show";
+			return states;
 		}
 		if (uniqueRefTypes.filter((t) => t == "playlist").length == uniqueRefTypes.length) {
 			states.new_playlist = "show";
 			this.showHideTrackAndAlbumButtons(states, "hide");
-			return;
+			return states;
 		}
 		this.showHideTrackAndAlbumButtons(states, "hide");
-		states.new_playlist = "hide";
+		states.new_playlist = "show";
+		return states;
 	}
 	showHideTrackAndAlbumButtons(states, state$1) {
 		states.add = state$1;
@@ -2855,6 +2868,7 @@ var MainView = class extends View {
 		states.play = state$1;
 		states.save = state$1;
 		states.edit = state$1;
+		return states;
 	}
 	onBreadCrumbsChanged() {
 		let browseComp = document.getElementById("browseView");
