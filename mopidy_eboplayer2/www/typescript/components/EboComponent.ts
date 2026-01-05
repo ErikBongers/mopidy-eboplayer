@@ -6,8 +6,8 @@ export interface HasName {
 }
 
 export abstract class EboComponent extends HTMLElement implements HasName, EboEventTarget {
-    get rendered(): boolean {
-        return this._rendered;
+    get isRendered(): boolean {
+        return this._isRendered;
     }
     static globalCss: CSSStyleSheet[] = [];
     static cssCache: Map<string, CSSStyleSheet> = new Map();
@@ -15,7 +15,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     protected styleTemplate?: HTMLTemplateElement;
     protected divTemplate?: HTMLTemplateElement;
     private connected = false;
-    private _rendered = false;
+    private _isRendered = false;
     private static readonly NO_TAG_NAME: string = "todo: override in subclass";
     static tagName: string = EboComponent.NO_TAG_NAME;
     private renderBatching: Batching;
@@ -98,7 +98,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     private doUpdate() {
         if (!this.connected)
             return;
-        if (!this._rendered)
+        if (!this._isRendered)
             return;
         this.update(this.shadow);
     }
@@ -124,7 +124,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
 
         this.render(this.shadow);
-        this._rendered = true;
+        this._isRendered = true;
     }
 
     abstract render(shadow: ShadowRoot): void;

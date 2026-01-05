@@ -283,7 +283,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     renderBreadCrumbs() {
-        if(!this.rendered) //may be called directly, before initialization.
+        if(!this.isRendered) //may be called directly, before initialization.
             return;
         let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
         breadCrumbsDiv.innerHTML = this.breadCrumbs
@@ -327,7 +327,7 @@ export class EboBrowseComp extends EboComponent {
         return `<img class="filterButton" src="${imgUrl}" alt="">`;
     }
     renderResults() {
-        if(!this.rendered) //may be called directly, before initialization.
+        if(!this.isRendered) //may be called directly, before initialization.
             return;
         this.setSearchInfo("");
 
@@ -371,6 +371,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     setButtonState(listButton: ListButtonName, state: ListButtonState) {
+        if(!this.isRendered) return;
         let listButtonBar = this.getShadow().querySelector("ebo-list-button-bar") as EboListButtonBar;
         listButtonBar.setAttribute(listButton+"_btn_state", state);
     }

@@ -1,4 +1,14 @@
+* Show "Save as playlist" for most search results.
+Create a Savall playlist
+=========================
+Scenario
+--------
+- Browse for "Savall", show Artists, Albums and tracks.
+- Click the "Save as playlist" button.
+
 * start "scan" from gui -> settings.
+  > perhaps a separate scan images command?
+* Play bar: clicking on image moves the player list to the current track (as high as possible, if more items are in the player list).
 * "edit playlists" shows the criteria AND the resulting tracks.
 * create a (generic) dialog with a slot content.
 

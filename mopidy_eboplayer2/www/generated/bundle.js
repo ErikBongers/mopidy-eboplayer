@@ -2000,8 +2000,8 @@ var Batching = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/EboComponent.ts
 var EboComponent = class EboComponent extends HTMLElement {
-	get rendered() {
-		return this._rendered;
+	get isRendered() {
+		return this._isRendered;
 	}
 	static globalCss = [];
 	static cssCache = /* @__PURE__ */ new Map();
@@ -2009,7 +2009,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	styleTemplate;
 	divTemplate;
 	connected = false;
-	_rendered = false;
+	_isRendered = false;
 	static NO_TAG_NAME = "todo: override in subclass";
 	static tagName = EboComponent.NO_TAG_NAME;
 	renderBatching;
@@ -2070,7 +2070,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	doUpdate() {
 		if (!this.connected) return;
-		if (!this._rendered) return;
+		if (!this._isRendered) return;
 		this.update(this.shadow);
 	}
 	update(shadow) {}
@@ -2086,7 +2086,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (this.styleTemplate) this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
 		if (this.divTemplate) this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
 		this.render(this.shadow);
-		this._rendered = true;
+		this._isRendered = true;
 	}
 	getShadow() {
 		return this.shadow;
@@ -3259,7 +3259,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		if (searchInfo) searchInfo.innerHTML = text;
 	}
 	renderBreadCrumbs() {
-		if (!this.rendered) return;
+		if (!this.isRendered) return;
 		let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
 		breadCrumbsDiv.innerHTML = this.breadCrumbs.map((crumb) => this.renderBreadcrumb(crumb)).join(" ");
 		breadCrumbsDiv.querySelectorAll("button").forEach((btn) => {
@@ -3305,7 +3305,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		return `<img class="filterButton" src="${imgUrl}" alt="">`;
 	}
 	renderResults() {
-		if (!this.rendered) return;
+		if (!this.isRendered) return;
 		this.setSearchInfo("");
 		let body = this.getShadow().getElementById("searchResultsTable").tBodies[0];
 		body.innerHTML = "";
@@ -3345,6 +3345,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.dispatchEboEvent("breadCrumbClick.eboplayer", { breadcrumbId: parseInt(btn.dataset.id) });
 	}
 	setButtonState(listButton, state$1) {
+		if (!this.isRendered) return;
 		this.getShadow().querySelector("ebo-list-button-bar").setAttribute(listButton + "_btn_state", state$1);
 	}
 };
