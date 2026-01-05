@@ -64,7 +64,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     }
 
     // noinspection JSUnusedGlobalSymbols
-    connectedCallback() {
+    private connectedCallback() {
         this.shadow = this.attachShadow({mode: "open"});
         this.fetchCssAndCache().then( () => {
             this.connected = true;
