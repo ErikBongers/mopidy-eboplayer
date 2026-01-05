@@ -4,11 +4,29 @@ import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFi
 import {EmptySearchResults, RefType, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
-import {EboListButtonBar, ListButtonName, ListButtonState} from "./eboListButtonBar";
+import {EboListButtonBar, ListButtonStates} from "./eboListButtonBar";
+import {text} from "node:stream/consumers";
 
 export class EboBrowseComp extends EboComponent {
+    get btn_states(): ListButtonStates {
+        return this._btn_states;
+    }
+
+    set btn_states(value: ListButtonStates) {
+        this._btn_states = value;
+        this.requestUpdate();
+    }
     static override readonly tagName=  "ebo-browse-view";
     private static listSource: GuiSource = "browseView";
+
+    private _btn_states: ListButtonStates = {
+        add: "hide",
+        play: "hide",
+        edit: "hide",
+        replace: "hide",
+        save: "hide",
+        new_playlist: "hide"
+    };
 
     get breadCrumbs(): FilterBreadCrumb[] {
         return this._breadCrumbs;
@@ -265,6 +283,8 @@ export class EboBrowseComp extends EboComponent {
                 this.updateFilterButton(btn as HTMLButtonElement));
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
+        let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
+        listButtonBar.btn_states = this.btn_states;
     }
 
     private updateFilterButton(btn: HTMLButtonElement) {
@@ -368,11 +388,5 @@ export class EboBrowseComp extends EboComponent {
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
         this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(btn.dataset.id)});
-    }
-
-    setButtonState(listButton: ListButtonName, state: ListButtonState) {
-        if(!this.isRendered) return;
-        let listButtonBar = this.getShadow().querySelector("ebo-list-button-bar") as EboListButtonBar;
-        listButtonBar.setAttribute(listButton+"_btn_state", state);
     }
 }

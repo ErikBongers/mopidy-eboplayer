@@ -2194,7 +2194,6 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 		if (!(this.min <= this.position && this.position <= this.max)) throw `Attribute position="${this.position}" should be between min="${this.min}" and max="${this.max}".`;
 		this.requestRender();
 	}
-	connectedCallback() {}
 	render(shadow) {
 		let percent = (this.position - this.min) / (this.max - this.min) * 100;
 		let styleElement = shadow.appendChild(document.createElement("style"));
@@ -2815,39 +2814,47 @@ var MainView = class extends View {
 		this.setListButtonStates(browseComp);
 	}
 	setListButtonStates(browseComp) {
+		let states = {
+			add: "hide",
+			replace: "hide",
+			play: "hide",
+			save: "hide",
+			edit: "hide",
+			new_playlist: "hide"
+		};
 		let currentView = playerState_default().getModel().getView();
 		if (currentView == Views.NowPlaying) return;
 		if (currentView == Views.Browse) {
-			this.setBrowseViewListButtonStates(browseComp);
+			this.setBrowseViewListButtonStates(states);
 			return;
 		}
 		if (currentView == Views.Album) {
-			this.showHideTrackAndAlbumButtons(browseComp, "show");
-			browseComp.setButtonState("new_playlist", "hide");
+			this.showHideTrackAndAlbumButtons(states, "show");
+			states.new_playlist = "hide";
 		}
 	}
-	setBrowseViewListButtonStates(browseComp) {
+	setBrowseViewListButtonStates(states) {
 		let refs = playerState_default().getModel().getCurrentSearchResults().refs;
 		let uniqueRefTypes = [...new Set(refs.map((ref) => ref.ref.type))];
 		if (uniqueRefTypes.filter((t) => t == "track" || t == "album").length == uniqueRefTypes.length) {
-			this.showHideTrackAndAlbumButtons(browseComp, "show");
-			browseComp.setButtonState("new_playlist", "hide");
+			this.showHideTrackAndAlbumButtons(states, "show");
+			states.new_playlist = "hide";
 			return;
 		}
 		if (uniqueRefTypes.filter((t) => t == "playlist").length == uniqueRefTypes.length) {
-			browseComp.setButtonState("new_playlist", "show");
-			this.showHideTrackAndAlbumButtons(browseComp, "hide");
+			states.new_playlist = "show";
+			this.showHideTrackAndAlbumButtons(states, "hide");
 			return;
 		}
-		this.showHideTrackAndAlbumButtons(browseComp, "hide");
-		browseComp.setButtonState("new_playlist", "hide");
+		this.showHideTrackAndAlbumButtons(states, "hide");
+		states.new_playlist = "hide";
 	}
-	showHideTrackAndAlbumButtons(browseComp, state$1) {
-		browseComp.setButtonState("add", state$1);
-		browseComp.setButtonState("replace", state$1);
-		browseComp.setButtonState("play", state$1);
-		browseComp.setButtonState("save", state$1);
-		browseComp.setButtonState("edit", state$1);
+	showHideTrackAndAlbumButtons(states, state$1) {
+		states.add = state$1;
+		states.replace = state$1;
+		states.play = state$1;
+		states.save = state$1;
+		states.edit = state$1;
 	}
 	onBreadCrumbsChanged() {
 		let browseComp = document.getElementById("browseView");
@@ -3026,8 +3033,23 @@ var MainView = class extends View {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
+	get btn_states() {
+		return this._btn_states;
+	}
+	set btn_states(value) {
+		this._btn_states = value;
+		this.requestUpdate();
+	}
 	static tagName = "ebo-browse-view";
 	static listSource = "browseView";
+	_btn_states = {
+		add: "hide",
+		play: "hide",
+		edit: "hide",
+		replace: "hide",
+		save: "hide",
+		new_playlist: "hide"
+	};
 	get breadCrumbs() {
 		return this._breadCrumbs;
 	}
@@ -3248,6 +3270,8 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
 		let inputElement = shadow.getElementById("searchText");
 		inputElement.value = this._browseFilter.searchText;
+		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
+		listButtonBar.btn_states = this.btn_states;
 	}
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
@@ -3343,10 +3367,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
 		this.dispatchEboEvent("breadCrumbClick.eboplayer", { breadcrumbId: parseInt(btn.dataset.id) });
-	}
-	setButtonState(listButton, state$1) {
-		if (!this.isRendered) return;
-		this.getShadow().querySelector("ebo-list-button-bar").setAttribute(listButton + "_btn_state", state$1);
 	}
 };
 
@@ -3954,23 +3974,23 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboListButtonBar.ts
 var EboListButtonBar = class EboListButtonBar extends EboComponent {
+	get btn_states() {
+		return this._btn_states;
+	}
+	set btn_states(value) {
+		this._btn_states = value;
+		this.requestUpdate();
+	}
 	static tagName = "ebo-list-button-bar";
-	static observedAttributes = [
-		"add_btn_state",
-		"play_btn_state",
-		"edit_btn_state",
-		"replace_btn_state",
-		"save_btn_state",
-		"new_playlist_btn_state",
-		"list_source",
-		"uri"
-	];
-	add_btn_state = "hide";
-	play_btn_state = "hide";
-	edit_btn_state = "hide";
-	save_btn_state = "hide";
-	replace_btn_state = "hide";
-	new_playlist_btn_state = "hide";
+	static observedAttributes = ["list_source", "uri"];
+	_btn_states = {
+		add: "hide",
+		play: "hide",
+		edit: "hide",
+		replace: "hide",
+		save: "hide",
+		new_playlist: "hide"
+	};
 	list_source;
 	uri;
 	static styleText = `
@@ -4013,14 +4033,6 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
-			case "add_btn_state":
-			case "play_btn_state":
-			case "edit_btn_state":
-			case "replace_btn_state":
-			case "save_btn_state":
-			case "new_playlist_btn_state":
-				this.updateButtonStateProperty(name, newValue);
-				break;
 			case "list_source":
 				this.list_source = newValue;
 				break;
@@ -4032,46 +4044,46 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", (ev) => {
-			if (this.play_btn_state != "show") return;
+			if (this.btn_states.play != "show") return;
 			this.dispatchEboEvent("playItemListClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnAdd", "click", (ev) => {
-			if (this.add_btn_state != "show") return;
+			if (this.btn_states.add != "show") return;
 			this.dispatchEboEvent("addItemListClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnReplace", "click", (ev) => {
-			if (this.replace_btn_state != "show") return;
+			if (this.btn_states.replace != "show") return;
 			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnEdit", "click", (ev) => {
-			if (this.edit_btn_state != "show") return;
+			if (this.btn_states.edit != "show") return;
 			this.dispatchEboEvent("editClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnSave", "click", (ev) => {
-			if (this.save_btn_state != "show") return;
+			if (this.btn_states.save != "show") return;
 			this.dispatchEboEvent("saveClicked.eboplayer", {
 				source: this.list_source,
 				uri: this.uri
 			});
 		});
 		this.addShadowEventListener("btnNewPlaylist", "click", (ev) => {
-			if (this.new_playlist_btn_state != "show") return;
+			if (this.btn_states.new_playlist != "show") return;
 			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
 		});
 		this.requestUpdate();
 	}
-	updateButtonStateProperty(name, newValue) {
-		this.updateStringProperty(name, newValue);
+	updateButtonState(name, newValue) {
+		this.btn_states[name] = newValue;
 	}
 	update(shadow) {
-		this.updateButtonState("btnPlay", this.play_btn_state);
-		this.updateButtonState("btnAdd", this.add_btn_state);
-		this.updateButtonState("btnReplace", this.replace_btn_state);
-		this.updateButtonState("btnEdit", this.edit_btn_state);
-		this.updateButtonState("btnSave", this.save_btn_state);
-		this.updateButtonState("btnNewPlaylist", this.new_playlist_btn_state);
+		this.updateButtonVisibility("btnPlay", this._btn_states.play);
+		this.updateButtonVisibility("btnAdd", this._btn_states.add);
+		this.updateButtonVisibility("btnReplace", this._btn_states.replace);
+		this.updateButtonVisibility("btnEdit", this._btn_states.edit);
+		this.updateButtonVisibility("btnSave", this._btn_states.save);
+		this.updateButtonVisibility("btnNewPlaylist", this._btn_states.new_playlist);
 	}
-	updateButtonState(id, state$1) {
+	updateButtonVisibility(id, state$1) {
 		let btn = this.shadow.getElementById(id);
 		switch (state$1) {
 			case "show":

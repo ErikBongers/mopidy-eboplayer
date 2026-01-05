@@ -6,7 +6,7 @@ import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
-import {ListButtonState} from "../components/eboListButtonBar";
+import {ListButtonState, ListButtonStates} from "../components/eboListButtonBar";
 import {RefType} from "../refs";
 
 export class MainView extends View {
@@ -99,50 +99,58 @@ export class MainView extends View {
     }
 
     private setListButtonStates(browseComp: EboBrowseComp) {
+        let states: ListButtonStates = {
+            add: "hide",
+            replace: "hide",
+            play: "hide",
+            save: "hide",
+            edit: "hide",
+            new_playlist: "hide"
+        };
         let currentView = getState().getModel().getView();
         if(currentView == Views.NowPlaying) return;
 
         if(currentView == Views.Browse) {
-            this.setBrowseViewListButtonStates(browseComp);
+            this.setBrowseViewListButtonStates(states);
             return;
         }
         if(currentView == Views.Album) {
-            this.showHideTrackAndAlbumButtons(browseComp, "show");
-            browseComp.setButtonState("new_playlist", "hide");
+            this.showHideTrackAndAlbumButtons(states, "show");
+            states.new_playlist = "hide";
         }
     }
 
-    private setBrowseViewListButtonStates(browseComp: EboBrowseComp) {
+    private setBrowseViewListButtonStates(states: ListButtonStates) {
         let refs = getState().getModel().getCurrentSearchResults().refs;
         let uniqueRefTypes = [...new Set(refs.map(ref => ref.ref.type))];
 
         //list ref types state 1
         let onlyTracksAndAlbums = uniqueRefTypes.filter(t => t == "track" || t == "album").length == uniqueRefTypes.length;
         if (onlyTracksAndAlbums) {
-            this.showHideTrackAndAlbumButtons(browseComp, "show");
-            browseComp.setButtonState("new_playlist", "hide");
+            this.showHideTrackAndAlbumButtons(states, "show");
+            states.new_playlist = "hide";
             return;
         }
 
         //list ref types state 2
         let onlyPlaylists = uniqueRefTypes.filter(t => t == "playlist").length == uniqueRefTypes.length;
         if (onlyPlaylists) {
-            browseComp.setButtonState("new_playlist", "show");
-            this.showHideTrackAndAlbumButtons(browseComp, "hide");
+            states.new_playlist = "show";
+            this.showHideTrackAndAlbumButtons(states, "hide");
             return;
         }
 
         //list ref types state 3
-        this.showHideTrackAndAlbumButtons(browseComp, "hide");
-        browseComp.setButtonState("new_playlist", "hide");
+        this.showHideTrackAndAlbumButtons(states, "hide");
+        states.new_playlist = "hide";
     }
 
-    private showHideTrackAndAlbumButtons(browseComp: EboBrowseComp, state: ListButtonState) {
-        browseComp.setButtonState("add", state);
-        browseComp.setButtonState("replace", state);
-        browseComp.setButtonState("play", state);
-        browseComp.setButtonState("save", state);
-        browseComp.setButtonState("edit", state);
+    private showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState) {
+        states.add = state;
+        states.replace = state;
+        states.play = state;
+        states.save = state;
+        states.edit = state;
     }
 
     private onBreadCrumbsChanged() {

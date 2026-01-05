@@ -85,10 +85,6 @@ export class EboProgressBar extends EboComponent {
         this.requestRender();
         }
 
-    // noinspection JSUnusedGlobalSymbols
-    override connectedCallback() {
-    }
-
     render(shadow:ShadowRoot) {
         let percent = (this.position - this.min) / (this.max-this.min) * 100;
         let styleElement = shadow.appendChild(document.createElement("style"));
