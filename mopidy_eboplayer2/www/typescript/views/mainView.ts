@@ -1,6 +1,6 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
-import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, PlaylistUri, TrackUri, Views} from "../modelTypes";
+import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaylistUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
@@ -25,6 +25,7 @@ export class MainView extends View {
     }
 
     bind() {
+        // @ts-ignore
         document.getElementById("headerSearchBtn").addEventListener("click", () => {
             this.onBrowseButtonClick();
         });
@@ -182,7 +183,7 @@ export class MainView extends View {
     }
 
     private onBrowseButtonClick() {
-        let browseBtn = document.getElementById("headerSearchBtn");
+        let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
         switch (browseBtn.dataset.goto) {
             case Views.Browse:
                 getState().getController().setView(Views.Browse);
@@ -202,8 +203,8 @@ export class MainView extends View {
     }
 
     private showView(view: Views) {
-        let browseBtn = document.getElementById("headerSearchBtn");
-        let layout = document.getElementById("layout");
+        let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
+        let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         layout.classList.remove("browse", "bigAlbum", "bigTrack");
@@ -258,14 +259,14 @@ export class MainView extends View {
         let uri = getState().getModel().getSelectedTrack();
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
-                if(track.type == "file") {
+                if(track?.type == "file") {
                     let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
                     this.setAlbumComponentData(albumModel);
                 }
-                else {
+                else if(track?.type == "stream") {
                     let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                     let streamModel = await getState().getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
-                    albumComp.albumInfo = undefined;
+                    albumComp.albumInfo = null;
                     albumComp.streamInfo = streamModel;
                     albumComp.setAttribute("img", streamModel.stream.imageUrl);
                     albumComp.setAttribute("name", streamModel.stream.name);
@@ -281,7 +282,7 @@ export class MainView extends View {
     private setAlbumComponentData(albumModel: ExpandedAlbumModel) {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
-        albumComp.streamInfo = undefined;
+        albumComp.streamInfo = null;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
         albumComp.setAttribute("name", albumModel.meta?.albumTitle?? albumModel.album.albumInfo.name);
         albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
@@ -335,7 +336,7 @@ export class MainView extends View {
 
     private async onAddTrackClicked(uri: TrackUri) {
         let trackModel = await getState().getController().getExpandedTrackModel(uri);
-        if(!isInstanceOfExpandedStreamModel(trackModel)) {
+        if(isInstanceOfExpandedTrackModel(trackModel)) {
             let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
             let text = await res.text();
             console_yellow(text);
@@ -349,7 +350,8 @@ export class MainView extends View {
                 <input type="text" id="playListName">
             `;
             this.showDialog(dialogContent, "Save", (dialog) => {
-                let name = dialog.querySelector<HTMLInputElement>("#playListName").value;
+                let playlistName = dialog.querySelector("#playListName") as HTMLInputElement;
+                let name = playlistName.value;
                 return this.saveAlbumAsPlaylist(name, detail);
             });
         }

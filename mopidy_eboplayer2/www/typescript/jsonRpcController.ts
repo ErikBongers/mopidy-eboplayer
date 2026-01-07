@@ -15,11 +15,11 @@ type PendingRequests = { [k: string]: PendingRequest};
 
 export class JsonRpcController extends EventEmitter {
     private readonly _pendingRequests: PendingRequests;
-    private _webSocket: WebSocket;
+    private _webSocket: WebSocket | null;
     private currentDelay: number;
     private readonly webSocketUrl: string;
-    private backoffDelayMin: number;
-    private backoffDelayMax: number;
+    private readonly backoffDelayMin: number;
+    private readonly backoffDelayMax: number;
 
     constructor(webSocketUrl: string, backoffDelayMin: number, backoffDelayMax: number) {
         super();
@@ -99,7 +99,7 @@ export class JsonRpcController extends EventEmitter {
     }
 
     send(message: Object) {
-        switch (this._webSocket.readyState) {
+        switch (this._webSocket?.readyState) {
             case WebSocket.CONNECTING:
                 return Promise.reject(
                     new ConnectionError("WebSocket is still connecting")
@@ -120,7 +120,7 @@ export class JsonRpcController extends EventEmitter {
                         id: this._nextRequestId(),
                     };
                     this._pendingRequests[jsonRpcMessage.id] = {resolve, reject};
-                    this._webSocket.send(JSON.stringify(jsonRpcMessage));
+                    this._webSocket?.send(JSON.stringify(jsonRpcMessage));
                     this.emit("websocket:outgoingMessage", jsonRpcMessage);
                 });
         }
@@ -180,6 +180,7 @@ export class JsonRpcController extends EventEmitter {
 
     private handleEvent(eventMessage: { event: string; }) {
         const data = {...eventMessage};
+        // @ts-ignore
         delete data.event;
         const eventName = `event:${snakeToCamel(eventMessage.event)}`;
         this.emit("event", [eventName, data]);

@@ -15,6 +15,7 @@
         "noImplicitThis": true,
         "noImplicitReturns": true,
         "noImplicitAny": true,
+        "strictNullChecks": true,
         "paths": {
         },
         "typeRoots": ["node_modules/@types"]

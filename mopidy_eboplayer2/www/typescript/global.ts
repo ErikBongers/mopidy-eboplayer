@@ -27,9 +27,9 @@ export function getHostAndPort() {
 }
 
 export function getHostAndPortDefs() {
-    let altHostName = document.body.dataset.hostname;
-    if (altHostName.startsWith("{{"))
-        altHostName = undefined;
+    let altHostName = document.body.dataset.hostname ?? null;
+    if (altHostName?.startsWith("{{"))
+        altHostName = null;
 
     if(!altHostName) {
         altHostName = localStorage.getItem("eboplayer.hostName");

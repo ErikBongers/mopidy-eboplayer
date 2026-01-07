@@ -12,20 +12,20 @@ export class EboBigAlbumComp extends EboComponent {
         this._activeTrackUri = value;
         this.onActiveTrackChanged();
     }
-    get albumInfo() {
+    get albumInfo(): ExpandedAlbumModel | null {
         return this._albumInfo;
     }
 
-    set albumInfo(value: ExpandedAlbumModel) {
+    set albumInfo(value: ExpandedAlbumModel | null) {
         this._albumInfo = value;
         this.requestUpdate();
     }
 
-    private _streamInfo?: ExpandedStreamModel;
-    get streamInfo(): ExpandedStreamModel {
+    private _streamInfo: ExpandedStreamModel | null = null;
+    get streamInfo(): ExpandedStreamModel | null {
         return this._streamInfo;
     }
-    set streamInfo(value: ExpandedStreamModel) {
+    set streamInfo(value: ExpandedStreamModel | null) {
         this._streamInfo = value;
         this.requestUpdate();
     }
@@ -41,7 +41,7 @@ export class EboBigAlbumComp extends EboComponent {
     private extra: string = "";
     private img: string  = "";
     private albumClickEvent: CustomEvent<unknown>;
-    private _albumInfo: ExpandedAlbumModel;
+    private _albumInfo: ExpandedAlbumModel | null = null;
 
     static styleText= `
             <style>
@@ -134,7 +134,7 @@ export class EboBigAlbumComp extends EboComponent {
 
     constructor() {
         super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
-        this.albumInfo = undefined;
+        this.albumInfo = null;
         this.albumClickEvent = new CustomEvent("albumClick", {
             bubbles: true,
             cancelable: false,

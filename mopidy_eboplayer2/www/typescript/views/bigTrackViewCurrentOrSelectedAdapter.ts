@@ -6,7 +6,7 @@ import {EboBigTrackComp} from "../components/eboBigTrackComp";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     private streamLines: string;
-    private uri: string;
+    private uri: string | null = null;
 
     constructor(id: string) {
         super(id);
@@ -44,38 +44,47 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
             if (this.uri && linesObject?.uri == this.uri)
                 this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
         }
+        // @ts-ignore
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
     }
 
-    async setUri(uri: TrackUri) {
+    async setUri(uri: TrackUri | null) {
         this.uri = uri;
         let track = await getState().getController().getExpandedTrackModel(uri);
         this.setComponentData(track);
     }
 
-    protected setComponentData(track: ExpandedStreamModel | ExpandedFileTrackModel) {
+    protected setComponentData(track: ExpandedStreamModel | ExpandedFileTrackModel | null) {
         let name = "no current track";
         let info = "";
         let position: string;
         let button: string;
         let imageUrl: string;
-        if(isInstanceOfExpandedStreamModel(track)) {
-            name = track.stream.name;
-            position = "100";
+        if(!track) {
+            name = "no current track";
+            info = "";
+            position = "0";
             button = "false";
-            imageUrl = track.stream.imageUrl;
+            imageUrl = "";
         } else {
-            name = track.track.title;
-            info = track.album.albumInfo.name;
-            position = "60"; //todo: just a test
-            button = "true";
-            imageUrl = track.album.imageUrl;
-            let artists = track.track.track.artists.map(a => a.name).join(", ");
-            let composers = track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
-            if(artists)
-                info += "<br>" + artists;
-            if(composers)
-                info += "<br>" + composers;
+            if (isInstanceOfExpandedStreamModel(track)) {
+                name = track.stream.name;
+                position = "100";
+                button = "false";
+                imageUrl = track.stream.imageUrl;
+            } else {
+                name = track.track.title;
+                info = track.album.albumInfo.name;
+                position = "60"; //todo: just a test
+                button = "true";
+                imageUrl = track.album.imageUrl;
+                let artists = track.track.track.artists.map(a => a.name).join(", ");
+                let composers = track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
+                if (artists)
+                    info += "<br>" + artists;
+                if (composers)
+                    info += "<br>" + composers;
+            }
         }
         let comp = document.getElementById(this.componentId) as EboBigTrackComp;
         comp.setAttribute("name", name);

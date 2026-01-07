@@ -77,7 +77,7 @@ export class EboButton extends EboComponent {
         this.setClassFromBoolAttribute(imgTag, "pressed");
         this.setClassFromBoolAttribute(imgTag, "disabled");
         imgTag.src = this.img ?? "";
-        let button = shadow.querySelector("button");
+        let button = shadow.querySelector("button") as HTMLButtonElement;
         button.addEventListener("mousedown", (ev) => {
             this.pressTimer.onMouseDown(ev);
         });
@@ -91,7 +91,7 @@ export class EboButton extends EboComponent {
 
     private onClick(eboButton: EboButton) {
         if(this.disabled) return;
-        let button = this.getShadow().querySelector("button");
+        let button = this.getShadow().querySelector("button") as HTMLButtonElement;
         this.pressed = !this.pressed;
         this.setClassFromBoolAttribute(button, "pressed");
         this.setAttribute("pressed", this.pressed.toString());

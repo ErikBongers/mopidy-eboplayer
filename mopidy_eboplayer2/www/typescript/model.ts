@@ -8,14 +8,14 @@ import TlTrack = models.TlTrack;
 
 export interface ViewModel extends EboEventTargetClass {
     getConnectionState: () => ConnectionState;
-    getCurrentTrack: () => TrackUri;
-    getSelectedTrack: () => TrackUri | undefined;
+    getCurrentTrack: () => TrackUri | null;
+    getSelectedTrack: () => TrackUri | null;
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
     getActiveStreamLines: () => StreamTitles;
     getHistory: () => HistoryLine[];
-    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel);
+    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel | null);
     getCurrentBrowseFilter: () => BrowseFilter;
     getCurrentSearchResults(): SearchResults;
     getTrackList(): TlTrack[];
@@ -30,10 +30,10 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 // Views should not update the model directly. See ViewModel for that.
 export class Model extends EboEventTargetClass implements ViewModel {
     static NoTrack: TrackModel = { type: "none" } as NoneTrackModel;
-    currentTrack: TrackUri;
+    currentTrack: TrackUri | null = null;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
-    selectedTrack?: TrackUri;
+    selectedTrack: TrackUri | null = null;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -58,8 +58,8 @@ export class Model extends EboEventTargetClass implements ViewModel {
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
 
-    private allRefs?: Refs;
-    private currentRefs?: Refs;
+    private allRefs: Refs | null = null;
+    private currentRefs: Refs | null = null;
     private view: Views = Views.NowPlaying;
     private albumToViewUri: AlbumUri;
     // private albumCache: Set<LibraryItem> = new Map();
@@ -139,8 +139,8 @@ export class Model extends EboEventTargetClass implements ViewModel {
 
     getConnectionState = () => this.connectionState;
 
-    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel  | AlbumModel) {
-        return this.libraryCache.get(uri);
+    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel  | AlbumModel | null) {
+        return this.libraryCache.get(uri) ?? null;
     }
 
     getCurrentBrowseFilter = () => this.currentBrowseFilter;
@@ -155,25 +155,26 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
     }
 
-    getCurrentTrack(): TrackUri {
+    getCurrentTrack(): TrackUri | null {
         return this.currentTrack;
     }
 
-    setCurrentTrack(track: TrackModel) {
-        if(track.type == "none") {
-            this.currentTrack = undefined;
+    setCurrentTrack(track: TrackModel | null) {
+        if(track?.type == "none") {
+            this.currentTrack = null;
             return;
         }
-        this.currentTrack = track.track.uri;
-        this.addToLibraryCache(this.currentTrack, track);
+        this.currentTrack = track?.track?.uri ?? null;
+        if(this.currentTrack)
+            this.addToLibraryCache(this.currentTrack, track as (FileTrackModel | StreamTrackModel | AlbumModel)); //excluding NoneTrackModel
         this.dispatchEboEvent("currentTrackChanged.eboplayer", {});
     }
 
     getSelectedTrack = () => this.selectedTrack;
 
-    setSelectedTrack(uri?: TrackUri) {
+    setSelectedTrack(uri: TrackUri | null) {
         if(uri == "")
-            this.selectedTrack = undefined;
+            this.selectedTrack = null;
         else
             this.selectedTrack = uri;
         this.dispatchEboEvent("selectedTrackChanged.eboplayer", {});
@@ -276,11 +277,11 @@ export class Model extends EboEventTargetClass implements ViewModel {
         }
     }
 
-    getFromLibraryCache(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel) | undefined {
-        return this.libraryCache.get(uri);
+    getFromLibraryCache(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel) | null {
+        return this.libraryCache.get(uri) ?? null;
     }
 
-    setCurrentRefs(refs: Refs) {
+    setCurrentRefs(refs: Refs | null) {
         this.currentRefs = refs;
         this.dispatchEboEvent("currentRefsLoaded.eboplayer", {});
     }

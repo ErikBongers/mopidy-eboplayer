@@ -157,7 +157,7 @@ export interface CachedAlbumMetaData {
 export interface ExpandedAlbumModel {
     album: AlbumModel,
     tracks: FileTrackModel[],
-    meta: AlbumMetaData,
+    meta: AlbumMetaData | null,
 }
 
 export interface ExpandedStreamModel {
@@ -165,8 +165,14 @@ export interface ExpandedStreamModel {
     historyLines: string[][];
 }
 
-export function isInstanceOfExpandedStreamModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel): model is ExpandedStreamModel {
+export function isInstanceOfExpandedStreamModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel | null): model is ExpandedStreamModel {
+    if(!model) return false;
     return 'stream' in model;
+}
+
+export function isInstanceOfExpandedTrackModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel | null): model is ExpandedFileTrackModel {
+    if(!model) return false;
+    return 'track' in model;
 }
 
 export type TrackModel = NoneTrackModel | FileTrackModel | StreamTrackModel;

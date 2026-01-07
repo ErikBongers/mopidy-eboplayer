@@ -11,7 +11,7 @@ export class HeaderView extends View {
 
     private onMessageChanged() {
         let msg = getState().getModel().getCurrentMessage();
-        let headerSpan = document.getElementById("contentHeadline");
+        let headerSpan = document.getElementById("contentHeadline") as HTMLSpanElement;
         headerSpan.innerText = msg.message;
         switch (msg.type) {
             case MessageType.Error:

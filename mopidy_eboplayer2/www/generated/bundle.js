@@ -142,7 +142,7 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 		console.warn("WebSocket error:", error.stack || error);
 	}
 	send(message) {
-		switch (this._webSocket.readyState) {
+		switch (this._webSocket?.readyState) {
 			case WebSocket.CONNECTING: return Promise.reject(new ConnectionError("WebSocket is still connecting"));
 			case WebSocket.CLOSING: return Promise.reject(new ConnectionError("WebSocket is closing"));
 			case WebSocket.CLOSED: return Promise.reject(new ConnectionError("WebSocket is closed"));
@@ -156,7 +156,7 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 					resolve,
 					reject
 				};
-				this._webSocket.send(JSON.stringify(jsonRpcMessage));
+				this._webSocket?.send(JSON.stringify(jsonRpcMessage));
 				this.emit("websocket:outgoingMessage", jsonRpcMessage);
 			});
 		}
@@ -317,13 +317,7 @@ var Mopidy = class {
 	_options;
 	rpcController;
 	constructor(options) {
-		this._options = this._configure({
-			backoffDelayMin: 1e3,
-			backoffDelayMax: 64e3,
-			autoConnect: true,
-			webSocketUrl: "",
-			...options
-		});
+		this._options = this._configure(options);
 		this.rpcController = new JsonRpcController(this._options.webSocketUrl, this._options.backoffDelayMin, this._options.backoffDelayMax);
 		this._delegateEvents();
 		if (this._options.autoConnect) this.connect();
@@ -335,11 +329,24 @@ var Mopidy = class {
 		this.rpcController?.on(name, callback);
 	}
 	_configure(options) {
-		if (options.webSocketUrl) return options;
+		let defaultOptions = {
+			backoffDelayMin: 1e3,
+			backoffDelayMax: 64e3,
+			autoConnect: true,
+			webSocketUrl: this.resolveWebSocketUrl(options)
+		};
+		return {
+			webSocketUrl: options.webSocketUrl ?? defaultOptions.webSocketUrl,
+			autoConnect: options.autoConnect ?? defaultOptions.autoConnect,
+			backoffDelayMin: options.backoffDelayMin ?? defaultOptions.backoffDelayMin,
+			backoffDelayMax: options.backoffDelayMax ?? defaultOptions.backoffDelayMax
+		};
+	}
+	resolveWebSocketUrl(options) {
+		if (options.webSocketUrl) return options.webSocketUrl;
 		let protocol = typeof document !== "undefined" && document.location.protocol === "https:" ? "wss://" : "ws://";
 		let currentHost = typeof document !== "undefined" && document.location.host || "localhost";
-		options.webSocketUrl = `${protocol}${currentHost}/mopidy/ws`;
-		return options;
+		return `${protocol}${currentHost}/mopidy/ws`;
 	}
 	_delegateEvents() {
 		this.rpcController.on("websocket:close", (closeEvent) => this.onWebSocketClose(closeEvent));
@@ -352,8 +359,12 @@ var Mopidy = class {
 	close() {
 		if (this.rpcController) this.rpcController.close();
 	}
-	send(message) {
-		return this.rpcController?.send(message);
+	send(method, params) {
+		if (params) return this.rpcController?.send({
+			method,
+			params
+		});
+		else return this.rpcController?.send({ method });
 	}
 	_onWebsocketOpen() {
 		this.rpcController.emit("state", "state:online");
@@ -400,7 +411,7 @@ var State = class {
 		});
 	}
 };
-let state = void 0;
+let state = null;
 function setState(newState) {
 	state = newState;
 }
@@ -429,8 +440,8 @@ var Refs = class {
 	}
 	_browseFilter;
 	calculateWeight(result, browseFilter) {
-		if (result.ref.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
-		if (result.ref.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.ref.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.ref.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
 	}
 	setFilter(browseFilter) {
@@ -441,7 +452,7 @@ var Refs = class {
 			this.calculateWeight(result, this.browseFilter);
 		});
 		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
-			if (b.weight === a.weight) return a.ref.ref.name.localeCompare(b.ref.ref.name);
+			if (b.weight === a.weight) return a.ref.ref.name?.localeCompare(b.ref.ref.name ?? "") ?? 0;
 			return b.weight - a.weight;
 		});
 	}
@@ -663,7 +674,12 @@ var BrowseFilter = class {
 };
 const TrackNone = { type: "none" };
 function isInstanceOfExpandedStreamModel(model) {
+	if (!model) return false;
 	return "stream" in model;
+}
+function isInstanceOfExpandedTrackModel(model) {
+	if (!model) return false;
+	return "track" in model;
 }
 let ConnectionState = /* @__PURE__ */ function(ConnectionState$1) {
 	ConnectionState$1[ConnectionState$1["Offline"] = 0] = "Offline";
@@ -723,8 +739,8 @@ function addEboEventListener(target, type, listener, options) {
 var BrowseFilterBreadCrumbStack = class extends BreadCrumbStack {};
 var Model = class extends EboEventTargetClass {
 	static NoTrack = { type: "none" };
-	currentTrack;
-	selectedTrack;
+	currentTrack = null;
+	selectedTrack = null;
 	volume;
 	connectionState = ConnectionState.Offline;
 	currentMessage = {
@@ -746,8 +762,8 @@ var Model = class extends EboEventTargetClass {
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-	allRefs;
-	currentRefs;
+	allRefs = null;
+	currentRefs = null;
 	view = Views.NowPlaying;
 	albumToViewUri;
 	constructor() {
@@ -806,7 +822,7 @@ var Model = class extends EboEventTargetClass {
 	}
 	getConnectionState = () => this.connectionState;
 	getCachedInfo(uri) {
-		return this.libraryCache.get(uri);
+		return this.libraryCache.get(uri) ?? null;
 	}
 	getCurrentBrowseFilter = () => this.currentBrowseFilter;
 	setCurrentBrowseFilter(browseFilter) {
@@ -822,17 +838,17 @@ var Model = class extends EboEventTargetClass {
 		return this.currentTrack;
 	}
 	setCurrentTrack(track) {
-		if (track.type == "none") {
-			this.currentTrack = void 0;
+		if (track?.type == "none") {
+			this.currentTrack = null;
 			return;
 		}
-		this.currentTrack = track.track.uri;
-		this.addToLibraryCache(this.currentTrack, track);
+		this.currentTrack = track?.track?.uri ?? null;
+		if (this.currentTrack) this.addToLibraryCache(this.currentTrack, track);
 		this.dispatchEboEvent("currentTrackChanged.eboplayer", {});
 	}
 	getSelectedTrack = () => this.selectedTrack;
 	setSelectedTrack(uri) {
-		if (uri == "") this.selectedTrack = void 0;
+		if (uri == "") this.selectedTrack = null;
 		else this.selectedTrack = uri;
 		this.dispatchEboEvent("selectedTrackChanged.eboplayer", {});
 	}
@@ -918,7 +934,7 @@ var Model = class extends EboEventTargetClass {
 		else this.updateLibraryCache(item.track.uri, item);
 	}
 	getFromLibraryCache(uri) {
-		return this.libraryCache.get(uri);
+		return this.libraryCache.get(uri) ?? null;
 	}
 	setCurrentRefs(refs) {
 		this.currentRefs = refs;
@@ -1000,260 +1016,281 @@ var HeaderView = class extends View {
 //#region mopidy_eboplayer2/www/typescript/commands.ts
 var Commands = class {
 	mopidy;
+	core;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
-		this.core.commands = this;
-		this.core.history.commands = this;
-		this.core.library.commands = this;
-		this.core.mixer.commands = this;
-		this.core.playback.commands = this;
-		this.core.playlists.commands = this;
-		this.core.tracklist.commands = this;
+		this.core = new Core(mopidy);
 	}
-	send(method, params) {
-		if (params) return this.mopidy.send({
-			method,
-			params
+};
+var Core = class {
+	mopidy;
+	history;
+	library;
+	mixer;
+	playback;
+	playlists;
+	tracklist;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+		this.history = new History(mopidy);
+		this.library = new Library(mopidy);
+		this.mixer = new Mixer(mopidy);
+		this.playback = new Playback(mopidy);
+		this.playlists = new Playlists(mopidy);
+		this.tracklist = new Tracklist(mopidy);
+	}
+	getUriSchemes() {
+		return this.mopidy.send("core.get_uri_schemes");
+	}
+	getVersion() {
+		return this.mopidy.send("core.get_version");
+	}
+};
+var History = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+	}
+	getHistory() {
+		return this.mopidy.send("core.history.get_history");
+	}
+	getLength() {
+		return this.mopidy.send("core.history.get_length");
+	}
+};
+var Library = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+	}
+	browse(uri) {
+		return this.mopidy.send("core.library.browse", { uri });
+	}
+	getDistinct(field, query) {
+		return this.mopidy.send("core.library.get_distinct", {
+			field,
+			query
 		});
-		else return this.mopidy.send({ method });
 	}
-	core = {
-		commands: void 0,
-		getUriSchemes() {
-			return this.commands.send("core.get_uri_schemes");
-		},
-		getVersion() {
-			return this.commands.send("core.get_version");
-		},
-		history: {
-			commands: void 0,
-			getHistory() {
-				return this.commands.send("core.history.get_history");
-			},
-			getLength() {
-				return this.commands.send("core.history.get_length");
-			}
-		},
-		library: {
-			commands: void 0,
-			browse(uri) {
-				return this.commands.send("core.library.browse", { uri });
-			},
-			getDistinct(field, query) {
-				return this.commands.send("core.library.get_distinct", {
-					field,
-					query
-				});
-			},
-			getImages(uris) {
-				return this.commands.send("core.library.get_images", { uris });
-			},
-			lookup(uris) {
-				return this.commands.send("core.library.lookup", { uris });
-			},
-			refresh(uri) {
-				return this.commands.send("core.library.refresh", { uri });
-			},
-			search(query, uris, exact = false) {
-				return this.commands.send("core.library.search", {
-					query,
-					uris,
-					exact
-				});
-			}
-		},
-		mixer: {
-			commands: void 0,
-			getMute() {
-				return this.commands.send("core.mixer.get_mute");
-			},
-			getVolume() {
-				return this.commands.send("core.mixer.get_volume");
-			},
-			setMute(mute) {
-				return this.commands.send("core.mixer.set_mute", { mute });
-			},
-			setVolume(volume) {
-				return this.commands.send("core.mixer.set_volume", { volume });
-			}
-		},
-		playback: {
-			commands: void 0,
-			getCurrentTlTrack() {
-				return this.commands.send("core.playback.get_current_tl_track");
-			},
-			getCurrentTlid() {
-				return this.commands.send("core.playback.get_current_tlid");
-			},
-			getCurrentTrack() {
-				return this.commands.send("core.playback.get_current_track");
-			},
-			getState() {
-				return this.commands.send("core.playback.get_state");
-			},
-			getStreamTitle() {
-				return this.commands.send("core.playback.get_stream_title");
-			},
-			getTimePosition() {
-				return this.commands.send("core.playback.get_time_position");
-			},
-			next() {
-				return this.commands.send("core.playback.next");
-			},
-			pause() {
-				return this.commands.send("core.playback.pause");
-			},
-			play(tl_track, tlid) {
-				return this.commands.send("core.playback.play", {
-					tl_track,
-					tlid
-				});
-			},
-			previous() {
-				return this.commands.send("core.playback.previous");
-			},
-			resume() {
-				return this.commands.send("core.playback.resume");
-			},
-			seek(time_position) {
-				return this.commands.send("core.playback.seek", { time_position });
-			},
-			setState(new_state) {
-				return this.commands.send("core.playback.set_state", { new_state });
-			},
-			stop() {
-				return this.commands.send("core.playback.stop");
-			}
-		},
-		playlists: {
-			commands: void 0,
-			asList() {
-				return this.commands.send("core.playlists.as_list");
-			},
-			create(name, uri_scheme) {
-				return this.commands.send("core.playlists.create", {
-					name,
-					uri_scheme
-				});
-			},
-			delete(uri) {
-				return this.commands.send("core.playlists.delete", { uri });
-			},
-			getItems(uri) {
-				return this.commands.send("core.playlists.get_items", { uri });
-			},
-			getUriSchemes() {
-				return this.commands.send("core.playlists.get_uri_schemes");
-			},
-			lookup(uri) {
-				return this.commands.send("core.playlists.lookup", { uri });
-			},
-			refresh(uri_scheme) {
-				return this.commands.send("core.playlists.refresh", { uri_scheme });
-			},
-			save(playlist) {
-				return this.commands.send("core.playlists.save", { playlist });
-			}
-		},
-		tracklist: {
-			commands: void 0,
-			add(tracks, at_position, uris) {
-				return this.commands.send("core.tracklist.add", {
-					tracks,
-					at_position,
-					uris
-				});
-			},
-			clear() {
-				return this.commands.send("core.tracklist.clear");
-			},
-			eotTrack(tl_track) {
-				return this.commands.send("core.tracklist.eot_track", { tl_track });
-			},
-			filter(criteria) {
-				return this.commands.send("core.tracklist.filter", { criteria });
-			},
-			getConsume() {
-				return this.commands.send("core.tracklist.get_consume");
-			},
-			getEotTlid() {
-				return this.commands.send("core.tracklist.get_eot_tlid");
-			},
-			getLength() {
-				return this.commands.send("core.tracklist.get_length");
-			},
-			getNextTlid() {
-				return this.commands.send("core.tracklist.get_next_tlid");
-			},
-			getPreviousTlid() {
-				return this.commands.send("core.tracklist.get_previous_tlid");
-			},
-			getRandom() {
-				return this.commands.send("core.tracklist.get_random");
-			},
-			getRepeat() {
-				return this.commands.send("core.tracklist.get_repeat");
-			},
-			getSingle() {
-				return this.commands.send("core.tracklist.get_single");
-			},
-			getTlTracks() {
-				return this.commands.send("core.tracklist.get_tl_tracks");
-			},
-			getTracks() {
-				return this.commands.send("core.tracklist.get_tracks");
-			},
-			getVersion() {
-				return this.commands.send("core.tracklist.get_version");
-			},
-			index(tl_track, tlid) {
-				return this.commands.send("core.tracklist.index", {
-					tl_track,
-					tlid
-				});
-			},
-			move(start, end, to_position) {
-				return this.commands.send("core.tracklist.move", {
-					start,
-					end,
-					to_position
-				});
-			},
-			nextTrack(tl_track) {
-				return this.commands.send("core.tracklist.next_track", { tl_track });
-			},
-			previousTrack(tl_track) {
-				return this.commands.send("core.tracklist.previous_track", { tl_track });
-			},
-			remove(criteria) {
-				return this.commands.send("core.tracklist.remove", { criteria });
-			},
-			setConsume(value) {
-				return this.commands.send("core.tracklist.set_consume", { value });
-			},
-			setRandom(value) {
-				return this.commands.send("core.tracklist.set_random", { value });
-			},
-			setRepeat(value) {
-				return this.commands.send("core.tracklist.set_repeat", { value });
-			},
-			setSingle(value) {
-				return this.commands.send("core.tracklist.set_single", { value });
-			},
-			shuffle(start, end) {
-				return this.commands.send("core.tracklist.shuffle", {
-					start,
-					end
-				});
-			},
-			slice(start, end) {
-				return this.commands.send("core.tracklist.slice", {
-					start,
-					end
-				});
-			}
-		}
-	};
+	getImages(uris) {
+		return this.mopidy.send("core.library.get_images", { uris });
+	}
+	lookup(uris) {
+		return this.mopidy.send("core.library.lookup", { uris });
+	}
+	refresh(uri) {
+		return this.mopidy.send("core.library.refresh", { uri });
+	}
+	search(query, uris, exact = false) {
+		return this.mopidy.send("core.library.search", {
+			query,
+			uris,
+			exact
+		});
+	}
+};
+var Mixer = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+	}
+	getMute() {
+		return this.mopidy.send("core.mixer.get_mute");
+	}
+	getVolume() {
+		return this.mopidy.send("core.mixer.get_volume");
+	}
+	setMute(mute) {
+		return this.mopidy.send("core.mixer.set_mute", { mute });
+	}
+	setVolume(volume) {
+		return this.mopidy.send("core.mixer.set_volume", { volume });
+	}
+};
+var Playback = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+	}
+	getCurrentTlTrack() {
+		return this.mopidy.send("core.playback.get_current_tl_track");
+	}
+	getCurrentTlid() {
+		return this.mopidy.send("core.playback.get_current_tlid");
+	}
+	getCurrentTrack() {
+		return this.mopidy.send("core.playback.get_current_track");
+	}
+	getState() {
+		return this.mopidy.send("core.playback.get_state");
+	}
+	getStreamTitle() {
+		return this.mopidy.send("core.playback.get_stream_title");
+	}
+	getTimePosition() {
+		return this.mopidy.send("core.playback.get_time_position");
+	}
+	next() {
+		return this.mopidy.send("core.playback.next");
+	}
+	pause() {
+		return this.mopidy.send("core.playback.pause");
+	}
+	play(tl_track, tlid) {
+		return this.mopidy.send("core.playback.play", {
+			tl_track,
+			tlid
+		});
+	}
+	previous() {
+		return this.mopidy.send("core.playback.previous");
+	}
+	resume() {
+		return this.mopidy.send("core.playback.resume");
+	}
+	seek(time_position) {
+		return this.mopidy.send("core.playback.seek", { time_position });
+	}
+	setState(new_state) {
+		return this.mopidy.send("core.playback.set_state", { new_state });
+	}
+	stop() {
+		return this.mopidy.send("core.playback.stop");
+	}
+};
+var Playlists = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+	}
+	asList() {
+		return this.mopidy.send("core.playlists.as_list");
+	}
+	create(name, uri_scheme) {
+		return this.mopidy.send("core.playlists.create", {
+			name,
+			uri_scheme
+		});
+	}
+	delete(uri) {
+		return this.mopidy.send("core.playlists.delete", { uri });
+	}
+	getItems(uri) {
+		return this.mopidy.send("core.playlists.get_items", { uri });
+	}
+	getUriSchemes() {
+		return this.mopidy.send("core.playlists.get_uri_schemes");
+	}
+	lookup(uri) {
+		return this.mopidy.send("core.playlists.lookup", { uri });
+	}
+	refresh(uri_scheme) {
+		return this.mopidy.send("core.playlists.refresh", { uri_scheme });
+	}
+	save(playlist) {
+		return this.mopidy.send("core.playlists.save", { playlist });
+	}
+};
+var Tracklist = class {
+	mopidy;
+	constructor(mopidy) {
+		this.mopidy = mopidy;
+	}
+	add(tracks, at_position, uris) {
+		return this.mopidy.send("core.tracklist.add", {
+			tracks,
+			at_position,
+			uris
+		});
+	}
+	clear() {
+		return this.mopidy.send("core.tracklist.clear");
+	}
+	eotTrack(tl_track) {
+		return this.mopidy.send("core.tracklist.eot_track", { tl_track });
+	}
+	filter(criteria) {
+		return this.mopidy.send("core.tracklist.filter", { criteria });
+	}
+	getConsume() {
+		return this.mopidy.send("core.tracklist.get_consume");
+	}
+	getEotTlid() {
+		return this.mopidy.send("core.tracklist.get_eot_tlid");
+	}
+	getLength() {
+		return this.mopidy.send("core.tracklist.get_length");
+	}
+	getNextTlid() {
+		return this.mopidy.send("core.tracklist.get_next_tlid");
+	}
+	getPreviousTlid() {
+		return this.mopidy.send("core.tracklist.get_previous_tlid");
+	}
+	getRandom() {
+		return this.mopidy.send("core.tracklist.get_random");
+	}
+	getRepeat() {
+		return this.mopidy.send("core.tracklist.get_repeat");
+	}
+	getSingle() {
+		return this.mopidy.send("core.tracklist.get_single");
+	}
+	getTlTracks() {
+		return this.mopidy.send("core.tracklist.get_tl_tracks");
+	}
+	getTracks() {
+		return this.mopidy.send("core.tracklist.get_tracks");
+	}
+	getVersion() {
+		return this.mopidy.send("core.tracklist.get_version");
+	}
+	index(tl_track, tlid) {
+		return this.mopidy.send("core.tracklist.index", {
+			tl_track,
+			tlid
+		});
+	}
+	move(start, end, to_position) {
+		return this.mopidy.send("core.tracklist.move", {
+			start,
+			end,
+			to_position
+		});
+	}
+	nextTrack(tl_track) {
+		return this.mopidy.send("core.tracklist.next_track", { tl_track });
+	}
+	previousTrack(tl_track) {
+		return this.mopidy.send("core.tracklist.previous_track", { tl_track });
+	}
+	remove(criteria) {
+		return this.mopidy.send("core.tracklist.remove", { criteria });
+	}
+	setConsume(value) {
+		return this.mopidy.send("core.tracklist.set_consume", { value });
+	}
+	setRandom(value) {
+		return this.mopidy.send("core.tracklist.set_random", { value });
+	}
+	setRepeat(value) {
+		return this.mopidy.send("core.tracklist.set_repeat", { value });
+	}
+	setSingle(value) {
+		return this.mopidy.send("core.tracklist.set_single", { value });
+	}
+	shuffle(start, end) {
+		return this.mopidy.send("core.tracklist.shuffle", {
+			start,
+			end
+		});
+	}
+	slice(start, end) {
+		return this.mopidy.send("core.tracklist.slice", {
+			start,
+			end
+		});
+	}
 };
 
 //#endregion
@@ -1339,8 +1376,8 @@ function getHostAndPort() {
 	return hostDefs.altHost ?? hostDefs.host;
 }
 function getHostAndPortDefs() {
-	let altHostName = document.body.dataset.hostname;
-	if (altHostName.startsWith("{{")) altHostName = void 0;
+	let altHostName = document.body.dataset.hostname ?? null;
+	if (altHostName?.startsWith("{{")) altHostName = null;
 	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
 	return {
 		host: document.location.host,
@@ -1540,7 +1577,7 @@ var Controller = class Controller extends Commands {
 		}
 		let trackModel = await this.lookupTrackCached(data.track.uri);
 		this.model.setCurrentTrack(trackModel);
-		if (!this.model.selectedTrack) this.model.setSelectedTrack(trackModel.track.uri);
+		if (!this.model.selectedTrack) this.model.setSelectedTrack(trackModel?.track?.uri ?? null);
 		await this.updateStreamLines();
 	}
 	async updateStreamLines() {
@@ -1558,8 +1595,8 @@ var Controller = class Controller extends Commands {
 			let arr = images[uri];
 			arr.sort((imgA, imgB) => imgA.width * imgA.height - imgB.width * imgB.height);
 			if (arr.length == 0) return Controller.DEFAULT_IMG_URL;
-			let imageUrl = arr.pop().uri;
-			if (imageUrl == "") imageUrl = Controller.DEFAULT_IMG_URL;
+			let imageUrl = arr.pop()?.uri;
+			if ((imageUrl ?? "") == "") imageUrl = Controller.DEFAULT_IMG_URL;
 			return baseUrl + imageUrl;
 		}
 		let images = await this.mopidyProxy.fetchImages(uris);
@@ -1624,7 +1661,7 @@ var Controller = class Controller extends Commands {
 		let breadCrumbs = playerState_default().getModel().getBreadCrumbs();
 		if (breadCrumb instanceof BreadCrumbBrowseFilter) {
 			this.model.resetBreadCrumbsTo(id);
-			let browseFilter = this.model.popBreadCrumb().data;
+			let browseFilter = this.model.popBreadCrumb()?.data;
 			this.setAndSaveBrowseFilter(browseFilter);
 			this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
 			this.fetchRefsForCurrentBreadCrumbs().then(() => {
@@ -1649,6 +1686,7 @@ var Controller = class Controller extends Commands {
 		}
 	}
 	async lookupTrackCached(trackUri) {
+		if (!trackUri) return null;
 		let item = this.model.getFromLibraryCache(trackUri);
 		if (item) return item;
 		let libraryList = await this.fetchAndConvertTracks(trackUri);
@@ -1740,24 +1778,29 @@ var Controller = class Controller extends Commands {
 		return await Promise.all(newListPromises);
 	}
 	async getExpandedTrackModel(trackUri) {
+		if (!trackUri) return null;
 		let track = await this.lookupTrackCached(trackUri);
-		if (track.type == "stream") {
+		if (track?.type == "stream") {
 			let streamLines = await this.fetchStreamLines(trackUri);
 			return {
 				stream: track,
 				historyLines: streamLines
 			};
-		} else {
-			let album = await this.lookupAlbumsCached([track.track.album.uri]);
+		}
+		if (track) {
+			let uri = track?.track?.album?.uri;
+			if (!uri) throw new Error("trackUri is null");
+			let album = await this.lookupAlbumsCached([uri]);
 			return {
 				track,
 				album: album[0]
 			};
 		}
+		throw new Error("trackUri not found in library");
 	}
 	async getExpandedAlbumModel(albumUri) {
 		let album = (await this.lookupAlbumsCached([albumUri]))[0];
-		let meta = await this.getMetaDataCached(albumUri);
+		let meta = await this.getMetaDataCached(albumUri) ?? null;
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
 		return {
 			album,
@@ -1769,7 +1812,7 @@ var Controller = class Controller extends Commands {
 		let cachedMeta = this.model.getFromMetaCache(albumUri);
 		if (cachedMeta) return cachedMeta.meta;
 		let meta = await this.webProxy.fetchMetaData(albumUri);
-		this.model.addToMetaCache(albumUri, meta);
+		if (meta) this.model.addToMetaCache(albumUri, meta);
 		return meta;
 	}
 	setSelectedTrack(uri) {
@@ -1790,7 +1833,7 @@ var Controller = class Controller extends Commands {
 		let playLists = await this.mopidyProxy.fetchPlayLists();
 		let radioStreamsPlayList = playLists.find((playlist) => playlist.name == "[Radio Streams]");
 		let playlists = playLists.filter((playlist) => playlist.name != "[Radio Streams]");
-		let radioStreams;
+		let radioStreams = [];
 		if (radioStreamsPlayList) radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
 		return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
 	}
@@ -1833,7 +1876,7 @@ var Controller = class Controller extends Commands {
 			let allRefs = await this.fetchAllRefs();
 			this.model.setAllRefs(allRefs);
 		}
-		this.model.setCurrentRefs(this.model.getAllRefs());
+		this.model.setCurrentRefs(this.model.getAllRefs() ?? null);
 	}
 	async fetchStreamLines(streamUri) {
 		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
@@ -1950,7 +1993,7 @@ var ButtonBarView = class extends View {
 				comp.setAttribute("allow_next", "false");
 				comp.setAttribute("image_url", trackModel.stream.imageUrl);
 				comp.setAttribute("stop_or_pause", "stop");
-			} else {
+			} else if (isInstanceOfExpandedStreamModel(trackModel)) {
 				comp.setAttribute("text", trackModel.track.track.name);
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
@@ -2112,7 +2155,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		customElements.define(comp.tagName, comp);
 	}
 	addShadowEventListener(id, type, listener) {
-		this.shadow.getElementById(id).addEventListener(type, listener);
+		this.shadow.getElementById(id)?.addEventListener(type, listener);
 	}
 };
 
@@ -2281,7 +2324,7 @@ var TimelineView = class extends View {
 		tr.classList.add("current", "textGlow");
 	}
 	insertHistoryLine(line, body) {
-		let title = line.ref.name.split(" - ").pop();
+		let title = line.ref.name.split(" - ").pop() ?? "???";
 		this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
 	}
 	insertTrackLine(title, uri, body, classes = [], tlid) {
@@ -2303,6 +2346,7 @@ var TimelineView = class extends View {
 		await playerState_default().getController().lookupAllTracks(uris);
 		for (const uri of uris) {
 			const track = await playerState_default().getController().lookupTrackCached(uri);
+			if (!track) continue;
 			document.querySelectorAll(`tr[data-uri="${uri}"]`).forEach((tr) => this.updateTrackLineFromLookup(tr, track));
 		}
 	}
@@ -2527,7 +2571,7 @@ var ComponentViewAdapter = class extends View {
 //#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
 var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	streamLines;
-	uri;
+	uri = null;
 	constructor(id) {
 		super(id);
 	}
@@ -2576,7 +2620,13 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		let position;
 		let button;
 		let imageUrl;
-		if (isInstanceOfExpandedStreamModel(track)) {
+		if (!track) {
+			name = "no current track";
+			info = "";
+			position = "0";
+			button = "false";
+			imageUrl = "";
+		} else if (isInstanceOfExpandedStreamModel(track)) {
 			name = track.stream.name;
 			position = "100";
 			button = "false";
@@ -2605,7 +2655,7 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboAlbumTracksComp.ts
 var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
-	_streamInfo;
+	_streamInfo = null;
 	get streamInfo() {
 		return this._streamInfo;
 	}
@@ -2627,10 +2677,10 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	_activeTrackUri = null;
 	static tagName = "ebo-album-tracks-view";
 	static observedAttributes = ["img"];
-	_albumInfo;
+	_albumInfo = null;
 	constructor() {
 		super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
-		this.albumInfo = void 0;
+		this.albumInfo = null;
 		this.requestRender();
 	}
 	static styleText = `
@@ -2958,13 +3008,13 @@ var MainView = class extends View {
 	async onSelectedTrackChanged() {
 		let uri = playerState_default().getModel().getSelectedTrack();
 		playerState_default().getController().lookupTrackCached(uri).then(async (track) => {
-			if (track.type == "file") {
+			if (track?.type == "file") {
 				let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
 				this.setAlbumComponentData(albumModel);
-			} else {
+			} else if (track?.type == "stream") {
 				let albumComp = document.getElementById("bigAlbumView");
 				let streamModel = await playerState_default().getController().getExpandedTrackModel(track.track.uri);
-				albumComp.albumInfo = void 0;
+				albumComp.albumInfo = null;
 				albumComp.streamInfo = streamModel;
 				albumComp.setAttribute("img", streamModel.stream.imageUrl);
 				albumComp.setAttribute("name", streamModel.stream.name);
@@ -2978,7 +3028,7 @@ var MainView = class extends View {
 	setAlbumComponentData(albumModel) {
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.albumInfo = albumModel;
-		albumComp.streamInfo = void 0;
+		albumComp.streamInfo = null;
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
 		albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 		albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
@@ -3021,7 +3071,7 @@ var MainView = class extends View {
 	}
 	async onAddTrackClicked(uri) {
 		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
-		if (!isInstanceOfExpandedStreamModel(trackModel)) {
+		if (isInstanceOfExpandedTrackModel(trackModel)) {
 			let text = await (await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri)).text();
 			console_yellow(text);
 		}
@@ -3434,7 +3484,7 @@ var MouseTimer = class {
 	}
 	cancelPressTimer() {
 		if (this.activeTimer) clearTimeout(this.activeTimer);
-		this.activeTimer = void 0;
+		this.activeTimer = null;
 	}
 	startPressTimer(ev, onTimeOutCallback) {
 		this.mouseUpCount = 0;
@@ -3564,7 +3614,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		this._albumInfo = value;
 		this.requestUpdate();
 	}
-	_streamInfo;
+	_streamInfo = null;
 	get streamInfo() {
 		return this._streamInfo;
 	}
@@ -3591,7 +3641,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	extra = "";
 	img = "";
 	albumClickEvent;
-	_albumInfo;
+	_albumInfo = null;
 	static styleText = `
             <style>
                 :host { 
@@ -3680,7 +3730,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
         `;
 	constructor() {
 		super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
-		this.albumInfo = void 0;
+		this.albumInfo = null;
 		this.albumClickEvent = new CustomEvent("albumClick", {
 			bubbles: true,
 			cancelable: false,
@@ -3872,7 +3922,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		};
 		let btnPlay = shadow.getElementById("btnPlay");
 		btnPlay.addEventListener("click", (ev) => {
-			switch (btnPlay.querySelector("i").title) {
+			switch (btnPlay.querySelector("i")?.title) {
 				case "Play":
 					this.dispatchEboEvent("playPressed.eboplayer", {});
 					break;
@@ -3918,7 +3968,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
 		titleEl.innerHTML = this.text.replaceAll("\n", "<br/>");
 	}
 	setPlayButton(title, addClass) {
-		let btnPlayIcon = this.getShadow().getElementById("btnPlay").querySelector("i");
+		let btnPlayIcon = this.getShadow().getElementById("btnPlay")?.querySelector("i");
 		btnPlayIcon.classList.remove("fa-play", "fa-pause", "fa-stop");
 		btnPlayIcon.classList.add(addClass);
 		btnPlayIcon.setAttribute("title", title);
@@ -4324,8 +4374,8 @@ var EboDialog = class EboDialog extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
-	let webSocketUrl = document.body.dataset.websocketUrl;
-	if (webSocketUrl.startsWith("{{")) webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
+	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
+	if (webSocketUrl?.startsWith("{{")) webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
 	return webSocketUrl;
 }
 document.addEventListener("DOMContentLoaded", function() {

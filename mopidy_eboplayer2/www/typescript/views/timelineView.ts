@@ -73,8 +73,8 @@ export class TimelineView extends View {
     }
 
     private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {
-        document
-            .getElementById("timelineTable")
+        (document
+            .getElementById("timelineTable") as HTMLTableElement)
             .querySelectorAll(`tr`)
             .forEach(tr =>
                 tr.classList.remove(...classes)
@@ -82,8 +82,8 @@ export class TimelineView extends View {
         if(rowOrSelector instanceof HTMLTableRowElement)
             rowOrSelector.classList.add(...classes);
         else {
-            document
-                .getElementById("timelineTable")
+            (document
+                .getElementById("timelineTable") as HTMLTableElement)
                 .querySelectorAll(rowOrSelector)
                 .forEach(tr =>
                     tr.classList.add(...classes)
@@ -116,7 +116,7 @@ export class TimelineView extends View {
 
     private insertHistoryLine(line: HistoryLine, body: HTMLTableSectionElement) {
         let slices = line.ref.name.split(" - ");
-        let title = slices.pop();
+        let title = slices.pop() ?? "???";
         this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
     }
 
@@ -142,6 +142,7 @@ export class TimelineView extends View {
         await getState().getController().lookupAllTracks(uris);
         for (const uri of uris) {
             const track = await getState().getController().lookupTrackCached(uri);
+            if(!track) continue;
             let trs = document.querySelectorAll(`tr[data-uri="${uri}"]`) as NodeListOf<HTMLTableRowElement>;
             trs.forEach(tr => this.updateTrackLineFromLookup(tr, track));
         }

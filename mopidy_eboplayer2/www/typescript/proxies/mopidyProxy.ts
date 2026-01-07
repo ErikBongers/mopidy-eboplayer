@@ -29,7 +29,7 @@ export class MopidyProxy {
         await this.commands.core.tracklist.clear();
     }
 
-    async browse<T extends AllUris>(uri: string) {
+    async browse<T extends AllUris>(uri: string | null) {
         return await this.commands.core.library.browse(uri) as Ref<T>[];
     }
 
@@ -112,7 +112,7 @@ export class MopidyProxy {
     }
 
     async fetchCurrentTrack() {
-        return await this.commands.core.playback.getCurrentTlTrack() as TlTrack | undefined;
+        return await this.commands.core.playback.getCurrentTlTrack() as TlTrack | null;
     }
 
     async fetchPlayLists() {

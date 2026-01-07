@@ -55,7 +55,8 @@ export class State {
     }
 }
 
-let state: State = undefined; //todo: assuming here that all calls to getState() will receive a valid state object.
+// @ts-ignore
+let state: State = null; //todo: assuming here that all calls to getState() will receive a valid state object.
 
 export function setState(newState: State) { state = newState; }
 const getState = () => state;

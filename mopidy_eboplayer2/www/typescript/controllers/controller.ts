@@ -175,7 +175,7 @@ export class Controller extends Commands implements DataRequester{
         let trackModel = await this.lookupTrackCached(data.track.uri);
         this.model.setCurrentTrack(trackModel);
         if(!this.model.selectedTrack)
-            this.model.setSelectedTrack(trackModel.track.uri);
+            this.model.setSelectedTrack(trackModel?.track?.uri ?? null);
         await this.updateStreamLines();
 
         //todo: do this only when a track is started?s
@@ -201,8 +201,8 @@ export class Controller extends Commands implements DataRequester{
             arr.sort((imgA, imgB) => (imgA.width * imgA.height) - (imgB.width * imgB.height));
             if (arr.length == 0)
                 return Controller.DEFAULT_IMG_URL;
-            let imageUrl = arr.pop().uri;
-            if (imageUrl == "")
+            let imageUrl = arr.pop()?.uri;
+            if ((imageUrl?? "") == "")
                 imageUrl = Controller.DEFAULT_IMG_URL;
             return baseUrl + imageUrl as ImageUri;
         }
@@ -280,7 +280,7 @@ export class Controller extends Commands implements DataRequester{
         //if the breadCrumb is a browseFilter, reset to the previous breadCrumb and set the current browseFilter to the one in the breadCrumb.
         if(breadCrumb instanceof BreadCrumbBrowseFilter) {
             this.model.resetBreadCrumbsTo(id);
-            let browseFilter = this.model.popBreadCrumb().data as BrowseFilter;
+            let browseFilter = this.model.popBreadCrumb()?.data as BrowseFilter;
             this.setAndSaveBrowseFilter(browseFilter);
             this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
             this.fetchRefsForCurrentBreadCrumbs().then(() => {
@@ -305,14 +305,16 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    async lookupTrackCached(trackUri: TrackUri) {
+    async lookupTrackCached(trackUri: TrackUri | null) {
+        if(!trackUri)
+            return null;
         let item = this.model.getFromLibraryCache(trackUri);
         if(item)
             return item as FileTrackModel | StreamTrackModel;
 
         let libraryList = await this.fetchAndConvertTracks(trackUri);
         this.model.addItemsToLibraryCache(libraryList);
-        return this.model.getFromLibraryCache(trackUri) as FileTrackModel | StreamTrackModel | undefined; //assuming the trackUri points to a file or a stream.
+        return this.model.getFromLibraryCache(trackUri) as FileTrackModel | StreamTrackModel | null; //assuming the trackUri points to a file or a stream.
     }
 
     async lookupAlbumsCached(albumUris: AlbumUri[]) {
@@ -408,9 +410,11 @@ export class Controller extends Commands implements DataRequester{
         return await Promise.all(newListPromises);
     }
 
-    async getExpandedTrackModel(trackUri: TrackUri): Promise<ExpandedStreamModel | ExpandedFileTrackModel>{
+    async getExpandedTrackModel(trackUri: TrackUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
+        if(!trackUri)
+            return null;
         let track = await this.lookupTrackCached(trackUri);
-        if(track.type == "stream") {
+        if(track?.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
             // noinspection UnnecessaryLocalVariableJS
             let streamModel: ExpandedStreamModel = {
@@ -418,15 +422,20 @@ export class Controller extends Commands implements DataRequester{
                 historyLines: streamLines,
             };
             return streamModel;
-        } else {
-            let album = await this.lookupAlbumsCached([track.track.album.uri]);
+        }
+        if(track) {
+            let uri = track?.track?.album?.uri;
+            if(!uri)
+                throw new Error("trackUri is null");
+            let album = await this.lookupAlbumsCached([uri]);
             return {track, album: album[0]};
         }
+        throw new Error("trackUri not found in library");
     }
 
     async getExpandedAlbumModel(albumUri: AlbumUri): Promise<ExpandedAlbumModel> {
         let album =  (await this.lookupAlbumsCached([albumUri]))[0];
-        let meta = await this.getMetaDataCached(albumUri);
+        let meta = await this.getMetaDataCached(albumUri) ?? null;
         let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
         return {album, tracks, meta};
     }
@@ -436,11 +445,12 @@ export class Controller extends Commands implements DataRequester{
         if(cachedMeta)
             return cachedMeta.meta;
         let meta = await this.webProxy.fetchMetaData(albumUri);
-        this.model.addToMetaCache(albumUri, meta);
+        if(meta)
+            this.model.addToMetaCache(albumUri, meta);
         return meta;
     }
 
-    setSelectedTrack(uri: TrackUri) {
+    setSelectedTrack(uri: TrackUri | null) {
         this.model.setSelectedTrack(uri);
     }
 
@@ -462,7 +472,7 @@ export class Controller extends Commands implements DataRequester{
         let playLists = await this.mopidyProxy.fetchPlayLists();
         let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
         let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
-        let radioStreams: models.Ref<RadioUri>[];
+        let radioStreams: models.Ref<RadioUri>[] = [];
         if(radioStreamsPlayList) {
             radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri) as models.Ref<RadioUri>[];
         }
@@ -521,7 +531,7 @@ export class Controller extends Commands implements DataRequester{
             let allRefs = await this.fetchAllRefs();
             this.model.setAllRefs(allRefs);
         }
-        this.model.setCurrentRefs(this.model.getAllRefs());
+        this.model.setCurrentRefs(this.model.getAllRefs()?? null);
     }
 
     async fetchStreamLines(streamUri: string) {

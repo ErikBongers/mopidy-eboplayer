@@ -42,9 +42,9 @@ export abstract class Refs {
     abstract filter(): void;
 
     protected calculateWeight(result: SearchResult, browseFilter: BrowseFilter) {
-        if (result.ref.ref.name.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
+        if (result.ref.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
-        if (result.ref.ref.name.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
+        if (result.ref.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (!browseFilter.searchText)
             result.weight += 1; //No search text? Give every result a weight of 1, so that they are always shown.
@@ -62,7 +62,7 @@ export abstract class Refs {
             .filter(result => result.weight > 0)
             .sort((a, b) => {
                 if (b.weight === a.weight) {
-                    return a.ref.ref.name.localeCompare(b.ref.ref.name);
+                    return a.ref.ref.name?.localeCompare(b.ref.ref.name?? "")?? 0;
                 }
                 return b.weight - a.weight
             });

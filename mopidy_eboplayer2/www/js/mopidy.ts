@@ -17,7 +17,7 @@ export interface Options {
      * In a non-browser environment, where document.location isn't available, it
      * defaults to ws://localhost/mopidy/ws.
      */
-    webSocketUrl: string;
+    webSocketUrl?: string | null;
     /**
      * Whether or not to connect to the WebSocket on instance creation. Defaults
      * to true.
@@ -38,6 +38,14 @@ export interface Options {
      * If set, this object will be used to log errors from Mopidy.js. This is
      * mostly useful for testing Mopidy.js. Defaults to console.
      */
+}
+
+
+export interface ResolvedOptions {
+    webSocketUrl: string;
+    autoConnect: boolean;
+    backoffDelayMin: number;
+    backoffDelayMax: number;
 }
 
 type URI = string;
@@ -155,16 +163,10 @@ export namespace core {
 }
 
 export class Mopidy {
-    _options: Options;
+    _options: ResolvedOptions;
     private rpcController: JsonRpcController;
     constructor(options: Options) {
-        const defaultOptions = {
-            backoffDelayMin: 1000,
-                backoffDelayMax: 64000,
-            autoConnect: true,
-            webSocketUrl: ''
-        };
-        this._options = this._configure({...defaultOptions, ...options});
+        this._options = this._configure(options);
         this.rpcController = new JsonRpcController(this._options.webSocketUrl, this._options.backoffDelayMin, this._options.backoffDelayMax);
         this._delegateEvents();
         if (this._options.autoConnect) {
@@ -180,9 +182,25 @@ export class Mopidy {
         this.rpcController?.on(name, callback);
     }
 
-    private _configure(options: Options) {
+    private _configure(options: Options): ResolvedOptions {
+        let defaultOptions: ResolvedOptions = {
+            backoffDelayMin: 1000,
+            backoffDelayMax: 64000,
+            autoConnect: true,
+            webSocketUrl: this.resolveWebSocketUrl(options)
+        };
+
+        return {
+            webSocketUrl: options.webSocketUrl ?? defaultOptions.webSocketUrl,
+            autoConnect: options.autoConnect ?? defaultOptions.autoConnect,
+            backoffDelayMin: options.backoffDelayMin ?? defaultOptions.backoffDelayMin,
+            backoffDelayMax: options.backoffDelayMax ?? defaultOptions.backoffDelayMax
+        };
+        }
+
+    private resolveWebSocketUrl(options: Options): string {
         if(options.webSocketUrl)
-            return options;
+            return options.webSocketUrl;
 
         let protocol =
             typeof document !== "undefined" && document.location.protocol === "https:"
@@ -191,31 +209,33 @@ export class Mopidy {
         let currentHost =
             (typeof document !== "undefined" && document.location.host) ||
             "localhost";
-        options.webSocketUrl = `${protocol}${currentHost}/mopidy/ws`;
-        return options;
+        return `${protocol}${currentHost}/mopidy/ws`;
     }
 
-  _delegateEvents() {
-    this.rpcController.on("websocket:close", (closeEvent: any) => this.onWebSocketClose(closeEvent));
-    this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
-  }
-
-  onWebSocketClose(closeEvent: any) {
-    this.rpcController.emit("state", "state:offline");
-    this.rpcController.emit("state:offline");
-  }
-
-  close() {
-    if (this.rpcController) {
-      this.rpcController.close();
+    _delegateEvents() {
+        this.rpcController.on("websocket:close", (closeEvent: any) => this.onWebSocketClose(closeEvent));
+        this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
     }
-  }
 
-  send(message: Object) {
-      return this.rpcController?.send(message);
-  }
+    onWebSocketClose(closeEvent: any) {
+        this.rpcController.emit("state", "state:offline");
+        this.rpcController.emit("state:offline");
+    }
 
-  _onWebsocketOpen() {
+    close() {
+        if (this.rpcController) {
+            this.rpcController.close();
+        }
+    }
+
+    send(method: string, params?: Object) {
+        if(params)
+            return this.rpcController?.send({method, params});
+        else
+            return this.rpcController?.send({method});
+    }
+
+    _onWebsocketOpen() {
     this.rpcController.emit("state", "state:online");
     this.rpcController.emit("state:online");
   }

@@ -26,8 +26,8 @@ import {MopidyProxy} from "./proxies/mopidyProxy";
 import {EboDialog} from "./components/eboDialog";
 
 export function getWebSocketUrl() {
-    let webSocketUrl = document.body.dataset.websocketUrl;
-    if (webSocketUrl.startsWith("{{"))
+    let webSocketUrl = document.body.dataset.websocketUrl ?? null;
+    if (webSocketUrl?.startsWith("{{"))
         webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
     return webSocketUrl;
 }
@@ -91,6 +91,7 @@ function setupStuff() {
 }
 
 function updateDocumentTitle (headline: string) {
+    // @ts-ignore
     headline = headline || document.getElementById('contentHeadline').textContent;
     document.title = headline + ' | ' + document.body.dataset.title;
 }

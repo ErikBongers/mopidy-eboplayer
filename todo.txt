@@ -1,6 +1,16 @@
 * implement strictNullChecks
 
-* Genres: browsing can return ALL Ref.types, while nested genre Refs remain type Ref.dir.
+
+Playlists vs Genres
+====================
+The only difference is order.
+Genres have no order.
+So, technically, you could have Classic playlist and a Classic genre.
+You could implement a classic playlist as a filter on genre, and re-arrange the tracks in the list.
+If new tracks are added to that genre, they get to the top or bottom of that playlist. Perhaps rather the top, as they are more recent and this more wanted. Also, this triggers the user to rearrange them if wanted.
+
+
+
 
 * Ref.type = "genre" does not exist in mopidy.
   > a genre cannot directy be represended by a Ref because these are the possible Ref types: "album" | "artist" | "directory" | "playlist" | "track"

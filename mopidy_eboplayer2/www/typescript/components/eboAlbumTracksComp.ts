@@ -3,12 +3,12 @@ import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 import {EboMenuButton} from "./eboMenuButton";
 
 export class EboAlbumTracksComp extends EboComponent {
-    private _streamInfo?: ExpandedStreamModel;
-    get streamInfo(): ExpandedStreamModel {
+    private _streamInfo: ExpandedStreamModel | null = null;
+    get streamInfo(): ExpandedStreamModel | null {
         return this._streamInfo;
     }
 
-    set streamInfo(value: ExpandedStreamModel) {
+    set streamInfo(value: ExpandedStreamModel | null) {
         this._streamInfo = value;
         this.requestRender();
     }
@@ -16,11 +16,11 @@ export class EboAlbumTracksComp extends EboComponent {
         this._activeTrackUri = value;
         this.highLightActiveTrack();
     }
-    get albumInfo() {
+    get albumInfo(): ExpandedAlbumModel | null {
         return this._albumInfo;
     }
 
-    set albumInfo(value: ExpandedAlbumModel) {
+    set albumInfo(value: ExpandedAlbumModel | null) {
         this._albumInfo = value;
         this.requestRender();
     }
@@ -32,13 +32,12 @@ export class EboAlbumTracksComp extends EboComponent {
     static observedAttributes = [
         "img",
     ];
-    private _albumInfo?: ExpandedAlbumModel;
-
+    private _albumInfo: ExpandedAlbumModel | null = null;
 
     constructor() {
         super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 
-        this.albumInfo = undefined;
+        this.albumInfo = null;
         this.requestRender();
     }
 

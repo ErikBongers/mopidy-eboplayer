@@ -157,6 +157,7 @@ export class EboBigTrackComp extends EboComponent {
 
     override update(shadow:ShadowRoot) {
         if(this.albumInfo.type == AlbumDataType.Loaded) {
+            // @ts-ignore
             shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
         let img = shadow.getElementById("image") as HTMLImageElement;

@@ -141,9 +141,9 @@ export class EboButtonBar extends EboComponent {
         slider.onmousedown = slider.ontouchstart = () => { this.isVolumeSliding = true;};
         slider.onmouseup = slider.ontouchend = () => { this.isVolumeSliding = false;};
 
-        let btnPlay = shadow.getElementById('btnPlay');
+        let btnPlay = shadow.getElementById('btnPlay') as HTMLButtonElement;
         btnPlay.addEventListener("click", (ev) => {
-            let title = btnPlay.querySelector('i').title;
+            let title = btnPlay.querySelector('i')?.title as string;
             switch (title) {
                 case "Play": this.dispatchEboEvent("playPressed.eboplayer", {}); break;
                 case "Pause": this.dispatchEboEvent("pausePressed.eboplayer", {}); break;
@@ -169,11 +169,14 @@ export class EboButtonBar extends EboComponent {
                 this.setPlayButton('Play', 'fa-play');
                 break;
         }
+        // @ts-ignore
         shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5" ;
+        // @ts-ignore
         shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";
+        // @ts-ignore
         shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
 
-        let titleEl = shadow.getElementById("text");
+        let titleEl = shadow.getElementById("text") as HTMLElement;
         let img = shadow.querySelector("img") as HTMLImageElement;
         titleEl.style.display = this.show_info ? "" : "none";
         if(this.image_url) {
@@ -187,13 +190,13 @@ export class EboButtonBar extends EboComponent {
             let visualVolume = inverseQuadratic100(this.volume);
             slider.value = Math.floor(visualVolume).toString();
         }
-        let wrapper = shadow.getElementById("wrapper");
+        let wrapper = shadow.getElementById("wrapper") as HTMLElement;
         wrapper.classList.toggle("playing", this.play_state == "playing");
         titleEl.innerHTML = this.text.replaceAll("\n", "<br/>");
     }
 
     private setPlayButton(title: string, addClass: string) {
-        let btnPlayIcon = this.getShadow().getElementById('btnPlay').querySelector('i');
+        let btnPlayIcon = this.getShadow().getElementById('btnPlay')?.querySelector('i') as HTMLElement;
         btnPlayIcon.classList.remove("fa-play", "fa-pause", "fa-stop" );
         btnPlayIcon.classList.add(addClass);
         btnPlayIcon.setAttribute('title', title);

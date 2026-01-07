@@ -1,19 +1,19 @@
 const TIME_OUT_TIME = 500;
 
 export class MouseTimer<Source> {
-    private activeTimer: number;
-    private source: Source;
+    private activeTimer: number | null;
+    private readonly source: Source;
     private mouseUpCount = 0;
     private isMouseDown = false;
 
-    private readonly onClick: (source: Source) => void = undefined;
-    private readonly onTimeOut: (source: Source) => void = undefined;
-    private readonly onMultiClick: (source: Source, clickCount: number) => void = undefined;
+    private readonly onClick: ((source: Source) => void) | undefined = undefined;
+    private readonly onTimeOut: ((source: Source) => void) | undefined = undefined;
+    private readonly onMultiClick: ((source: Source, clickCount: number) => void) | undefined = undefined;
 
     constructor(source: Source,
-                onClick: (source: Source) => void = undefined,
-                onMultiClick: (source: Source, clickCount: number) => void = undefined,
-                onTimeOut: (source: Source) => void = undefined
+                onClick: ((source: Source) => void) | undefined = undefined,
+                onMultiClick: ((source: Source, clickCount: number) => void) | undefined = undefined,
+                onTimeOut: ((source: Source) => void) | undefined = undefined
     ) {
         this.source = source;
         this.onClick = onClick;
@@ -56,7 +56,7 @@ export class MouseTimer<Source> {
     private cancelPressTimer() {
         if(this.activeTimer)
             clearTimeout(this.activeTimer);
-        this.activeTimer = undefined;
+        this.activeTimer = null;
     }
 
     private startPressTimer(ev: MouseEvent, onTimeOutCallback: (ev: MouseEvent) => void) {

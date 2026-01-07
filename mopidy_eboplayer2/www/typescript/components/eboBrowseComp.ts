@@ -213,6 +213,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     render(shadow:ShadowRoot) {
+        // @ts-ignore
         shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             //todo: is this button even needed?
         });
@@ -306,7 +307,7 @@ export class EboBrowseComp extends EboComponent {
     renderBreadCrumbs() {
         if(!this.isRendered) //may be called directly, before initialization.
             return;
-        let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs");
+        let breadCrumbsDiv = this.getShadow().getElementById("breadCrumbs") as HTMLDivElement;
         breadCrumbsDiv.innerHTML = this.breadCrumbs
             .map(crumb => this.renderBreadcrumb(crumb))
             .join(" ");
@@ -378,7 +379,7 @@ export class EboBrowseComp extends EboComponent {
 
     private onRowClicked(ev: MouseEvent) {
         let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEboEvent("browseResultClick.eboplayer", {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": row.dataset.type});
+        this.dispatchEboEvent("browseResultClick.eboplayer", {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": <string>row.dataset.type});
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
@@ -388,6 +389,6 @@ export class EboBrowseComp extends EboComponent {
 
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
-        this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(btn.dataset.id)});
+        this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(<string>btn.dataset.id)});
     }
 }
