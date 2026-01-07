@@ -205,7 +205,7 @@ class Core_Library {
     //
     //.. versionadded:: 1.0
     //    The ``exact`` keyword argument.
-    search(query: Object, uris ? : string[], exact: boolean = false): Promise<SearchResult[]> {
+    search(query: Object, uris?: string[], exact: boolean = false): Promise<SearchResult[]> {
         return this.mopidy.send("core.library.search", {query, uris, exact}) as Promise<SearchResult[]>;
     }
 }
