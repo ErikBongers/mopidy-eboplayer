@@ -52,6 +52,7 @@ class Core_History {
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
     }
+
     //Get the track history.
     //
     //The timestamps are milliseconds since epoch.
@@ -76,6 +77,7 @@ class Core_Library {
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
     }
+
     //Browse directories and tracks at the given ``uri``.
     //
     //``uri`` is a string which represents some directory belonging to a
@@ -214,6 +216,7 @@ class Core_Mixer {
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
     }
+
     //Get mute state.
     //
     //:class:`True` if muted, :class:`False` unmuted, :class:`None` if
@@ -255,6 +258,7 @@ class Core_Playback {
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
     }
+
     //Get the currently playing or selected track.
     //
     //Returns a :class:`mopidy.models.TlTrack` or :class:`None`.
@@ -366,6 +370,7 @@ class Core_Playlists {
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
     }
+
     //Get a list of the currently available playlists.
     //
     //Returns a list of :class:`~mopidy.models.Ref` objects referring to the
@@ -485,6 +490,7 @@ class Core_Tracklist {
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
     }
+
     //Add tracks to the tracklist.
     //
     //If ``uris`` is given instead of ``tracks``, the URIs are
