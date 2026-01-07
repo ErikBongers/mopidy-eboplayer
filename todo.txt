@@ -1,10 +1,50 @@
-* Show "Save as playlist" for most search results.
+* Genres: browsing can return ALL Ref.types, while nested genre Refs remain type Ref.dir.
+
+* Ref.type = "genre" does not exist in mopidy.
+  > a genre cannot directy be represended by a Ref because these are the possible Ref types: "album" | "artist" | "directory" | "playlist" | "track"
+  > DAMN !!!!!!
+  > mopidy-local solves this with a Ref.directory.
+  > in principle, mopidy.browse() can only return Ref.dirs and Ref.tracks, but mopidy-local does NOT keep to that restriction!
+  > two options:
+    - Use/abuse Ref.directory or Ref.playlist, like mopidy-local.
+      > but uris are opaque.
+      > or...are they.
+      > they are opaque for mopidy, but not necessarily for eboback/player.
+        > a uri/ref could be a full definition of something to play. mopidy-local has some quite defined uris.
+    - bypass via www.
+      > return a proprietry json.
+      > but in browse-mode, we're only interested in diving into group structures until we hit only tracks.
+
+
+* In browse filter: don't just list albums or groups, but also tracks (which is by default disabled).
+  > important for filter/playlist creation below.
+
+* Is the browseFilter the full criteria or does the parent matter?
+  > parent may be genre, artist (and maybe even playlist?)
+  > a parent of a current/active browse filter is ALWAYS a concrete group. A group is a Genre, Artist, Playlist. (Album is not considered a group...or should it be?)
+* A playlist could be build from browse windows, and new browse 'sessions' could be added to existing playlists...
+
+* What is the difference between the browss and edit playlist window?
+  - Multiple filter sections AND/OR
+  -
+* Save as playlist: Just a button that brings you to the playlist edit page where
+  - The name field is shown.
+  - The (last) browseFilter.
+  - The results
+  - Buttons to save as:
+    - save tracks as fixed playlist
+    - save filter as generic playlist.
+    > buttons ABOVE results of course.
+  > Edit playlist has a state that is stored in storage so you can refresh it (or even navigate away and come back?)
+
 Create a Savall playlist
 =========================
 Scenario
 --------
 - Browse for "Savall", show Artists, Albums and tracks.
 - Click the "Save as playlist" button.
+- Enter name.
+- Click fixed or generic long buttons.
 
 * start "scan" from gui -> settings.
   > perhaps a separate scan images command?

@@ -46,6 +46,7 @@ export class EboBrowseComp extends EboComponent {
     set results(value: SearchResults) {
         this._results = value;
         this.renderResults(); // don't render all, as user may be typing a search text.
+        this.requestUpdate();
     }
 
     private _results: SearchResults = EmptySearchResults;
