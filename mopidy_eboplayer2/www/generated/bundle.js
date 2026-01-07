@@ -644,6 +644,9 @@ var BrowseFilter = class {
 	isNoTypeSelected() {
 		return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
 	}
+	isAllTypesSelected() {
+		return this.album && this.track && this.radio && this.artist && this.playlist && this.genre;
+	}
 	getSelectedFilters() {
 		return [
 			"album",
@@ -653,6 +656,9 @@ var BrowseFilter = class {
 			"playlist",
 			"genre"
 		].filter((key) => this[key] == true);
+	}
+	isEmpty() {
+		return (this.isNoTypeSelected() || this.isAllTypesSelected()) && this.searchText == "";
 	}
 };
 const TrackNone = { type: "none" };
@@ -1576,8 +1582,10 @@ var Controller = class Controller extends Commands {
 		});
 		if (addTextFilterBreadcrumb) {
 			let browseFilter = this.model.getCurrentBrowseFilter();
-			let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-			this.model.pushBreadCrumb(breadCrumb1);
+			if (!browseFilter.isEmpty()) {
+				let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
+				this.model.pushBreadCrumb(breadCrumb1);
+			}
 		}
 		let breadCrumb2 = new BreadCrumbRef(label, {
 			type,

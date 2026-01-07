@@ -236,8 +236,10 @@ export class Controller extends Commands implements DataRequester{
         // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
         if(addTextFilterBreadcrumb) {
             let browseFilter = this.model.getCurrentBrowseFilter();
-            let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-            this.model.pushBreadCrumb(breadCrumb1);
+            if(! browseFilter.isEmpty()) {
+                let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
+                this.model.pushBreadCrumb(breadCrumb1);
+            }
         }
         let ref: Ref<AllUris> = {type: type as models.ModelType, name: label, uri};
         let breadCrumb2 = new BreadCrumbRef(label, ref);

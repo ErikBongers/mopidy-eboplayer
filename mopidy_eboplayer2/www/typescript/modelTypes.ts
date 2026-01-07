@@ -87,8 +87,20 @@ export class BrowseFilter implements BrowseFilterFlags{
         return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
     }
 
+    isAllTypesSelected(): boolean {
+        return this.album && this.track && this.radio && this.artist && this.playlist && this.genre;
+    }
+
     getSelectedFilters() {
         return ["album", "track", "radio", "artist", "playlist", "genre"].filter(key => this[key as keyof BrowseFilterFlags] == true);
+    }
+
+    isEmpty(): boolean {
+        return (
+            this.isNoTypeSelected()
+            || this.isAllTypesSelected()
+        )
+        && this.searchText == "";
     }
 }
 

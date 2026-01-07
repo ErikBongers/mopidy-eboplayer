@@ -1,3 +1,5 @@
+* implement strictNullChecks
+
 * Genres: browsing can return ALL Ref.types, while nested genre Refs remain type Ref.dir.
 
 * Ref.type = "genre" does not exist in mopidy.
