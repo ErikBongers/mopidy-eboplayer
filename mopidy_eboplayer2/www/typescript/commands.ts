@@ -19,21 +19,21 @@ export class Commands {
 
 class Core {
     mopidy: Mopidy;
-    history: History;
-    library: Library;
-    mixer: Mixer;
-    playback: Playback;
-    playlists: Playlists;
-    tracklist: Tracklist;
+    history: Core_History;
+    library: Core_Library;
+    mixer: Core_Mixer;
+    playback: Core_Playback;
+    playlists: Core_Playlists;
+    tracklist: Core_Tracklist;
 
     constructor(mopidy: Mopidy) {
         this.mopidy = mopidy;
-        this.history = new History(mopidy);
-        this.library = new Library(mopidy);
-        this.mixer = new Mixer(mopidy);
-        this.playback = new Playback(mopidy);
-        this.playlists = new Playlists(mopidy);
-        this.tracklist = new Tracklist(mopidy);
+        this.history = new Core_History(mopidy);
+        this.library = new Core_Library(mopidy);
+        this.mixer = new Core_Mixer(mopidy);
+        this.playback = new Core_Playback(mopidy);
+        this.playlists = new Core_Playlists(mopidy);
+        this.tracklist = new Core_Tracklist(mopidy);
     }
 
     //Get list of URI schemes we can handle
@@ -46,7 +46,7 @@ class Core {
     }
 }
 
-class History {
+class Core_History {
     mopidy: Mopidy;
 
     constructor(mopidy: Mopidy) {
@@ -70,7 +70,7 @@ class History {
     }
 }
 
-class Library {
+class Core_Library {
     mopidy: Mopidy;
 
     constructor(mopidy: Mopidy) {
@@ -208,7 +208,7 @@ class Library {
     }
 }
 
-class Mixer {
+class Core_Mixer {
     mopidy: Mopidy;
 
     constructor(mopidy: Mopidy) {
@@ -249,7 +249,7 @@ class Mixer {
     }
 }
 
-class Playback {
+class Core_Playback {
     mopidy: Mopidy;
 
     constructor(mopidy: Mopidy) {
@@ -360,7 +360,7 @@ class Playback {
     }
 }
 
-class Playlists {
+class Core_Playlists {
     mopidy: Mopidy;
 
     constructor(mopidy: Mopidy) {
@@ -479,7 +479,7 @@ class Playlists {
     }
 }
 
-class Tracklist {
+class Core_Tracklist {
     mopidy: Mopidy;
 
     constructor(mopidy: Mopidy) {

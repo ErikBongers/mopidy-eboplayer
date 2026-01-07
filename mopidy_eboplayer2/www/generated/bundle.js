@@ -1032,12 +1032,12 @@ var Core = class {
 	tracklist;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
-		this.history = new History(mopidy);
-		this.library = new Library(mopidy);
-		this.mixer = new Mixer(mopidy);
-		this.playback = new Playback(mopidy);
-		this.playlists = new Playlists(mopidy);
-		this.tracklist = new Tracklist(mopidy);
+		this.history = new Core_History(mopidy);
+		this.library = new Core_Library(mopidy);
+		this.mixer = new Core_Mixer(mopidy);
+		this.playback = new Core_Playback(mopidy);
+		this.playlists = new Core_Playlists(mopidy);
+		this.tracklist = new Core_Tracklist(mopidy);
 	}
 	getUriSchemes() {
 		return this.mopidy.send("core.get_uri_schemes");
@@ -1046,7 +1046,7 @@ var Core = class {
 		return this.mopidy.send("core.get_version");
 	}
 };
-var History = class {
+var Core_History = class {
 	mopidy;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
@@ -1058,7 +1058,7 @@ var History = class {
 		return this.mopidy.send("core.history.get_length");
 	}
 };
-var Library = class {
+var Core_Library = class {
 	mopidy;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
@@ -1089,7 +1089,7 @@ var Library = class {
 		});
 	}
 };
-var Mixer = class {
+var Core_Mixer = class {
 	mopidy;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
@@ -1107,7 +1107,7 @@ var Mixer = class {
 		return this.mopidy.send("core.mixer.set_volume", { volume });
 	}
 };
-var Playback = class {
+var Core_Playback = class {
 	mopidy;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
@@ -1158,7 +1158,7 @@ var Playback = class {
 		return this.mopidy.send("core.playback.stop");
 	}
 };
-var Playlists = class {
+var Core_Playlists = class {
 	mopidy;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
@@ -1191,7 +1191,7 @@ var Playlists = class {
 		return this.mopidy.send("core.playlists.save", { playlist });
 	}
 };
-var Tracklist = class {
+var Core_Tracklist = class {
 	mopidy;
 	constructor(mopidy) {
 		this.mopidy = mopidy;
