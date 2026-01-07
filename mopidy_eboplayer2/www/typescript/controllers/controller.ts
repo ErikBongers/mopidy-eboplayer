@@ -285,14 +285,14 @@ export class Controller extends Commands implements DataRequester{
                 this.filterBrowseResults();
             });
         } else if(breadCrumb instanceof BreadCrumbRef) {
-            if(isBreadCrumbForArtist(breadCrumb)) {
-                this.model.resetBreadCrumbsTo(id);
-                this.model.popBreadCrumb(); // remove the artist breadCrumb as it will be added again below.
-                this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
-            } else if(isBreadCrumbForAlbum(breadCrumb)) {
+            if(isBreadCrumbForAlbum(breadCrumb)) {
                 this.model.setAlbumToView(breadCrumb.data.uri);
                 this.setView(Views.Album);
+                return;
             }
+            this.model.resetBreadCrumbsTo(id);
+            this.model.popBreadCrumb(); // remove the current breadCrumb as it will be added again below.
+            this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
         } else if (breadCrumb instanceof BreadCrumbHome) {
             this.model.resetBreadCrumbsTo(id);
             this.setAndSaveBrowseFilter(new BrowseFilter());

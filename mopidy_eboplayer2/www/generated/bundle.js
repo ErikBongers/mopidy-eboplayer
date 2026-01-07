@@ -624,9 +624,6 @@ var BreadCrumbRef = class extends BrowseFilterBreadCrumb {
 function isBreadCrumbForAlbum(breadCrumb) {
 	return breadCrumb.data.type == "album";
 }
-function isBreadCrumbForArtist(breadCrumb) {
-	return breadCrumb.data.type == "artist";
-}
 var BrowseFilter = class {
 	searchText;
 	album;
@@ -1626,14 +1623,14 @@ var Controller = class Controller extends Commands {
 				this.filterBrowseResults();
 			});
 		} else if (breadCrumb instanceof BreadCrumbRef) {
-			if (isBreadCrumbForArtist(breadCrumb)) {
-				this.model.resetBreadCrumbsTo(id);
-				this.model.popBreadCrumb();
-				this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
-			} else if (isBreadCrumbForAlbum(breadCrumb)) {
+			if (isBreadCrumbForAlbum(breadCrumb)) {
 				this.model.setAlbumToView(breadCrumb.data.uri);
 				this.setView(Views.Album);
+				return;
 			}
+			this.model.resetBreadCrumbsTo(id);
+			this.model.popBreadCrumb();
+			this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
 		} else if (breadCrumb instanceof BreadCrumbHome) {
 			this.model.resetBreadCrumbsTo(id);
 			this.setAndSaveBrowseFilter(new BrowseFilter());
@@ -3078,6 +3075,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	set results(value) {
 		this._results = value;
 		this.renderResults();
+		this.requestUpdate();
 	}
 	_results = EmptySearchResults;
 	get browseFilter() {
