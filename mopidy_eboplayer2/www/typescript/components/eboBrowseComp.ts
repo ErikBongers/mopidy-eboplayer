@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, BrowseFilterFlags, FilterBreadCrumb} from "../modelTypes";
 import {EmptySearchResults, RefType, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
@@ -273,7 +273,7 @@ export class EboBrowseComp extends EboComponent {
     private toggleFilterButton(btn: EboButton) {
         let propName = btn.id.replace("filter", "");
         propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-        this.browseFilter[propName] = !this.browseFilter[propName];
+        this.browseFilter[propName as keyof BrowseFilterFlags] = !this.browseFilter[propName as keyof BrowseFilterFlags];
         this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
     }
 

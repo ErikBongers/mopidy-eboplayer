@@ -55,8 +55,16 @@ export function isBreadCrumbForArtist(breadCrumb: BreadCrumbRef<AllUris>): bread
 
 export type ImageLookup = {[string: AllUris]: Image[]}
 
-export class BrowseFilter {
-    [k: string]: any;
+export interface BrowseFilterFlags {
+    album: boolean;
+    track: boolean;
+    radio: boolean;
+    artist: boolean;
+    playlist: boolean;
+    genre: boolean;
+}
+
+export class BrowseFilter implements BrowseFilterFlags{
     searchText: string;
     album: boolean;
     track: boolean;
@@ -80,7 +88,7 @@ export class BrowseFilter {
     }
 
     getSelectedFilters() {
-        return ["album", "track", "radio", "artist", "playlist", "genre"].filter(key => this[key] == true);
+        return ["album", "track", "radio", "artist", "playlist", "genre"].filter(key => this[key as keyof BrowseFilterFlags] == true);
     }
 }
 
