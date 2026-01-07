@@ -106,8 +106,8 @@ class Core_Library {
     //:rtype: list of :class:`mopidy.models.Ref`
     //
     //.. versionadded:: 0.18
-    browse(uri: string | null ): Promise < Ref < AllUris > [] > {
-            return this.mopidy.send("core.library.browse", {uri}) as Promise<Ref<AllUris>[]>;
+    browse(uri: string | null ): Promise<Ref<AllUris>[]> {
+        return this.mopidy.send("core.library.browse", {uri}) as Promise<Ref<AllUris>[]>;
     }
     //List distinct values for a given field from the library.
     //
@@ -125,7 +125,7 @@ class Core_Library {
     //:rtype: set of values corresponding to the requested field type.
     //
     //.. versionadded:: 1.0
-    getDistinct(field: string, query: Object): Promise < any > {
+    getDistinct(field: string, query: Object): Promise<any> {
         return this.mopidy.send("core.library.get_distinct", {field, query}) as Promise<any>;
     }
     //Lookup the images for the given URIs
@@ -142,7 +142,7 @@ class Core_Library {
     //:rtype: {uri: tuple of :class:`mopidy.models.Image`}
     //
     //.. versionadded:: 1.0
-    getImages(uris: string[]): Promise < any > {
+    getImages(uris: string[]): Promise<any> {
         return this.mopidy.send("core.library.get_images", {uris}) as Promise<any>;
     }
     //Lookup the given URIs.
@@ -153,14 +153,14 @@ class Core_Library {
     //:param uris: track URIs
     //:type uris: list of string
     //:rtype: {uri: list of :class:`mopidy.models.Track`}
-    lookup(uris: string[]): Promise < LibraryDict > {
+    lookup(uris: string[]): Promise<LibraryDict> {
         return this.mopidy.send("core.library.lookup", {uris}) as Promise<LibraryDict>;
     }
     //Refresh library. Limit to URI and below if an URI is given.
     //
     //:param uri: directory or track URI
     //:type uri: string
-    refresh(uri: string): Promise < any > {
+    refresh(uri: string): Promise<any> {
         return this.mopidy.send("core.library.refresh", {uri}) as Promise<any>;
     }
     //Search the library for tracks where ``field`` contains ``values``.
@@ -203,7 +203,7 @@ class Core_Library {
     //
     //.. versionadded:: 1.0
     //    The ``exact`` keyword argument.
-    search(query: Object, uris ? : string[], exact: boolean = false): Promise < SearchResult[] > {
+    search(query: Object, uris ? : string[], exact: boolean = false): Promise<SearchResult[]> {
         return this.mopidy.send("core.library.search", {query, uris, exact}) as Promise<SearchResult[]>;
     }
 }
