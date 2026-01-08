@@ -1,13 +1,25 @@
-* implement strictNullChecks
-
+* Make distinction between play buttons and other/edit buttons.
 
 Playlists vs Genres
 ====================
-The only difference is order.
 Genres have no order.
+Playlists can contain unrelated tracks.
 So, technically, you could have Classic playlist and a Classic genre.
 You could implement a classic playlist as a filter on genre, and re-arrange the tracks in the list.
 If new tracks are added to that genre, they get to the top or bottom of that playlist. Perhaps rather the top, as they are more recent and this more wanted. Also, this triggers the user to rearrange them if wanted.
+Standard sequence for a playlist track is -1 (if automatically added) and last-trackk-plus-1 if user-added.
+Scenario
+--------
+A playlist based on a genre.
+A new album is added to the genre.
+Album is added genericly based on file date. Most recent ones on top.
+  > assuming all track dates for a given album are almost the same.
+Playlist has option to decide if fixed tracks come at start of end of playlist.
+At any time can use decide to make a track/album/all generic tracks fixed.
+Re-ordering per track or per album.
+Playlists can collapse based on album, artist,genre for easy re-arranging.
+Playlists can be filtered in edit mode for easy re-arranging.
+
 
 
 

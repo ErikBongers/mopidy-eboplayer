@@ -4072,6 +4072,10 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                 button.disabled {
                     opacity: 0.2;
                 }
+                button.playButton {
+                    background-color: var(--highlight-background);
+                    border: none;
+                }
                 img {
                     height: 1.2rem;
                 }
@@ -4080,9 +4084,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
     `;
 	static htmlText = `
         <div id="buttons">
-            <button id="btnPlay" class="roundBorder"><i class="fa fa-play"></i></button>
-            <button id="btnAdd" class="roundBorder"><i class="fa fa-plus"></i></button>
-            <button id="btnReplace" class="roundBorder">Replace</button>
+            <button id="btnPlay" class="roundBorder playButton"><i class="fa fa-play"></i></button>
+            <button id="btnAdd" class="roundBorder playButton"><i class="fa fa-plus"></i></button>
+            <button id="btnReplace" class="roundBorder playButton">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
             <button id="btnSave" class="roundBorder">
                 <div class="flexRow">
