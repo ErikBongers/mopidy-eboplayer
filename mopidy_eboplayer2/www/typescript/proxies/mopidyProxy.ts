@@ -22,7 +22,7 @@ export class MopidyProxy {
     }
 
     async addTracksToTracklist(uris: AllUris[]) {
-        return await this.commands.core.tracklist.add(null, null, uris);
+        return await this.commands.core.tracklist.add(undefined, undefined, uris);
     }
 
     async clearTrackList() {

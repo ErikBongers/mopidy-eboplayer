@@ -4214,7 +4214,7 @@ var MopidyProxy = class {
 		await this.commands.core.playback.play(null, tlid);
 	}
 	async addTracksToTracklist(uris) {
-		return await this.commands.core.tracklist.add(null, null, uris);
+		return await this.commands.core.tracklist.add(void 0, void 0, uris);
 	}
 	async clearTrackList() {
 		await this.commands.core.tracklist.clear();

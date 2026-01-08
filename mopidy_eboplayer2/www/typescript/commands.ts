@@ -516,7 +516,7 @@ class Core_Tracklist {
     //
     //.. deprecated:: 1.0
     //    The ``tracks`` argument. Use ``uris``.
-    add(tracks: null, at_position: number | null, uris: string[] | null): Promise<TlTrack[]> {
+    add(tracks?: undefined, at_position?: number, uris?: string[]): Promise<TlTrack[]> {
         return this.mopidy.send("core.tracklist.add", {tracks, at_position, uris}) as Promise<TlTrack[]>;
     }
     //Clear the tracklist.
@@ -792,3 +792,4 @@ class Core_Tracklist {
         return this.mopidy.send("core.tracklist.slice", {start, end}) as Promise<TlTrack>;
     }
 }
+
