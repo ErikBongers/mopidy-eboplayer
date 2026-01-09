@@ -373,10 +373,10 @@ export class EboBrowseComp extends EboComponent {
 
         body.innerHTML = this.results.refs
             .map(result => {
-                let refType = result.ref.type;
+                let refType = result.item.type;
                 return `
-                    <tr data-uri="${result.ref.ref.uri}" data-type="${refType}">
-                    <td>${result.ref.ref.name + this.getGenreAlias(result.ref)}</td>
+                    <tr data-uri="${result.item.ref.uri}" data-type="${refType}">
+                    <td>${result.item.ref.name + this.getGenreAlias(result.item)}</td>
                     <td>...</td>
                     </tr>`;
             })

@@ -127,7 +127,7 @@ export class MainView extends View {
 
     private setBrowseViewListButtonStates(states: ListButtonStates): ListButtonStates {
         let refs = getState().getModel().getCurrentSearchResults().refs;
-        let uniqueRefTypes = [...new Set(refs.map(ref => ref.ref.type))];
+        let uniqueRefTypes = [...new Set(refs.map(ref => ref.item.type))];
         let browseFilter = getState().getModel().getCurrentBrowseFilter();
 
         //list ref types state 1

@@ -12,7 +12,7 @@ export interface TypedRef {
 }
 
 export interface SearchResult {
-    ref: TypedRef;
+    item: TypedRef;
     weight: number;
 }
 
@@ -42,9 +42,9 @@ export abstract class Refs {
     abstract filter(): void;
 
     protected calculateWeight(result: SearchResult, browseFilter: BrowseFilter) {
-        if (result.ref.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
+        if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
-        if (result.ref.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
+        if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (!browseFilter.searchText)
             result.weight += 1; //No search text? Give every result a weight of 1, so that they are always shown.
@@ -62,7 +62,7 @@ export abstract class Refs {
             .filter(result => result.weight > 0)
             .sort((a, b) => {
                 if (b.weight === a.weight) {
-                    return a.ref.ref.name?.localeCompare(b.ref.ref.name?? "")?? 0;
+                    return a.item.ref.name?.localeCompare(b.item.ref.name?? "")?? 0;
                 }
                 return b.weight - a.weight
             });
@@ -121,17 +121,17 @@ export class AllRefs extends Refs {
     private prefillWithTypes(browseFilter: BrowseFilter): SearchResult[] {
         let refs: SearchResult[] =  [];
         if(browseFilter.album || browseFilter.isNoTypeSelected())
-            refs.push(...this.albums.map(ref => ({ref, weight: 0})));
+            refs.push(...this.albums.map(ref => ({item: ref, weight: 0})));
         if(browseFilter.artist || browseFilter.isNoTypeSelected())
-            refs.push(...this.artists.map(ref => ({ref, weight: 0})));
+            refs.push(...this.artists.map(ref => ({item: ref, weight: 0})));
         if(browseFilter.track || browseFilter.isNoTypeSelected())
-            refs.push(...this.tracks.map(ref => ({ref, weight: 0})));
+            refs.push(...this.tracks.map(ref => ({item: ref, weight: 0})));
         if(browseFilter.genre || browseFilter.isNoTypeSelected())
-            refs.push(...this.genres.map(ref => ({ref, weight: 0})));
+            refs.push(...this.genres.map(ref => ({item: ref, weight: 0})));
         if(browseFilter.radio || browseFilter.isNoTypeSelected())
-            refs.push(...this.radios.map(ref => ({ref, weight: 0})));
+            refs.push(...this.radios.map(ref => ({item: ref, weight: 0})));
         if(browseFilter.playlist || browseFilter.isNoTypeSelected())
-            refs.push(...this.playlists.map(ref => ({ref, weight: 0})));
+            refs.push(...this.playlists.map(ref => ({item: ref, weight: 0})));
         return refs;
     }
 }
@@ -161,7 +161,7 @@ export class SomeRefs extends Refs {
 
     filter() {
         this.searchResults = {
-            refs: this.applyFilter(this.refs.map(ref => ({ref: ref, weight: 0}))),
+            refs: this.applyFilter(this.refs.map(ref => ({item: ref, weight: 0}))),
             availableRefTypes: this.availableRefTypes
         };
     }

@@ -560,7 +560,7 @@ export class Controller extends Commands implements DataRequester{
 
     async addCurrentSearchResultsToPlayer() {
         let results = getState()?.getModel()?.getCurrentSearchResults();
-        let trackList = await this.player.add(results.refs.map(r => r.ref.ref.uri));
+        await this.player.add(results.refs.map(r => r.item.ref.uri));
     }
 
     async createPlaylist(name: string) {

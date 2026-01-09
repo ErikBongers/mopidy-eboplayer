@@ -441,8 +441,8 @@ var Refs = class {
 	}
 	_browseFilter;
 	calculateWeight(result, browseFilter) {
-		if (result.ref.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
-		if (result.ref.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
+		if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
 	}
 	setFilter(browseFilter) {
@@ -453,7 +453,7 @@ var Refs = class {
 			this.calculateWeight(result, this.browseFilter);
 		});
 		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
-			if (b.weight === a.weight) return a.ref.ref.name?.localeCompare(b.ref.ref.name ?? "") ?? 0;
+			if (b.weight === a.weight) return a.item.ref.name?.localeCompare(b.item.ref.name ?? "") ?? 0;
 			return b.weight - a.weight;
 		});
 	}
@@ -521,27 +521,27 @@ var AllRefs = class extends Refs {
 	prefillWithTypes(browseFilter) {
 		let refs = [];
 		if (browseFilter.album || browseFilter.isNoTypeSelected()) refs.push(...this.albums.map((ref) => ({
-			ref,
+			item: ref,
 			weight: 0
 		})));
 		if (browseFilter.artist || browseFilter.isNoTypeSelected()) refs.push(...this.artists.map((ref) => ({
-			ref,
+			item: ref,
 			weight: 0
 		})));
 		if (browseFilter.track || browseFilter.isNoTypeSelected()) refs.push(...this.tracks.map((ref) => ({
-			ref,
+			item: ref,
 			weight: 0
 		})));
 		if (browseFilter.genre || browseFilter.isNoTypeSelected()) refs.push(...this.genres.map((ref) => ({
-			ref,
+			item: ref,
 			weight: 0
 		})));
 		if (browseFilter.radio || browseFilter.isNoTypeSelected()) refs.push(...this.radios.map((ref) => ({
-			ref,
+			item: ref,
 			weight: 0
 		})));
 		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) refs.push(...this.playlists.map((ref) => ({
-			ref,
+			item: ref,
 			weight: 0
 		})));
 		return refs;
@@ -569,7 +569,7 @@ var SomeRefs = class SomeRefs extends Refs {
 	filter() {
 		this.searchResults = {
 			refs: this.applyFilter(this.refs.map((ref) => ({
-				ref,
+				item: ref,
 				weight: 0
 			}))),
 			availableRefTypes: this.availableRefTypes
@@ -1911,7 +1911,7 @@ var Controller = class Controller extends Commands {
 	}
 	async addCurrentSearchResultsToPlayer() {
 		let results = playerState_default()?.getModel()?.getCurrentSearchResults();
-		await this.player.add(results.refs.map((r) => r.ref.ref.uri));
+		await this.player.add(results.refs.map((r) => r.item.ref.uri));
 	}
 	async createPlaylist(name) {
 		return this.mopidyProxy.createPlaylist(name);
@@ -2912,7 +2912,7 @@ var MainView = class extends View {
 	}
 	setBrowseViewListButtonStates(states) {
 		let refs = playerState_default().getModel().getCurrentSearchResults().refs;
-		let uniqueRefTypes = [...new Set(refs.map((ref) => ref.ref.type))];
+		let uniqueRefTypes = [...new Set(refs.map((ref) => ref.item.type))];
 		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
 		if (refs.length == 0) {
 			this.showHideTrackAndAlbumButtons(states, "hide");
@@ -3437,10 +3437,10 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		body.innerHTML = "";
 		if (this.results.refs.length == 0) return;
 		body.innerHTML = this.results.refs.map((result) => {
-			let refType = result.ref.type;
+			let refType = result.item.type;
 			return `
-                    <tr data-uri="${result.ref.ref.uri}" data-type="${refType}">
-                    <td>${result.ref.ref.name + this.getGenreAlias(result.ref)}</td>
+                    <tr data-uri="${result.item.ref.uri}" data-type="${refType}">
+                    <td>${result.item.ref.name + this.getGenreAlias(result.item)}</td>
                     <td>...</td>
                     </tr>`;
 		}).join("\n");

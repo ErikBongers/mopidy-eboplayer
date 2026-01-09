@@ -1,3 +1,13 @@
+* Do below beforehand in controller.
+  > needed:
+    - GenreDefs
+    - All 'raw' genres.
+  > create ExpandedGenre-s containing
+    - the original genre
+    - it's optional replacement.
+  > create list of 'active' or 'compiled' genres. (see below)
+  > create a list of hidden genres.
+
 * Browse genres:
   > Before rendering, make a new list, with the replacements...replaced.
     > First map the genres without a replacement.
