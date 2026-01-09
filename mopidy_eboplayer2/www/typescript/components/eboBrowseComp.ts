@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, BrowseFilterFlags, FilterBreadCrumb, GenreDef} from "../modelTypes";
-import {EmptySearchResults, RefType, SearchResults, TypedRef} from "../refs";
+import {EmptySearchResults, RefType, SearchResult, SearchResults, TypedRef} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
 import {EboListButtonBar, ListButtonStates} from "./eboListButtonBar";
@@ -373,10 +373,10 @@ export class EboBrowseComp extends EboComponent {
 
         body.innerHTML = this.results.refs
             .map(result => {
-                let refType = result.item.type;
+                let refType = result.item.ref.type;
                 return `
                     <tr data-uri="${result.item.ref.uri}" data-type="${refType}">
-                    <td>${result.item.ref.name + this.getGenreAlias(result.item)}</td>
+                    <td>${result.item.ref.name + this.getGenreAlias(result)}</td>
                     <td>...</td>
                     </tr>`;
             })
@@ -388,10 +388,10 @@ export class EboBrowseComp extends EboComponent {
         this.requestUpdate();
     }
 
-    private getGenreAlias(ref: TypedRef) {
-        if(ref.type != "genre")
+    private getGenreAlias(result: SearchResult) {
+        if(result.type != "genreDef")
             return "";
-        let genreDef = this.genreDefs?.get(ref.ref.name?? "__undefined__");
+        let genreDef = this.genreDefs?.get(result.item.ref.name?? "__undefined__");
         if(!genreDef)
             return "";
         if(genreDef.replacement != null)

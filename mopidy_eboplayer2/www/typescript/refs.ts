@@ -1,9 +1,8 @@
 import models from "../js/mopidy";
-import Ref = models.Ref;
 
-import {AlbumUri, AllUris, ArtistUri, BrowseFilter, GenreUri, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
-import Track = models.Track;
-import Artist = models.Artist;
+import {AlbumUri, AllUris, ArtistUri, BrowseFilter, GenreDef, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
+import getState from "./playerState";
+import Ref = models.Ref;
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
 export interface TypedRef {
@@ -11,10 +10,18 @@ export interface TypedRef {
     type: RefType
 }
 
-export interface SearchResult {
+export type RefSearchResult  = {
+    type: "ref";
     item: TypedRef;
     weight: number;
 }
+export type GenreSearchResult  = {
+    type: "genreDef";
+    item: GenreDef;
+    weight: number;
+}
+
+export type SearchResult = RefSearchResult | GenreSearchResult;
 
 export interface SearchResults {
     refs: SearchResult[];
@@ -72,41 +79,104 @@ export abstract class Refs {
         return this.searchResults;
     }
 
-    protected getAvailableRefTypes(refs: TypedRef[]) {
-        let distinctTypes = refs
-            .map(r => r.type)
+    protected getAvailableRefTypes(refs: SearchResult[]) {
+        return refs
+            .map(r => r.type == "ref" ? r.item.type : "genre")
             .reduce((typeSet, val) => typeSet.add(val), new Set<RefType>());
-        console.log(distinctTypes);
-        return distinctTypes;
+    }
+
+    static toRefType(ref: models.Ref<AllUris>): RefType {
+        if (!["directory", "track"].includes(ref.type)) {
+            return ref.type as RefType;
+        }
+        if (ref.uri.startsWith("eboback:stream:"))
+            return "radio";
+        if (ref.uri.startsWith("eboback:directory?genre"))
+            return "genre";
+        return ref.type as RefType; //WARNING: this really is an unknown type!
+    }
+
+    static transformRefsToSearchResults(refs: Ref<AllUris>[]): SearchResult[] {
+        let results = refs.map(ref => {
+            let refType = SomeRefs.toRefType(ref);
+            if(refType == "genre") {
+                let genreDefs = getState().getModel().getGenreDefs();
+                if(!genreDefs)
+                    throw new Error("No genre defs found!");
+                let genreDef = genreDefs.get(ref.name?? "???");
+                return {
+                    type: "genreDef",
+                    item: genreDef,
+                    weight: -1
+                } as GenreSearchResult;
+            }
+            return {
+                type: "ref",
+                item: {
+                    ref: ref,
+                    type:SomeRefs.toRefType(ref)
+                },
+                weight: -1
+            } as RefSearchResult;
+        });
+        // make genreDefs distinct and keep removed defs separate.
+        return this.reduceResults(results);
+    }
+
+    static reduceResults(results: (GenreSearchResult | RefSearchResult)[]) {
+        let resultsWithoutGenreDefs = results.filter(result => result.type != "genreDef"); //todo: return this list as well.
+        let onlyGenreDefResults = results.filter(result => result.type == "genreDef");
+
+        let onlyWithoutReplacementResults = onlyGenreDefResults.filter(r => r.item.replacement == null);
+        let onlyWithoutReplacementResultsMap = new Map<string, GenreSearchResult>();
+        onlyWithoutReplacementResults.forEach(result => {
+            onlyWithoutReplacementResultsMap.set(result.item.ref.name?? "???", result);
+        });
+
+        onlyGenreDefResults.forEach(result => {
+            let name: string;
+            if (result.item.replacement != null) {
+                name = result.item.replacement;
+            } else {
+                name = result.item.ref.name ?? "???";
+            }
+            if(!onlyWithoutReplacementResultsMap.has(name))
+                onlyWithoutReplacementResultsMap.set(name, result);
+        })
+        return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
     }
 }
 
 export class AllRefs extends Refs {
     roots: Ref<AllUris>[]; //todo: is DirectoryUri
     sub: Ref<AllUris>[];
-    tracks: TypedRef[];
-    albums: TypedRef[];
-    artists: TypedRef[];
-    genres: TypedRef[];
-    radios: TypedRef[];
-    playlists: TypedRef[];
+    tracks: SearchResult[];
+    albums: SearchResult[];
+    artists: SearchResult[];
+    genres: SearchResult[];
+    radios: SearchResult[];
+    playlists: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: Ref<GenreUri>[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
+    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
         super();
         this.roots = roots;
         this.sub = sub;
-        this.tracks = tracks.map(track => ({type: "track" as RefType, ref: track}));
-        this.albums = albums.map(album => ({type: "album" as RefType, ref: album}));
-        this.artists = artists.map(artist => ({type: "artist" as RefType, ref: artist}));
-        this.genres = genres.map(genre => ({type: "genre" as RefType, ref: genre}));
-        this.radios = radios.map(radio => ({type: "radio" as RefType, ref: radio}));
-        this.playlists = playlists.map(album => ({type: "playlist" as RefType, ref: album}));
+        this.tracks = tracks.map(track => ({item: {type: "track" as RefType, ref: track}, type: "ref", weight: 0}));
+        this.albums = albums.map(album => ({item: {type: "album" as RefType, ref: album}, type: "ref", weight: 0}));
+        this.artists = artists.map(artist => ({item: {type: "artist" as RefType, ref: artist}, type: "ref", weight: 0}));
+        this.genres = Refs.reduceResults(
+            genres.map(ref => ({item: ref, type: "genreDef", weight: 0}))
+        );
+        this.radios = radios.map(radio => ({item: {type: "radio" as RefType, ref: radio}, type: "ref", weight: 0}));
+        this.playlists = playlists.map(album => ({item: {type: "playlist" as RefType, ref: album}, type: "ref", weight: 0}));
         this.availableRefTypes = new Set();
+
         this.getAvailableRefTypes(this.tracks).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.albums).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.artists).forEach(type => this.availableRefTypes.add(type));
-        this.getAvailableRefTypes(this.genres).forEach(type => this.availableRefTypes.add(type));
+        if(this.genres.length)
+            this.availableRefTypes.add("genre");
         this.getAvailableRefTypes(this.radios).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.playlists).forEach(type => this.availableRefTypes.add(type));
     }
@@ -121,48 +191,36 @@ export class AllRefs extends Refs {
     private prefillWithTypes(browseFilter: BrowseFilter): SearchResult[] {
         let refs: SearchResult[] =  [];
         if(browseFilter.album || browseFilter.isNoTypeSelected())
-            refs.push(...this.albums.map(ref => ({item: ref, weight: 0})));
+            refs.push(...this.albums);
         if(browseFilter.artist || browseFilter.isNoTypeSelected())
-            refs.push(...this.artists.map(ref => ({item: ref, weight: 0})));
+            refs.push(...this.artists);
         if(browseFilter.track || browseFilter.isNoTypeSelected())
-            refs.push(...this.tracks.map(ref => ({item: ref, weight: 0})));
+            refs.push(...this.tracks);
         if(browseFilter.genre || browseFilter.isNoTypeSelected())
-            refs.push(...this.genres.map(ref => ({item: ref, weight: 0})));
+            refs.push(...this.genres);
         if(browseFilter.radio || browseFilter.isNoTypeSelected())
-            refs.push(...this.radios.map(ref => ({item: ref, weight: 0})));
+            refs.push(...this.radios);
         if(browseFilter.playlist || browseFilter.isNoTypeSelected())
-            refs.push(...this.playlists.map(ref => ({item: ref, weight: 0})));
+            refs.push(...this.playlists);
         return refs;
     }
 }
 
 export class SomeRefs extends Refs {
-    refs: TypedRef[];
+    allresults: SearchResult[];
     availableRefTypes: Set<RefType>
 
     constructor(refs: Ref<AllUris>[]) {
         super();
-        this.refs = refs.map(r => {
-            return {ref: r, type: SomeRefs.toRefType(r)};
-        });
-        this.availableRefTypes = this.getAvailableRefTypes(this.refs);
-    }
-
-    static toRefType(ref: models.Ref<AllUris>): RefType {
-        if(!["directory", "track"].includes(ref.type)) {
-            return ref.type as RefType;
-        }
-        if(ref.uri.startsWith("eboback:stream:"))
-            return "radio";
-        if(ref.uri.startsWith("eboback:directory?genre"))
-            return "genre";
-        return ref.type as RefType; //WARNING: this really is an unknown type!
+        this.allresults = Refs.transformRefsToSearchResults(refs);
+        this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
     }
 
     filter() {
         this.searchResults = {
-            refs: this.applyFilter(this.refs.map(ref => ({item: ref, weight: 0}))),
+            refs: this.applyFilter(this.allresults),
             availableRefTypes: this.availableRefTypes
         };
     }
 }
+

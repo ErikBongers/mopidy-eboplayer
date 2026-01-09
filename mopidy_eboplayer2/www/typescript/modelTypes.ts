@@ -258,6 +258,6 @@ export enum Views {
 }
 
 export interface GenreDef {
-    genre: string;
-    replacement: string;
+    ref: Ref<GenreUri>;
+    replacement: string | null;
 }

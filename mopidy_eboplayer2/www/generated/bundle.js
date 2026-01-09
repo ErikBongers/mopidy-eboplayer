@@ -461,9 +461,51 @@ var Refs = class {
 		return this.searchResults;
 	}
 	getAvailableRefTypes(refs) {
-		let distinctTypes = refs.map((r) => r.type).reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
-		console.log(distinctTypes);
-		return distinctTypes;
+		return refs.map((r) => r.type == "ref" ? r.item.type : "genre").reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
+	}
+	static toRefType(ref) {
+		if (!["directory", "track"].includes(ref.type)) return ref.type;
+		if (ref.uri.startsWith("eboback:stream:")) return "radio";
+		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
+		return ref.type;
+	}
+	static transformRefsToSearchResults(refs) {
+		let results = refs.map((ref) => {
+			if (SomeRefs.toRefType(ref) == "genre") {
+				let genreDefs = playerState_default().getModel().getGenreDefs();
+				if (!genreDefs) throw new Error("No genre defs found!");
+				return {
+					type: "genreDef",
+					item: genreDefs.get(ref.name ?? "???"),
+					weight: -1
+				};
+			}
+			return {
+				type: "ref",
+				item: {
+					ref,
+					type: SomeRefs.toRefType(ref)
+				},
+				weight: -1
+			};
+		});
+		return this.reduceResults(results);
+	}
+	static reduceResults(results) {
+		let resultsWithoutGenreDefs = results.filter((result) => result.type != "genreDef");
+		let onlyGenreDefResults = results.filter((result) => result.type == "genreDef");
+		let onlyWithoutReplacementResults = onlyGenreDefResults.filter((r) => r.item.replacement == null);
+		let onlyWithoutReplacementResultsMap = /* @__PURE__ */ new Map();
+		onlyWithoutReplacementResults.forEach((result) => {
+			onlyWithoutReplacementResultsMap.set(result.item.ref.name ?? "???", result);
+		});
+		onlyGenreDefResults.forEach((result) => {
+			let name;
+			if (result.item.replacement != null) name = result.item.replacement;
+			else name = result.item.ref.name ?? "???";
+			if (!onlyWithoutReplacementResultsMap.has(name)) onlyWithoutReplacementResultsMap.set(name, result);
+		});
+		return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
 	}
 };
 var AllRefs = class extends Refs {
@@ -481,34 +523,55 @@ var AllRefs = class extends Refs {
 		this.roots = roots;
 		this.sub = sub;
 		this.tracks = tracks.map((track) => ({
-			type: "track",
-			ref: track
+			item: {
+				type: "track",
+				ref: track
+			},
+			type: "ref",
+			weight: 0
 		}));
 		this.albums = albums.map((album) => ({
-			type: "album",
-			ref: album
+			item: {
+				type: "album",
+				ref: album
+			},
+			type: "ref",
+			weight: 0
 		}));
 		this.artists = artists.map((artist) => ({
-			type: "artist",
-			ref: artist
+			item: {
+				type: "artist",
+				ref: artist
+			},
+			type: "ref",
+			weight: 0
 		}));
-		this.genres = genres.map((genre) => ({
-			type: "genre",
-			ref: genre
-		}));
+		this.genres = Refs.reduceResults(genres.map((ref) => ({
+			item: ref,
+			type: "genreDef",
+			weight: 0
+		})));
 		this.radios = radios.map((radio) => ({
-			type: "radio",
-			ref: radio
+			item: {
+				type: "radio",
+				ref: radio
+			},
+			type: "ref",
+			weight: 0
 		}));
 		this.playlists = playlists.map((album) => ({
-			type: "playlist",
-			ref: album
+			item: {
+				type: "playlist",
+				ref: album
+			},
+			type: "ref",
+			weight: 0
 		}));
 		this.availableRefTypes = /* @__PURE__ */ new Set();
 		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.artists).forEach((type) => this.availableRefTypes.add(type));
-		this.getAvailableRefTypes(this.genres).forEach((type) => this.availableRefTypes.add(type));
+		if (this.genres.length) this.availableRefTypes.add("genre");
 		this.getAvailableRefTypes(this.radios).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.playlists).forEach((type) => this.availableRefTypes.add(type));
 	}
@@ -520,58 +583,26 @@ var AllRefs = class extends Refs {
 	}
 	prefillWithTypes(browseFilter) {
 		let refs = [];
-		if (browseFilter.album || browseFilter.isNoTypeSelected()) refs.push(...this.albums.map((ref) => ({
-			item: ref,
-			weight: 0
-		})));
-		if (browseFilter.artist || browseFilter.isNoTypeSelected()) refs.push(...this.artists.map((ref) => ({
-			item: ref,
-			weight: 0
-		})));
-		if (browseFilter.track || browseFilter.isNoTypeSelected()) refs.push(...this.tracks.map((ref) => ({
-			item: ref,
-			weight: 0
-		})));
-		if (browseFilter.genre || browseFilter.isNoTypeSelected()) refs.push(...this.genres.map((ref) => ({
-			item: ref,
-			weight: 0
-		})));
-		if (browseFilter.radio || browseFilter.isNoTypeSelected()) refs.push(...this.radios.map((ref) => ({
-			item: ref,
-			weight: 0
-		})));
-		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) refs.push(...this.playlists.map((ref) => ({
-			item: ref,
-			weight: 0
-		})));
+		if (browseFilter.album || browseFilter.isNoTypeSelected()) refs.push(...this.albums);
+		if (browseFilter.artist || browseFilter.isNoTypeSelected()) refs.push(...this.artists);
+		if (browseFilter.track || browseFilter.isNoTypeSelected()) refs.push(...this.tracks);
+		if (browseFilter.genre || browseFilter.isNoTypeSelected()) refs.push(...this.genres);
+		if (browseFilter.radio || browseFilter.isNoTypeSelected()) refs.push(...this.radios);
+		if (browseFilter.playlist || browseFilter.isNoTypeSelected()) refs.push(...this.playlists);
 		return refs;
 	}
 };
-var SomeRefs = class SomeRefs extends Refs {
-	refs;
+var SomeRefs = class extends Refs {
+	allresults;
 	availableRefTypes;
 	constructor(refs) {
 		super();
-		this.refs = refs.map((r) => {
-			return {
-				ref: r,
-				type: SomeRefs.toRefType(r)
-			};
-		});
-		this.availableRefTypes = this.getAvailableRefTypes(this.refs);
-	}
-	static toRefType(ref) {
-		if (!["directory", "track"].includes(ref.type)) return ref.type;
-		if (ref.uri.startsWith("eboback:stream:")) return "radio";
-		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
-		return ref.type;
+		this.allresults = Refs.transformRefsToSearchResults(refs);
+		this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
 	}
 	filter() {
 		this.searchResults = {
-			refs: this.applyFilter(this.refs.map((ref) => ({
-				item: ref,
-				weight: 0
-			}))),
+			refs: this.applyFilter(this.allresults),
 			availableRefTypes: this.availableRefTypes
 		};
 	}
@@ -763,7 +794,7 @@ var Model = class extends EboEventTargetClass {
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-	genreDefs;
+	genreDefs = null;
 	allRefs = null;
 	currentRefs = null;
 	view = Views.NowPlaying;
@@ -774,7 +805,7 @@ var Model = class extends EboEventTargetClass {
 	}
 	setGenreDefs(defs) {
 		this.genreDefs = /* @__PURE__ */ new Map();
-		for (let def of defs) this.genreDefs.set(def.genre, def);
+		for (let def of defs) this.genreDefs.set(def.ref.name ?? "???", def);
 		this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
 	}
 	getGenreDefs = () => this.genreDefs;
@@ -1841,13 +1872,13 @@ var Controller = class Controller extends Commands {
 		let allTracks = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=track");
 		let allAlbums = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
 		let allArtists = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=artist");
-		let allGenres = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=genre");
+		let genreArray = [...(await this.getGenreDefsCached()).values()];
 		let playLists = await this.mopidyProxy.fetchPlayLists();
 		let radioStreamsPlayList = playLists.find((playlist) => playlist.name == "[Radio Streams]");
 		let playlists = playLists.filter((playlist) => playlist.name != "[Radio Streams]");
 		let radioStreams = [];
 		if (radioStreamsPlayList) radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
-		return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
+		return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
 	}
 	filterBrowseResults() {
 		this.model.filterCurrentRefs();
@@ -2911,10 +2942,9 @@ var MainView = class extends View {
 		}
 	}
 	setBrowseViewListButtonStates(states) {
-		let refs = playerState_default().getModel().getCurrentSearchResults().refs;
-		let uniqueRefTypes = [...new Set(refs.map((ref) => ref.item.type))];
+		let searchResults = playerState_default().getModel().getCurrentSearchResults();
 		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
-		if (refs.length == 0) {
+		if (searchResults.refs.length == 0) {
 			this.showHideTrackAndAlbumButtons(states, "hide");
 			states.new_playlist = "hide";
 			return states;
@@ -2924,12 +2954,12 @@ var MainView = class extends View {
 			states.new_playlist = "hide";
 			return states;
 		}
-		if (uniqueRefTypes.filter((t) => t == "track" || t == "album").length == uniqueRefTypes.length) {
+		if ([...searchResults.availableRefTypes].filter((t) => t == "track" || t == "album").length == searchResults.availableRefTypes.size) {
 			this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "show";
 			return states;
 		}
-		if (uniqueRefTypes.filter((t) => t == "playlist").length == uniqueRefTypes.length) {
+		if ([...searchResults.availableRefTypes].filter((t) => t == "playlist").length == searchResults.availableRefTypes.size) {
 			states.new_playlist = "show";
 			this.showHideTrackAndAlbumButtons(states, "hide");
 			return states;
@@ -3437,10 +3467,10 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		body.innerHTML = "";
 		if (this.results.refs.length == 0) return;
 		body.innerHTML = this.results.refs.map((result) => {
-			let refType = result.item.type;
+			let refType = result.item.ref.type;
 			return `
                     <tr data-uri="${result.item.ref.uri}" data-type="${refType}">
-                    <td>${result.item.ref.name + this.getGenreAlias(result.item)}</td>
+                    <td>${result.item.ref.name + this.getGenreAlias(result)}</td>
                     <td>...</td>
                     </tr>`;
 		}).join("\n");
@@ -3454,9 +3484,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		});
 		this.requestUpdate();
 	}
-	getGenreAlias(ref) {
-		if (ref.type != "genre") return "";
-		let genreDef = this.genreDefs?.get(ref.ref.name ?? "__undefined__");
+	getGenreAlias(result) {
+		if (result.type != "genreDef") return "";
+		let genreDef = this.genreDefs?.get(result.item.ref.name ?? "__undefined__");
 		if (!genreDef) return "";
 		if (genreDef.replacement != null) return ` (${genreDef.replacement})`;
 		return "";

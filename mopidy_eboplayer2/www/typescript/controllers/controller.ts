@@ -8,7 +8,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreDef, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -468,7 +468,8 @@ export class Controller extends Commands implements DataRequester{
         let allTracks = await this.mopidyProxy.browse<TrackUri>(LIBRARY_PROTOCOL+"directory?type=track");
         let allAlbums = await this.mopidyProxy.browse<AlbumUri>(LIBRARY_PROTOCOL+"directory?type=album");
         let allArtists = await this.mopidyProxy.browse<ArtistUri>(LIBRARY_PROTOCOL+"directory?type=artist");
-        let allGenres = await this.mopidyProxy.browse<GenreUri>(LIBRARY_PROTOCOL+"directory?type=genre");
+        let allGenres = await this.getGenreDefsCached();
+        let genreArray = [...allGenres.values()];
         let playLists = await this.mopidyProxy.fetchPlayLists();
         let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
         let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
@@ -477,7 +478,7 @@ export class Controller extends Commands implements DataRequester{
             radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri) as models.Ref<RadioUri>[];
         }
 
-        return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
+        return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
     }
 
     filterBrowseResults() {
@@ -573,9 +574,9 @@ export class Controller extends Commands implements DataRequester{
 
     async getGenreDefsCached() {
         if(this.model.getGenreDefs())
-            return this.model.getGenreDefs();
+            return this.model.getGenreDefs() as Map<string, GenreDef>;
         let genreDefs = await this.webProxy.fetchGenreDefs();
         this.model.setGenreDefs(genreDefs);
-        return this.model.getGenreDefs();
+        return this.model.getGenreDefs() as Map<string, GenreDef>;
     }
 }

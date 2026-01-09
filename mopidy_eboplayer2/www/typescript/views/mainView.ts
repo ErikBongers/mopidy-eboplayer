@@ -126,12 +126,11 @@ export class MainView extends View {
     }
 
     private setBrowseViewListButtonStates(states: ListButtonStates): ListButtonStates {
-        let refs = getState().getModel().getCurrentSearchResults().refs;
-        let uniqueRefTypes = [...new Set(refs.map(ref => ref.item.type))];
+        let searchResults = getState().getModel().getCurrentSearchResults();
         let browseFilter = getState().getModel().getCurrentBrowseFilter();
 
         //list ref types state 1
-        if (refs.length == 0) {
+        if (searchResults.refs.length == 0) {
             this.showHideTrackAndAlbumButtons(states, "hide");
             states.new_playlist = "hide";
             return states;
@@ -145,7 +144,7 @@ export class MainView extends View {
         }
 
         //list ref types state 3
-        let onlyTracksAndAlbums = uniqueRefTypes.filter(t => t == "track" || t == "album").length == uniqueRefTypes.length;
+        let onlyTracksAndAlbums = [...searchResults.availableRefTypes].filter(t => t == "track" || t == "album").length == searchResults.availableRefTypes.size;
         if (onlyTracksAndAlbums) {
             this.showHideTrackAndAlbumButtons(states, "show");
             states.new_playlist = "show";
@@ -153,7 +152,7 @@ export class MainView extends View {
         }
 
         //list ref types state 4
-        let onlyPlaylists = uniqueRefTypes.filter(t => t == "playlist").length == uniqueRefTypes.length;
+        let onlyPlaylists = [...searchResults.availableRefTypes].filter(t => t == "playlist").length == searchResults.availableRefTypes.size;
         if (onlyPlaylists) {
             states.new_playlist = "show";
             this.showHideTrackAndAlbumButtons(states, "hide");

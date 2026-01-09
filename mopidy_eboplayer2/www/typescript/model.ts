@@ -22,6 +22,7 @@ export interface ViewModel extends EboEventTargetClass {
     getBreadCrumbs(): BrowseFilterBreadCrumbStack;
     getView(): Views;
     getAlbumToView(): AlbumUri;
+    getGenreDefs(): Map<string, GenreDef> | null;
 }
 
 export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrumbTypeName, FilterBreadCrumb>{}
@@ -57,7 +58,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private currentBrowseFilter= new BrowseFilter();
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-    private genreDefs: Map<string, GenreDef>;
+    private genreDefs: Map<string, GenreDef> | null = null;
 
     private allRefs: Refs | null = null;
     private currentRefs: Refs | null = null;
@@ -73,7 +74,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     setGenreDefs(defs: GenreDef[]) {
         this.genreDefs = new Map<string, GenreDef>();
         for (let def of defs) {
-            this.genreDefs.set(def.genre, def);
+            this.genreDefs.set(def.ref.name ?? "???", def);
         }
         this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
     }
