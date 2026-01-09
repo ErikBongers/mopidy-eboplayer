@@ -42,6 +42,9 @@ export class MainView extends View {
         browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
+        getState().getModel().addEboEventListener("genreDefsChanged.eboplayer", () => {
+            this.onGenreDefsChanged();
+        });
         getState().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
             this.onRefsFiltered();
         });
@@ -369,5 +372,10 @@ export class MainView extends View {
         this.dialog.innerHTML = contentHtml;
         this.dialog.showModal();
         this.dialog.setAttribute("ok_text", okButtonText);
+    }
+
+    private async onGenreDefsChanged() {
+        let browseComp = document.getElementById("browseView") as EboBrowseComp;
+        browseComp.genreDefs = await getState().getController().getGenreDefsCached();
     }
 }

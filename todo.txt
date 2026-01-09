@@ -1,3 +1,42 @@
+* Browse genres:
+  > Before rendering, make a new list, with the replacements...replaced.
+    > First map the genres without a replacement.
+    > For each replacement:
+      - if the replacement already exists: don't add the genre with the replacement.
+        > keep a separate list of hidden replacements.
+      - if it does not exist, add it, it's essentially a rename rather than a replacement.
+  > When genres are hidden, add a button to the button bar to reveil hidden items.
+  > This can be done in any view of Browse, not just a Genre-only view.
+
+* Test genre replace:
+  > Alternative Music >> Alternative
+    > applicable to album "Papillon" > track "Papilin(Tiesto Remix)"
+    > this album seems to have alternative title "Allez dansez!!!"
+      > hebbekik dat gedaan? Waar? eboplayer file.
+* create a REPLACE_GENRE table.
+
+* In browse overview, show all available genres.
+  > A replaced genre is hidden by default.
+  > A button next to a genre allows to replace it.
+  > no grouping of genres: complexity is for playlists.
+  > A replaced genre is viewed by a striped-out original genre and the replacement next to it.
+  > replaced genres are below the 'active' genres (when shown)
+
+* Genres are tags at TRACK level only. Keep this simple!
+  > Genres on tracks need aa bit of uniformisation using alias/replace.
+* Grouping at album/artist level should happen in playlists.
+
+* Create track/album/artist_genre table.
+  >
+* Scan: fill genres in track_genre table.
+> when a new track is added, genres are added as-is.
+> when viewing track/album details: genres are striped-out when there is a replace-genre.
+  > genres can be added/removed at album, artist and track level.
+
+> a track has own genres, album genres and artist genres.
+
+
+
 * Make distinction between play buttons and other/edit buttons.
 
 Playlists vs Genres

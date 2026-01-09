@@ -256,3 +256,8 @@ export enum Views {
     Browse = "#Browse",
     Album = "#Album"
 }
+
+export interface GenreDef {
+    genre: string;
+    replacement: string;
+}

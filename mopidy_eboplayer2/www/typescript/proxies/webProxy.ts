@@ -1,7 +1,4 @@
-import {Model} from "../model";
-import {EboPlayerDataType} from "../views/view";
-import {getHostAndPort} from "../global";
-import {AlbumMetaData, AllUris, NoStreamTitles, StreamTitles, TrackUri} from "../modelTypes";
+import {AlbumMetaData, AllUris, GenreDef, StreamTitles, TrackUri} from "../modelTypes";
 
 export class WebProxy {
     private ebobackBase: string;
@@ -53,5 +50,11 @@ export class WebProxy {
         data.append("sequence", sequence.toString());
         let res = await fetch(url, {method: 'POST', body: data});
         return await res.json();
+    }
+
+    async fetchGenreDefs() {
+        let url = this.ebobackUrl(`get_genres`);
+        let res = await fetch(url);
+        return await res.json() as GenreDef[];
     }
 }

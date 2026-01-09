@@ -52,6 +52,7 @@ export class State {
         this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
             this.controller.filterBrowseResults();
         });
+        await this.controller.getGenreDefsCached();
     }
 }
 

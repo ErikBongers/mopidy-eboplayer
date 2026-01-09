@@ -1,13 +1,22 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton, PressedChangeEvent} from "./eboButton";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, BrowseFilterFlags, FilterBreadCrumb} from "../modelTypes";
-import {EmptySearchResults, RefType, SearchResults} from "../refs";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, BrowseFilterFlags, FilterBreadCrumb, GenreDef} from "../modelTypes";
+import {EmptySearchResults, RefType, SearchResults, TypedRef} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
 import {EboListButtonBar, ListButtonStates} from "./eboListButtonBar";
 import {text} from "node:stream/consumers";
+import models from "../../js/mopidy";
+import Ref = models.Ref;
 
 export class EboBrowseComp extends EboComponent {
+    get genreDefs(){
+        return this._genreDefs;
+    }
+
+    set genreDefs(value: Map<string, GenreDef>) {
+        this._genreDefs = value;
+    }
     get btn_states(): ListButtonStates {
         return this._btn_states;
     }
@@ -63,6 +72,8 @@ export class EboBrowseComp extends EboComponent {
     }
 
     private _browseFilter: BrowseFilter;
+
+    private _genreDefs: Map<string, GenreDef>;
 
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
@@ -365,7 +376,7 @@ export class EboBrowseComp extends EboComponent {
                 let refType = result.ref.type;
                 return `
                     <tr data-uri="${result.ref.ref.uri}" data-type="${refType}">
-                    <td>${result.ref.ref.name}</td>
+                    <td>${result.ref.ref.name + this.getGenreAlias(result.ref)}</td>
                     <td>...</td>
                     </tr>`;
             })
@@ -375,6 +386,17 @@ export class EboBrowseComp extends EboComponent {
             tr.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
         this.requestUpdate();
+    }
+
+    private getGenreAlias(ref: TypedRef) {
+        if(ref.type != "genre")
+            return "";
+        let genreDef = this.genreDefs?.get(ref.ref.name?? "__undefined__");
+        if(!genreDef)
+            return "";
+        if(genreDef.replacement != null)
+            return ` (${genreDef.replacement})`;
+        return "";
     }
 
     private onRowClicked(ev: MouseEvent) {

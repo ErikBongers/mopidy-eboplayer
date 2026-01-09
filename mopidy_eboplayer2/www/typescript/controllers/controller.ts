@@ -570,5 +570,12 @@ export class Controller extends Commands implements DataRequester{
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {
         return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
     }
-}
 
+    async getGenreDefsCached() {
+        if(this.model.getGenreDefs())
+            return this.model.getGenreDefs();
+        let genreDefs = await this.webProxy.fetchGenreDefs();
+        this.model.setGenreDefs(genreDefs);
+        return this.model.getGenreDefs();
+    }
+}

@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {EmptySearchResults, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, HistoryLine, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLine, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -57,6 +57,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private currentBrowseFilter= new BrowseFilter();
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
+    private genreDefs: Map<string, GenreDef>;
 
     private allRefs: Refs | null = null;
     private currentRefs: Refs | null = null;
@@ -68,6 +69,15 @@ export class Model extends EboEventTargetClass implements ViewModel {
         super();
         this.initializeBreadcrumbStack();
     }
+
+    setGenreDefs(defs: GenreDef[]) {
+        this.genreDefs = new Map<string, GenreDef>();
+        for (let def of defs) {
+            this.genreDefs.set(def.genre, def);
+        }
+        this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
+    }
+    getGenreDefs = () => this.genreDefs;
 
     pushBreadCrumb(crumb: FilterBreadCrumb) {
         this.filterBreadCrumbStack.push(crumb);

@@ -409,6 +409,7 @@ var State = class {
 		this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
 			this.controller.filterBrowseResults();
 		});
+		await this.controller.getGenreDefsCached();
 	}
 };
 let state = null;
@@ -762,6 +763,7 @@ var Model = class extends EboEventTargetClass {
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
+	genreDefs;
 	allRefs = null;
 	currentRefs = null;
 	view = Views.NowPlaying;
@@ -770,6 +772,12 @@ var Model = class extends EboEventTargetClass {
 		super();
 		this.initializeBreadcrumbStack();
 	}
+	setGenreDefs(defs) {
+		this.genreDefs = /* @__PURE__ */ new Map();
+		for (let def of defs) this.genreDefs.set(def.genre, def);
+		this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
+	}
+	getGenreDefs = () => this.genreDefs;
 	pushBreadCrumb(crumb) {
 		this.filterBreadCrumbStack.push(crumb);
 		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
@@ -1458,6 +1466,10 @@ var WebProxy = class {
 			body: data
 		})).json();
 	}
+	async fetchGenreDefs() {
+		let url = this.ebobackUrl(`get_genres`);
+		return await (await fetch(url)).json();
+	}
 };
 
 //#endregion
@@ -1906,6 +1918,12 @@ var Controller = class Controller extends Commands {
 	}
 	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
 		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
+	}
+	async getGenreDefsCached() {
+		if (this.model.getGenreDefs()) return this.model.getGenreDefs();
+		let genreDefs = await this.webProxy.fetchGenreDefs();
+		this.model.setGenreDefs(genreDefs);
+		return this.model.getGenreDefs();
 	}
 };
 
@@ -2812,6 +2830,9 @@ var MainView = class extends View {
 		browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
 			await this.onBrowseResultDblClick(ev.detail.uri);
 		});
+		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", () => {
+			this.onGenreDefsChanged();
+		});
 		playerState_default().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
 			this.onRefsFiltered();
 		});
@@ -3097,11 +3118,21 @@ var MainView = class extends View {
 		this.dialog.showModal();
 		this.dialog.setAttribute("ok_text", okButtonText);
 	}
+	async onGenreDefsChanged() {
+		let browseComp = document.getElementById("browseView");
+		browseComp.genreDefs = await playerState_default().getController().getGenreDefsCached();
+	}
 };
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
+	get genreDefs() {
+		return this._genreDefs;
+	}
+	set genreDefs(value) {
+		this._genreDefs = value;
+	}
 	get btn_states() {
 		return this._btn_states;
 	}
@@ -3145,6 +3176,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.requestRender();
 	}
 	_browseFilter;
+	_genreDefs;
 	static observedAttributes = [];
 	static styleText = `
         <style>
@@ -3408,7 +3440,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			let refType = result.ref.type;
 			return `
                     <tr data-uri="${result.ref.ref.uri}" data-type="${refType}">
-                    <td>${result.ref.ref.name}</td>
+                    <td>${result.ref.ref.name + this.getGenreAlias(result.ref)}</td>
                     <td>...</td>
                     </tr>`;
 		}).join("\n");
@@ -3421,6 +3453,13 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			});
 		});
 		this.requestUpdate();
+	}
+	getGenreAlias(ref) {
+		if (ref.type != "genre") return "";
+		let genreDef = this.genreDefs?.get(ref.ref.name ?? "__undefined__");
+		if (!genreDef) return "";
+		if (genreDef.replacement != null) return ` (${genreDef.replacement})`;
+		return "";
 	}
 	onRowClicked(ev) {
 		let row = ev.currentTarget;

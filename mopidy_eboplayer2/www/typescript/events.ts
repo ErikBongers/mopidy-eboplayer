@@ -36,7 +36,8 @@ export interface EboEventHandlersEventMap {
     "editClicked.eboplayer"               : GuiSourceArgs,
     "saveClicked.eboplayer"               : SaveUriArgs,
     "newPlaylistClicked.eboplayer"        : GuiSourceArgs,
-    "dialogOkClicked.eboplayer"          : DialogArgs,
+    "dialogOkClicked.eboplayer"           : DialogArgs,
+    "genreDefsChanged.eboplayer"          : VoidArgs,
 }
 
 export default interface EboEventTarget {
