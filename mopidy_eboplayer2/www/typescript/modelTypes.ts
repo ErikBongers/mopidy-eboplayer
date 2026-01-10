@@ -2,6 +2,7 @@ import models, {Branded} from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
 import Image = models.Image;
+import Artist = models.Artist;
 
 declare const __brand: unique symbol;
 
@@ -154,10 +155,37 @@ export interface CachedAlbumMetaData {
     meta?: AlbumMetaData,
 }
 
-export interface ExpandedAlbumModel {
-    album: AlbumModel,
-    tracks: FileTrackModel[],
-    meta: AlbumMetaData | null,
+export class ExpandedAlbumModel {
+    album: AlbumModel;
+    tracks: FileTrackModel[];
+    meta: AlbumMetaData | null;
+
+    constructor(album: AlbumModel, tracks: FileTrackModel[], meta: AlbumMetaData | null) {
+        this.album = album;
+        this.tracks = tracks;
+        this.meta = meta;
+    }
+
+    get genres(): string[] {
+        return [...new Set(this.tracks.map(track => track.track.genre))];
+    }
+    get artists()  {
+        let artistMap: Map<string, Artist> = new Map();
+        this.tracks
+            .map(track => track.track.artists?? [])
+            .flat()
+            .forEach(artist => artistMap.set(artist.name, artist));
+        return [...artistMap.values()]
+    }
+
+    get composers() {
+        let artistMap: Map<string, Artist> = new Map();
+        this.tracks
+            .map(track => track.track.composers?? [])
+            .flat()
+            .forEach(artist => artistMap.set(artist.name, artist));
+        return [...artistMap.values()]
+    }
 }
 
 export interface ExpandedStreamModel {

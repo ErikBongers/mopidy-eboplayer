@@ -705,6 +705,29 @@ var BrowseFilter = class {
 	}
 };
 const TrackNone = { type: "none" };
+var ExpandedAlbumModel = class {
+	album;
+	tracks;
+	meta;
+	constructor(album, tracks, meta) {
+		this.album = album;
+		this.tracks = tracks;
+		this.meta = meta;
+	}
+	get genres() {
+		return [...new Set(this.tracks.map((track) => track.track.genre))];
+	}
+	get artists() {
+		let artistMap = /* @__PURE__ */ new Map();
+		this.tracks.map((track) => track.track.artists ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
+		return [...artistMap.values()];
+	}
+	get composers() {
+		let artistMap = /* @__PURE__ */ new Map();
+		this.tracks.map((track) => track.track.composers ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
+		return [...artistMap.values()];
+	}
+};
 function isInstanceOfExpandedStreamModel(model) {
 	if (!model) return false;
 	return "stream" in model;
@@ -1845,11 +1868,7 @@ var Controller = class Controller extends Commands {
 		let album = (await this.lookupAlbumsCached([albumUri]))[0];
 		let meta = await this.getMetaDataCached(albumUri) ?? null;
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
-		return {
-			album,
-			tracks,
-			meta
-		};
+		return new ExpandedAlbumModel(album, tracks, meta);
 	}
 	async getMetaDataCached(albumUri) {
 		let cachedMeta = this.model.getFromMetaCache(albumUri);
@@ -3712,59 +3731,62 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	albumClickEvent;
 	_albumInfo = null;
 	static styleText = `
-            <style>
-                :host { 
-                    display: flex;
-                } 
-                h3 {
-                    margin-block-start: .5em;
-                    margin-block-end: .5em;
-                }
-                .albumCoverContainer {
-                    display: flex;
-                    flex-direction: column;
-                    align-content: center;
+        <style>
+            :host { 
+                display: flex;
+            } 
+            h3 {
+                margin-block-start: .5em;
+                margin-block-end: .5em;
+            }
+            .albumCoverContainer {
+                display: flex;
+                flex-direction: column;
+                align-content: center;
+                overflow: hidden;
+                flex-wrap: wrap;
+            }
+            img {
+                max-width: 90vw;
+                height: 45vh;
+                object-fit: contain;
+                background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
+            }
+            ebo-progressbar {
+                margin-top: .5em;
+            }
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                width: 100%;
+                #bottom {
                     overflow: hidden;
-                    flex-wrap: wrap;
                 }
-                img {
-                    max-width: 90vw;
-                    height: 45vh;
-                    object-fit: contain;
-                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
-                }
-                ebo-progressbar {
-                    margin-top: .5em;
-                }
-                #wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
-                    width: 100%;
-                    #bottom {
-                        overflow: hidden;
-                    }
-                }
-                #wrapper.front {
-                    #back {
-                        display: none;
-                    }                
-                }
-                #wrapper.back {
-                    #front {
-                        display: none;
-                    }                
-                }
-                .info {
-                    font-size: .7em;
-                }
-                #albumTableWrapper {
-                    height: 100%;
-                }
-                ebo-album-tracks-view {
-                    height: 100%;
-                }
-            </style>
+            }
+            #wrapper.front {
+                #back {
+                    display: none;
+                }                
+            }
+            #wrapper.back {
+                #front {
+                    display: none;
+                }                
+            }
+            .info {
+                font-size: .7em;
+            }
+            #albumTableWrapper {
+                height: 100%;
+            }
+            ebo-album-tracks-view {
+                height: 100%;
+            }
+            #back {
+                min-height: 40vh;
+            }
+        </style>
         `;
 	static list_source = "albumView";
 	static htmlText = `
@@ -4483,13 +4505,19 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                 height: 2rem;
                 object-fit: contain;
             }
+            label {
+                margin-right: 1rem;
+            }
         </style>
     `;
 	static htmlText = `
         <div>
             <img id="image" src="" alt="Album image">
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus ducimus earum incidunt ipsam itaque maiores, molestias, nesciunt numquam optio perspiciatis possimus, quae quas recusandae repellendus saepe tempora tenetur totam.</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus ducimus earum incidunt ipsam itaque maiores, molestias, nesciunt numquam optio perspiciatis possimus, quae quas recusandae repellendus saepe tempora tenetur totam.</p>
+            <div class="flexColumn">
+                <div class="flexRow"><label>Artists</label> <span id="artists"></span></div>
+                <div class="flexRow"><label>Composers</label> <span id="composers"></span></div>
+                <div class="flexRow"><label>Genres</label> <span id="genres"></span></div>
+            </div>        
         </div>
         `;
 	constructor() {
@@ -4507,6 +4535,12 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 		if (this.albumInfo) {
 			let imgTag = shadow.getElementById("image");
 			imgTag.src = this.albumInfo.album.imageUrl;
+			let artists = shadow.getElementById("artists");
+			artists.textContent = this.albumInfo.artists.map((artist) => artist.name).join(", ");
+			let composers = shadow.getElementById("composers");
+			composers.textContent = this.albumInfo.composers.map((artist) => artist.name).join(", ");
+			let genres = shadow.getElementById("genres");
+			genres.textContent = this.albumInfo.genres.join(", ");
 		}
 	}
 };

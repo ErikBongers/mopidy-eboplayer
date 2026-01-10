@@ -45,59 +45,62 @@ export class EboBigAlbumComp extends EboComponent {
     private _albumInfo: ExpandedAlbumModel | null = null;
 
     static styleText= `
-            <style>
-                :host { 
-                    display: flex;
-                } 
-                h3 {
-                    margin-block-start: .5em;
-                    margin-block-end: .5em;
-                }
-                .albumCoverContainer {
-                    display: flex;
-                    flex-direction: column;
-                    align-content: center;
+        <style>
+            :host { 
+                display: flex;
+            } 
+            h3 {
+                margin-block-start: .5em;
+                margin-block-end: .5em;
+            }
+            .albumCoverContainer {
+                display: flex;
+                flex-direction: column;
+                align-content: center;
+                overflow: hidden;
+                flex-wrap: wrap;
+            }
+            img {
+                max-width: 90vw;
+                height: 45vh;
+                object-fit: contain;
+                background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
+            }
+            ebo-progressbar {
+                margin-top: .5em;
+            }
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                height: 100%;
+                width: 100%;
+                #bottom {
                     overflow: hidden;
-                    flex-wrap: wrap;
                 }
-                img {
-                    max-width: 90vw;
-                    height: 45vh;
-                    object-fit: contain;
-                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
-                }
-                ebo-progressbar {
-                    margin-top: .5em;
-                }
-                #wrapper {
-                    display: flex;
-                    flex-direction: column;
-                    height: 100%;
-                    width: 100%;
-                    #bottom {
-                        overflow: hidden;
-                    }
-                }
-                #wrapper.front {
-                    #back {
-                        display: none;
-                    }                
-                }
-                #wrapper.back {
-                    #front {
-                        display: none;
-                    }                
-                }
-                .info {
-                    font-size: .7em;
-                }
-                #albumTableWrapper {
-                    height: 100%;
-                }
-                ebo-album-tracks-view {
-                    height: 100%;
-                }
-            </style>
+            }
+            #wrapper.front {
+                #back {
+                    display: none;
+                }                
+            }
+            #wrapper.back {
+                #front {
+                    display: none;
+                }                
+            }
+            .info {
+                font-size: .7em;
+            }
+            #albumTableWrapper {
+                height: 100%;
+            }
+            ebo-album-tracks-view {
+                height: 100%;
+            }
+            #back {
+                min-height: 40vh;
+            }
+        </style>
         `;
 
     private static readonly list_source: GuiSource = "albumView";

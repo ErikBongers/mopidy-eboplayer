@@ -24,14 +24,20 @@ export class EboAlbumDetails extends EboComponent {
                 height: 2rem;
                 object-fit: contain;
             }
+            label {
+                margin-right: 1rem;
+            }
         </style>
     `;
 
     static htmlText = `
         <div>
             <img id="image" src="" alt="Album image">
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus ducimus earum incidunt ipsam itaque maiores, molestias, nesciunt numquam optio perspiciatis possimus, quae quas recusandae repellendus saepe tempora tenetur totam.</p>
-            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus ducimus earum incidunt ipsam itaque maiores, molestias, nesciunt numquam optio perspiciatis possimus, quae quas recusandae repellendus saepe tempora tenetur totam.</p>
+            <div class="flexColumn">
+                <div class="flexRow"><label>Artists</label> <span id="artists"></span></div>
+                <div class="flexRow"><label>Composers</label> <span id="composers"></span></div>
+                <div class="flexRow"><label>Genres</label> <span id="genres"></span></div>
+            </div>        
         </div>
         `;
 
@@ -64,6 +70,12 @@ export class EboAlbumDetails extends EboComponent {
         if(this.albumInfo) {
             let imgTag = shadow.getElementById("image") as HTMLImageElement;
             imgTag.src = this.albumInfo.album.imageUrl;
+            let artists = shadow.getElementById("artists") as HTMLElement;
+            artists.textContent = this.albumInfo.artists.map(artist => artist.name).join(", ");
+            let composers = shadow.getElementById("composers") as HTMLElement;
+            composers.textContent = this.albumInfo.composers.map(artist => artist.name).join(", ");
+            let genres = shadow.getElementById("genres") as HTMLElement;
+            genres.textContent = this.albumInfo.genres.join(", ");
         }
     }
 }
