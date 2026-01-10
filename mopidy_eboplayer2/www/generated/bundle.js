@@ -3728,7 +3728,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                     flex-wrap: wrap;
                 }
                 img {
-                    width: 90vw;
+                    max-width: 90vw;
                     height: 45vh;
                     object-fit: contain;
                     background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);

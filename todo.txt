@@ -1,14 +1,12 @@
+* Most tracks/albums have no genre
+  > allow to easily set Genre for a track/album.
+  > prefilled list but option to create a genre.
 * Add button in Browse to show hidden items (replaced genres)
   > what icon? Eye?
 
 * Add menus to browse results.
   > Keep this generic.
   > Add "Rename to" for genres.
-
-* create python write_root_file()
-  > but first store the info of the root file somewhere...
-    > in backend memory.
-
 
 * Grouping at album/artist level should happen in playlists.
 
