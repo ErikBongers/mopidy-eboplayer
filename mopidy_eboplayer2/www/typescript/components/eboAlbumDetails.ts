@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
 import {ExpandedAlbumModel} from "../modelTypes";
+import getState from "../playerState";
 
 export class EboAlbumDetails extends EboComponent {
     get albumInfo(): ExpandedAlbumModel | null {
@@ -19,24 +20,41 @@ export class EboAlbumDetails extends EboComponent {
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
         <style>
+            * {
+                font-size: .8rem;
+            }
+            #header {
+                margin-bottom: .5rem;
+            }
+            #albumName {
+                font-size: 1rem;
+            }
             img {
-                width: 2rem;
-                height: 2rem;
+                width: 2.1rem;
+                height: 2.1rem;
                 object-fit: contain;
+                margin-right: .5rem;
             }
             label {
                 margin-right: 1rem;
+            }
+            .replaced {
+                opacity: .5;
+                text-decoration: line-through;
             }
         </style>
     `;
 
     static htmlText = `
         <div>
-            <img id="image" src="" alt="Album image">
-            <div class="flexColumn">
-                <div class="flexRow"><label>Artists</label> <span id="artists"></span></div>
-                <div class="flexRow"><label>Composers</label> <span id="composers"></span></div>
-                <div class="flexRow"><label>Genres</label> <span id="genres"></span></div>
+            <div id="header" class="flexRow">
+                <img id="image" src="" alt="Album image">
+                <span id="albumName"></span>
+            </div>
+            <div id="tableContainer" class="flexColumn">
+                <table>
+                    <tbody></tbody>                
+                </table>
             </div>        
         </div>
         `;
@@ -68,15 +86,35 @@ export class EboAlbumDetails extends EboComponent {
 
     override update(shadow: ShadowRoot) {
         if(this.albumInfo) {
+            let albumName = shadow.getElementById("albumName") as HTMLElement;
+            albumName.innerHTML = this.albumInfo.album.albumInfo.name;
             let imgTag = shadow.getElementById("image") as HTMLImageElement;
             imgTag.src = this.albumInfo.album.imageUrl;
-            let artists = shadow.getElementById("artists") as HTMLElement;
-            artists.textContent = this.albumInfo.artists.map(artist => artist.name).join(", ");
-            let composers = shadow.getElementById("composers") as HTMLElement;
-            composers.textContent = this.albumInfo.composers.map(artist => artist.name).join(", ");
-            let genres = shadow.getElementById("genres") as HTMLElement;
-            genres.textContent = this.albumInfo.genres.join(", ");
+
+            let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;
+            let body = table.tBodies[0];
+            body.innerHTML = "";
+            this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo.date);
+            this.addMetaDataRow(body, "Artists:", this.albumInfo.artists.map(artist => artist.name).join(", "));
+            this.addMetaDataRow(body, "Composers:", this.albumInfo.composers.map(artist => artist.name).join(","))
+            let genreDefs = this.albumInfo.genres.map(genre => ({genre, def: getState().getController().getGenreDef(genre)}));
+            let genresHtml = "";
+            genreDefs.forEach(def => {
+                let defHtml = "";
+                if(def.def)
+                    defHtml += `<span class="replaced">${def.genre}</span> &gt; ${def.def.replacement}`;
+                genresHtml += defHtml;
+            });
+            this.addMetaDataRow(body, "Genres", genresHtml);
         }
+    }
+
+    private addMetaDataRow(body: HTMLTableSectionElement, colText1: string, colText2: string) {
+        let tr = body.appendChild(document.createElement("tr"));
+        let td1 = tr.appendChild(document.createElement("td"));
+        td1.innerHTML = colText1;
+        let td2 = tr.appendChild(document.createElement("td"));
+        td2.innerHTML = colText2;
     }
 }
 

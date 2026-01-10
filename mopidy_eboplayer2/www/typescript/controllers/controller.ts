@@ -579,4 +579,8 @@ export class Controller extends Commands implements DataRequester{
         this.model.setGenreDefs(genreDefs);
         return this.model.getGenreDefs() as Map<string, GenreDef>;
     }
+
+    getGenreDef(name: string) {
+        return this.model.getGenreDefs()?.get(name);
+    }
 }
