@@ -4573,6 +4573,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 				genresHtml += defHtml;
 			});
 			this.addMetaDataRow(body, "Genres", genresHtml);
+			this.addMetaDataRow(body, "Playlists", "todo...");
 		}
 	}
 	addMetaDataRow(body, colText1, colText2) {

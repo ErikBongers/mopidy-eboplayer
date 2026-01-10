@@ -106,6 +106,7 @@ export class EboAlbumDetails extends EboComponent {
                 genresHtml += defHtml;
             });
             this.addMetaDataRow(body, "Genres", genresHtml);
+            this.addMetaDataRow(body, "Playlists", "todo...");
         }
     }
 
