@@ -29,6 +29,9 @@ export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
     if (webSocketUrl?.startsWith("{{"))
         webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
+
+    if(webSocketUrl == "")
+        return null;
     return webSocketUrl;
 }
 
