@@ -3752,7 +3752,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 }
                 #wrapper.back {
                     #front {
-                        position: absolute;
                         display: none;
                     }                
                 }
@@ -3769,8 +3768,9 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
         `;
 	static list_source = "albumView";
 	static htmlText = `
-            <div id="wrapper" class="front">
-                <div id="top">
+        <div id="wrapper" class="front">
+            <div id="top">
+                <div id="front">
                     <div class="albumCoverContainer">
                         <img id="image" src="" alt="Album cover"/>
                     </div>
@@ -3790,12 +3790,16 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                     >
                     </ebo-list-button-bar>
                 </div>
-                <div id="bottom">
-                    <div id="albumTableWrapper">
-                        <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
-                    </div>
+                <div id="back">
+                    <ebo-album-details></ebo-album-details>
+                </div>                
+            </div>
+            <div id="bottom">
+                <div id="albumTableWrapper">
+                    <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
                 </div>
-            </div>        
+            </div>
+        </div>        
         `;
 	constructor() {
 		super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
@@ -3833,9 +3837,24 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			img.style.visibility = "";
 			img.src = this.img;
 		} else img.style.visibility = "hidden";
-		if (this.albumInfo) shadow.querySelector("ebo-list-button-bar").setAttribute("uri", this.albumInfo.album.albumInfo.uri);
+		if (this.albumInfo) {
+			shadow.querySelector("ebo-list-button-bar").setAttribute("uri", this.albumInfo.album.albumInfo.uri);
+			let albumDetails = shadow.querySelector("ebo-album-details");
+			albumDetails.albumInfo = this.albumInfo;
+		}
 	}
-	render(shadow) {}
+	render(shadow) {
+		this.shadow.getElementById("image").addEventListener("click", () => {
+			let wrapper = this.getShadow().querySelector("#wrapper");
+			wrapper.classList.toggle("front");
+			wrapper.classList.toggle("back");
+		});
+		this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
+			let wrapper = this.getShadow().querySelector("#wrapper");
+			wrapper.classList.add("front");
+			wrapper.classList.remove("back");
+		});
+	}
 	onActiveTrackChanged() {
 		let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view");
 		tracksComp.activeTrackUri = this.activeTrackUri;
@@ -4445,6 +4464,54 @@ var EboDialog = class EboDialog extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboAlbumDetails.ts
+var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
+	get albumInfo() {
+		return this._albumInfo;
+	}
+	set albumInfo(value) {
+		this._albumInfo = value;
+		this.requestUpdate();
+	}
+	static tagName = "ebo-album-details";
+	static observedAttributes = [];
+	_albumInfo = null;
+	static styleText = `
+        <style>
+            img {
+                width: 2rem;
+                height: 2rem;
+                object-fit: contain;
+            }
+        </style>
+    `;
+	static htmlText = `
+        <div>
+            <img id="image" src="" alt="Album image">
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus ducimus earum incidunt ipsam itaque maiores, molestias, nesciunt numquam optio perspiciatis possimus, quae quas recusandae repellendus saepe tempora tenetur totam.</p>
+            <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Dicta doloribus ducimus earum incidunt ipsam itaque maiores, molestias, nesciunt numquam optio perspiciatis possimus, quae quas recusandae repellendus saepe tempora tenetur totam.</p>
+        </div>
+        `;
+	constructor() {
+		super(EboAlbumDetails.styleText, EboAlbumDetails.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {
+		shadow.getElementById("image").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
+		});
+	}
+	update(shadow) {
+		if (this.albumInfo) {
+			let imgTag = shadow.getElementById("image");
+			imgTag.src = this.albumInfo.album.imageUrl;
+		}
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -4465,6 +4532,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboMenuButton);
 		EboComponent.define(EboListButtonBar);
 		EboComponent.define(EboDialog);
+		EboComponent.define(EboAlbumDetails);
 		setupStuff();
 	});
 });

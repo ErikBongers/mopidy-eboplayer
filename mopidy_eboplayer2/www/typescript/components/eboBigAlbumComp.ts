@@ -2,6 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 import {GuiSource} from "../events";
+import {EboAlbumDetails} from "./eboAlbumDetails";
 
 
 export class EboBigAlbumComp extends EboComponent {
@@ -84,7 +85,6 @@ export class EboBigAlbumComp extends EboComponent {
                 }
                 #wrapper.back {
                     #front {
-                        position: absolute;
                         display: none;
                     }                
                 }
@@ -103,8 +103,9 @@ export class EboBigAlbumComp extends EboComponent {
     private static readonly list_source: GuiSource = "albumView";
     // noinspection HtmlUnknownTarget
     static htmlText = `
-            <div id="wrapper" class="front">
-                <div id="top">
+        <div id="wrapper" class="front">
+            <div id="top">
+                <div id="front">
                     <div class="albumCoverContainer">
                         <img id="image" src="" alt="Album cover"/>
                     </div>
@@ -124,12 +125,16 @@ export class EboBigAlbumComp extends EboComponent {
                     >
                     </ebo-list-button-bar>
                 </div>
-                <div id="bottom">
-                    <div id="albumTableWrapper">
-                        <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
-                    </div>
+                <div id="back">
+                    <ebo-album-details></ebo-album-details>
+                </div>                
+            </div>
+            <div id="bottom">
+                <div id="albumTableWrapper">
+                    <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
                 </div>
-            </div>        
+            </div>
+        </div>        
         `;
 
     constructor() {
@@ -176,10 +181,24 @@ export class EboBigAlbumComp extends EboComponent {
         if(this.albumInfo) {
             let buttonBar = shadow.querySelector("ebo-list-button-bar") as HTMLElement;
             buttonBar.setAttribute("uri", this.albumInfo.album.albumInfo.uri);
+            let albumDetails = shadow.querySelector("ebo-album-details") as EboAlbumDetails;
+            albumDetails.albumInfo = this.albumInfo;
         }
+
     }
 
     override render(shadow:ShadowRoot) {
+        let image = this.shadow.getElementById("image") as HTMLImageElement;
+        image.addEventListener("click", () => {
+            let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
+            wrapper.classList.toggle("front");
+            wrapper.classList.toggle("back");
+        });
+        this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
+            let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
+            wrapper.classList.add("front");
+            wrapper.classList.remove("back");
+        })
     }
 
     private onActiveTrackChanged() {

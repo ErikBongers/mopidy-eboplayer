@@ -24,6 +24,7 @@ import {PlayController} from "./controllers/playController";
 import {Commands} from "./commands";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {EboDialog} from "./components/eboDialog";
+import {EboAlbumDetails} from "./components/eboAlbumDetails";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -53,6 +54,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboMenuButton);
             EboComponent.define(EboListButtonBar);
             EboComponent.define(EboDialog);
+            EboComponent.define(EboAlbumDetails);
 
             setupStuff();
         });
