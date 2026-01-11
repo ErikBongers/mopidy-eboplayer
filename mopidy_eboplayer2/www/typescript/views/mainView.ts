@@ -243,8 +243,7 @@ export class MainView extends View {
         let expandedTrackInfo = await getState().getController().getExpandedTrackModel(selectedTrack);
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-            getState().getController().setAlbumToView(expandedTrackInfo.album.albumInfo.uri);
-            getState().getController().setView(Views.Album);
+            getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
         }
     }
 

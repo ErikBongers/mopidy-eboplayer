@@ -3937,13 +3937,13 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 </div>
                 <div id="back">
                     <ebo-album-details></ebo-album-details>
                 </div>                
             </div>
             <div id="bottom">
+                <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 <div id="albumTableWrapper">
                     <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
                 </div>

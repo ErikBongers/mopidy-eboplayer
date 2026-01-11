@@ -226,9 +226,8 @@ export class Controller extends Commands implements DataRequester{
 
         if(type == "album") {
             getState().getController().getExpandedAlbumModel(uri as AlbumUri).then(() => { //fetch before changing view, to avoid flicker.
-                this.model.setAlbumToView(uri as AlbumUri);
-                this.setView(Views.Album);
-            })
+                this.showAlbum(uri as AlbumUri);
+            });
         }
 
         // set 2 new breadCrumbs and a new browseFilter.
@@ -287,8 +286,7 @@ export class Controller extends Commands implements DataRequester{
             });
         } else if(breadCrumb instanceof BreadCrumbRef) {
             if(isBreadCrumbForAlbum(breadCrumb)) {
-                this.model.setAlbumToView(breadCrumb.data.uri);
-                this.setView(Views.Album);
+                this.showAlbum(breadCrumb.data.uri);
                 return;
             }
             this.model.resetBreadCrumbsTo(id);
@@ -583,7 +581,8 @@ export class Controller extends Commands implements DataRequester{
         return this.model.getGenreDefs()?.get(name);
     }
 
-    setAlbumToView(albumUri: AlbumUri) {
+    showAlbum(albumUri: AlbumUri) {
         this.model.setAlbumToView(albumUri);
+        this.model.setView(Views.Album);
     }
 }
