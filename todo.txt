@@ -1,4 +1,5 @@
 * Load data when list item becomes visible: https://www.youtube.com/watch?v=Jo8ABAJtMM0
+* Make meta data (title, artists, composers) selectable.
 
 * Most tracks/albums have no genre
   > allow to easily set Genre for a track/album.

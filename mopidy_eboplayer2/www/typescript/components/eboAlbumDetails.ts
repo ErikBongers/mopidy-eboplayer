@@ -49,7 +49,7 @@ export class EboAlbumDetails extends EboComponent {
         <div>
             <div id="header" class="flexRow">
                 <img id="image" src="" alt="Album image">
-                <span id="albumName"></span>
+                <span id="albumName" class="selectable"></span>
             </div>
             <div id="tableContainer" class="flexColumn">
                 <table>
@@ -116,6 +116,7 @@ export class EboAlbumDetails extends EboComponent {
         td1.innerHTML = colText1;
         let td2 = tr.appendChild(document.createElement("td"));
         td2.innerHTML = colText2;
+        td2.classList.add("selectable");
     }
 }
 
