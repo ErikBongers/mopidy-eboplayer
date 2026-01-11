@@ -32,7 +32,6 @@ export class EboBigTrackComp extends EboComponent {
     private active: string = "true";
 
     private img: string  = "";
-    private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: AlbumData = AlbumNone;
 
     static styleText= `
@@ -108,12 +107,6 @@ export class EboBigTrackComp extends EboComponent {
 
     constructor() {
         super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
-        this.albumClickEvent = new CustomEvent("albumClick", {
-            bubbles: true,
-            cancelable: false,
-            composed: true, //needed to 'break' out of the shadow.
-            detail: "todo: tadaaa!"
-        });
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -150,7 +143,7 @@ export class EboBigTrackComp extends EboComponent {
         let img = shadow.getElementById("image") as HTMLImageElement;
         img.src = this.img;
         this.addShadowEventListener("image","click", (ev) => {
-            this.dispatchEvent(this.albumClickEvent);
+            this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
         });
         this.requestUpdate();
     }

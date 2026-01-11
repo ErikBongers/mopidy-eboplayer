@@ -3,9 +3,18 @@ import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 import {GuiSource} from "../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
+import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 
 
 export class EboBigAlbumComp extends EboComponent {
+    get btn_states(): ListButtonStates {
+        return this._btn_states;
+    }
+
+    set btn_states(value: ListButtonStates) {
+        this._btn_states = value;
+        this.requestUpdate();
+    }
     get activeTrackUri(): string | null {
         return this._activeTrackUri;
     }
@@ -43,6 +52,7 @@ export class EboBigAlbumComp extends EboComponent {
     private img: string  = "";
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: ExpandedAlbumModel | null = null;
+    private _btn_states: ListButtonStates = ListButtonState_AllHidden();
 
     static styleText= `
         <style>
@@ -119,14 +129,7 @@ export class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar 
-                        list_source="${this.list_source}"
-                        add_btn_state="show"
-                        play_btn_state="show"
-                        replace_btn_state="show"
-                        edit_btn_state="show"
-                    >
-                    </ebo-list-button-bar>
+                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 </div>
                 <div id="back">
                     <ebo-album-details></ebo-album-details>
@@ -187,7 +190,8 @@ export class EboBigAlbumComp extends EboComponent {
             let albumDetails = shadow.querySelector("ebo-album-details") as EboAlbumDetails;
             albumDetails.albumInfo = this.albumInfo;
         }
-
+        let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
+        listButtonBar.btn_states = this.btn_states;
     }
 
     override render(shadow:ShadowRoot) {

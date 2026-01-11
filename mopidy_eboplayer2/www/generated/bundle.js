@@ -1573,7 +1573,6 @@ var Controller = class Controller extends Commands {
 		});
 		this.mopidy.on("event:trackPlaybackEnded", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
-			this.model.setPlayState("stopped");
 		});
 		this.mopidy.on("event:trackPlaybackResumed", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
@@ -1977,6 +1976,9 @@ var Controller = class Controller extends Commands {
 	}
 	getGenreDef(name) {
 		return this.model.getGenreDefs()?.get(name);
+	}
+	setAlbumToView(albumUri) {
+		this.model.setAlbumToView(albumUri);
 	}
 };
 
@@ -2497,7 +2499,6 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	button = "false";
 	active = "true";
 	img = "";
-	albumClickEvent;
 	_albumInfo = AlbumNone;
 	static styleText = `
             <style>
@@ -2569,12 +2570,6 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
         `;
 	constructor() {
 		super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
-		this.albumClickEvent = new CustomEvent("albumClick", {
-			bubbles: true,
-			cancelable: false,
-			composed: true,
-			detail: "todo: tadaaa!"
-		});
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigTrackComp.progressBarAttributes.includes(name)) {
@@ -2610,7 +2605,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		let img = shadow.getElementById("image");
 		img.src = this.img;
 		this.addShadowEventListener("image", "click", (ev) => {
-			this.dispatchEvent(this.albumClickEvent);
+			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
 		});
 		this.requestUpdate();
 	}
@@ -2853,6 +2848,143 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboListButtonBar.ts
+function ListButtonState_AllHidden() {
+	return {
+		add: "hide",
+		play: "hide",
+		edit: "hide",
+		replace: "hide",
+		save: "hide",
+		new_playlist: "hide"
+	};
+}
+var EboListButtonBar = class EboListButtonBar extends EboComponent {
+	get btn_states() {
+		return this._btn_states;
+	}
+	set btn_states(value) {
+		this._btn_states = value;
+		this.requestUpdate();
+	}
+	static tagName = "ebo-list-button-bar";
+	static observedAttributes = ["list_source", "uri"];
+	_btn_states = ListButtonState_AllHidden();
+	list_source;
+	uri;
+	static styleText = `
+        <style>
+            #buttons {
+                display: flex;
+                flex-direction: row;
+                margin-bottom: .5em;
+                button.disabled {
+                    opacity: 0.2;
+                }
+                button.playButton {
+                    background-color: var(--highlight-background);
+                    border: none;
+                }
+                img {
+                    height: 1.2rem;
+                }
+            }
+        </style>
+    `;
+	static htmlText = `
+        <div id="buttons">
+            <button id="btnPlay" class="roundBorder playButton"><i class="fa fa-play"></i></button>
+            <button id="btnAdd" class="roundBorder playButton"><i class="fa fa-plus"></i></button>
+            <button id="btnReplace" class="roundBorder playButton">Replace</button>
+            <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
+            <button id="btnSave" class="roundBorder">
+                <div class="flexRow">
+                    >            
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
+                </div>            
+            </button>
+            <button id="btnNewPlaylist" class="roundBorder">
+                <div class="flexRow">
+                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
+                    *            
+                </div>            
+            </button>
+        </div>                   
+    `;
+	constructor() {
+		super(EboListButtonBar.styleText, EboListButtonBar.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "list_source":
+				this.list_source = newValue;
+				break;
+			case "uri":
+				this[name] = newValue;
+				break;
+		}
+		this.requestUpdate();
+	}
+	render(shadow) {
+		this.addShadowEventListener("btnPlay", "click", (ev) => {
+			if (this.btn_states.play != "show") return;
+			this.dispatchEboEvent("playItemListClicked.eboplayer", { source: this.list_source });
+		});
+		this.addShadowEventListener("btnAdd", "click", (ev) => {
+			if (this.btn_states.add != "show") return;
+			this.dispatchEboEvent("addItemListClicked.eboplayer", { source: this.list_source });
+		});
+		this.addShadowEventListener("btnReplace", "click", (ev) => {
+			if (this.btn_states.replace != "show") return;
+			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
+		});
+		this.addShadowEventListener("btnEdit", "click", (ev) => {
+			if (this.btn_states.edit != "show") return;
+			this.dispatchEboEvent("editClicked.eboplayer", { source: this.list_source });
+		});
+		this.addShadowEventListener("btnSave", "click", (ev) => {
+			if (this.btn_states.save != "show") return;
+			this.dispatchEboEvent("saveClicked.eboplayer", {
+				source: this.list_source,
+				uri: this.uri
+			});
+		});
+		this.addShadowEventListener("btnNewPlaylist", "click", (ev) => {
+			if (this.btn_states.new_playlist != "show") return;
+			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
+		});
+		this.requestUpdate();
+	}
+	updateButtonState(name, newValue) {
+		this.btn_states[name] = newValue;
+	}
+	update(shadow) {
+		this.updateButtonVisibility("btnPlay", this._btn_states.play);
+		this.updateButtonVisibility("btnAdd", this._btn_states.add);
+		this.updateButtonVisibility("btnReplace", this._btn_states.replace);
+		this.updateButtonVisibility("btnEdit", this._btn_states.edit);
+		this.updateButtonVisibility("btnSave", this._btn_states.save);
+		this.updateButtonVisibility("btnNewPlaylist", this._btn_states.new_playlist);
+	}
+	updateButtonVisibility(id, state$1) {
+		let btn = this.shadow.getElementById(id);
+		switch (state$1) {
+			case "show":
+				btn.style.display = "";
+				break;
+			case "hide":
+				btn.style.display = "none";
+				break;
+			case "disabled":
+				btn.disabled = true;
+				btn.classList.add("disabled");
+				break;
+			default: break;
+		}
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/views/mainView.ts
 var MainView = class extends View {
 	onDialogOkClickedCallback = () => true;
@@ -2907,8 +3039,8 @@ var MainView = class extends View {
 		playerState_default().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
 			await this.onAlbumToViewChanged();
 		});
-		document.getElementById("currentTrackBigView").addEventListener("albumClick", async () => {
-			this.onAlbumClick();
+		document.getElementById("currentTrackBigView").addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
+			this.onBigTrackAlbumImgClick();
 		});
 		addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
@@ -2940,28 +3072,17 @@ var MainView = class extends View {
 			availableRefTypes: /* @__PURE__ */ new Set()
 		};
 		browseComp.renderResults();
-		this.setListButtonStates(browseComp);
+		browseComp.btn_states = this.getListButtonStates(playerState_default().getModel().getView());
 	}
-	setListButtonStates(browseComp) {
-		let currentView = playerState_default().getModel().getView();
-		if (currentView == Views.NowPlaying) return;
-		let states = {
-			add: "hide",
-			replace: "hide",
-			play: "hide",
-			save: "hide",
-			edit: "hide",
-			new_playlist: "hide"
-		};
-		if (currentView == Views.Browse) {
-			browseComp.btn_states = this.setBrowseViewListButtonStates(states);
-			return;
-		}
+	getListButtonStates(currentView) {
+		let states = ListButtonState_AllHidden();
+		if (currentView == Views.Browse) return this.setBrowseViewListButtonStates(states);
 		if (currentView == Views.Album) {
 			states = this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "hide";
-			browseComp.btn_states = states;
+			return states;
 		}
+		return states;
 	}
 	setBrowseViewListButtonStates(states) {
 		let searchResults = playerState_default().getModel().getCurrentSearchResults();
@@ -3046,6 +3167,7 @@ var MainView = class extends View {
 				};
 				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
 				browseComp.setFocusAndSelect();
+				browseComp.btn_states = this.getListButtonStates(view);
 				break;
 			case Views.NowPlaying:
 				layout.classList.add("bigTrack");
@@ -3063,14 +3185,22 @@ var MainView = class extends View {
 					browseBtn.dataset.goto = Views.NowPlaying;
 					browseBtn.title = "Now playing";
 				}
+				let albumComp = document.getElementById("bigAlbumView");
+				albumComp.btn_states = this.getListButtonStates(view);
 		}
-		this.setListButtonStates(browseComp);
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.TrackList];
 	}
-	onAlbumClick() {
-		playerState_default().getController().setView(Views.Album);
+	async onBigTrackAlbumImgClick() {
+		let selectedTrack = playerState_default().getModel().getSelectedTrack();
+		if (!selectedTrack) return;
+		let expandedTrackInfo = await playerState_default().getController().getExpandedTrackModel(selectedTrack);
+		if (!expandedTrackInfo) return;
+		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
+			playerState_default().getController().setAlbumToView(expandedTrackInfo.album.albumInfo.uri);
+			playerState_default().getController().setView(Views.Album);
+		}
 	}
 	async onTrackListChanged() {
 		if (!playerState_default().getModel().getCurrentTrack()) {
@@ -3194,14 +3324,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	static tagName = "ebo-browse-view";
 	static listSource = "browseView";
-	_btn_states = {
-		add: "hide",
-		play: "hide",
-		edit: "hide",
-		replace: "hide",
-		save: "hide",
-		new_playlist: "hide"
-	};
+	_btn_states = ListButtonState_AllHidden();
 	get breadCrumbs() {
 		return this._breadCrumbs;
 	}
@@ -3691,6 +3814,13 @@ var EboButton = class EboButton extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBigAlbumComp.ts
 var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
+	get btn_states() {
+		return this._btn_states;
+	}
+	set btn_states(value) {
+		this._btn_states = value;
+		this.requestUpdate();
+	}
 	get activeTrackUri() {
 		return this._activeTrackUri;
 	}
@@ -3733,6 +3863,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	img = "";
 	albumClickEvent;
 	_albumInfo = null;
+	_btn_states = ListButtonState_AllHidden();
 	static styleText = `
         <style>
             :host { 
@@ -3806,14 +3937,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
-                    <ebo-list-button-bar 
-                        list_source="${this.list_source}"
-                        add_btn_state="show"
-                        play_btn_state="show"
-                        replace_btn_state="show"
-                        edit_btn_state="show"
-                    >
-                    </ebo-list-button-bar>
+                    <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 </div>
                 <div id="back">
                     <ebo-album-details></ebo-album-details>
@@ -3867,6 +3991,8 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			let albumDetails = shadow.querySelector("ebo-album-details");
 			albumDetails.albumInfo = this.albumInfo;
 		}
+		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
+		listButtonBar.btn_states = this.btn_states;
 	}
 	render(shadow) {
 		this.shadow.getElementById("image").addEventListener("click", () => {
@@ -4151,140 +4277,6 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 	render() {}
 	closeMenu() {
 		this.getShadow().getElementById("menu").hidePopover();
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboListButtonBar.ts
-var EboListButtonBar = class EboListButtonBar extends EboComponent {
-	get btn_states() {
-		return this._btn_states;
-	}
-	set btn_states(value) {
-		this._btn_states = value;
-		this.requestUpdate();
-	}
-	static tagName = "ebo-list-button-bar";
-	static observedAttributes = ["list_source", "uri"];
-	_btn_states = {
-		add: "hide",
-		play: "hide",
-		edit: "hide",
-		replace: "hide",
-		save: "hide",
-		new_playlist: "hide"
-	};
-	list_source;
-	uri;
-	static styleText = `
-        <style>
-            #buttons {
-                display: flex;
-                flex-direction: row;
-                margin-bottom: .5em;
-                button.disabled {
-                    opacity: 0.2;
-                }
-                button.playButton {
-                    background-color: var(--highlight-background);
-                    border: none;
-                }
-                img {
-                    height: 1.2rem;
-                }
-            }
-        </style>
-    `;
-	static htmlText = `
-        <div id="buttons">
-            <button id="btnPlay" class="roundBorder playButton"><i class="fa fa-play"></i></button>
-            <button id="btnAdd" class="roundBorder playButton"><i class="fa fa-plus"></i></button>
-            <button id="btnReplace" class="roundBorder playButton">Replace</button>
-            <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
-            <button id="btnSave" class="roundBorder">
-                <div class="flexRow">
-                    >            
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
-                </div>            
-            </button>
-            <button id="btnNewPlaylist" class="roundBorder">
-                <div class="flexRow">
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
-                    *            
-                </div>            
-            </button>
-        </div>                   
-    `;
-	constructor() {
-		super(EboListButtonBar.styleText, EboListButtonBar.htmlText);
-	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		switch (name) {
-			case "list_source":
-				this.list_source = newValue;
-				break;
-			case "uri":
-				this[name] = newValue;
-				break;
-		}
-		this.requestUpdate();
-	}
-	render(shadow) {
-		this.addShadowEventListener("btnPlay", "click", (ev) => {
-			if (this.btn_states.play != "show") return;
-			this.dispatchEboEvent("playItemListClicked.eboplayer", { source: this.list_source });
-		});
-		this.addShadowEventListener("btnAdd", "click", (ev) => {
-			if (this.btn_states.add != "show") return;
-			this.dispatchEboEvent("addItemListClicked.eboplayer", { source: this.list_source });
-		});
-		this.addShadowEventListener("btnReplace", "click", (ev) => {
-			if (this.btn_states.replace != "show") return;
-			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
-		});
-		this.addShadowEventListener("btnEdit", "click", (ev) => {
-			if (this.btn_states.edit != "show") return;
-			this.dispatchEboEvent("editClicked.eboplayer", { source: this.list_source });
-		});
-		this.addShadowEventListener("btnSave", "click", (ev) => {
-			if (this.btn_states.save != "show") return;
-			this.dispatchEboEvent("saveClicked.eboplayer", {
-				source: this.list_source,
-				uri: this.uri
-			});
-		});
-		this.addShadowEventListener("btnNewPlaylist", "click", (ev) => {
-			if (this.btn_states.new_playlist != "show") return;
-			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
-		});
-		this.requestUpdate();
-	}
-	updateButtonState(name, newValue) {
-		this.btn_states[name] = newValue;
-	}
-	update(shadow) {
-		this.updateButtonVisibility("btnPlay", this._btn_states.play);
-		this.updateButtonVisibility("btnAdd", this._btn_states.add);
-		this.updateButtonVisibility("btnReplace", this._btn_states.replace);
-		this.updateButtonVisibility("btnEdit", this._btn_states.edit);
-		this.updateButtonVisibility("btnSave", this._btn_states.save);
-		this.updateButtonVisibility("btnNewPlaylist", this._btn_states.new_playlist);
-	}
-	updateButtonVisibility(id, state$1) {
-		let btn = this.shadow.getElementById(id);
-		switch (state$1) {
-			case "show":
-				btn.style.display = "";
-				break;
-			case "hide":
-				btn.style.display = "none";
-				break;
-			case "disabled":
-				btn.disabled = true;
-				btn.classList.add("disabled");
-				break;
-			default: break;
-		}
 	}
 };
 

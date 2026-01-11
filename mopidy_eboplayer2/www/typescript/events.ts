@@ -15,6 +15,7 @@ export interface EboEventHandlersEventMap {
     "browseResultDblClick.eboplayer"      : UriArgs,
     "buttonBarAlbumImgClicked.eboplayer"  : VoidArgs,
     "detailsAlbumImgClicked.eboplayer"    : VoidArgs,
+    "bigTrackAlbumImgClicked.eboplayer"   : VoidArgs,
     "changingVolume.eboplayer"            : VolumeEventArgs,
     "connectionChanged.eboplayer"         : VoidArgs, //todo: never received?
     "currentImageSet.eboplayer"           : VoidArgs, //todo: never received?

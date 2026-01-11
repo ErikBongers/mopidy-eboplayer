@@ -4,7 +4,7 @@ import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFi
 import {EmptySearchResults, RefType, SearchResult, SearchResults, TypedRef} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
-import {EboListButtonBar, ListButtonStates} from "./eboListButtonBar";
+import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {text} from "node:stream/consumers";
 import models from "../../js/mopidy";
 import Ref = models.Ref;
@@ -28,14 +28,7 @@ export class EboBrowseComp extends EboComponent {
     static override readonly tagName=  "ebo-browse-view";
     private static listSource: GuiSource = "browseView";
 
-    private _btn_states: ListButtonStates = {
-        add: "hide",
-        play: "hide",
-        edit: "hide",
-        replace: "hide",
-        save: "hide",
-        new_playlist: "hide"
-    };
+    private _btn_states: ListButtonStates = ListButtonState_AllHidden();
 
     get breadCrumbs(): FilterBreadCrumb[] {
         return this._breadCrumbs;

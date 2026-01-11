@@ -582,4 +582,8 @@ export class Controller extends Commands implements DataRequester{
     getGenreDef(name: string) {
         return this.model.getGenreDefs()?.get(name);
     }
+
+    setAlbumToView(albumUri: AlbumUri) {
+        this.model.setAlbumToView(albumUri);
+    }
 }

@@ -13,6 +13,17 @@ export type ListButtonStates = {
     new_playlist: ListButtonState;
 }
 export type ListButtonName = keyof ListButtonStates;
+export function ListButtonState_AllHidden(): ListButtonStates {
+    return {
+        add: "hide",
+            play: "hide",
+        edit: "hide",
+        replace: "hide",
+        save: "hide",
+        new_playlist: "hide"
+    };
+}
+
 
 export class EboListButtonBar extends EboComponent {
     get btn_states(): ListButtonStates {
@@ -26,14 +37,7 @@ export class EboListButtonBar extends EboComponent {
     static override readonly tagName=  "ebo-list-button-bar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["list_source", "uri"];
-    private _btn_states: ListButtonStates = {
-        add: "hide",
-        play: "hide",
-        edit: "hide",
-        replace: "hide",
-        save: "hide",
-        new_playlist: "hide"
-    };
+    private _btn_states: ListButtonStates = ListButtonState_AllHidden();
     list_source: GuiSource;
     uri: string;
     static styleText = `

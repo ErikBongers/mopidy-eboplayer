@@ -6,7 +6,7 @@ import {EboBrowseComp} from "../components/eboBrowseComp";
 import {console_yellow} from "../global";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
-import {ListButtonState, ListButtonStates} from "../components/eboListButtonBar";
+import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {RefType} from "../refs";
 
 export class MainView extends View {
@@ -67,8 +67,8 @@ export class MainView extends View {
             await this.onAlbumToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
-        currentTrackBigViewComp.addEventListener("albumClick", async () => {
-            this.onAlbumClick();
+        currentTrackBigViewComp.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
+            this.onBigTrackAlbumImgClick();
         });
         addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
@@ -99,30 +99,20 @@ export class MainView extends View {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? { refs: [], availableRefTypes: new Set()};
         browseComp.renderResults();
-        this.setListButtonStates(browseComp);
+        browseComp.btn_states = this.getListButtonStates(getState().getModel().getView());
     }
 
-    private setListButtonStates(browseComp: EboBrowseComp) {
-        let currentView = getState().getModel().getView();
-        if(currentView == Views.NowPlaying) return;
-
-        let states: ListButtonStates = {
-            add: "hide",
-            replace: "hide",
-            play: "hide",
-            save: "hide",
-            edit: "hide",
-            new_playlist: "hide"
-        };
+    private getListButtonStates(currentView: Views) {
+        let states: ListButtonStates = ListButtonState_AllHidden();
         if(currentView == Views.Browse) {
-            browseComp.btn_states = this.setBrowseViewListButtonStates(states);
-            return;
+            return this.setBrowseViewListButtonStates(states);
         }
         if(currentView == Views.Album) {
             states = this.showHideTrackAndAlbumButtons(states, "show");
             states.new_playlist = "hide";
-            browseComp.btn_states = states;
+            return states;
         }
+        return states;
     }
 
     private setBrowseViewListButtonStates(states: ListButtonStates): ListButtonStates {
@@ -220,6 +210,7 @@ export class MainView extends View {
                 browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()};
                 browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
                 browseComp.setFocusAndSelect();
+                browseComp.btn_states = this.getListButtonStates(view);
                 break;
             case Views.NowPlaying:
                 layout.classList.add("bigTrack");
@@ -237,16 +228,24 @@ export class MainView extends View {
                     browseBtn.dataset.goto = Views.NowPlaying;
                     browseBtn.title = "Now playing";
                 }
+                let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
+                albumComp.btn_states = this.getListButtonStates(view);
         }
-        this.setListButtonStates(browseComp);
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
         return [EboPlayerDataType.TrackList];
     }
 
-    private onAlbumClick() {
-        getState().getController().setView(Views.Album);
+    private async onBigTrackAlbumImgClick() {
+        let selectedTrack = getState().getModel().getSelectedTrack();
+        if (!selectedTrack) return;
+        let expandedTrackInfo = await getState().getController().getExpandedTrackModel(selectedTrack);
+        if (!expandedTrackInfo) return;
+        if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
+            getState().getController().setAlbumToView(expandedTrackInfo.album.albumInfo.uri);
+            getState().getController().setView(Views.Album);
+        }
     }
 
     private async onTrackListChanged() {
