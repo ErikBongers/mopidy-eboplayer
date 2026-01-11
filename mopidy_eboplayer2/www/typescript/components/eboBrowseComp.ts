@@ -165,7 +165,7 @@ export class EboBrowseComp extends EboComponent {
             <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
-            <button> ALL </button>
+            <button id="all"> ALL </button>
             <button> &nbsp;&nbsp;(?) </button>
         </div>
     </div>    
@@ -232,6 +232,10 @@ export class EboBrowseComp extends EboComponent {
         inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
             this._browseFilter.searchText = inputElement.value;
             this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+        });
+        let allButton = shadow.getElementById("all") as HTMLButtonElement;
+        allButton.addEventListener("click", (ev) => {
+            this.onShowAllTypesButtonPress();
         });
         shadow.querySelectorAll("ebo-button")
             .forEach((btn: EboButton) => {
@@ -405,5 +409,11 @@ export class EboBrowseComp extends EboComponent {
     private onBreadCrumbClicked(ev: MouseEvent) {
         let btn = ev.currentTarget as HTMLButtonElement;
         this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(<string>btn.dataset.id)});
+    }
+
+    private onShowAllTypesButtonPress() {
+        this.clearFilterButtons();
+        this.requestUpdate();
+        this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
     }
 }

@@ -450,6 +450,9 @@ var Refs = class {
 	}
 	applyFilter(searchResults) {
 		searchResults.forEach((result) => {
+			result.weight = 0;
+		});
+		searchResults.forEach((result) => {
 			this.calculateWeight(result, this.browseFilter);
 		});
 		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
@@ -1679,8 +1682,7 @@ var Controller = class Controller extends Commands {
 	diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
 		if (type == "track" || type == "radio") return;
 		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
-			this.model.setAlbumToView(uri);
-			this.setView(Views.Album);
+			this.showAlbum(uri);
 		});
 		if (addTextFilterBreadcrumb) {
 			let browseFilter = this.model.getCurrentBrowseFilter();
@@ -1734,8 +1736,7 @@ var Controller = class Controller extends Commands {
 			});
 		} else if (breadCrumb instanceof BreadCrumbRef) {
 			if (isBreadCrumbForAlbum(breadCrumb)) {
-				this.model.setAlbumToView(breadCrumb.data.uri);
-				this.setView(Views.Album);
+				this.showAlbum(breadCrumb.data.uri);
 				return;
 			}
 			this.model.resetBreadCrumbsTo(id);
@@ -1977,8 +1978,9 @@ var Controller = class Controller extends Commands {
 	getGenreDef(name) {
 		return this.model.getGenreDefs()?.get(name);
 	}
-	setAlbumToView(albumUri) {
+	showAlbum(albumUri) {
 		this.model.setAlbumToView(albumUri);
+		this.model.setView(Views.Album);
 	}
 };
 
@@ -3197,10 +3199,7 @@ var MainView = class extends View {
 		if (!selectedTrack) return;
 		let expandedTrackInfo = await playerState_default().getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
-		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-			playerState_default().getController().setAlbumToView(expandedTrackInfo.album.albumInfo.uri);
-			playerState_default().getController().setView(Views.Album);
-		}
+		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
 	}
 	async onTrackListChanged() {
 		if (!playerState_default().getModel().getCurrentTrack()) {
@@ -3445,7 +3444,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
             <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
-            <button> ALL </button>
+            <button id="all"> ALL </button>
             <button> &nbsp;&nbsp;(?) </button>
         </div>
     </div>    
@@ -3501,6 +3500,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		inputElement.addEventListener("keyup", (ev) => {
 			this._browseFilter.searchText = inputElement.value;
 			this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+		});
+		shadow.getElementById("all").addEventListener("click", (ev) => {
+			this.onShowAllTypesButtonPress();
 		});
 		shadow.querySelectorAll("ebo-button").forEach((btn) => {
 			btn.addEventListener("pressedChange", async (ev) => {
@@ -3651,6 +3653,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
 		this.dispatchEboEvent("breadCrumbClick.eboplayer", { breadcrumbId: parseInt(btn.dataset.id) });
+	}
+	onShowAllTypesButtonPress() {
+		this.clearFilterButtons();
+		this.requestUpdate();
+		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
 	}
 };
 

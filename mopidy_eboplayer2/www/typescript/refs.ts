@@ -63,6 +63,9 @@ export abstract class Refs {
 
     protected applyFilter(searchResults: SearchResult[]) {
         searchResults.forEach(result => {
+            result.weight = 0;
+        });
+        searchResults.forEach(result => {
             this.calculateWeight(result, this.browseFilter);
         });
         return searchResults
