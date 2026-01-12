@@ -31,15 +31,6 @@ export class EboBigAlbumComp extends EboComponent {
         this.requestUpdate();
     }
 
-    private _streamInfo: ExpandedStreamModel | null = null;
-    get streamInfo(): ExpandedStreamModel | null {
-        return this._streamInfo;
-    }
-    set streamInfo(value: ExpandedStreamModel | null) {
-        this._streamInfo = value;
-        this.requestUpdate();
-    }
-
     private _activeTrackUri: string | null = null;
     static override readonly tagName=  "ebo-big-album-view";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -120,7 +111,7 @@ export class EboBigAlbumComp extends EboComponent {
             <div id="top">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="image" src="" alt="Album cover"/>
+                        <img id="bigImage" src="" alt="Album cover"/>
                     </div>
         
                     <div id="info">
@@ -177,8 +168,7 @@ export class EboBigAlbumComp extends EboComponent {
         });
         let tracksComp = shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.albumInfo = this.albumInfo;
-        tracksComp.streamInfo = this.streamInfo;
-        let img = shadow.getElementById("image") as HTMLImageElement;
+        let img = shadow.getElementById("bigImage") as HTMLImageElement;
         if(this.img != "") {
             img.style.visibility = "";
             img.src = this.img;
@@ -195,7 +185,7 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     override render(shadow:ShadowRoot) {
-        let image = this.shadow.getElementById("image") as HTMLImageElement;
+        let image = this.shadow.getElementById("bigImage") as HTMLImageElement;
         image.addEventListener("click", () => {
             let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
             wrapper.classList.toggle("front");

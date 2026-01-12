@@ -8,6 +8,7 @@ import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {RefType} from "../refs";
+import {EboBigTrackComp} from "../components/eboBigTrackComp";
 
 export class MainView extends View {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -68,7 +69,10 @@ export class MainView extends View {
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
-            this.onBigTrackAlbumImgClick();
+            await this.onBigTrackAlbumImgClick();
+        });
+        currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+            currentTrackBigViewComp.setAttribute("show_back", "false");
         });
         addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
@@ -244,6 +248,11 @@ export class MainView extends View {
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
             getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+            return;
+        }
+        if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
+            let bigTrackView = document.getElementById("currentTrackBigView") as EboBigTrackComp;
+            bigTrackView.setAttribute("show_back", "true");
         }
     }
 
@@ -267,9 +276,10 @@ export class MainView extends View {
                     let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                     let streamModel = await getState().getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
                     albumComp.albumInfo = null;
-                    albumComp.streamInfo = streamModel;
                     albumComp.setAttribute("img", streamModel.stream.imageUrl);
                     albumComp.setAttribute("name", streamModel.stream.name);
+                    let bigTrackComp = document.getElementById("currentTrackBigView") as EboBigTrackComp;
+                    bigTrackComp.streamInfo = streamModel;
                 }
             });
     }
@@ -282,7 +292,6 @@ export class MainView extends View {
     private setAlbumComponentData(albumModel: ExpandedAlbumModel) {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
-        albumComp.streamInfo = null;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
         albumComp.setAttribute("name", albumModel.meta?.albumTitle?? albumModel.album.albumInfo.name);
         albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;

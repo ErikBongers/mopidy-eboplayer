@@ -68,12 +68,12 @@ export class EboListButtonBar extends EboComponent {
             <button id="btnSave" class="roundBorder">
                 <div class="flexRow">
                     >            
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
+                    <img id="bigImage" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
                 </div>            
             </button>
             <button id="btnNewPlaylist" class="roundBorder">
                 <div class="flexRow">
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
+                    <img id="bigImage" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
                     *            
                 </div>            
             </button>

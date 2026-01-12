@@ -44,7 +44,7 @@ export class EboButton extends EboComponent {
 
     static htmlText = `
         <button>
-            <img id="image" src="" alt="Button image">
+            <img id="bigImage" src="" alt="Button image">
         </button>
         `;
 
@@ -73,7 +73,7 @@ export class EboButton extends EboComponent {
         }
 
     render(shadow:ShadowRoot) {
-        let imgTag = shadow.getElementById("image") as HTMLImageElement;
+        let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
         this.setClassFromBoolAttribute(imgTag, "pressed");
         this.setClassFromBoolAttribute(imgTag, "disabled");
         imgTag.src = this.img ?? "";

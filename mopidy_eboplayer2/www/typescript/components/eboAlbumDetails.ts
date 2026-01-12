@@ -48,7 +48,7 @@ export class EboAlbumDetails extends EboComponent {
     static htmlText = `
         <div>
             <div id="header" class="flexRow">
-                <img id="image" src="" alt="Album image">
+                <img id="bigImage" src="" alt="Album image">
                 <span id="albumName" class="selectable"></span>
             </div>
             <div id="tableContainer" class="flexColumn">
@@ -78,7 +78,7 @@ export class EboAlbumDetails extends EboComponent {
         }
 
     render(shadow:ShadowRoot) { //todo: make override method instead of abstract (and thus required)
-        let imageTag = shadow.getElementById("image") as HTMLImageElement;
+        let imageTag = shadow.getElementById("bigImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {
             this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
         })
@@ -88,7 +88,7 @@ export class EboAlbumDetails extends EboComponent {
         if(this.albumInfo) {
             let albumName = shadow.getElementById("albumName") as HTMLElement;
             albumName.innerHTML = this.albumInfo.album.albumInfo.name;
-            let imgTag = shadow.getElementById("image") as HTMLImageElement;
+            let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
             imgTag.src = this.albumInfo.album.imageUrl;
 
             let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;

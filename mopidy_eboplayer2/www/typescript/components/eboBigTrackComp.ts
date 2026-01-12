@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumData, AlbumDataType, AlbumNone} from "../modelTypes";
+import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import {console_yellow} from "../global";
+import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 
 export class EboBigTrackComp extends EboComponent {
     get albumInfo(): AlbumData {
@@ -10,6 +11,15 @@ export class EboBigTrackComp extends EboComponent {
     set albumInfo(value: AlbumData) {
         this._albumInfo = value;
         this.requestRender();
+    }
+
+    private _streamInfo: ExpandedStreamModel | null = null;
+    get streamInfo(): ExpandedStreamModel | null {
+        return this._streamInfo;
+    }
+    set streamInfo(value: ExpandedStreamModel | null) {
+        this._streamInfo = value;
+        this.requestUpdate();
     }
 
     static override readonly tagName=  "ebo-big-track-view";
@@ -49,13 +59,19 @@ export class EboBigTrackComp extends EboComponent {
                     /*align-content: center;*/
                     overflow: hidden;
                 }
-                img {
+                img#bigImage {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
                     min-width: 200px;
                     min-height: 200px;
                     background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
+                }
+                img#smallImage {
+                    width: 2.1rem;
+                    height: 2.1rem;
+                    object-fit: contain;
+                    margin-right: .5rem;
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -71,9 +87,19 @@ export class EboBigTrackComp extends EboComponent {
                         width: 100%;
                         align-items: center;
                     }
+                    #back {
+                        width: 100%;
+                        padding: 1rem;
+                    }
                 }
                 #wrapper.front {
                     #back {
+                        display: none;
+                    }                
+                }
+                #wrapper.back {
+                    #front {
+                        position: absolute;
                         display: none;
                     }                
                 }
@@ -83,6 +109,10 @@ export class EboBigTrackComp extends EboComponent {
                 ebo-album-tracks-view {
                     height: 100%;
                 }
+                #albumTableWrapper {
+                    height: 100%;
+                    font-size: .8rem;
+                }
             </style>
         `;
 
@@ -91,7 +121,7 @@ export class EboBigTrackComp extends EboComponent {
             <div id="wrapper" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="image" style="visibility: hidden" src="" alt="Album cover"/>
+                        <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -100,6 +130,15 @@ export class EboBigTrackComp extends EboComponent {
                         <h3 id="name" class="selectable"></h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
+                    </div>
+                </div>
+                <div id="back">
+                    <div id="header" class="flexRow">
+                        <img id="smallImage" src="" alt="Album image">
+                        <span id="title" class="selectable"></span>
+                    </div>
+                    <div id="albumTableWrapper">
+                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
                     </div>
                 </div>
             </div>        
@@ -124,6 +163,7 @@ export class EboBigTrackComp extends EboComponent {
                 this[name] = newValue;
                 break;
             case "enabled":
+            case "show_back":
                 this.updateBoolProperty(name, newValue);
                 break;
         }
@@ -140,10 +180,15 @@ export class EboBigTrackComp extends EboComponent {
             // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });
-        let img = shadow.getElementById("image") as HTMLImageElement;
+        let img = shadow.getElementById("bigImage") as HTMLImageElement;
         img.src = this.img;
-        this.addShadowEventListener("image","click", (ev) => {
+        this.switchFrontBackNoRender();
+        this.addShadowEventListener("bigImage","click", (ev) => {
             this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
+        });
+        let smallImage = shadow.getElementById("smallImage") as HTMLImageElement;
+        smallImage.addEventListener("click", (ev) => {
+            this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
         });
         this.requestUpdate();
     }
@@ -153,14 +198,31 @@ export class EboBigTrackComp extends EboComponent {
             // @ts-ignore
             shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
-        let img = shadow.getElementById("image") as HTMLImageElement;
+        let tracksComp = shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
+        tracksComp.streamInfo = this.streamInfo;
+        let img = shadow.getElementById("bigImage") as HTMLImageElement;
+        let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
         if(this.img != "") {
             img.style.visibility = "";
+            smallImg.style.visibility = "";
             img.src = this.img;
+            smallImg.src = this.img;
         }
         else {
             img.style.visibility = "hidden";
+            smallImg.style.visibility = "hidden";
         }
+        let title = shadow.getElementById("title") as HTMLElement;
+        title.textContent = this.name;
+    }
+
+    private switchFrontBackNoRender() {
+        let wrapper = this.shadow.getElementById("wrapper") as HTMLElement;
+        wrapper.classList.remove("front", "back");
+        if (this.show_back)
+            wrapper.classList.add("back");
+        else
+            wrapper.classList.add("front");
     }
 
 }

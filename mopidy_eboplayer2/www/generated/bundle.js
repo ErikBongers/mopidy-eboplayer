@@ -2473,6 +2473,14 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		this._albumInfo = value;
 		this.requestRender();
 	}
+	_streamInfo = null;
+	get streamInfo() {
+		return this._streamInfo;
+	}
+	set streamInfo(value) {
+		this._streamInfo = value;
+		this.requestUpdate();
+	}
 	static tagName = "ebo-big-track-view";
 	static progressBarAttributes = [
 		"position",
@@ -2517,13 +2525,19 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                     /*align-content: center;*/
                     overflow: hidden;
                 }
-                img {
+                img#bigImage {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
                     min-width: 200px;
                     min-height: 200px;
                     background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
+                }
+                img#smallImage {
+                    width: 2.1rem;
+                    height: 2.1rem;
+                    object-fit: contain;
+                    margin-right: .5rem;
                 }
                 ebo-progressbar {
                     margin-top: .5em;
@@ -2539,9 +2553,19 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                         width: 100%;
                         align-items: center;
                     }
+                    #back {
+                        width: 100%;
+                        padding: 1rem;
+                    }
                 }
                 #wrapper.front {
                     #back {
+                        display: none;
+                    }                
+                }
+                #wrapper.back {
+                    #front {
+                        position: absolute;
                         display: none;
                     }                
                 }
@@ -2551,13 +2575,17 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                 ebo-album-tracks-view {
                     height: 100%;
                 }
+                #albumTableWrapper {
+                    height: 100%;
+                    font-size: .8rem;
+                }
             </style>
         `;
 	static htmlText = `
             <div id="wrapper" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="image" style="visibility: hidden" src="" alt="Album cover"/>
+                        <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -2566,6 +2594,15 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                         <h3 id="name" class="selectable"></h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
+                    </div>
+                </div>
+                <div id="back">
+                    <div id="header" class="flexRow">
+                        <img id="smallImage" src="" alt="Album image">
+                        <span id="title" class="selectable"></span>
+                    </div>
+                    <div id="albumTableWrapper">
+                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
                     </div>
                 </div>
             </div>        
@@ -2587,6 +2624,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 				this[name] = newValue;
 				break;
 			case "enabled":
+			case "show_back":
 				this.updateBoolProperty(name, newValue);
 				break;
 		}
@@ -2604,20 +2642,40 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
-		let img = shadow.getElementById("image");
+		let img = shadow.getElementById("bigImage");
 		img.src = this.img;
-		this.addShadowEventListener("image", "click", (ev) => {
+		this.switchFrontBackNoRender();
+		this.addShadowEventListener("bigImage", "click", (ev) => {
 			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
 		});
+		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
+		});
+		let title = shadow.getElementById("title");
+		title.textContent = this.name;
 		this.requestUpdate();
 	}
 	update(shadow) {
 		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let img = shadow.getElementById("image");
+		let tracksComp = shadow.querySelector("ebo-album-tracks-view");
+		tracksComp.streamInfo = this.streamInfo;
+		let img = shadow.getElementById("bigImage");
+		let smallImg = shadow.getElementById("smallImage");
 		if (this.img != "") {
 			img.style.visibility = "";
+			smallImg.style.visibility = "";
 			img.src = this.img;
-		} else img.style.visibility = "hidden";
+			smallImg.src = this.img;
+		} else {
+			img.style.visibility = "hidden";
+			smallImg.style.visibility = "hidden";
+		}
+	}
+	switchFrontBackNoRender() {
+		let wrapper = this.shadow.getElementById("wrapper");
+		wrapper.classList.remove("front", "back");
+		if (this.show_back) wrapper.classList.add("back");
+		else wrapper.classList.add("front");
 	}
 };
 
@@ -2902,12 +2960,12 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
             <button id="btnSave" class="roundBorder">
                 <div class="flexRow">
                     >            
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
+                    <img id="bigImage" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
                 </div>            
             </button>
             <button id="btnNewPlaylist" class="roundBorder">
                 <div class="flexRow">
-                    <img id="image" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
+                    <img id="bigImage" src="images/icons/Playlist.svg" alt="New playlist" class="whiteIcon">
                     *            
                 </div>            
             </button>
@@ -3041,8 +3099,12 @@ var MainView = class extends View {
 		playerState_default().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
 			await this.onAlbumToViewChanged();
 		});
-		document.getElementById("currentTrackBigView").addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
-			this.onBigTrackAlbumImgClick();
+		let currentTrackBigViewComp = document.getElementById("currentTrackBigView");
+		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
+			await this.onBigTrackAlbumImgClick();
+		});
+		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+			currentTrackBigViewComp.setAttribute("show_back", "false");
 		});
 		addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
@@ -3199,7 +3261,11 @@ var MainView = class extends View {
 		if (!selectedTrack) return;
 		let expandedTrackInfo = await playerState_default().getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
-		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
+			playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+			return;
+		}
+		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("currentTrackBigView").setAttribute("show_back", "true");
 	}
 	async onTrackListChanged() {
 		if (!playerState_default().getModel().getCurrentTrack()) {
@@ -3217,9 +3283,10 @@ var MainView = class extends View {
 				let albumComp = document.getElementById("bigAlbumView");
 				let streamModel = await playerState_default().getController().getExpandedTrackModel(track.track.uri);
 				albumComp.albumInfo = null;
-				albumComp.streamInfo = streamModel;
 				albumComp.setAttribute("img", streamModel.stream.imageUrl);
 				albumComp.setAttribute("name", streamModel.stream.name);
+				let bigTrackComp = document.getElementById("currentTrackBigView");
+				bigTrackComp.streamInfo = streamModel;
 			}
 		});
 	}
@@ -3230,7 +3297,6 @@ var MainView = class extends View {
 	setAlbumComponentData(albumModel) {
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.albumInfo = albumModel;
-		albumComp.streamInfo = null;
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
 		albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 		albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
@@ -3762,7 +3828,7 @@ var EboButton = class EboButton extends EboComponent {
     `;
 	static htmlText = `
         <button>
-            <img id="image" src="" alt="Button image">
+            <img id="bigImage" src="" alt="Button image">
         </button>
         `;
 	constructor() {
@@ -3782,7 +3848,7 @@ var EboButton = class EboButton extends EboComponent {
 		this.requestRender();
 	}
 	render(shadow) {
-		let imgTag = shadow.getElementById("image");
+		let imgTag = shadow.getElementById("bigImage");
 		this.setClassFromBoolAttribute(imgTag, "pressed");
 		this.setClassFromBoolAttribute(imgTag, "disabled");
 		imgTag.src = this.img ?? "";
@@ -3840,14 +3906,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	}
 	set albumInfo(value) {
 		this._albumInfo = value;
-		this.requestUpdate();
-	}
-	_streamInfo = null;
-	get streamInfo() {
-		return this._streamInfo;
-	}
-	set streamInfo(value) {
-		this._streamInfo = value;
 		this.requestUpdate();
 	}
 	_activeTrackUri = null;
@@ -3935,7 +3993,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
             <div id="top">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="image" src="" alt="Album cover"/>
+                        <img id="bigImage" src="" alt="Album cover"/>
                     </div>
         
                     <div id="info">
@@ -3987,8 +4045,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		});
 		let tracksComp = shadow.querySelector("ebo-album-tracks-view");
 		tracksComp.albumInfo = this.albumInfo;
-		tracksComp.streamInfo = this.streamInfo;
-		let img = shadow.getElementById("image");
+		let img = shadow.getElementById("bigImage");
 		if (this.img != "") {
 			img.style.visibility = "";
 			img.src = this.img;
@@ -4002,7 +4059,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		listButtonBar.btn_states = this.btn_states;
 	}
 	render(shadow) {
-		this.shadow.getElementById("image").addEventListener("click", () => {
+		this.shadow.getElementById("bigImage").addEventListener("click", () => {
 			let wrapper = this.getShadow().querySelector("#wrapper");
 			wrapper.classList.toggle("front");
 			wrapper.classList.toggle("back");
@@ -4529,7 +4586,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 	static htmlText = `
         <div>
             <div id="header" class="flexRow">
-                <img id="image" src="" alt="Album image">
+                <img id="bigImage" src="" alt="Album image">
                 <span id="albumName" class="selectable"></span>
             </div>
             <div id="tableContainer" class="flexColumn">
@@ -4546,7 +4603,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		shadow.getElementById("image").addEventListener("click", (ev) => {
+		shadow.getElementById("bigImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
 		});
 	}
@@ -4554,7 +4611,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 		if (this.albumInfo) {
 			let albumName = shadow.getElementById("albumName");
 			albumName.innerHTML = this.albumInfo.album.albumInfo.name;
-			let imgTag = shadow.getElementById("image");
+			let imgTag = shadow.getElementById("bigImage");
 			imgTag.src = this.albumInfo.album.imageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			body.innerHTML = "";
