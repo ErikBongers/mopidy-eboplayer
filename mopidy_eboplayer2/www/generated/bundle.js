@@ -2572,7 +2572,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                 .info {
                     font-size: .7em;
                 }
-                ebo-album-tracks-view {
+                ebo-radio-details-view {
                     height: 100%;
                 }
                 #albumTableWrapper {
@@ -2602,7 +2602,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
                         <span id="title" class="selectable"></span>
                     </div>
                     <div id="albumTableWrapper">
-                        <ebo-album-tracks-view img="images/default_cover.png" ></ebo-album-tracks-view>
+                        <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
                     </div>
                 </div>
             </div>        
@@ -2628,9 +2628,18 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 				this.updateBoolProperty(name, newValue);
 				break;
 		}
-		this.requestRender();
+		this.requestUpdate();
 	}
 	render(shadow) {
+		this.addShadowEventListener("bigImage", "click", (ev) => {
+			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
+		});
+		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
+		});
+		this.requestUpdate();
+	}
+	update(shadow) {
 		[
 			"name",
 			"stream_lines",
@@ -2645,21 +2654,9 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		let img = shadow.getElementById("bigImage");
 		img.src = this.img;
 		this.switchFrontBackNoRender();
-		this.addShadowEventListener("bigImage", "click", (ev) => {
-			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
-		});
-		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
-			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
-		});
-		let title = shadow.getElementById("title");
-		title.textContent = this.name;
-		this.requestUpdate();
-	}
-	update(shadow) {
 		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let tracksComp = shadow.querySelector("ebo-album-tracks-view");
-		tracksComp.streamInfo = this.streamInfo;
-		let img = shadow.getElementById("bigImage");
+		let redioDetailsComp = shadow.querySelector("ebo-radio-details-view");
+		redioDetailsComp.streamInfo = this.streamInfo;
 		let smallImg = shadow.getElementById("smallImage");
 		if (this.img != "") {
 			img.style.visibility = "";
@@ -2670,6 +2667,8 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 			img.style.visibility = "hidden";
 			smallImg.style.visibility = "hidden";
 		}
+		let title = shadow.getElementById("title");
+		title.textContent = this.name;
 	}
 	switchFrontBackNoRender() {
 		let wrapper = this.shadow.getElementById("wrapper");
@@ -2781,14 +2780,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboAlbumTracksComp.ts
 var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
-	_streamInfo = null;
-	get streamInfo() {
-		return this._streamInfo;
-	}
-	set streamInfo(value) {
-		this._streamInfo = value;
-		this.requestRender();
-	}
 	set activeTrackUri(value) {
 		this._activeTrackUri = value;
 		this.highLightActiveTrack();
@@ -2892,11 +2883,6 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 				ev.target.closest("ebo-menu-button").closeMenu();
 				this.dispatchEboEvent("playTrackClicked.eboplayer", { uri: track.track.uri });
 			});
-		});
-		if (this.streamInfo) this.streamInfo.historyLines.forEach((lineGroup) => {
-			let td = tbody.appendChild(document.createElement("tr")).appendChild(document.createElement("td"));
-			td.innerHTML = lineGroup.join("<br>");
-			td.classList.add("selectable");
 		});
 		this.highLightActiveTrack();
 	}
@@ -4643,6 +4629,83 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboRadioDetailsComp.ts
+var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
+	_streamInfo = null;
+	get streamInfo() {
+		return this._streamInfo;
+	}
+	set streamInfo(value) {
+		this._streamInfo = value;
+		this.requestUpdate();
+	}
+	static tagName = "ebo-radio-details-view";
+	static observedAttributes = ["img"];
+	constructor() {
+		super(EboRadioDetailsComp.styleText, EboRadioDetailsComp.htmlText);
+		this.requestRender();
+	}
+	static styleText = `
+            <style>
+                :host { 
+                    display: flex;
+                    text-align: start;
+                } 
+                #wrapper {
+                    display: flex;
+                    flex-direction: column;
+                    height: 100%;
+                    width: 100%;
+                }
+                .info {
+                    font-size: .7em;
+                }
+                #tableScroller {
+                    overflow: scroll;
+                    scrollbar-width: none;
+                    height: 100%;    
+                }
+                #tracksTable {
+                    width: 100%;
+                    border-collapse: collapse;
+                    tr {
+                        border-bottom: 1px solid #ffffff80;
+                    }
+                }
+            </style>
+        `;
+	static htmlText = `
+            <div id="wrapper">
+                <div id="tableScroller">
+                    <table id="tracksTable">
+                        <tbody>
+                        </tbody>                
+                    </table>
+                </div>          
+            </div>
+            <dialog popover id="albumTrackPopup">
+            </dialog>        
+        `;
+	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {}
+	update(shadow) {
+		let tbody = shadow.getElementById("tracksTable").tBodies[0];
+		tbody.innerHTML = "";
+		if (this.streamInfo) {
+			this.streamInfo.historyLines.forEach((lineGroup) => {
+				let td = tbody.appendChild(document.createElement("tr")).appendChild(document.createElement("td"));
+				td.innerHTML = lineGroup.join("<br>");
+				td.classList.add("selectable");
+			});
+			let lastRow = tbody.lastElementChild;
+			if (lastRow) lastRow.scrollIntoView({ block: "end" });
+		}
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -4664,6 +4727,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboListButtonBar);
 		EboComponent.define(EboDialog);
 		EboComponent.define(EboAlbumDetails);
+		EboComponent.define(EboRadioDetailsComp);
 		setupStuff();
 	});
 });

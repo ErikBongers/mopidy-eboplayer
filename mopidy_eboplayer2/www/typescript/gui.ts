@@ -25,6 +25,7 @@ import {Commands} from "./commands";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {EboDialog} from "./components/eboDialog";
 import {EboAlbumDetails} from "./components/eboAlbumDetails";
+import {EboRadioDetailsComp} from "./components/eboRadioDetailsComp";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -55,6 +56,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboListButtonBar);
             EboComponent.define(EboDialog);
             EboComponent.define(EboAlbumDetails);
+            EboComponent.define(EboRadioDetailsComp);
 
             setupStuff();
         });

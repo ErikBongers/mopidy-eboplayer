@@ -3,15 +3,6 @@ import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
 import {EboMenuButton} from "./eboMenuButton";
 
 export class EboAlbumTracksComp extends EboComponent {
-    private _streamInfo: ExpandedStreamModel | null = null;
-    get streamInfo(): ExpandedStreamModel | null {
-        return this._streamInfo;
-    }
-
-    set streamInfo(value: ExpandedStreamModel | null) {
-        this._streamInfo = value;
-        this.requestRender();
-    }
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
         this.highLightActiveTrack();
@@ -133,15 +124,6 @@ export class EboAlbumTracksComp extends EboComponent {
                     button.closeMenu();
                     this.dispatchEboEvent("playTrackClicked.eboplayer", {uri: track.track.uri});
                 });
-            });
-        }
-
-        if(this.streamInfo) {
-            this.streamInfo.historyLines.forEach(lineGroup => {
-                let tr = tbody.appendChild(document.createElement("tr"));
-                let td = tr.appendChild(document.createElement("td"));
-                td.innerHTML = lineGroup.join("<br>");
-                td.classList.add("selectable");
             });
         }
         this.highLightActiveTrack();
