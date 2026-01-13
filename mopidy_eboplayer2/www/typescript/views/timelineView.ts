@@ -155,8 +155,10 @@ export class TimelineView extends View {
         switch (track.type) {
             case "file":
                 title = track.title;
-                artist = track.track.artists[0].name; //todo: add other names?
-                album = track.track.album.name;
+                if (track.track.artists)
+                    artist = track.track.artists[0].name;
+                if (track.track.album)
+                    album = track.track.album.name;
                 break;
             case "stream":
                 title = track.name;

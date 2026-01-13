@@ -1,3 +1,7 @@
+* mopidy.Track: check if fields are not required and change the type accordingly.
+
+* Put tracks that are not part off the 'eboback' schema in italic.
+
 * Load data when list item becomes visible: https://www.youtube.com/watch?v=Jo8ABAJtMM0
 
 * Most tracks/albums have no genre

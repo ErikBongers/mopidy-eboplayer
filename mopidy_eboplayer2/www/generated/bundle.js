@@ -2432,7 +2432,7 @@ var TimelineView = class extends View {
 		switch (track.type) {
 			case "file":
 				title = track.title;
-				artist = track.track.artists[0].name;
+				if (track.track.artists) artist = track.track.artists[0].name;
 				album = track.track.album.name;
 				break;
 			case "stream":
