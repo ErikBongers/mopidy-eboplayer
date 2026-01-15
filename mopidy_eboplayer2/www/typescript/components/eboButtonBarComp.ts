@@ -1,8 +1,8 @@
 import {EboComponent} from "./EboComponent";
 import {inverseQuadratic100, quadratic100} from "../global";
 
-export class EboButtonBar extends EboComponent {
-    static override readonly tagName=  "ebo-button-bar";
+export class EboPlayerBar extends EboComponent {
+    static override readonly tagName=  "ebo-player-bar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text", "stop_or_pause"];
     private play_state: string;
@@ -106,7 +106,7 @@ export class EboButtonBar extends EboComponent {
         `;
 
     constructor() {
-        super(EboButtonBar.styleText, EboButtonBar.htmlText);
+        super(EboPlayerBar.styleText, EboPlayerBar.htmlText);
     }
 
     // noinspection JSUnusedGlobalSymbols

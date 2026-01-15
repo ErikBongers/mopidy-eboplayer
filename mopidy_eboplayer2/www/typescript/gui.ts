@@ -3,7 +3,7 @@ import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
 import {Controller} from "./controllers/controller";
-import {ButtonBarView} from "./views/buttonBarView";
+import {PlayerBarView} from "./views/playerBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
 import {EboBigTrackComp} from "./components/eboBigTrackComp";
@@ -16,7 +16,7 @@ import {EboButton} from "./components/eboButton";
 import {getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
-import {EboButtonBar} from "./components/eboButtonBarComp";
+import {EboPlayerBar} from "./components/eboButtonBarComp";
 import {Views} from "./modelTypes";
 import {EboMenuButton} from "./components/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
@@ -51,7 +51,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboBrowseComp);
             EboComponent.define(EboButton);
             EboComponent.define(EboBigAlbumComp);
-            EboComponent.define(EboButtonBar);
+            EboComponent.define(EboPlayerBar);
             EboComponent.define(EboMenuButton);
             EboComponent.define(EboListButtonBar);
             EboComponent.define(EboDialog);
@@ -84,7 +84,7 @@ function setupStuff() {
     let mainView = new MainView(document.getElementById("dialog") as EboDialog);
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
-    let buttonBarView = new ButtonBarView("buttonBar", mainView);
+    let buttonBarView = new PlayerBarView("buttonBar", mainView);
     let historyView = new TimelineView();
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 

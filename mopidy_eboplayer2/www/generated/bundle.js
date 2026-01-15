@@ -1994,8 +1994,8 @@ var Controller = class Controller extends Commands {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/buttonBarView.ts
-var ButtonBarView = class extends View {
+//#region mopidy_eboplayer2/www/typescript/views/playerBarView.ts
+var PlayerBarView = class extends View {
 	componentId;
 	parent;
 	constructor(containerId, parent) {
@@ -4077,8 +4077,8 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboButtonBarComp.ts
-var EboButtonBar = class EboButtonBar extends EboComponent {
-	static tagName = "ebo-button-bar";
+var EboPlayerBar = class EboPlayerBar extends EboComponent {
+	static tagName = "ebo-player-bar";
 	static observedAttributes = [
 		"play_state",
 		"image_url",
@@ -4187,7 +4187,7 @@ var EboButtonBar = class EboButtonBar extends EboComponent {
         </div>
         `;
 	constructor() {
-		super(EboButtonBar.styleText, EboButtonBar.htmlText);
+		super(EboPlayerBar.styleText, EboPlayerBar.htmlText);
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
@@ -4735,7 +4735,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboBrowseComp);
 		EboComponent.define(EboButton);
 		EboComponent.define(EboBigAlbumComp);
-		EboComponent.define(EboButtonBar);
+		EboComponent.define(EboPlayerBar);
 		EboComponent.define(EboMenuButton);
 		EboComponent.define(EboListButtonBar);
 		EboComponent.define(EboDialog);
@@ -4761,7 +4761,7 @@ function setupStuff() {
 	let mainView = new MainView(document.getElementById("dialog"));
 	let headerView = new HeaderView();
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
-	let buttonBarView = new ButtonBarView("buttonBar", mainView);
+	let buttonBarView = new PlayerBarView("buttonBar", mainView);
 	let historyView = new TimelineView();
 	playerState_default().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 	if (location.hash == Views.Browse) controller.setView(Views.Browse);

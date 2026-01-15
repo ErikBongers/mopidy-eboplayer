@@ -2,9 +2,9 @@ import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {isInstanceOfExpandedStreamModel, Views} from "../modelTypes";
 import {MainView} from "./mainView";
-import {EboButtonBar} from "../components/eboButtonBarComp";
+import {EboPlayerBar} from "../components/eboButtonBarComp";
 
-export class ButtonBarView extends View {
+export class PlayerBarView extends View {
     private componentId: string;
     private parent: MainView;
 
@@ -28,7 +28,7 @@ export class ButtonBarView extends View {
             this.onActiveStreamLinesChanged();
         });
 
-        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         comp.addEboEventListener("playPressed.eboplayer", async () => {
             await getState().getController().mopidyProxy.sendPlay();
         });
@@ -55,14 +55,14 @@ export class ButtonBarView extends View {
 
     private onVolumeChanged() {
         let volume = getState().getModel().getVolume();
-        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         comp.setAttribute("volume", volume.toString());
 
     }
 
     private async onPlaybackStateChanged() {
         let playState = getState().getModel().getPlayState();
-        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         comp.setAttribute("play_state", playState);
         await this.updateComponent();
     }
@@ -77,7 +77,7 @@ export class ButtonBarView extends View {
 
     private async updateComponent() {
         let track = getState().getModel().getCurrentTrack();
-        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         if (!track) {
             comp.setAttribute("text", "");
             comp.setAttribute("allow_play", "false");
@@ -119,7 +119,7 @@ export class ButtonBarView extends View {
             show_info = true;
         if(currentView != Views.NowPlaying)
             show_info = true;
-        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         comp.setAttribute("show_info", show_info.toString());
     }
 
@@ -134,7 +134,7 @@ export class ButtonBarView extends View {
 
     private onActiveStreamLinesChanged() {
         let lines = getState().getModel().getActiveStreamLines();
-        let comp = document.getElementById(this.componentId) as EboButtonBar;
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         comp.setAttribute("text", lines.active_titles.join("\n"));
     }
 }

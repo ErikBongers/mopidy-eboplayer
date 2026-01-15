@@ -1,4 +1,3 @@
-* Put tracks that are not part off the 'eboback' schema in italic.
 * Add a mute button.
 * Use pause button/action to stop a normal track.
 
