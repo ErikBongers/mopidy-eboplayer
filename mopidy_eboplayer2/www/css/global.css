@@ -78,3 +78,7 @@ button {
     display: flex;
     flex-direction: row;
 }
+
+.italic {
+    font-style: italic;
+}

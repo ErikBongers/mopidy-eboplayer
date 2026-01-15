@@ -2415,6 +2415,7 @@ var TimelineView = class extends View {
 		let tr = document.createElement("tr");
 		body.appendChild(tr);
 		tr.classList.add("trackLine", ...classes);
+		if (!uri.startsWith("eboback")) tr.classList.add("italic");
 		tr.dataset.uri = uri;
 		if (tlid) tr.dataset.tlid = tlid.toString();
 		this.setTrackLineContent(tr, title);
