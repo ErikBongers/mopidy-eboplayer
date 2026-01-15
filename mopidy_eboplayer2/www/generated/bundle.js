@@ -2077,7 +2077,7 @@ var PlayerBarView = class extends View {
 				comp.setAttribute("allow_next", "false");
 				comp.setAttribute("image_url", trackModel.stream.imageUrl);
 				comp.setAttribute("stop_or_pause", "stop");
-			} else if (isInstanceOfExpandedStreamModel(trackModel)) {
+			} else if (isInstanceOfExpandedTrackModel(trackModel)) {
 				comp.setAttribute("text", trackModel.track.track.name ?? "--no name--");
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
