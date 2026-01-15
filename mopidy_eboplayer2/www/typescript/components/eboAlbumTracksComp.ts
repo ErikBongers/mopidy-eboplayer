@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {ExpandedAlbumModel, ExpandedStreamModel, TrackUri} from "../modelTypes";
 import {EboMenuButton} from "./eboMenuButton";
 
 export class EboAlbumTracksComp extends EboComponent {
@@ -92,7 +92,7 @@ export class EboAlbumTracksComp extends EboComponent {
                 let tr = tbody.appendChild(document.createElement("tr"));
                 let tdData = tr.appendChild(document.createElement("td"));
                 tr.dataset.uri = track.track.uri;
-                tdData.innerText = track.track.name;
+                tdData.innerText = track.track.name?? "--no name--";
                 let tdButton = tr.appendChild(document.createElement("td"));
                 tdButton.innerHTML = `
                     <ebo-menu-button >
@@ -116,13 +116,13 @@ export class EboAlbumTracksComp extends EboComponent {
                     let menuButton = ev.target as HTMLElement;
                     let button = menuButton.closest("ebo-menu-button") as EboMenuButton;
                     button.closeMenu();
-                    this.dispatchEboEvent("addTrackClicked.eboplayer", {uri: track.track.uri});
+                    this.dispatchEboEvent("addTrackClicked.eboplayer", {uri: track.track.uri as TrackUri});
                 });
                 tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
                     let menuButton = ev.target as HTMLElement;
                     let button = menuButton.closest("ebo-menu-button") as EboMenuButton;
                     button.closeMenu();
-                    this.dispatchEboEvent("playTrackClicked.eboplayer", {uri: track.track.uri});
+                    this.dispatchEboEvent("playTrackClicked.eboplayer", {uri: track.track.uri as TrackUri});
                 });
             });
         }

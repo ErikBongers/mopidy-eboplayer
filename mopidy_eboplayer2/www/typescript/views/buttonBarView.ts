@@ -99,7 +99,7 @@ export class ButtonBarView extends View {
                 comp.setAttribute("image_url", trackModel.stream.imageUrl);
                 comp.setAttribute("stop_or_pause", "stop");
             } else if (isInstanceOfExpandedStreamModel(trackModel)) {
-                comp.setAttribute("text", trackModel.track.track.name);
+                comp.setAttribute("text", trackModel.track.track.name?? "--no name--");
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");

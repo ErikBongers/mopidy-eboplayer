@@ -1,4 +1,4 @@
-import {AlbumMetaData, AllUris, GenreDef, StreamTitles, TrackUri} from "../modelTypes";
+import {AlbumMetaData, AllUris, GenreDef, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
 
 export class WebProxy {
     private ebobackBase: string;
@@ -16,7 +16,7 @@ export class WebProxy {
         return new URL(this.ebobackBase+relPath);
     }
 
-    async fetchActiveStreamLines(uri: TrackUri) {
+    async fetchActiveStreamLines(uri: StreamUri) {
         let url = this.playerUrl(`stream/activeLines`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);

@@ -108,7 +108,7 @@ export class BrowseFilter implements BrowseFilterFlags{
 export interface PartialAlbumModel {
     type: "album";
     tracks: TrackUri[];
-    albumInfo: models.Album;
+    albumInfo: models.Album | null;
 }
 
 export interface AlbumModel extends PartialAlbumModel {
@@ -167,7 +167,9 @@ export class ExpandedAlbumModel {
     }
 
     get genres(): string[] {
-        return [...new Set(this.tracks.map(track => track.track.genre))];
+        return [...new Set(this.tracks
+            .filter(track => track.track.genre != undefined)
+            .map(track => track.track.genre as string))];
     }
     get artists()  {
         let artistMap: Map<string, Artist> = new Map();

@@ -1,7 +1,7 @@
 // Type definitions for js v1.2.0, Mopidy v3.0.2 WebSocket API
 
 import {JsonRpcController} from "../typescript/jsonRpcController";
-import {AlbumUri, AllUris, TrackUri} from "../typescript/modelTypes";
+import {AlbumUri, AllUris, StreamUri, TrackUri} from "../typescript/modelTypes";
 import MopidyEventName = core.MopidyEventName;
 
 export type Branded<T, Brand> = T & { __brand: Brand };
@@ -58,21 +58,21 @@ namespace models {
         readonly track: Track;
     }
     export class Track {
-        readonly uri: TrackUri;
-        readonly name: string;
+        readonly uri: TrackUri | StreamUri;
+        readonly name?: string;
         readonly artists: Artist[];
-        readonly album: Album;
+        readonly album?: Album;
         readonly composers: Artist[];
         readonly performers: Artist[];
-        readonly genre: string;
-        readonly track_no: number;
-        readonly disc_no: number;
-        readonly date: string;
-        readonly length: number;
-        readonly bitrate: string;
-        readonly comment: string;
-        readonly musicbrainz_id: string;
-        readonly last_modified: number;
+        readonly genre?: string;
+        readonly track_no?: number;
+        readonly disc_no?: number;
+        readonly date?: string;
+        readonly length?: number;
+        readonly bitrate?: string;
+        readonly comment?: string;
+        readonly musicbrainz_id?: string;
+        readonly last_modified?: number;
     }
     export class SearchResult {
         readonly uri: URI;

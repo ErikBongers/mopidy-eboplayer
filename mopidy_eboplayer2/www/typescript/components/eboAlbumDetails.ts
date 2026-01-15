@@ -87,14 +87,14 @@ export class EboAlbumDetails extends EboComponent {
     override update(shadow: ShadowRoot) {
         if(this.albumInfo) {
             let albumName = shadow.getElementById("albumName") as HTMLElement;
-            albumName.innerHTML = this.albumInfo.album.albumInfo.name;
+            albumName.innerHTML = this.albumInfo.album?.albumInfo?.name?? "--no name--";
             let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
             imgTag.src = this.albumInfo.album.imageUrl;
 
             let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;
             let body = table.tBodies[0];
             body.innerHTML = "";
-            this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo.date);
+            this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
             this.addMetaDataRow(body, "Artists:", this.albumInfo.artists.map(artist => artist.name).join(", "));
             this.addMetaDataRow(body, "Composers:", this.albumInfo.composers.map(artist => artist.name).join(","))
             let genreDefs = this.albumInfo.genres.map(genre => ({genre, def: getState().getController().getGenreDef(genre)}));

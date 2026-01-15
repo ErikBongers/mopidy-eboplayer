@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {EmptySearchResults, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLine, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLine, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -8,8 +8,8 @@ import TlTrack = models.TlTrack;
 
 export interface ViewModel extends EboEventTargetClass {
     getConnectionState: () => ConnectionState;
-    getCurrentTrack: () => TrackUri | null;
-    getSelectedTrack: () => TrackUri | null;
+    getCurrentTrack: () => TrackUri | StreamUri | null;
+    getSelectedTrack: () => TrackUri | StreamUri | null;
     getCurrentMessage: () => Message;
     getVolume: () => number;
     getPlayState: () => PlayState;
@@ -30,11 +30,10 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
 export class Model extends EboEventTargetClass implements ViewModel {
-    static NoTrack: TrackModel = { type: "none" } as NoneTrackModel;
-    currentTrack: TrackUri | null = null;
+    currentTrack: TrackUri | StreamUri | null = null;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
-    selectedTrack: TrackUri | null = null;
+    selectedTrack: TrackUri | StreamUri | null = null;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
     currentMessage: Message = {
@@ -166,7 +165,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
     }
 
-    getCurrentTrack(): TrackUri | null {
+    getCurrentTrack(): TrackUri | StreamUri | null {
         return this.currentTrack;
     }
 
@@ -183,7 +182,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
 
     getSelectedTrack = () => this.selectedTrack;
 
-    setSelectedTrack(uri: TrackUri | null) {
+    setSelectedTrack(uri: TrackUri | StreamUri | null) {
         if(uri == "")
             this.selectedTrack = null;
         else
@@ -281,8 +280,10 @@ export class Model extends EboEventTargetClass implements ViewModel {
     //Overwrites!
     addItemsToLibraryCache(items: (FileTrackModel | StreamTrackModel | AlbumModel)[]) {
         for(let item of items) {
-            if(item.type == "album")
-                this.updateLibraryCache(item.albumInfo.uri, item);
+            if(item.type == "album") {
+                if(item.albumInfo)
+                    this.updateLibraryCache(item.albumInfo.uri, item);
+            }
             else
                 this.updateLibraryCache(item.track.uri, item);
         }

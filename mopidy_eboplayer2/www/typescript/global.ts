@@ -47,7 +47,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
         let model: PartialStreamTrackModel = {
             type: "stream",
             track,
-            name: track.name,
+            name: track.name?? "--no name--",
         };
         return model;
     }
@@ -56,7 +56,7 @@ export function transformTrackDataToModel(track: (models.Track)): FileTrackModel
         type: "file",
         composer: "",
         track,
-        title: track.name,
+        title: track.name?? "--no name--",
         performer: "",
         songlenght: 0,
     };

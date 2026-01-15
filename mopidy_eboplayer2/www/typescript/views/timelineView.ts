@@ -41,7 +41,7 @@ export class TimelineView extends View {
         }
 
         for(let track of trackList) {
-            this.insertTrackLine(track.track.name, track.track.uri, body, [], track.tlid);
+            this.insertTrackLine(track.track.name??"--no name--", track.track.uri, body, [], track.tlid);
         }
 
         let uris = trackList.map(tl => tl.track.uri) as TrackUri[];

@@ -247,7 +247,9 @@ export class MainView extends View {
         let expandedTrackInfo = await getState().getController().getExpandedTrackModel(selectedTrack);
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-            getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+            if(expandedTrackInfo.album.albumInfo)
+                getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+            //todo: else?
             return;
         }
         if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
@@ -269,8 +271,11 @@ export class MainView extends View {
         getState().getController().lookupTrackCached(uri)
             .then(async track => {
                 if(track?.type == "file") {
-                    let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
-                    this.setAlbumComponentData(albumModel);
+                    if(track.track.album) {
+                        let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
+                        this.setAlbumComponentData(albumModel);
+                    }
+                    //todo: else?
                 }
                 else if(track?.type == "stream") {
                     let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
@@ -293,8 +298,10 @@ export class MainView extends View {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
         albumComp.setAttribute("img", albumModel.album.imageUrl);
-        albumComp.setAttribute("name", albumModel.meta?.albumTitle?? albumModel.album.albumInfo.name);
-        albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
+        if(albumModel.album.albumInfo) {
+            albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
+            albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
+        }
     }
 
     private async onPlayItemListClick(detail: GuiSourceArgs) {
@@ -302,7 +309,10 @@ export class MainView extends View {
             let model = getState().getModel();
             let albumUri = model.getAlbumToView();
             let album = (await getState().getController().lookupAlbumsCached([albumUri]))[0];
-            await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
+            if(album.albumInfo) {
+                await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
+            }
+            //todo: else?
             return;
         }
         if(detail.source == "browseView") {
@@ -346,9 +356,11 @@ export class MainView extends View {
     private async onAddTrackClicked(uri: TrackUri) {
         let trackModel = await getState().getController().getExpandedTrackModel(uri);
         if(isInstanceOfExpandedTrackModel(trackModel)) {
-            let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
-            let text = await res.text();
-            console_yellow(text);
+            if(trackModel.album.albumInfo) {
+                let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
+                let text = await res.text();
+            }
+            //todo: else?
         }
     }
 

@@ -8,7 +8,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreDef, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreDef, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -16,6 +16,7 @@ import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
+import Album = models.Album;
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -171,10 +172,12 @@ export class Controller extends Commands implements DataRequester{
             this.model.setCurrentTrack(TrackNone);
             return;
         }
-        let trackModel = await this.lookupTrackCached(data.track.uri);
+        let trackModel = await this.lookupTrackCached(data.track.uri as TrackUri);
         this.model.setCurrentTrack(trackModel);
-        if(!this.model.selectedTrack)
-            this.model.setSelectedTrack(trackModel?.track?.uri ?? null);
+        if(!this.model.selectedTrack) {
+            let uri = trackModel?.track?.uri as TrackUri | undefined;
+            this.model.setSelectedTrack(uri?? null);
+        }
         await this.updateStreamLines();
 
         //todo: do this only when a track is started?s
@@ -183,15 +186,22 @@ export class Controller extends Commands implements DataRequester{
     }
 
     private async updateStreamLines() {
-        if (this.model.getPlayState() == "playing") {
-            if (!this.model.currentTrack) {
-                this.model.setActiveStreamLinesHistory(NoStreamTitles);
-                return;
-            }
-            let lines = await this.webProxy.fetchActiveStreamLines(this.model.currentTrack);
-            this.model.setActiveStreamLinesHistory(lines);
-        } else
+        if (this.model.getPlayState() != "playing") {
             this.model.setActiveStreamLinesHistory(NoStreamTitles);
+            return;
+        }
+        if (this.model.currentTrack == null) {
+            this.model.setActiveStreamLinesHistory(NoStreamTitles);
+            return;
+        }
+
+        let trackModel = await this.lookupTrackCached(this.model.currentTrack);
+        if (trackModel?.type == "stream") {
+            let lines = await this.webProxy.fetchActiveStreamLines(this.model.currentTrack as StreamUri);
+            this.model.setActiveStreamLinesHistory(lines);
+        } else {
+            this.model.setActiveStreamLinesHistory(NoStreamTitles);
+        }
     }
 
     private async fetchLargestImagesOrDefault(uris: AllUris[]) {
@@ -302,7 +312,7 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    async lookupTrackCached(trackUri: TrackUri | null) {
+    async lookupTrackCached(trackUri: TrackUri | StreamUri | null) {
         if(!trackUri)
             return null;
         let item = this.model.getFromLibraryCache(trackUri);
@@ -339,17 +349,22 @@ export class Controller extends Commands implements DataRequester{
             let trackList = dict[albumUri] as models.Track[];
             let albumModel: PartialAlbumModel = {
                 type: "album",
-                albumInfo: trackList[0].album,
-                tracks: trackList.map(track => track.uri),
+                albumInfo: trackList[0].album?? null,
+                tracks: trackList.map(track => track.uri as TrackUri),
             }
             return albumModel;
         });
         let partialAlbumModels = await Promise.all(albumModelsPending);
 
-        let images = await this.fetchLargestImagesOrDefault(partialAlbumModels.map(album => album.albumInfo.uri));
+        let albumInfos = partialAlbumModels
+            .filter(album => album.albumInfo != null)
+            .map(album => album.albumInfo as Album);
+        let images = await this.fetchLargestImagesOrDefault(albumInfos.map(album => album.uri));
         this.model.addImagesToCache(images);
         let albumModels = partialAlbumModels.map(m => {
-            return {...m, imageUrl:this.model.getImageFromCache(m.albumInfo.uri)} as AlbumModel;
+            if(m.albumInfo)
+                return {...m, imageUrl:this.model.getImageFromCache(m.albumInfo.uri)} as AlbumModel;
+            return m as AlbumModel; //without images
         });
         this.model.addItemsToLibraryCache(albumModels);
         return albumModels;
@@ -388,7 +403,7 @@ export class Controller extends Commands implements DataRequester{
         return img.uri;
     }
 
-    private async fetchAndConvertTracks(uri: TrackUri) {
+    private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
         let dict = await this.mopidyProxy.lookup(uri);
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => {
@@ -407,7 +422,7 @@ export class Controller extends Commands implements DataRequester{
         return await Promise.all(newListPromises);
     }
 
-    async getExpandedTrackModel(trackUri: TrackUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
+    async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)
             return null;
         let track = await this.lookupTrackCached(trackUri);
@@ -447,7 +462,7 @@ export class Controller extends Commands implements DataRequester{
         return meta;
     }
 
-    setSelectedTrack(uri: TrackUri | null) {
+    setSelectedTrack(uri: TrackUri | StreamUri | null) {
         this.model.setSelectedTrack(uri);
     }
 

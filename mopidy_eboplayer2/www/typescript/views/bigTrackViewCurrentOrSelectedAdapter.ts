@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
-import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, TrackUri} from "../modelTypes";
+import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
 import {EboBigTrackComp} from "../components/eboBigTrackComp";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
@@ -48,7 +48,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
     }
 
-    async setUri(uri: TrackUri | null) {
+    async setUri(uri: TrackUri | StreamUri | null) {
         this.uri = uri;
         let track = await getState().getController().getExpandedTrackModel(uri);
         this.setComponentData(track);
@@ -74,7 +74,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
                 imageUrl = track.stream.imageUrl;
             } else {
                 name = track.track.title;
-                info = track.album.albumInfo.name;
+                info = track.album.albumInfo?.name?? "--no name--";
                 position = "60"; //todo: just a test
                 button = "true";
                 imageUrl = track.album.imageUrl;
