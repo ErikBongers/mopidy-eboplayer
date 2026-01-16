@@ -1,5 +1,74 @@
+* *New*s screen: how?
+  > Some popup: "New"
+    > Goes to pre-filled browse filter
+      > filter on date: how?
+
+
+
+* Is there a date a track/album is added via scan?
+  > if not, add it and use it to show a "New" section.
+  > Yes: last_modified!
+  : t = datetime.fromtimestamp(track.last_modified/1000, UTC)
+    print(t.strftime('%Y-%m-%dT%H:%M:%SZ'))
+
+
+* Browse allow filter on date
+  > only show data "since".
+    > that's the only date filter.
+
+* Make scan command callable from outside the command.
+  > create a separte python module?
+  > pipe user-friendly progress messages to websocket.
+  > start command in separate thread?
+  > use a pipe to get the info?
+https://www.geeksforgeeks.org/python/python-communicating-between-threads-set-1/
+
+
+
+* reload all caches after scan.
+
+New albums
+----------
+* Allow scanning from the app.
+  > progress indicator
+    > improve scan messaging.
+    > send messages via ebo websocket.
+
+Playlists vs Genres
+====================
+Wiki has a list of genres. A track belongs to one genre.
+Filters per genres have no order.
+Playlists can contain unrelated tracks in a defined order.
+So, technically, you could have Classic playlist and a Classic genre.
+You could implement a classic playlist as a filter on genre, and re-arrange the tracks in the list.
+If new tracks are added to that genre, they get to the top or bottom of that playlist. Perhaps rather the top, as they are more recent and this more wanted. Also, this triggers the user to rearrange them if wanted.
+Standard sequence for a playlist track is -1 (if automatically added) and last-trackk-plus-1 if user-added.
+Scenario
+--------
+A playlist based on a genre.
+A new album is added to the genre.
+Album is added genericly based on file date. Most recent ones on top.
+  > assuming all track dates for a given album are almost the same.
+Playlist has option to decide if fixed tracks come at start of end of playlist.
+At any time can use decide to make a track/album/all generic tracks fixed.
+Re-ordering per track or per album.
+Playlists can collapse based on album, artist,genre for easy re-arranging.
+Playlists can be filtered in edit mode for easy re-arranging.
+Scenario 2
+-----------
+Album is added. It has tracks of 2 different genres.
+  > The album has 2 genres (even if the tracks only have one genre).
+We label the album with "Gamba" and "Jordi".
+That may implicitely create a playlist and add those albums to it (not the tracks!).
+When viewing the playlists, the added albums are shown and can be expanded to tracks but grayed out.
+The expanded tracks can be "unwrapped" or some better word...?
+Any playlist can be grouped per album.
+  > this adds new lines with the album title, but grayed out.
+  > the album can be "packed" again...or better word?
+
+
+
 * Add a mute button.
-* Use pause button/action to stop a normal track.
 
 * Load data when list item becomes visible: https://www.youtube.com/watch?v=Jo8ABAJtMM0
 
@@ -27,28 +96,6 @@
 
 
 * Make distinction between play buttons and other/edit buttons.
-
-Playlists vs Genres
-====================
-Genres have no order.
-Playlists can contain unrelated tracks.
-So, technically, you could have Classic playlist and a Classic genre.
-You could implement a classic playlist as a filter on genre, and re-arrange the tracks in the list.
-If new tracks are added to that genre, they get to the top or bottom of that playlist. Perhaps rather the top, as they are more recent and this more wanted. Also, this triggers the user to rearrange them if wanted.
-Standard sequence for a playlist track is -1 (if automatically added) and last-trackk-plus-1 if user-added.
-Scenario
---------
-A playlist based on a genre.
-A new album is added to the genre.
-Album is added genericly based on file date. Most recent ones on top.
-  > assuming all track dates for a given album are almost the same.
-Playlist has option to decide if fixed tracks come at start of end of playlist.
-At any time can use decide to make a track/album/all generic tracks fixed.
-Re-ordering per track or per album.
-Playlists can collapse based on album, artist,genre for easy re-arranging.
-Playlists can be filtered in edit mode for easy re-arranging.
-
-
 
 
 

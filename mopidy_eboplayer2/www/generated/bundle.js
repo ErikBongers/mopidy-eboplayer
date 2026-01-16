@@ -3132,7 +3132,7 @@ var MainView = class extends View {
 			availableRefTypes: /* @__PURE__ */ new Set()
 		};
 		browseComp.renderResults();
-		browseComp.btn_states = this.getListButtonStates(playerState_default().getModel().getView());
+		browseComp.action_btn_states = this.getListButtonStates(playerState_default().getModel().getView());
 	}
 	getListButtonStates(currentView) {
 		let states = ListButtonState_AllHidden();
@@ -3227,7 +3227,7 @@ var MainView = class extends View {
 				};
 				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
 				browseComp.setFocusAndSelect();
-				browseComp.btn_states = this.getListButtonStates(view);
+				browseComp.action_btn_states = this.getListButtonStates(view);
 				break;
 			case Views.NowPlaying:
 				layout.classList.add("bigTrack");
@@ -3379,16 +3379,16 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	set genreDefs(value) {
 		this._genreDefs = value;
 	}
-	get btn_states() {
-		return this._btn_states;
+	get action_btn_states() {
+		return this._action_btn_states;
 	}
-	set btn_states(value) {
-		this._btn_states = value;
+	set action_btn_states(value) {
+		this._action_btn_states = value;
 		this.requestUpdate();
 	}
 	static tagName = "ebo-browse-view";
 	static listSource = "browseView";
-	_btn_states = ListButtonState_AllHidden();
+	_action_btn_states = ListButtonState_AllHidden();
 	get breadCrumbs() {
 		return this._breadCrumbs;
 	}
@@ -3412,7 +3412,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	set browseFilter(value) {
 		if (JSON.stringify(this._browseFilter) == JSON.stringify(value)) return;
 		this._browseFilter = value;
-		this.requestRender();
+		this.requestUpdate();
 	}
 	_browseFilter;
 	_genreDefs;
@@ -3434,8 +3434,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 flex-direction: row;
             }
             #searchBox {
-                display: flex;
-                flex-direction: row;
                 & input {
                     flex-grow: 1;
                     color: white;
@@ -3492,27 +3490,15 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                     margin-right: .2rem;
                 }
             }
+            #expandFilterBtn {
+                margin-left: .5rem;
+            }
         </style>
         `;
 	static htmlText = `
 <div id="wrapper">
     <div id="breadCrumbs"></div>
-    <div id="filterBox">
-        <div id="searchBox">
-            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
-            <input id="searchText" type="text" autofocus>
-        </div>
-        <div id="filterButtons">
-            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
-            <button id="all"> ALL </button>
-            <button> &nbsp;&nbsp;(?) </button>
-        </div>
-    </div>    
+    <ebo-browse-filter></ebo-browse-filter>
     <div id="searchResults">
         <ebo-list-button-bar list_source="${this.listSource}"></ebo-list-button-bar>
         <div id="searchInfo">
@@ -3532,6 +3518,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	constructor() {
 		super(EboBrowseComp.styleText, EboBrowseComp.htmlText);
 		this._browseFilter = new BrowseFilter();
+		this.results = EmptySearchResults;
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
@@ -3554,68 +3541,17 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		searchText?.select();
 	}
 	render(shadow) {
-		shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
-		this.renderBrowseFilter(shadow);
 		this.renderBreadCrumbs();
 		this.renderResults();
 		this.requestUpdate();
 	}
-	renderBrowseFilter(shadow) {
-		let inputElement = shadow.getElementById("searchText");
-		inputElement.addEventListener("keyup", (ev) => {
-			this._browseFilter.searchText = inputElement.value;
-			this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
-		});
-		shadow.getElementById("all").addEventListener("click", (ev) => {
-			this.onShowAllTypesButtonPress();
-		});
-		shadow.querySelectorAll("ebo-button").forEach((btn) => {
-			btn.addEventListener("pressedChange", async (ev) => {
-				this.onFilterButtonPress(ev);
-			});
-			btn.addEboEventListener("longPress.eboplayer", (ev) => {
-				this.onFilterButtonLongPress(ev);
-			});
-			btn.addEventListener("dblclick", (ev) => {
-				this.onFilterButtonDoubleClick(ev);
-			});
-		});
-	}
-	onFilterButtonLongPress(ev) {
-		this.setSingleButton(ev);
-	}
-	onFilterButtonDoubleClick(ev) {
-		this.setSingleButton(ev);
-	}
-	setSingleButton(ev) {
-		this.clearFilterButtons();
-		this.toggleFilterButton(ev.target);
-		this.requestUpdate();
-	}
-	clearFilterButtons() {
-		this.browseFilter.genre = false;
-		this.browseFilter.radio = false;
-		this.browseFilter.playlist = false;
-		this.browseFilter.album = false;
-		this.browseFilter.track = false;
-		this.browseFilter.artist = false;
-	}
-	onFilterButtonPress(ev) {
-		let btn = ev.target;
-		this.toggleFilterButton(btn);
-	}
-	toggleFilterButton(btn) {
-		let propName = btn.id.replace("filter", "");
-		propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-		this.browseFilter[propName] = !this.browseFilter[propName];
-		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
-	}
 	update(shadow) {
 		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
-		let inputElement = shadow.getElementById("searchText");
-		inputElement.value = this._browseFilter.searchText;
 		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
-		listButtonBar.btn_states = this.btn_states;
+		listButtonBar.btn_states = this.action_btn_states;
+		let browseFilterComp = shadow.querySelector("ebo-browse-filter");
+		browseFilterComp.browseFilter = this._browseFilter;
+		browseFilterComp.availableRefTypes = this.results.availableRefTypes;
 	}
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
@@ -3718,11 +3654,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
 		this.dispatchEboEvent("breadCrumbClick.eboplayer", { breadcrumbId: parseInt(btn.dataset.id) });
-	}
-	onShowAllTypesButtonPress() {
-		this.clearFilterButtons();
-		this.requestUpdate();
-		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
 	}
 };
 
@@ -4719,6 +4650,204 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboBrowseFilterComp.ts
+var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
+	get availableRefTypes() {
+		return this._availableRefTypes;
+	}
+	set availableRefTypes(value) {
+		this._availableRefTypes = value;
+		this.requestUpdate();
+	}
+	static tagName = "ebo-browse-filter";
+	static listSource = "browseView";
+	get browseFilter() {
+		return this._browseFilter;
+	}
+	set browseFilter(value) {
+		if (JSON.stringify(this._browseFilter) == JSON.stringify(value)) return;
+		this._browseFilter = value;
+		this.requestRender();
+	}
+	_browseFilter;
+	_availableRefTypes;
+	static observedAttributes = [];
+	static styleText = `
+        <style>
+            :host { 
+                display: flex;
+            } 
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+            #filterButtons {
+                margin-top: .3em;
+                display: flex;
+                flex-direction: row;
+            }
+            #searchBox {
+                & input {
+                    flex-grow: 1;
+                    color: white;
+                    border: none;
+                    &:focus {
+                        outline: none;
+                    }
+                }
+            }
+            
+           #filterBox {
+                margin-block: .5rem;
+                padding:.3rem;
+                background-color: rgba(0,0,0,.5);
+                border-radius: .5rem;
+            }
+            .filterButton {
+                width: 1.5em;
+                height: 1.5em;
+                object-fit: contain;
+                margin-right: .5em;
+            }
+            #expandFilterBtn {
+                margin-left: .5rem;
+            }
+        </style>
+        `;
+	static htmlText = `
+<div id="wrapper">
+    <div id="filterBox">
+        <div id="searchBox" class="flexRow">
+            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
+            <input id="searchText" type="text" autofocus>
+            <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
+        </div>
+        <div id="filterButtons">
+            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
+            <button id="all"> ALL </button>
+            <button> &nbsp;&nbsp;(?) </button>
+        </div>
+    </div>    
+</div>        
+        `;
+	constructor() {
+		super(EboBrowseFilterComp.styleText, EboBrowseFilterComp.htmlText);
+		this._browseFilter = new BrowseFilter();
+		this.availableRefTypes = /* @__PURE__ */ new Set();
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestRender();
+	}
+	setFocusAndSelect() {
+		let searchText = this.getShadow().getElementById("searchText");
+		searchText?.focus();
+		searchText?.select();
+	}
+	render(shadow) {
+		shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
+		let inputElement = shadow.getElementById("searchText");
+		inputElement.addEventListener("keyup", (ev) => {
+			this._browseFilter.searchText = inputElement.value;
+			this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+		});
+		shadow.getElementById("all").addEventListener("click", (ev) => {
+			this.onShowAllTypesButtonPress();
+		});
+		shadow.querySelectorAll("ebo-button").forEach((btn) => {
+			btn.addEventListener("pressedChange", async (ev) => {
+				this.onFilterButtonPress(ev);
+			});
+			btn.addEboEventListener("longPress.eboplayer", (ev) => {
+				this.onFilterButtonLongPress(ev);
+			});
+			btn.addEventListener("dblclick", (ev) => {
+				this.onFilterButtonDoubleClick(ev);
+			});
+		});
+		this.requestUpdate();
+	}
+	onFilterButtonLongPress(ev) {
+		this.setSingleButton(ev);
+	}
+	onFilterButtonDoubleClick(ev) {
+		this.setSingleButton(ev);
+	}
+	setSingleButton(ev) {
+		this.clearFilterButtons();
+		this.toggleFilterButton(ev.target);
+		this.requestUpdate();
+	}
+	clearFilterButtons() {
+		this.browseFilter.genre = false;
+		this.browseFilter.radio = false;
+		this.browseFilter.playlist = false;
+		this.browseFilter.album = false;
+		this.browseFilter.track = false;
+		this.browseFilter.artist = false;
+	}
+	onFilterButtonPress(ev) {
+		let btn = ev.target;
+		this.toggleFilterButton(btn);
+	}
+	toggleFilterButton(btn) {
+		let propName = btn.id.replace("filter", "");
+		propName = propName.charAt(0).toLowerCase() + propName.slice(1);
+		this.browseFilter[propName] = !this.browseFilter[propName];
+		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+	}
+	update(shadow) {
+		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
+		let inputElement = shadow.getElementById("searchText");
+		inputElement.value = this._browseFilter.searchText;
+	}
+	updateFilterButton(btn) {
+		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
+		btn.setAttribute("pressed", this._browseFilter[propName].toString());
+		btn.setAttribute("disabled", (!this.availableRefTypes.has(propName)).toString());
+	}
+	setSearchInfo(text) {
+		let searchInfo = this.getShadow().getElementById("searchInfo");
+		if (searchInfo) searchInfo.innerHTML = text;
+	}
+	filterToImg(filter) {
+		let imgUrl = "";
+		switch (filter) {
+			case "album":
+				imgUrl = "images/icons/Album.svg";
+				break;
+			case "track":
+				imgUrl = "images/icons/Track.svg";
+				break;
+			case "radio":
+				imgUrl = "images/icons/Radio.svg";
+				break;
+			case "artist":
+				imgUrl = "images/icons/Artist.svg";
+				break;
+			case "playlist":
+				imgUrl = "images/icons/Playlist.svg";
+				break;
+			case "genre":
+				imgUrl = "images/icons/Genre.svg";
+				break;
+		}
+		return `<img class="filterButton" src="${imgUrl}" alt="">`;
+	}
+	onShowAllTypesButtonPress() {
+		this.clearFilterButtons();
+		this.requestUpdate();
+		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -4741,6 +4870,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboDialog);
 		EboComponent.define(EboAlbumDetails);
 		EboComponent.define(EboRadioDetailsComp);
+		EboComponent.define(EboBrowseFilterComp);
 		setupStuff();
 	});
 });

@@ -103,7 +103,7 @@ export class MainView extends View {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? { refs: [], availableRefTypes: new Set()};
         browseComp.renderResults();
-        browseComp.btn_states = this.getListButtonStates(getState().getModel().getView());
+        browseComp.action_btn_states = this.getListButtonStates(getState().getModel().getView());
     }
 
     private getListButtonStates(currentView: Views) {
@@ -214,7 +214,7 @@ export class MainView extends View {
                 browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()};
                 browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
                 browseComp.setFocusAndSelect();
-                browseComp.btn_states = this.getListButtonStates(view);
+                browseComp.action_btn_states = this.getListButtonStates(view);
                 break;
             case Views.NowPlaying:
                 layout.classList.add("bigTrack");

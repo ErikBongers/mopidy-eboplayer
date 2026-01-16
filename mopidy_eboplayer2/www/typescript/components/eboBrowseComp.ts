@@ -1,13 +1,10 @@
 import {EboComponent} from "./EboComponent";
-import {EboButton, PressedChangeEvent} from "./eboButton";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, BrowseFilterFlags, FilterBreadCrumb, GenreDef} from "../modelTypes";
-import {EmptySearchResults, RefType, SearchResult, SearchResults, TypedRef} from "../refs";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef} from "../modelTypes";
+import {EmptySearchResults, RefType, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {assertUnreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
-import {text} from "node:stream/consumers";
-import models from "../../js/mopidy";
-import Ref = models.Ref;
+import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
 
 export class EboBrowseComp extends EboComponent {
     get genreDefs(){
@@ -17,18 +14,18 @@ export class EboBrowseComp extends EboComponent {
     set genreDefs(value: Map<string, GenreDef>) {
         this._genreDefs = value;
     }
-    get btn_states(): ListButtonStates {
-        return this._btn_states;
+    get action_btn_states(): ListButtonStates {
+        return this._action_btn_states;
     }
 
-    set btn_states(value: ListButtonStates) {
-        this._btn_states = value;
+    set action_btn_states(value: ListButtonStates) {
+        this._action_btn_states = value;
         this.requestUpdate();
     }
     static override readonly tagName=  "ebo-browse-view";
     private static listSource: GuiSource = "browseView";
 
-    private _btn_states: ListButtonStates = ListButtonState_AllHidden();
+    private _action_btn_states: ListButtonStates = ListButtonState_AllHidden();
 
     get breadCrumbs(): FilterBreadCrumb[] {
         return this._breadCrumbs;
@@ -39,7 +36,6 @@ export class EboBrowseComp extends EboComponent {
     }
 
     private _breadCrumbs: FilterBreadCrumb[] = [];
-
 
     get results(): SearchResults {
         return this._results;
@@ -61,7 +57,7 @@ export class EboBrowseComp extends EboComponent {
         if(JSON.stringify(this._browseFilter) == JSON.stringify(value))
             return;
         this._browseFilter = value;
-        this.requestRender();
+        this.requestUpdate();
     }
 
     private _browseFilter: BrowseFilter;
@@ -88,8 +84,6 @@ export class EboBrowseComp extends EboComponent {
                 flex-direction: row;
             }
             #searchBox {
-                display: flex;
-                flex-direction: row;
                 & input {
                     flex-grow: 1;
                     color: white;
@@ -146,6 +140,9 @@ export class EboBrowseComp extends EboComponent {
                     margin-right: .2rem;
                 }
             }
+            #expandFilterBtn {
+                margin-left: .5rem;
+            }
         </style>
         `;
 
@@ -153,22 +150,7 @@ export class EboBrowseComp extends EboComponent {
     static htmlText = `
 <div id="wrapper">
     <div id="breadCrumbs"></div>
-    <div id="filterBox">
-        <div id="searchBox">
-            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
-            <input id="searchText" type="text" autofocus>
-        </div>
-        <div id="filterButtons">
-            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
-            <button id="all"> ALL </button>
-            <button> &nbsp;&nbsp;(?) </button>
-        </div>
-    </div>    
+    <ebo-browse-filter></ebo-browse-filter>
     <div id="searchResults">
         <ebo-list-button-bar list_source="${this.listSource}"></ebo-list-button-bar>
         <div id="searchInfo">
@@ -189,6 +171,7 @@ export class EboBrowseComp extends EboComponent {
     constructor() {
         super(EboBrowseComp.styleText, EboBrowseComp.htmlText);
         this._browseFilter = new BrowseFilter();
+        this.results = EmptySearchResults;
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -207,9 +190,6 @@ export class EboBrowseComp extends EboComponent {
         this.requestRender();
         }
 
-    override onConnected() {
-    }
-
     setFocusAndSelect() {
         let searchText = this.getShadow().getElementById("searchText") as HTMLInputElement;
         searchText?.focus();
@@ -217,73 +197,9 @@ export class EboBrowseComp extends EboComponent {
     }
 
     render(shadow:ShadowRoot) {
-        // @ts-ignore
-        shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
-            //todo: is this button even needed?
-        });
-        this.renderBrowseFilter(shadow);
         this.renderBreadCrumbs();
         this.renderResults();
         this.requestUpdate();
-    }
-
-    private renderBrowseFilter(shadow: ShadowRoot) {
-        let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
-        inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
-            this._browseFilter.searchText = inputElement.value;
-            this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
-        });
-        let allButton = shadow.getElementById("all") as HTMLButtonElement;
-        allButton.addEventListener("click", (ev) => {
-            this.onShowAllTypesButtonPress();
-        });
-        shadow.querySelectorAll("ebo-button")
-            .forEach((btn: EboButton) => {
-                btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
-                    this.onFilterButtonPress(ev);
-                });
-                btn.addEboEventListener("longPress.eboplayer", (ev) => {
-                    this.onFilterButtonLongPress(ev);
-                });
-                btn.addEventListener("dblclick", (ev) => {
-                    this.onFilterButtonDoubleClick(ev);
-                })
-            });
-    }
-
-    private onFilterButtonLongPress(ev: Event) {
-        this.setSingleButton(ev);
-    }
-
-    private onFilterButtonDoubleClick(ev: Event) {
-        this.setSingleButton(ev);
-    }
-
-    private setSingleButton(ev: Event) {
-        this.clearFilterButtons();
-        this.toggleFilterButton(ev.target as EboButton);
-        this.requestUpdate();
-    }
-
-    private clearFilterButtons() {
-        this.browseFilter.genre = false;
-        this.browseFilter.radio = false;
-        this.browseFilter.playlist = false;
-        this.browseFilter.album = false;
-        this.browseFilter.track = false;
-        this.browseFilter.artist = false;
-    }
-
-    private onFilterButtonPress(ev: PressedChangeEvent) {
-        let btn: EboButton = ev.target as EboButton;
-        this.toggleFilterButton(btn);
-    }
-
-    private toggleFilterButton(btn: EboButton) {
-        let propName = btn.id.replace("filter", "");
-        propName = propName.charAt(0).toLowerCase() + propName.slice(1);
-        this.browseFilter[propName as keyof BrowseFilterFlags] = !this.browseFilter[propName as keyof BrowseFilterFlags];
-        this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
     }
 
     override update(shadow:ShadowRoot) {
@@ -291,10 +207,11 @@ export class EboBrowseComp extends EboComponent {
             .filter(el => el.id.startsWith("filter"))
             .forEach(btn =>
                 this.updateFilterButton(btn as HTMLButtonElement));
-        let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
-        inputElement.value = this._browseFilter.searchText;
         let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
-        listButtonBar.btn_states = this.btn_states;
+        listButtonBar.btn_states = this.action_btn_states;
+        let browseFilterComp = shadow.querySelector("ebo-browse-filter") as EboBrowseFilterComp;
+        browseFilterComp.browseFilter = this._browseFilter;
+        browseFilterComp.availableRefTypes = this.results.availableRefTypes;
     }
 
     private updateFilterButton(btn: HTMLButtonElement) {
@@ -328,6 +245,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     private renderBreadcrumb(crumb: FilterBreadCrumb) {
+        //todo: make switch statement:  https://stackoverflow.com/a/36332700/1311434
         if(crumb instanceof BreadCrumbRef)
             return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`;
         else if(crumb instanceof BreadCrumbBrowseFilter) {
@@ -411,9 +329,4 @@ export class EboBrowseComp extends EboComponent {
         this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(<string>btn.dataset.id)});
     }
 
-    private onShowAllTypesButtonPress() {
-        this.clearFilterButtons();
-        this.requestUpdate();
-        this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
-    }
 }
