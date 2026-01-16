@@ -203,24 +203,12 @@ export class EboBrowseComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        [...shadow.querySelectorAll("ebo-button")]
-            .filter(el => el.id.startsWith("filter"))
-            .forEach(btn =>
-                this.updateFilterButton(btn as HTMLButtonElement));
+
         let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
         listButtonBar.btn_states = this.action_btn_states;
         let browseFilterComp = shadow.querySelector("ebo-browse-filter") as EboBrowseFilterComp;
         browseFilterComp.browseFilter = this._browseFilter;
         browseFilterComp.availableRefTypes = this.results.availableRefTypes;
-    }
-
-    private updateFilterButton(btn: HTMLButtonElement) {
-        let propName = btn.id
-                .replace("filter", "").charAt(0).toLowerCase()
-               + btn.id.replace("filter", "").slice(1) as RefType;
-        btn.setAttribute("pressed", this._browseFilter[propName].toString());
-        if(this.results)
-            btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
     }
 
     setSearchInfo(text: string) {
