@@ -98,7 +98,7 @@ export class EboBrowseFilterComp extends EboComponent {
             <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
-            <button id="all"> ALL </button>
+            <ebo-button id="all"> ALL </ebo-button>
             <button> &nbsp;&nbsp;(?) </button>
         </div>
     </div>    
@@ -193,6 +193,13 @@ export class EboBrowseFilterComp extends EboComponent {
                 this.updateFilterButton(btn as HTMLButtonElement));
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
+        let allButton = shadow.getElementById("all") as EboButton;
+        if(this.availableRefTypes.size == 1) {
+            allButton.setAttribute("disabled", "true");
+        } else {
+            allButton.removeAttribute("disabled");
+        }
+
     }
 
     private updateFilterButton(btn: HTMLButtonElement) {
@@ -200,7 +207,10 @@ export class EboBrowseFilterComp extends EboComponent {
                 .replace("filter", "").charAt(0).toLowerCase()
                + btn.id.replace("filter", "").slice(1) as RefType;
         btn.setAttribute("pressed", this._browseFilter[propName].toString());
-        btn.setAttribute("disabled", (!this.availableRefTypes.has(propName)).toString());
+        if(this.availableRefTypes.has(propName))
+            btn.removeAttribute("disabled");
+        else
+            btn.setAttribute("disabled", "");
     }
 
     setSearchInfo(text: string) {

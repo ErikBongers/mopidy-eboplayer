@@ -28,16 +28,15 @@ export class EboButton extends EboComponent {
         <style>
             img {
                 width: 100%;
+            }
+            :host([disabled]) {
+                opacity: .2; 
+            }
+            :host {
                 opacity: 0.5;
                 &.pressed { 
                     opacity: 1; 
-                    &.disabled { 
-                        opacity: .2; /*if needed, set this too a lower value then when disabled+not pressed. */
-                    }
-                }
-                &.disabled { 
-                    opacity: .2; 
-                }
+                 }
             }
         </style>
     `;
@@ -45,11 +44,13 @@ export class EboButton extends EboComponent {
     static htmlText = `
         <button>
             <img id="bigImage" src="" alt="Button image">
+            <slot></slot>           
         </button>
         `;
 
     constructor() {
         super(EboButton.styleText, EboButton.htmlText);
+        this.img = "";
         this.pressTimer = new MouseTimer<EboButton>(
             this,
             (source) => this.onClick(source),
@@ -69,14 +70,10 @@ export class EboButton extends EboComponent {
                 this.updateBoolProperty(name, newValue);
                 break;
         }
-        this.requestRender();
+        this.requestUpdate();
         }
 
     render(shadow:ShadowRoot) {
-        let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
-        this.setClassFromBoolAttribute(imgTag, "pressed");
-        this.setClassFromBoolAttribute(imgTag, "disabled");
-        imgTag.src = this.img ?? "";
         let button = shadow.querySelector("button") as HTMLButtonElement;
         button.addEventListener("mousedown", (ev) => {
             this.pressTimer.onMouseDown(ev);
@@ -87,6 +84,19 @@ export class EboButton extends EboComponent {
         button.addEventListener("mouseleave", (ev) => {
             this.pressTimer.onMouseLeave(ev);
         });
+        this.requestUpdate();
+    }
+
+    override update(shadow: ShadowRoot) {
+        let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
+        if(this.img) {
+            imgTag.src = this.img;
+            imgTag.style.display = "";
+        } else {
+            imgTag.style.display = "none";
+        }
+        this.setClassFromBoolAttribute(imgTag, "pressed");
+        this.setClassFromBoolAttribute(imgTag, "disabled");
     }
 
     private onClick(eboButton: EboButton) {

@@ -2,7 +2,9 @@
   > Some popup: "New"
     > Goes to pre-filled browse filter
       > filter on date: how?
-
+* Add a "remember" function to streamline history items.
+  > add those items to the root.eboplayer file
+  > and a sql table?
 
 
 * Is there a date a track/album is added via scan?

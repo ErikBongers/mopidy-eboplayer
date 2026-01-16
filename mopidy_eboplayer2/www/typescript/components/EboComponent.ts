@@ -147,6 +147,11 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
 
     }
     protected updateBoolProperty(name: string, newValue: string) {
+        if(newValue == null || newValue=="") { //assume attribute removed?
+            // @ts-ignore
+            this[name] = false;
+            return;
+        }
         if (!["true", "false"].includes(newValue))
             throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
         // @ts-ignore
