@@ -27,7 +27,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         self.current_track_uri = tl_track.track.uri
         self.storage.switch_stream_uri(self.current_track_uri)
         contents = urllib.request.urlopen("http://192.168.1.111:6680/eboback/data/get_excluded_streamlines?uri=eboback:stream:http://icecast.vrtcdn.be/klara-high.mp3").read()
-        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+contents)
+        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+str(contents))
 
 
     def track_playback_ended(self, tl_track, time_position):
