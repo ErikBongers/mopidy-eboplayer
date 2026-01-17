@@ -22,6 +22,7 @@ export class EboButton extends EboComponent {
     private disabled: boolean = false;
     private img: string;
     private pressTimer: MouseTimer<EboButton>;
+    private toggle: boolean = false;
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -29,14 +30,17 @@ export class EboButton extends EboComponent {
             img {
                 width: 100%;
             }
+            :host {
+                opacity: 1;
+            }
+            :host([toggle]) { 
+                opacity: 0.5; 
+            }
+            :host([pressed]) { 
+                opacity: 1; 
+            }
             :host([disabled]) {
                 opacity: .2; 
-            }
-            :host {
-                opacity: 0.5;
-                &.pressed { 
-                    opacity: 1; 
-                 }
             }
         </style>
     `;
@@ -67,6 +71,7 @@ export class EboButton extends EboComponent {
                 break;
             case "pressed":
             case "disabled":
+            case "toggle":
                 this.updateBoolProperty(name, newValue);
                 break;
         }
@@ -95,16 +100,19 @@ export class EboButton extends EboComponent {
         } else {
             imgTag.style.display = "none";
         }
-        this.setClassFromBoolAttribute(imgTag, "pressed");
+        if(this.toggle)
+            this.setClassFromBoolAttribute(imgTag, "pressed");
         this.setClassFromBoolAttribute(imgTag, "disabled");
     }
 
     private onClick(eboButton: EboButton) {
         if(this.disabled) return;
         let button = this.getShadow().querySelector("button") as HTMLButtonElement;
-        this.pressed = !this.pressed;
-        this.setClassFromBoolAttribute(button, "pressed");
-        this.setAttribute("pressed", this.pressed.toString());
+        if(this.toggle) {
+            this.pressed = !this.pressed;
+            this.setClassFromBoolAttribute(button, "pressed");
+            this.setAttribute("pressed", this.pressed.toString());
+        }
         let event = new PressedChangeEvent(this.pressed);
         this.dispatchEvent(event);
     }

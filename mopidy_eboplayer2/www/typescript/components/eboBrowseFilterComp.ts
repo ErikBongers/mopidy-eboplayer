@@ -24,10 +24,8 @@ export class EboBrowseFilterComp extends EboComponent {
     }
 
     set browseFilter(value: BrowseFilter) {
-        if(JSON.stringify(this._browseFilter) == JSON.stringify(value))
-            return;
         this._browseFilter = value;
-        this.requestRender();
+        this.requestUpdate();
     }
 
     private _browseFilter: BrowseFilter;
@@ -92,12 +90,12 @@ export class EboBrowseFilterComp extends EboComponent {
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
         </div>
         <div id="filterButtons">
-            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="all"> ALL </ebo-button>
             <button> &nbsp;&nbsp;(?) </button>
         </div>
@@ -187,30 +185,35 @@ export class EboBrowseFilterComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        [...shadow.querySelectorAll("ebo-button")]
-            .filter(el => el.id.startsWith("filter"))
+        let filterButtons = [...shadow.querySelectorAll("ebo-button")]
+            .filter(el => el.id.startsWith("filter")) as EboButton[];
+        filterButtons
             .forEach(btn =>
-                this.updateFilterButton(btn as HTMLButtonElement));
+                this.updateFilterButton(btn));
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.value = this._browseFilter.searchText;
         let allButton = shadow.getElementById("all") as EboButton;
-        if(this.availableRefTypes.size == 1) {
-            allButton.setAttribute("disabled", "true");
+        let nonPressed = filterButtons.every(btn => !btn.hasAttribute("pressed"));
+        if(this.availableRefTypes.size == 1 || nonPressed) {
+            allButton.setAttribute("disabled", "");
         } else {
             allButton.removeAttribute("disabled");
         }
-
     }
 
-    private updateFilterButton(btn: HTMLButtonElement) {
+    private updateFilterButton(btn: EboButton) {
         let propName = btn.id
                 .replace("filter", "").charAt(0).toLowerCase()
                + btn.id.replace("filter", "").slice(1) as RefType;
-        btn.setAttribute("pressed", this._browseFilter[propName].toString());
+        if(this._browseFilter[propName])
+            btn.setAttribute("pressed", "");
+        else
+            btn.removeAttribute("pressed");
         if(this.availableRefTypes.has(propName))
             btn.removeAttribute("disabled");
         else
             btn.setAttribute("disabled", "");
+        //todo: use toggleAttribute?
     }
 
     setSearchInfo(text: string) {

@@ -147,9 +147,14 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
 
     }
     protected updateBoolProperty(name: string, newValue: string) {
-        if(newValue == null || newValue=="") { //assume attribute removed?
+        if(newValue == null) {
             // @ts-ignore
             this[name] = false;
+            return;
+        }
+        if(newValue == "") {
+            // @ts-ignore
+            this[name] = true;
             return;
         }
         if (!["true", "false"].includes(newValue))
