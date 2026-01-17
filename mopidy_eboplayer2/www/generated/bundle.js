@@ -678,6 +678,7 @@ var BrowseFilter = class {
 	artist;
 	playlist;
 	genre;
+	addedSince;
 	constructor() {
 		this.searchText = "";
 		this.track = false;
@@ -686,6 +687,7 @@ var BrowseFilter = class {
 		this.radio = false;
 		this.playlist = false;
 		this.album = false;
+		this.addedSince = 0;
 	}
 	isNoTypeSelected() {
 		return !(this.album || this.track || this.radio || this.artist || this.playlist || this.genre);
@@ -2231,6 +2233,14 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this[name] = newValue;
 	}
 	updateBoolProperty(name, newValue) {
+		if (newValue == null) {
+			this[name] = false;
+			return;
+		}
+		if (newValue == "") {
+			this[name] = true;
+			return;
+		}
 		if (!["true", "false"].includes(newValue)) throw `"${name}" attribute should be "true" or "false". Current value: "${newValue}"`;
 		this[name] = newValue == "true";
 	}
@@ -3534,7 +3544,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		}
 		this.requestRender();
 	}
-	onConnected() {}
 	setFocusAndSelect() {
 		let searchText = this.getShadow().getElementById("searchText");
 		searchText?.focus();
@@ -3546,17 +3555,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.requestUpdate();
 	}
 	update(shadow) {
-		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
 		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
 		listButtonBar.btn_states = this.action_btn_states;
 		let browseFilterComp = shadow.querySelector("ebo-browse-filter");
 		browseFilterComp.browseFilter = this._browseFilter;
 		browseFilterComp.availableRefTypes = this.results.availableRefTypes;
-	}
-	updateFilterButton(btn) {
-		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
-		btn.setAttribute("pressed", this._browseFilter[propName].toString());
-		if (this.results) btn.setAttribute("disabled", (!this.results.availableRefTypes.has(propName)).toString());
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
@@ -3739,30 +3742,35 @@ var EboButton = class EboButton extends EboComponent {
 	disabled = false;
 	img;
 	pressTimer;
+	toggle = false;
 	static styleText = `
         <style>
             img {
                 width: 100%;
-                opacity: 0.5;
-                &.pressed { 
-                    opacity: 1; 
-                    &.disabled { 
-                        opacity: .2; /*if needed, set this too a lower value then when disabled+not pressed. */
-                    }
-                }
-                &.disabled { 
-                    opacity: .2; 
-                }
+            }
+            :host {
+                opacity: 1;
+            }
+            :host([toggle]) { 
+                opacity: 0.5; 
+            }
+            :host([pressed]) { 
+                opacity: 1; 
+            }
+            :host([disabled]) {
+                opacity: .2; 
             }
         </style>
     `;
 	static htmlText = `
         <button>
             <img id="bigImage" src="" alt="Button image">
+            <slot></slot>           
         </button>
         `;
 	constructor() {
 		super(EboButton.styleText, EboButton.htmlText);
+		this.img = "";
 		this.pressTimer = new MouseTimer(this, (source) => this.onClick(source), (source, clickCount) => this.onMultiClick(source, clickCount), (source) => this.onFilterButtonTimeOut(source));
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
@@ -3772,16 +3780,13 @@ var EboButton = class EboButton extends EboComponent {
 				break;
 			case "pressed":
 			case "disabled":
+			case "toggle":
 				this.updateBoolProperty(name, newValue);
 				break;
 		}
-		this.requestRender();
+		this.requestUpdate();
 	}
 	render(shadow) {
-		let imgTag = shadow.getElementById("bigImage");
-		this.setClassFromBoolAttribute(imgTag, "pressed");
-		this.setClassFromBoolAttribute(imgTag, "disabled");
-		imgTag.src = this.img ?? "";
 		let button = shadow.querySelector("button");
 		button.addEventListener("mousedown", (ev) => {
 			this.pressTimer.onMouseDown(ev);
@@ -3792,13 +3797,25 @@ var EboButton = class EboButton extends EboComponent {
 		button.addEventListener("mouseleave", (ev) => {
 			this.pressTimer.onMouseLeave(ev);
 		});
+		this.requestUpdate();
+	}
+	update(shadow) {
+		let imgTag = shadow.getElementById("bigImage");
+		if (this.img) {
+			imgTag.src = this.img;
+			imgTag.style.display = "";
+		} else imgTag.style.display = "none";
+		if (this.toggle) this.setClassFromBoolAttribute(imgTag, "pressed");
+		this.setClassFromBoolAttribute(imgTag, "disabled");
 	}
 	onClick(eboButton) {
 		if (this.disabled) return;
 		let button = this.getShadow().querySelector("button");
-		this.pressed = !this.pressed;
-		this.setClassFromBoolAttribute(button, "pressed");
-		this.setAttribute("pressed", this.pressed.toString());
+		if (this.toggle) {
+			this.pressed = !this.pressed;
+			this.setClassFromBoolAttribute(button, "pressed");
+			this.setAttribute("pressed", this.pressed.toString());
+		}
 		let event = new PressedChangeEvent(this.pressed);
 		this.dispatchEvent(event);
 	}
@@ -4665,9 +4682,8 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		return this._browseFilter;
 	}
 	set browseFilter(value) {
-		if (JSON.stringify(this._browseFilter) == JSON.stringify(value)) return;
 		this._browseFilter = value;
-		this.requestRender();
+		this.requestUpdate();
 	}
 	_browseFilter;
 	_availableRefTypes;
@@ -4714,6 +4730,13 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
             #expandFilterBtn {
                 margin-left: .5rem;
             }
+            #details {
+                padding: .4rem;
+                margin-inline-start: 2rem;
+            }
+            label {
+                font-size: .9rem;
+            }
         </style>
         `;
 	static htmlText = `
@@ -4724,14 +4747,27 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
             <input id="searchText" type="text" autofocus>
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
         </div>
+        <div id="details">
+            <label for="selectDate">Added since </label>
+            <select id="selectDate" >
+                <option value="0"></option>
+                <option value="1">1 day</option>
+                <option value="2">2 days</option>
+                <option value="7">1 week</option>
+                <option value="30">1 month</option>
+                <option value="90">3 months</option>
+                <option value="180">6 months</option>
+                <option value="365">1 year</option>
+            </select>                    
+        </div>
         <div id="filterButtons">
-            <ebo-button id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
-            <ebo-button id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
-            <button id="all"> ALL </button>
+            <ebo-button toggle id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterTrack" img="images/icons/Track.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterRadio" img="images/icons/Radio.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterArtist" img="images/icons/Artist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button toggle id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
+            <ebo-button id="all"> ALL </ebo-button>
             <button> &nbsp;&nbsp;(?) </button>
         </div>
     </div>    
@@ -4803,14 +4839,21 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
 	}
 	update(shadow) {
-		[...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter")).forEach((btn) => this.updateFilterButton(btn));
+		let filterButtons = [...shadow.querySelectorAll("ebo-button")].filter((el) => el.id.startsWith("filter"));
+		filterButtons.forEach((btn) => this.updateFilterButton(btn));
 		let inputElement = shadow.getElementById("searchText");
 		inputElement.value = this._browseFilter.searchText;
+		let allButton = shadow.getElementById("all");
+		let nonPressed = filterButtons.every((btn) => !btn.hasAttribute("pressed"));
+		if (this.availableRefTypes.size == 1 || nonPressed) allButton.setAttribute("disabled", "");
+		else allButton.removeAttribute("disabled");
 	}
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
-		btn.setAttribute("pressed", this._browseFilter[propName].toString());
-		btn.setAttribute("disabled", (!this.availableRefTypes.has(propName)).toString());
+		if (this._browseFilter[propName]) btn.setAttribute("pressed", "");
+		else btn.removeAttribute("pressed");
+		if (this.availableRefTypes.has(propName)) btn.removeAttribute("disabled");
+		else btn.setAttribute("disabled", "");
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");

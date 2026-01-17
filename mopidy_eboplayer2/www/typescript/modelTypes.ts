@@ -73,6 +73,7 @@ export class BrowseFilter implements BrowseFilterFlags{
     artist: boolean;
     playlist: boolean;
     genre: boolean;
+    addedSince: number;
 
     constructor() {
         this.searchText = "";
@@ -82,6 +83,7 @@ export class BrowseFilter implements BrowseFilterFlags{
         this.radio = false;
         this.playlist = false;
         this.album = false;
+        this.addedSince = 0;
     }
 
     isNoTypeSelected(): boolean {

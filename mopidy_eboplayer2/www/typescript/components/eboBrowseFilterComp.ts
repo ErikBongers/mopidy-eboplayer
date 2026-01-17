@@ -77,6 +77,13 @@ export class EboBrowseFilterComp extends EboComponent {
             #expandFilterBtn {
                 margin-left: .5rem;
             }
+            #details {
+                padding: .4rem;
+                margin-inline-start: 2rem;
+            }
+            label {
+                font-size: .9rem;
+            }
         </style>
         `;
 
@@ -88,6 +95,19 @@ export class EboBrowseFilterComp extends EboComponent {
             <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
             <input id="searchText" type="text" autofocus>
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
+        </div>
+        <div id="details">
+            <label for="selectDate">Added since </label>
+            <select id="selectDate" >
+                <option value="0"></option>
+                <option value="1">1 day</option>
+                <option value="2">2 days</option>
+                <option value="7">1 week</option>
+                <option value="30">1 month</option>
+                <option value="90">3 months</option>
+                <option value="180">6 months</option>
+                <option value="365">1 year</option>
+            </select>                    
         </div>
         <div id="filterButtons">
             <ebo-button toggle id="filterAlbum" img="images/icons/Album.svg" class="filterButton whiteIcon"></ebo-button>
