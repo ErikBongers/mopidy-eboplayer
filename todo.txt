@@ -1,7 +1,5 @@
-* Add a "remember" function to streamline history items.
-  > add those items to the root.eboplayer file
-  > and a sql table?
-    > No. is a one-time query so from file is ok.
+* implement streamline buttons.
+  > make new socket event when a program title is changed.
 
 * *New*s screen: how?
   > Some popup: "New"
