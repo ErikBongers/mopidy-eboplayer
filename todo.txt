@@ -1,3 +1,5 @@
+* remove stream_history_changed handlers from fronted.py
+
 * implement streamline buttons.
   > make new socket event when a program title is changed.
 

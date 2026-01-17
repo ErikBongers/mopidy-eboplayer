@@ -2,11 +2,13 @@ import getState from "../playerState";
 import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
 import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
-import {EboBigTrackComp} from "../components/eboBigTrackComp";
+import EboBigTrackComp from "../components/eboBigTrackComp";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     private streamLines: string;
+    private programTitle: string = "";
     private uri: string | null = null;
+    private track: ExpandedStreamModel | ExpandedFileTrackModel | null;
 
     constructor(id: string) {
         super(id);
@@ -22,6 +24,9 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         });
         getState().getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
             this.onStreamLinesChanged();
+        });
+        getState().getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
+            this.onProgramTitleChanged();
         });
     }
 
@@ -50,36 +55,36 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
 
     async setUri(uri: TrackUri | StreamUri | null) {
         this.uri = uri;
-        let track = await getState().getController().getExpandedTrackModel(uri);
-        this.setComponentData(track);
+        this.track = await getState().getController().getExpandedTrackModel(uri);
+        this.setComponentData();
     }
 
-    protected setComponentData(track: ExpandedStreamModel | ExpandedFileTrackModel | null) {
+    protected setComponentData() {
         let name = "no current track";
         let info = "";
         let position: string;
         let button: string;
         let imageUrl: string;
-        if(!track) {
+        if(!this.track) {
             name = "no current track";
             info = "";
             position = "0";
             button = "false";
             imageUrl = "";
         } else {
-            if (isInstanceOfExpandedStreamModel(track)) {
-                name = track.stream.name;
+            if (isInstanceOfExpandedStreamModel(this.track)) {
+                name = this.track.stream.name;
                 position = "100";
                 button = "false";
-                imageUrl = track.stream.imageUrl;
+                imageUrl = this.track.stream.imageUrl;
             } else {
-                name = track.track.title;
-                info = track.album.albumInfo?.name?? "--no name--";
+                name = this.track.track.title;
+                info = this.track.album.albumInfo?.name?? "--no name--";
                 position = "60"; //todo: just a test
                 button = "true";
-                imageUrl = track.album.imageUrl;
-                let artists = track.track.track.artists.map(a => a.name).join(", ");
-                let composers = track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
+                imageUrl = this.track.album.imageUrl;
+                let artists = this.track.track.track.artists.map(a => a.name).join(", ");
+                let composers = this.track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
                 if (artists)
                     info += "<br>" + artists;
                 if (composers)
@@ -92,6 +97,12 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         comp.setAttribute("position", position);
         comp.setAttribute("button", button);
         comp.setAttribute("img", imageUrl);
+        comp.setAttribute("program_title", this.programTitle);
         this.onStreamLinesChanged();
+    }
+
+    private onProgramTitleChanged() {
+        this.programTitle = getState().getModel().getCurrentProgramTitle();
+        this.setComponentData();
     }
 }

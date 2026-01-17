@@ -3,6 +3,7 @@ import {EboDialog} from "./components/eboDialog";
 
 export interface EboEventHandlersEventMap {
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
+    "programTitleChanged.eboplayer"             : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
     "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "addTrackClicked.eboplayer"                 : TrackUriArgs,

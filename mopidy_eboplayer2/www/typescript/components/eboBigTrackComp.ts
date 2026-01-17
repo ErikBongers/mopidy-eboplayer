@@ -4,7 +4,7 @@ import {console_yellow} from "../global";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
 import {EboRadioDetailsComp} from "./eboRadioDetailsComp";
 
-export class EboBigTrackComp extends EboComponent {
+class EboBigTrackComp extends EboComponent {
     get albumInfo(): AlbumData {
         return this._albumInfo;
     }
@@ -27,7 +27,7 @@ export class EboBigTrackComp extends EboComponent {
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "show_back",
+        "name", "stream_lines", "extra", "img", "disabled", "show_back", "program_title",
         ...EboBigTrackComp.progressBarAttributes
     ];
     private name: string = "";
@@ -41,6 +41,7 @@ export class EboBigTrackComp extends EboComponent {
     private max: string = "100";
     private button: string = "false";
     private active: string = "true";
+    private program_title: string = "";
 
     private img: string  = "";
     private _albumInfo: AlbumData = AlbumNone;
@@ -161,6 +162,7 @@ export class EboBigTrackComp extends EboComponent {
             case "stream_lines":
             case "extra":
             case "img":
+            case "program_title":
                 this[name] = newValue;
                 break;
             case "enabled":
@@ -187,6 +189,10 @@ export class EboBigTrackComp extends EboComponent {
             // @ts-ignore
             shadow.getElementById(attName).innerHTML = this[attName];
         });
+        if(this.program_title != "") {
+            // @ts-ignore
+            shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
+        }
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboBigTrackComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore
@@ -226,3 +232,5 @@ export class EboBigTrackComp extends EboComponent {
     }
 
 }
+
+export default EboBigTrackComp

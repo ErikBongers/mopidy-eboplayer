@@ -23,6 +23,7 @@ export interface ViewModel extends EboEventTargetClass {
     getView(): Views;
     getAlbumToView(): AlbumUri;
     getGenreDefs(): Map<string, GenreDef> | null;
+    getCurrentProgramTitle(): string;
 }
 
 export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrumbTypeName, FilterBreadCrumb>{}
@@ -58,6 +59,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
     private genreDefs: Map<string, GenreDef> | null = null;
+    private currentProgramTitle: string = "";
 
     private allRefs: Refs | null = null;
     private currentRefs: Refs | null = null;
@@ -68,6 +70,15 @@ export class Model extends EboEventTargetClass implements ViewModel {
     constructor() {
         super();
         this.initializeBreadcrumbStack();
+    }
+
+    getCurrentProgramTitle(): string {
+        return this.currentProgramTitle;
+    }
+
+    setCurrentProgramTitle(title: string) {
+        this.currentProgramTitle = title;
+        this.dispatchEboEvent("programTitleChanged.eboplayer", {});
     }
 
     setGenreDefs(defs: GenreDef[]) {

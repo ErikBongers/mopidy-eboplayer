@@ -20,6 +20,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         self.storage.setup()
         self.current_track_uri = ""
         self.current_excluded_streamlines = []
+        self.current_program_titles = []
 
     def on_start(self) -> None:
         logger.info("STARTING....")
@@ -29,9 +30,10 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def track_playback_started(self, tl_track):
         self.current_track_uri = tl_track.track.uri
         self.storage.switch_stream_uri(self.current_track_uri)
-        contents = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
-        self.current_excluded_streamlines = contents.decode("utf-8").split("\n")
-        logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+str(self.current_excluded_streamlines))
+        excluded_streamlines = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
+        self.current_excluded_streamlines = excluded_streamlines.decode("utf-8").split("\n")
+        program_titles = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
+        self.current_program_titles = program_titles.decode("utf-8").split("\n")
 
 
     def track_playback_ended(self, tl_track, time_position):
@@ -50,6 +52,15 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def stream_title_changed(self, title: str) -> None:
         if title in self.current_excluded_streamlines:
             return
+
+        if title in self.current_program_titles:
+            the_event = {
+                "event" : "program_title_changed",
+                "program_title" : title
+            }
+            broadcast(json.dumps(the_event))
+            return
+
         if self.storage.write_title(title):
             stream_titles = self.storage.get_active_titles_object()
             the_event = {

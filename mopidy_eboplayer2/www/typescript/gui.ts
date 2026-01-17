@@ -6,7 +6,7 @@ import {Controller} from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
-import {EboBigTrackComp} from "./components/eboBigTrackComp";
+import EboBigTrackComp from "./components/eboBigTrackComp";
 import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
 import {EboAlbumTracksComp} from "./components/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";

@@ -8,7 +8,7 @@ import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {RefType} from "../refs";
-import {EboBigTrackComp} from "../components/eboBigTrackComp";
+import EboBigTrackComp from "../components/eboBigTrackComp";
 
 export class MainView extends View {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
