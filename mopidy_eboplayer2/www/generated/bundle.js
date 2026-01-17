@@ -443,22 +443,24 @@ var Refs = class {
 		if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
-		if (result.weight > 0) {
-			if (browseFilter.addedSince == 0) return;
-			if (result.type == "ref") {
-				if (browseFilter.album && result.item.type == "album") {
-					let mostRecentTrackModifiedDate = (await playerState_default().getController().getExpandedAlbumModel(result.item.ref.uri)).tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0];
-					if (!mostRecentTrackModifiedDate) return;
-					mostRecentTrackModifiedDate /= 1e3;
-					let currentPosixDate = Math.floor(Date.now() / 1e3);
-					let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
-					debugger;
-					if (currentPosixDate - mostRecentTrackModifiedDate < addedSinceInSeconds) result.weight += 10;
-				}
-				if (browseFilter.track && result.item.type == "track") result.weight += 10;
-				if (browseFilter.radio && result.item.type == "radio") result.weight += 10;
-			}
+		if (result.weight == 0) return;
+		if (browseFilter.addedSince == 0) return;
+		if (result.type != "ref") return;
+		if (browseFilter.album && result.item.type == "album") {
+			let mostRecentTrackModifiedDate = (await playerState_default().getController().getExpandedAlbumModel(result.item.ref.uri)).tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0];
+			this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter);
 		}
+		if (browseFilter.track && result.item.type == "track") {
+			let expandedTrack = await playerState_default().getController().getExpandedTrackModel(result.item.ref.uri);
+			this.calculateDateFilter(expandedTrack.track.track.last_modified, result, browseFilter);
+		}
+	}
+	calculateDateFilter(modifiedDate, result, browseFilter) {
+		if (!modifiedDate) return;
+		modifiedDate /= 1e3;
+		let currentPosixDate = Math.floor(Date.now() / 1e3);
+		let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
+		if (currentPosixDate - modifiedDate > addedSinceInSeconds) result.weight = 0;
 	}
 	setFilter(browseFilter) {
 		this._browseFilter = browseFilter;

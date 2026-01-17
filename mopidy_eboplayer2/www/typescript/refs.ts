@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 
-import {AlbumUri, AllUris, ArtistUri, BrowseFilter, GenreDef, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
+import {AlbumUri, AllUris, ArtistUri, BrowseFilter, ExpandedFileTrackModel, ExpandedStreamModel, GenreDef, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
 import getState from "./playerState";
 import Ref = models.Ref;
 
@@ -55,31 +55,34 @@ export abstract class Refs {
             result.weight += 100;
         if (!browseFilter.searchText)
             result.weight += 1; //No search text? Give every result a weight of 1, so that they are always shown.
-        if(result.weight > 0) {
-            if(browseFilter.addedSince == 0)
-                return;
-            if(result.type == "ref") {
-                if(browseFilter.album && result.item.type == "album") {
-                    let expandedAlbum = await getState().getController().getExpandedAlbumModel(result.item.ref.uri as AlbumUri);
-                    let mostRecentTrackModifiedDate = expandedAlbum.tracks
-                        .filter(t => t.track.last_modified)
-                        .map(t => t.track.last_modified)
-                        .sort()[0];
-                    if(!mostRecentTrackModifiedDate)
-                        return;
-                    mostRecentTrackModifiedDate /= 1000;
-                    let currentPosixDate = Math.floor(Date.now() / 1000);
-                    let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
-                    if(currentPosixDate - mostRecentTrackModifiedDate < addedSinceInSeconds)
-                        result.weight += 10;
-                }
-                if(browseFilter.track && result.item.type == "track")
-                    result.weight += 10;
-                if(browseFilter.radio && result.item.type == "radio")
-                    result.weight += 10;
-            }
-
+        if(result.weight == 0)
+            return;
+        if(browseFilter.addedSince == 0)
+            return;
+        if(result.type != "ref")
+            return;
+        if(browseFilter.album && result.item.type == "album") {
+            let expandedAlbum = await getState().getController().getExpandedAlbumModel(result.item.ref.uri as AlbumUri);
+            let mostRecentTrackModifiedDate = expandedAlbum.tracks
+                .filter(t => t.track.last_modified)
+                .map(t => t.track.last_modified)
+                .sort()[0];
+            this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter);
         }
+        if(browseFilter.track && result.item.type == "track") {
+            let expandedTrack = await getState().getController().getExpandedTrackModel(result.item.ref.uri as TrackUri) as ExpandedFileTrackModel;
+            this.calculateDateFilter(expandedTrack.track.track.last_modified, result, browseFilter);
+        }
+    }
+
+    protected calculateDateFilter(modifiedDate: number|undefined, result: SearchResult, browseFilter: BrowseFilter) {
+        if(!modifiedDate)
+            return;
+        modifiedDate /= 1000;
+        let currentPosixDate = Math.floor(Date.now() / 1000);
+        let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
+        if(currentPosixDate - modifiedDate > addedSinceInSeconds)
+            result.weight = 0;
     }
 
     setFilter(browseFilter: BrowseFilter) {
