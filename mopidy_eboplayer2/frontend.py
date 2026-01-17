@@ -48,6 +48,8 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
             self.current_track_uri = tl_track.track.uri
 
     def stream_title_changed(self, title: str) -> None:
+        if title in self.current_excluded_streamlines:
+            return
         if self.storage.write_title(title):
             stream_titles = self.storage.get_active_titles_object()
             the_event = {
