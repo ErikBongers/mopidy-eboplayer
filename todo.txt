@@ -1,11 +1,13 @@
+* Add a "remember" function to streamline history items.
+  > add those items to the root.eboplayer file
+  > and a sql table?
+    > No. is a one-time query so from file is ok.
+
 * *New*s screen: how?
   > Some popup: "New"
     > Goes to pre-filled browse filter
       > filter on date: how?
-* Add a "remember" function to streamline history items.
-  > add those items to the root.eboplayer file
-  > and a sql table?
-
+* Radio streams: filter out certain texts, like the radio name.
 
 * Is there a date a track/album is added via scan?
   > if not, add it and use it to show a "New" section.
