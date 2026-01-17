@@ -15,6 +15,8 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         self.core = core
         self.config = config
         self.storage = Storage(self.config['eboplayer2']['storage_dir'])
+        self.host = self.config['http']['hostname']
+        self.port = self.config['http']['port']
         self.storage.setup()
         self.current_track_uri = ""
         self.current_excluded_streamlines = []
@@ -27,7 +29,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def track_playback_started(self, tl_track):
         self.current_track_uri = tl_track.track.uri
         self.storage.switch_stream_uri(self.current_track_uri)
-        contents = urllib.request.urlopen(f"http://192.168.1.111:6680/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
+        contents = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
         self.current_excluded_streamlines = contents.decode("utf-8").split("\n")
         logger.info("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"+str(self.current_excluded_streamlines))
 
