@@ -116,11 +116,11 @@ export class Model extends EboEventTargetClass implements ViewModel {
 
     getAllRefs = () => this.allRefs;
 
-    filterCurrentRefs(){
+    async filterCurrentRefs(){
         if(!this.currentRefs)
             return;
         this.currentRefs.browseFilter = this.currentBrowseFilter;
-        this.currentRefs.filter();
+        await this.currentRefs.filter();
         this.dispatchEboEvent("refsFiltered.eboplayer", {});
     }
 

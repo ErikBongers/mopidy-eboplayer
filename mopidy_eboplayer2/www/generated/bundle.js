@@ -406,9 +406,8 @@ var State = class {
 		await this.controller.fetchAllAlbums();
 		this.controller.localStorageProxy.loadCurrentBrowseFilter();
 		this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-		this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
-			this.controller.filterBrowseResults();
-		});
+		await this.controller.fetchRefsForCurrentBreadCrumbs();
+		await this.controller.filterBrowseResults();
 		await this.controller.getGenreDefsCached();
 	}
 };
@@ -440,21 +439,35 @@ var Refs = class {
 		this._browseFilter = value;
 	}
 	_browseFilter;
-	calculateWeight(result, browseFilter) {
+	async calculateWeight(result, browseFilter) {
 		if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
+		if (result.weight > 0) {
+			if (browseFilter.addedSince == 0) return;
+			if (result.type == "ref") {
+				if (browseFilter.album && result.item.type == "album") {
+					let mostRecentTrackModifiedDate = (await playerState_default().getController().getExpandedAlbumModel(result.item.ref.uri)).tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0];
+					if (!mostRecentTrackModifiedDate) return;
+					mostRecentTrackModifiedDate /= 1e3;
+					let currentPosixDate = Math.floor(Date.now() / 1e3);
+					let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
+					debugger;
+					if (currentPosixDate - mostRecentTrackModifiedDate < addedSinceInSeconds) result.weight += 10;
+				}
+				if (browseFilter.track && result.item.type == "track") result.weight += 10;
+				if (browseFilter.radio && result.item.type == "radio") result.weight += 10;
+			}
+		}
 	}
 	setFilter(browseFilter) {
 		this._browseFilter = browseFilter;
 	}
-	applyFilter(searchResults) {
+	async applyFilter(searchResults) {
 		searchResults.forEach((result) => {
 			result.weight = 0;
 		});
-		searchResults.forEach((result) => {
-			this.calculateWeight(result, this.browseFilter);
-		});
+		for (const result of searchResults) await this.calculateWeight(result, this.browseFilter);
 		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
 			if (b.weight === a.weight) return a.item.ref.name?.localeCompare(b.item.ref.name ?? "") ?? 0;
 			return b.weight - a.weight;
@@ -578,9 +591,9 @@ var AllRefs = class extends Refs {
 		this.getAvailableRefTypes(this.radios).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.playlists).forEach((type) => this.availableRefTypes.add(type));
 	}
-	filter() {
+	async filter() {
 		this.searchResults = {
-			refs: this.applyFilter(this.prefillWithTypes(this.browseFilter)),
+			refs: await this.applyFilter(this.prefillWithTypes(this.browseFilter)),
 			availableRefTypes: this.availableRefTypes
 		};
 	}
@@ -603,9 +616,9 @@ var SomeRefs = class extends Refs {
 		this.allresults = Refs.transformRefsToSearchResults(refs);
 		this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
 	}
-	filter() {
+	async filter() {
 		this.searchResults = {
-			refs: this.applyFilter(this.allresults),
+			refs: await this.applyFilter(this.allresults),
 			availableRefTypes: this.availableRefTypes
 		};
 	}
@@ -865,10 +878,10 @@ var Model = class extends EboEventTargetClass {
 		return this.currentRefs?.getSearchResults() ?? EmptySearchResults;
 	}
 	getAllRefs = () => this.allRefs;
-	filterCurrentRefs() {
+	async filterCurrentRefs() {
 		if (!this.currentRefs) return;
 		this.currentRefs.browseFilter = this.currentBrowseFilter;
-		this.currentRefs.filter();
+		await this.currentRefs.filter();
 		this.dispatchEboEvent("refsFiltered.eboplayer", {});
 	}
 	getImageFromCache(uri) {
@@ -1683,12 +1696,12 @@ var Controller = class Controller extends Commands {
 		});
 		return new Map(mappedImage);
 	}
-	setAndSaveBrowseFilter(filter) {
+	async setAndSaveBrowseFilter(filter) {
 		this.localStorageProxy.saveCurrentBrowseFilter(filter);
 		this.model.setCurrentBrowseFilter(filter);
-		this.filterBrowseResults();
+		await this.filterBrowseResults();
 	}
-	diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
+	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
 		if (type == "track" || type == "radio") return;
 		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
 			this.showAlbum(uri);
@@ -1727,22 +1740,20 @@ var Controller = class Controller extends Commands {
 				newBrowseFilter.track = true;
 				break;
 		}
-		this.setAndSaveBrowseFilter(newBrowseFilter);
-		this.fetchRefsForCurrentBreadCrumbs().then(() => {
-			this.filterBrowseResults();
-		});
+		await this.setAndSaveBrowseFilter(newBrowseFilter);
+		await this.fetchRefsForCurrentBreadCrumbs();
+		await this.filterBrowseResults();
 	}
-	resetToBreadCrumb(id) {
+	async resetToBreadCrumb(id) {
 		let breadCrumb = playerState_default().getModel().getBreadCrumbs().get(id);
 		let breadCrumbs = playerState_default().getModel().getBreadCrumbs();
 		if (breadCrumb instanceof BreadCrumbBrowseFilter) {
 			this.model.resetBreadCrumbsTo(id);
 			let browseFilter = this.model.popBreadCrumb()?.data;
-			this.setAndSaveBrowseFilter(browseFilter);
+			await this.setAndSaveBrowseFilter(browseFilter);
 			this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-			this.fetchRefsForCurrentBreadCrumbs().then(() => {
-				this.filterBrowseResults();
-			});
+			await this.fetchRefsForCurrentBreadCrumbs();
+			await this.filterBrowseResults();
 		} else if (breadCrumb instanceof BreadCrumbRef) {
 			if (isBreadCrumbForAlbum(breadCrumb)) {
 				this.showAlbum(breadCrumb.data.uri);
@@ -1750,14 +1761,13 @@ var Controller = class Controller extends Commands {
 			}
 			this.model.resetBreadCrumbsTo(id);
 			this.model.popBreadCrumb();
-			this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+			await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
 		} else if (breadCrumb instanceof BreadCrumbHome) {
 			this.model.resetBreadCrumbsTo(id);
-			this.setAndSaveBrowseFilter(new BrowseFilter());
+			await this.setAndSaveBrowseFilter(new BrowseFilter());
 			this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-			this.fetchRefsForCurrentBreadCrumbs().then(() => {
-				this.filterBrowseResults();
-			});
+			await this.fetchRefsForCurrentBreadCrumbs();
+			await this.filterBrowseResults();
 		}
 	}
 	async lookupTrackCached(trackUri) {
@@ -1910,8 +1920,8 @@ var Controller = class Controller extends Commands {
 		if (radioStreamsPlayList) radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
 		return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
 	}
-	filterBrowseResults() {
-		this.model.filterCurrentRefs();
+	async filterBrowseResults() {
+		await this.model.filterCurrentRefs();
 	}
 	async fetchRefsForCurrentBreadCrumbs() {
 		let lastCrumb = this.model.getBreadCrumbs().getLast();
@@ -3069,8 +3079,8 @@ var MainView = class extends View {
 			this.onBrowseButtonClick();
 		});
 		let browseComp = document.getElementById("browseView");
-		browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", () => {
-			this.onGuiBrowseFilterChanged(browseComp);
+		browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
+			await this.onGuiBrowseFilterChanged(browseComp);
 		});
 		browseComp.addEboEventListener("breadCrumbClick.eboplayer", (ev) => {
 			this.onBreadcrumbClick(ev.detail.breadcrumbId);
@@ -3081,8 +3091,8 @@ var MainView = class extends View {
 		browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
 			await this.onBrowseResultDblClick(ev.detail.uri);
 		});
-		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", () => {
-			this.onGenreDefsChanged();
+		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+			await this.onGenreDefsChanged();
 		});
 		playerState_default().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
 			this.onRefsFiltered();
@@ -3132,8 +3142,8 @@ var MainView = class extends View {
 			await this.onSaveClicked(ev.detail);
 		});
 	}
-	onGuiBrowseFilterChanged(browseComp) {
-		playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
+	async onGuiBrowseFilterChanged(browseComp) {
+		await playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
 	}
 	onRefsFiltered() {
 		let browseComp = document.getElementById("browseView");
@@ -4807,6 +4817,9 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 				this.onFilterButtonDoubleClick(ev);
 			});
 		});
+		shadow.getElementById("selectDate").addEventListener("change", (ev) => {
+			this.onDateFilterChanged();
+		});
 		this.requestUpdate();
 	}
 	onFilterButtonLongPress(ev) {
@@ -4847,6 +4860,8 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		let nonPressed = filterButtons.every((btn) => !btn.hasAttribute("pressed"));
 		if (this.availableRefTypes.size == 1 || nonPressed) allButton.setAttribute("disabled", "");
 		else allButton.removeAttribute("disabled");
+		let selectDate = shadow.getElementById("selectDate");
+		selectDate.value = this._browseFilter.addedSince.toString();
 	}
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
@@ -4886,6 +4901,11 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 	onShowAllTypesButtonPress() {
 		this.clearFilterButtons();
 		this.requestUpdate();
+		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+	}
+	onDateFilterChanged() {
+		let selectDate = this.getShadow().getElementById("selectDate");
+		this.browseFilter.addedSince = parseInt(selectDate.value);
 		this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
 	}
 };

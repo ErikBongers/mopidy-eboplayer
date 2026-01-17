@@ -8,7 +8,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreDef, GenreUri, ImageUri, isBreadCrumbForAlbum, isBreadCrumbForArtist, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -223,13 +223,13 @@ export class Controller extends Commands implements DataRequester{
         return new Map(mappedImage);
     }
 
-    setAndSaveBrowseFilter(filter: BrowseFilter) {
+    async setAndSaveBrowseFilter(filter: BrowseFilter) {
         this.localStorageProxy.saveCurrentBrowseFilter(filter);
         this.model.setCurrentBrowseFilter(filter);
-        this.filterBrowseResults();
+        await this.filterBrowseResults();
     }
 
-    diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
+    async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
         if(type == "track"  ||  type  == "radio") {
             return; //don't dive.
         }
@@ -274,14 +274,13 @@ export class Controller extends Commands implements DataRequester{
                 newBrowseFilter.track = true;
                 break;
         }
-        this.setAndSaveBrowseFilter(newBrowseFilter);
+        await this.setAndSaveBrowseFilter(newBrowseFilter);
 
-        this.fetchRefsForCurrentBreadCrumbs().then(() => {
-            this.filterBrowseResults();
-        });
+        await this.fetchRefsForCurrentBreadCrumbs()
+        await this.filterBrowseResults();
     }
 
-    resetToBreadCrumb(id: number) {
+    async resetToBreadCrumb(id: number) {
         let breadCrumb = getState().getModel().getBreadCrumbs().get(id);
         let breadCrumbs = getState().getModel().getBreadCrumbs();
 
@@ -289,11 +288,10 @@ export class Controller extends Commands implements DataRequester{
         if(breadCrumb instanceof BreadCrumbBrowseFilter) {
             this.model.resetBreadCrumbsTo(id);
             let browseFilter = this.model.popBreadCrumb()?.data as BrowseFilter;
-            this.setAndSaveBrowseFilter(browseFilter);
+            await this.setAndSaveBrowseFilter(browseFilter);
             this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-            this.fetchRefsForCurrentBreadCrumbs().then(() => {
-                this.filterBrowseResults();
-            });
+            await this.fetchRefsForCurrentBreadCrumbs()
+            await this.filterBrowseResults();
         } else if(breadCrumb instanceof BreadCrumbRef) {
             if(isBreadCrumbForAlbum(breadCrumb)) {
                 this.showAlbum(breadCrumb.data.uri);
@@ -301,14 +299,13 @@ export class Controller extends Commands implements DataRequester{
             }
             this.model.resetBreadCrumbsTo(id);
             this.model.popBreadCrumb(); // remove the current breadCrumb as it will be added again below.
-            this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+            await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
         } else if (breadCrumb instanceof BreadCrumbHome) {
             this.model.resetBreadCrumbsTo(id);
-            this.setAndSaveBrowseFilter(new BrowseFilter());
+            await this.setAndSaveBrowseFilter(new BrowseFilter());
             this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-            this.fetchRefsForCurrentBreadCrumbs().then(() => {
-                this.filterBrowseResults();
-            });
+            await this.fetchRefsForCurrentBreadCrumbs()
+            await this.filterBrowseResults();
         }
     }
 
@@ -493,8 +490,8 @@ export class Controller extends Commands implements DataRequester{
         return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
     }
 
-    filterBrowseResults() {
-        this.model.filterCurrentRefs();
+    async filterBrowseResults() {
+        await this.model.filterCurrentRefs();
     }
 
     async fetchRefsForCurrentBreadCrumbs() {

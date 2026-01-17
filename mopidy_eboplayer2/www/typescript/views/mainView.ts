@@ -31,8 +31,8 @@ export class MainView extends View {
             this.onBrowseButtonClick();
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", () => {
-            this.onGuiBrowseFilterChanged(browseComp);
+        browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
+            await this.onGuiBrowseFilterChanged(browseComp);
         });
         browseComp.addEboEventListener("breadCrumbClick.eboplayer", (ev) => {
             this.onBreadcrumbClick(ev.detail.breadcrumbId);
@@ -43,8 +43,8 @@ export class MainView extends View {
         browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
-        getState().getModel().addEboEventListener("genreDefsChanged.eboplayer", () => {
-            this.onGenreDefsChanged();
+        getState().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+            await this.onGenreDefsChanged();
         });
         getState().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
             this.onRefsFiltered();
@@ -95,8 +95,8 @@ export class MainView extends View {
         });
     }
 
-    private onGuiBrowseFilterChanged(browseComp: EboBrowseComp) {
-        getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
+    private async onGuiBrowseFilterChanged(browseComp: EboBrowseComp) {
+        await getState().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
     }
 
     private onRefsFiltered() {

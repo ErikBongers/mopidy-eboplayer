@@ -46,28 +46,53 @@ export abstract class Refs {
     }
     private _browseFilter: BrowseFilter;
 
-    abstract filter(): void;
+    abstract filter(): Promise<void>;
 
-    protected calculateWeight(result: SearchResult, browseFilter: BrowseFilter) {
+    protected async calculateWeight(result: SearchResult, browseFilter: BrowseFilter) {
         if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (!browseFilter.searchText)
             result.weight += 1; //No search text? Give every result a weight of 1, so that they are always shown.
+        if(result.weight > 0) {
+            if(browseFilter.addedSince == 0)
+                return;
+            if(result.type == "ref") {
+                if(browseFilter.album && result.item.type == "album") {
+                    let expandedAlbum = await getState().getController().getExpandedAlbumModel(result.item.ref.uri as AlbumUri);
+                    let mostRecentTrackModifiedDate = expandedAlbum.tracks
+                        .filter(t => t.track.last_modified)
+                        .map(t => t.track.last_modified)
+                        .sort()[0];
+                    if(!mostRecentTrackModifiedDate)
+                        return;
+                    mostRecentTrackModifiedDate /= 1000;
+                    let currentPosixDate = Math.floor(Date.now() / 1000);
+                    let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
+                    if(currentPosixDate - mostRecentTrackModifiedDate < addedSinceInSeconds)
+                        result.weight += 10;
+                }
+                if(browseFilter.track && result.item.type == "track")
+                    result.weight += 10;
+                if(browseFilter.radio && result.item.type == "radio")
+                    result.weight += 10;
+            }
+
+        }
     }
 
     setFilter(browseFilter: BrowseFilter) {
         this._browseFilter = browseFilter;
     }
 
-    protected applyFilter(searchResults: SearchResult[]) {
+    protected async applyFilter(searchResults: SearchResult[]) {
         searchResults.forEach(result => {
             result.weight = 0;
         });
-        searchResults.forEach(result => {
-            this.calculateWeight(result, this.browseFilter);
-        });
+        for (const result of searchResults) {
+            await this.calculateWeight(result, this.browseFilter);
+        }
         return searchResults
             .filter(result => result.weight > 0)
             .sort((a, b) => {
@@ -184,9 +209,9 @@ export class AllRefs extends Refs {
         this.getAvailableRefTypes(this.playlists).forEach(type => this.availableRefTypes.add(type));
     }
 
-    filter() {
+    async filter() {
         this.searchResults = {
-            refs: this.applyFilter(this.prefillWithTypes(this.browseFilter)),
+            refs: await this.applyFilter(this.prefillWithTypes(this.browseFilter)),
             availableRefTypes: this.availableRefTypes
         };
     }
@@ -219,9 +244,9 @@ export class SomeRefs extends Refs {
         this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
     }
 
-    filter() {
+    async filter() {
         this.searchResults = {
-            refs: this.applyFilter(this.allresults),
+            refs: await this.applyFilter(this.allresults),
             availableRefTypes: this.availableRefTypes
         };
     }

@@ -49,9 +49,8 @@ export class State {
         await this.controller.fetchAllAlbums();
         this.controller.localStorageProxy.loadCurrentBrowseFilter();
         this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-        this.controller.fetchRefsForCurrentBreadCrumbs().then(() => {
-            this.controller.filterBrowseResults();
-        });
+        await this.controller.fetchRefsForCurrentBreadCrumbs();
+        await this.controller.filterBrowseResults();
         await this.controller.getGenreDefsCached();
     }
 }

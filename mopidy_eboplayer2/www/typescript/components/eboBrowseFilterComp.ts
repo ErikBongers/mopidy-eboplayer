@@ -3,8 +3,6 @@ import {EboButton, PressedChangeEvent} from "./eboButton";
 import {BrowseFilter, BrowseFilterFlags} from "../modelTypes";
 import {RefType} from "../refs";
 import {GuiSource} from "../events";
-import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
-import {text} from "node:stream/consumers";
 
 export class EboBrowseFilterComp extends EboComponent {
     get availableRefTypes(): Set<RefType> {
@@ -166,6 +164,10 @@ export class EboBrowseFilterComp extends EboComponent {
                     this.onFilterButtonDoubleClick(ev);
                 })
             });
+        let selectDate = shadow.getElementById("selectDate") as HTMLSelectElement;
+        selectDate.addEventListener("change", (ev: Event) => {
+            this.onDateFilterChanged();
+        });
         this.requestUpdate();
     }
 
@@ -219,6 +221,8 @@ export class EboBrowseFilterComp extends EboComponent {
         } else {
             allButton.removeAttribute("disabled");
         }
+        let selectDate = shadow.getElementById("selectDate") as HTMLSelectElement;
+        selectDate.value = this._browseFilter.addedSince.toString();
     }
 
     private updateFilterButton(btn: EboButton) {
@@ -258,6 +262,12 @@ export class EboBrowseFilterComp extends EboComponent {
     private onShowAllTypesButtonPress() {
         this.clearFilterButtons();
         this.requestUpdate();
+        this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+    }
+
+    private onDateFilterChanged() {
+        let selectDate = this.getShadow().getElementById("selectDate") as HTMLSelectElement;
+        this.browseFilter.addedSince = parseInt(selectDate.value);
         this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
     }
 }
