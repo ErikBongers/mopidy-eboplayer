@@ -30,10 +30,11 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def track_playback_started(self, tl_track):
         self.current_track_uri = tl_track.track.uri
         self.storage.switch_stream_uri(self.current_track_uri)
-        excluded_streamlines = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
-        self.current_excluded_streamlines = excluded_streamlines.decode("utf-8").split("\n")
-        program_titles = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
-        self.current_program_titles = program_titles.decode("utf-8").split("\n")
+        if self.current_track_uri.startswith("eboback:stream:"):
+            excluded_streamlines = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_excluded_streamlines?uri={self.current_track_uri}").read()
+            self.current_excluded_streamlines = excluded_streamlines.decode("utf-8").split("\n")
+            program_titles = urllib.request.urlopen(f"http://{self.host}:{self.port}/eboback/data/get_program_titles?uri={self.current_track_uri}").read()
+            self.current_program_titles = program_titles.decode("utf-8").split("\n")
 
 
     def track_playback_ended(self, tl_track, time_position):
