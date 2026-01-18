@@ -41,7 +41,7 @@ export class WebProxy {
     }
 
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {
-        let url = this.ebobackUrl(`add_ref_to_playlist`); //todo: put full base in var in constructor or is this too early? Or inject it!!!
+        let url = this.ebobackUrl(`add_ref_to_playlist`);
         //add params to body of post request
         let data = new FormData();
         data.append("playlist_uri", playlistUri);
@@ -56,5 +56,11 @@ export class WebProxy {
         let url = this.ebobackUrl(`get_genres`);
         let res = await fetch(url);
         return await res.json() as GenreDef[];
+    }
+
+    async remember(text: string) {
+        let url = this.ebobackUrl(`save_remember`);
+        let res = await fetch(url, {method: 'POST', body: text});
+        return await res.json();
     }
 }

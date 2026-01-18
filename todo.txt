@@ -1,7 +1,7 @@
-* remove stream_history_changed handlers from fronted.py
-
 * implement streamline buttons.
-  > make new socket event when a program title is changed.
+ > add "Google search" buttn.
+
+* Album view: highlight current/playing track.
 
 * *New*s screen: how?
   > Some popup: "New"

@@ -82,10 +82,11 @@ export class EboRadioDetailsComp extends EboComponent {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.streamInfo) {
-            this.streamInfo.historyLines.forEach(lineGroup => {
+            this.streamInfo.historyLines.forEach((lineGroup, index) => {
                 let tr: HTMLTableRowElement | null = null;
                 lineGroup.forEach(line => {
                     tr = tbody.appendChild(document.createElement("tr"));
+                    tr.dataset.index = index.toString();
                     let td = tr.appendChild(document.createElement("td"));
                     td.innerHTML = line;
                     td.classList.add("selectable");
@@ -99,7 +100,7 @@ export class EboRadioDetailsComp extends EboComponent {
                             </div>
                         </ebo-menu-button>`;
                     td2.querySelector("#rememberTrack")?.addEventListener("click", (ev) => {
-                        console_yellow("Remember track clicked");
+                        this.saveRemember(ev.target as HTMLElement);
                     });
                     td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {
                         console_yellow("Exclude line clicked");
@@ -115,5 +116,33 @@ export class EboRadioDetailsComp extends EboComponent {
             if(lastRow)
                 lastRow.scrollIntoView({block: "end"});
         }
+    }
+
+    private saveRemember(target: HTMLElement) {
+        let lines = this.getLinesForBlock(target);
+        if(!lines) {
+            console.error("No text found");
+            return;
+        }
+        this.dispatchEboEvent("rememberStreamLines.eboplayer", {lines});
+    }
+
+    private getLinesForBlock(target: HTMLElement) {
+        let tr = target.closest("tr");
+        if(!tr) {
+            console.error("No tr found");
+            return;
+        }
+        let index = parseInt(tr.dataset.index ?? "-1");
+        if(index == -1) {
+            console.error("No index found");
+            return;
+        }
+        let trsWithIndex = tr.closest("tbody")?.querySelectorAll<HTMLTableRowElement>(`tr[data-index="${index}"]`);
+        if(!trsWithIndex) {
+            console.error("No trs with index found");
+            return;
+        }
+        return [...trsWithIndex].map(tr => tr.cells[0].textContent ?? "--no text--");
     }
 }

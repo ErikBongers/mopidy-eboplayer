@@ -837,6 +837,7 @@ var Model = class extends EboEventTargetClass {
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
 	genreDefs = null;
+	currentProgramTitle = "";
 	allRefs = null;
 	currentRefs = null;
 	view = Views.NowPlaying;
@@ -844,6 +845,13 @@ var Model = class extends EboEventTargetClass {
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
+	}
+	getCurrentProgramTitle() {
+		return this.currentProgramTitle;
+	}
+	setCurrentProgramTitle(title) {
+		this.currentProgramTitle = title;
+		this.dispatchEboEvent("programTitleChanged.eboplayer", {});
 	}
 	setGenreDefs(defs) {
 		this.genreDefs = /* @__PURE__ */ new Map();
@@ -1544,6 +1552,13 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_genres`);
 		return await (await fetch(url)).json();
 	}
+	async remember(text) {
+		let url = this.ebobackUrl(`save_remember`);
+		return await (await fetch(url, {
+			method: "POST",
+			body: text
+		})).json();
+	}
 };
 
 //#endregion
@@ -1627,6 +1642,9 @@ var Controller = class Controller extends Commands {
 		this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data) => {
 			let streamTitles = data.stream_titles;
 			this.model.setActiveStreamLinesHistory(streamTitles);
+		});
+		this.eboWebSocketCtrl.on("event:programTitleChanged", (data) => {
+			this.model.setCurrentProgramTitle(data.program_title);
 		});
 		this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
 			await this.updateStreamLines();
@@ -2004,6 +2022,9 @@ var Controller = class Controller extends Commands {
 	showAlbum(albumUri) {
 		this.model.setAlbumToView(albumUri);
 		this.model.setView(Views.Album);
+	}
+	remember(s) {
+		this.webProxy.remember(s);
 	}
 };
 
@@ -2528,6 +2549,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		"img",
 		"disabled",
 		"show_back",
+		"program_title",
 		...EboBigTrackComp.progressBarAttributes
 	];
 	name = "";
@@ -2540,6 +2562,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 	max = "100";
 	button = "false";
 	active = "true";
+	program_title = "";
 	img = "";
 	_albumInfo = AlbumNone;
 	static styleText = `
@@ -2653,6 +2676,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 			case "stream_lines":
 			case "extra":
 			case "img":
+			case "program_title":
 				this[name] = newValue;
 				break;
 			case "enabled":
@@ -2679,6 +2703,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		].forEach((attName) => {
 			shadow.getElementById(attName).innerHTML = this[attName];
 		});
+		if (this.program_title != "") shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
@@ -2709,6 +2734,7 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 		else wrapper.classList.add("front");
 	}
 };
+var eboBigTrackComp_default = EboBigTrackComp;
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/componentViewAdapter.ts
@@ -2728,7 +2754,9 @@ var ComponentViewAdapter = class extends View {
 //#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
 var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	streamLines;
+	programTitle = "";
 	uri = null;
+	track;
 	constructor(id) {
 		super(id);
 	}
@@ -2742,6 +2770,9 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		});
 		playerState_default().getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
 			this.onStreamLinesChanged();
+		});
+		playerState_default().getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
+			this.onProgramTitleChanged();
 		});
 	}
 	async onCurrentOrSelectedChanged() {
@@ -2768,34 +2799,34 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	}
 	async setUri(uri) {
 		this.uri = uri;
-		let track = await playerState_default().getController().getExpandedTrackModel(uri);
-		this.setComponentData(track);
+		this.track = await playerState_default().getController().getExpandedTrackModel(uri);
+		this.setComponentData();
 	}
-	setComponentData(track) {
+	setComponentData() {
 		let name = "no current track";
 		let info = "";
 		let position;
 		let button;
 		let imageUrl;
-		if (!track) {
+		if (!this.track) {
 			name = "no current track";
 			info = "";
 			position = "0";
 			button = "false";
 			imageUrl = "";
-		} else if (isInstanceOfExpandedStreamModel(track)) {
-			name = track.stream.name;
+		} else if (isInstanceOfExpandedStreamModel(this.track)) {
+			name = this.track.stream.name;
 			position = "100";
 			button = "false";
-			imageUrl = track.stream.imageUrl;
+			imageUrl = this.track.stream.imageUrl;
 		} else {
-			name = track.track.title;
-			info = track.album.albumInfo?.name ?? "--no name--";
+			name = this.track.track.title;
+			info = this.track.album.albumInfo?.name ?? "--no name--";
 			position = "60";
 			button = "true";
-			imageUrl = track.album.imageUrl;
-			let artists = track.track.track.artists.map((a) => a.name).join(", ");
-			let composers = track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
+			imageUrl = this.track.album.imageUrl;
+			let artists = this.track.track.track.artists.map((a) => a.name).join(", ");
+			let composers = this.track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
 			if (artists) info += "<br>" + artists;
 			if (composers) info += "<br>" + composers;
 		}
@@ -2805,7 +2836,12 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		comp.setAttribute("position", position);
 		comp.setAttribute("button", button);
 		comp.setAttribute("img", imageUrl);
+		comp.setAttribute("program_title", this.programTitle);
 		this.onStreamLinesChanged();
+	}
+	onProgramTitleChanged() {
+		this.programTitle = playerState_default().getModel().getCurrentProgramTitle();
+		this.setComponentData();
 	}
 };
 
@@ -3124,6 +3160,9 @@ var MainView = class extends View {
 		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
 			currentTrackBigViewComp.setAttribute("show_back", "false");
 		});
+		currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
+			await this.rememberStreamLines(ev.detail.lines);
+		});
 		addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
@@ -3389,6 +3428,9 @@ var MainView = class extends View {
 	async onGenreDefsChanged() {
 		let browseComp = document.getElementById("browseView");
 		browseComp.genreDefs = await playerState_default().getController().getGenreDefsCached();
+	}
+	async rememberStreamLines(lines) {
+		playerState_default().getController().remember(lines.join("\n"));
 	}
 };
 
@@ -4671,10 +4713,11 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
 		if (this.streamInfo) {
-			this.streamInfo.historyLines.forEach((lineGroup) => {
+			this.streamInfo.historyLines.forEach((lineGroup, index) => {
 				let tr = null;
 				lineGroup.forEach((line) => {
 					tr = tbody.appendChild(document.createElement("tr"));
+					tr.dataset.index = index.toString();
 					let td = tr.appendChild(document.createElement("td"));
 					td.innerHTML = line;
 					td.classList.add("selectable");
@@ -4688,7 +4731,7 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
                             </div>
                         </ebo-menu-button>`;
 					td2.querySelector("#rememberTrack")?.addEventListener("click", (ev) => {
-						console_yellow("Remember track clicked");
+						this.saveRemember(ev.target);
 					});
 					td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {
 						console_yellow("Exclude line clicked");
@@ -4702,6 +4745,32 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 			let lastRow = tbody.lastElementChild;
 			if (lastRow) lastRow.scrollIntoView({ block: "end" });
 		}
+	}
+	saveRemember(target) {
+		let lines = this.getLinesForBlock(target);
+		if (!lines) {
+			console.error("No text found");
+			return;
+		}
+		this.dispatchEboEvent("rememberStreamLines.eboplayer", { lines });
+	}
+	getLinesForBlock(target) {
+		let tr = target.closest("tr");
+		if (!tr) {
+			console.error("No tr found");
+			return;
+		}
+		let index = parseInt(tr.dataset.index ?? "-1");
+		if (index == -1) {
+			console.error("No index found");
+			return;
+		}
+		let trsWithIndex = tr.closest("tbody")?.querySelectorAll(`tr[data-index="${index}"]`);
+		if (!trsWithIndex) {
+			console.error("No trs with index found");
+			return;
+		}
+		return [...trsWithIndex].map((tr$1) => tr$1.cells[0].textContent ?? "--no text--");
 	}
 };
 
@@ -4951,7 +5020,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((texts) => {
 		EboComponent.setGlobalCss(texts);
 		EboComponent.define(EboProgressBar);
-		EboComponent.define(EboBigTrackComp);
+		EboComponent.define(eboBigTrackComp_default);
 		EboComponent.define(EboAlbumTracksComp);
 		EboComponent.define(EboBrowseComp);
 		EboComponent.define(EboButton);

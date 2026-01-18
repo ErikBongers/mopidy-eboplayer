@@ -74,6 +74,10 @@ export class MainView extends View {
         currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
             currentTrackBigViewComp.setAttribute("show_back", "false");
         });
+        currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
+            await this.rememberStreamLines(ev.detail.lines);
+        });
+
         addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
@@ -395,5 +399,9 @@ export class MainView extends View {
     private async onGenreDefsChanged() {
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.genreDefs = await getState().getController().getGenreDefsCached();
+    }
+
+    private async rememberStreamLines(lines: string[]) {
+        getState().getController().remember(lines.join("\n"));
     }
 }

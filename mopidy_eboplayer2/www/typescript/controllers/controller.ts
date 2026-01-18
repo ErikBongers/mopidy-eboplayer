@@ -600,4 +600,8 @@ export class Controller extends Commands implements DataRequester{
         this.model.setAlbumToView(albumUri);
         this.model.setView(Views.Album);
     }
+
+    remember(s: string) {
+        this.webProxy.remember(s);
+    }
 }
