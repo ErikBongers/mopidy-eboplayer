@@ -51,6 +51,9 @@ export class EboRadioDetailsComp extends EboComponent {
                         border-bottom: 1px solid #ffffff80;
                     }
                 }
+                tr.remembered {
+                    background-color: var(--highlight-background);
+                }
             </style>
         `;
         static htmlText = `
@@ -84,9 +87,11 @@ export class EboRadioDetailsComp extends EboComponent {
         if(this.streamInfo) {
             this.streamInfo.historyLines.forEach((lineGroup, index) => {
                 let tr: HTMLTableRowElement | null = null;
-                lineGroup.forEach(line => {
+                lineGroup.lines.forEach(line => {
                     tr = tbody.appendChild(document.createElement("tr"));
                     tr.dataset.index = index.toString();
+                    if(lineGroup.remembered)
+                        tr.classList.add("remembered");
                     let td = tr.appendChild(document.createElement("td"));
                     td.innerHTML = line;
                     td.classList.add("selectable");

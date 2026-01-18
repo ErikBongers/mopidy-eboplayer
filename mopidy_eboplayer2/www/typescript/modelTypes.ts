@@ -192,9 +192,13 @@ export class ExpandedAlbumModel {
     }
 }
 
+export interface ExpandedHistoryLineGroup {
+    remembered: boolean,
+    lines: string[]
+}
 export interface ExpandedStreamModel {
     stream: StreamTrackModel,
-    historyLines: string[][];
+    historyLines: ExpandedHistoryLineGroup[]
 }
 
 export function isInstanceOfExpandedStreamModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel | null): model is ExpandedStreamModel {

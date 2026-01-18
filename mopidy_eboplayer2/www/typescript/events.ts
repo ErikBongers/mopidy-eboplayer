@@ -2,6 +2,7 @@ import {AllUris, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 
 export interface EboEventHandlersEventMap {
+    "remembersChanged.eboplayer"                : VoidArgs,
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,

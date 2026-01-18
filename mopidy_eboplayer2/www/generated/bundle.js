@@ -842,6 +842,7 @@ var Model = class extends EboEventTargetClass {
 	currentRefs = null;
 	view = Views.NowPlaying;
 	albumToViewUri;
+	remembers = null;
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -1040,6 +1041,11 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
 	}
 	getAlbumToView = () => this.albumToViewUri;
+	setRemembers(remembers) {
+		this.remembers = remembers;
+		this.dispatchEboEvent("remembersChanged.eboplayer", {});
+	}
+	getRemembers = () => this.remembers;
 };
 
 //#endregion
@@ -1559,6 +1565,10 @@ var WebProxy = class {
 			body: text
 		})).json();
 	}
+	async fetchRemembers() {
+		let url = this.ebobackUrl(`get_remembers`);
+		return await (await fetch(url)).json();
+	}
 };
 
 //#endregion
@@ -1884,14 +1894,29 @@ var Controller = class Controller extends Commands {
 		});
 		return await Promise.all(newListPromises);
 	}
+	async lookupRemembersCached() {
+		let remembers = this.model.getRemembers();
+		if (remembers) return remembers;
+		remembers = await this.webProxy.fetchRemembers();
+		this.model.setRemembers(remembers);
+		return remembers;
+	}
 	async getExpandedTrackModel(trackUri) {
 		if (!trackUri) return null;
 		let track = await this.lookupTrackCached(trackUri);
 		if (track?.type == "stream") {
 			let streamLines = await this.fetchStreamLines(trackUri);
+			let remembers = await this.lookupRemembersCached();
+			let expandedStreamLines = streamLines.map((lines) => {
+				let lineStr = lines.join("\n");
+				return {
+					lines,
+					remembered: remembers.includes(lineStr)
+				};
+			});
 			return {
 				stream: track,
-				historyLines: streamLines
+				historyLines: expandedStreamLines
 			};
 		}
 		if (track) {
@@ -2023,8 +2048,8 @@ var Controller = class Controller extends Commands {
 		this.model.setAlbumToView(albumUri);
 		this.model.setView(Views.Album);
 	}
-	remember(s) {
-		this.webProxy.remember(s);
+	async remember(s) {
+		await this.webProxy.remember(s);
 	}
 };
 
@@ -4687,6 +4712,9 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
                         border-bottom: 1px solid #ffffff80;
                     }
                 }
+                tr.remembered {
+                    background-color: var(--highlight-background);
+                }
             </style>
         `;
 	static htmlText = `
@@ -4715,9 +4743,10 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 		if (this.streamInfo) {
 			this.streamInfo.historyLines.forEach((lineGroup, index) => {
 				let tr = null;
-				lineGroup.forEach((line) => {
+				lineGroup.lines.forEach((line) => {
 					tr = tbody.appendChild(document.createElement("tr"));
 					tr.dataset.index = index.toString();
+					if (lineGroup.remembered) tr.classList.add("remembered");
 					let td = tr.appendChild(document.createElement("td"));
 					td.innerHTML = line;
 					td.classList.add("selectable");

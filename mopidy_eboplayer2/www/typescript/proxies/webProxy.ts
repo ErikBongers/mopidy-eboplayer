@@ -63,4 +63,10 @@ export class WebProxy {
         let res = await fetch(url, {method: 'POST', body: text});
         return await res.json();
     }
+
+    async fetchRemembers() {
+        let url = this.ebobackUrl(`get_remembers`);
+        let res = await fetch(url);
+        return await res.json() as string[];
+    }
 }

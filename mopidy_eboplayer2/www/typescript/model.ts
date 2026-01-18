@@ -66,6 +66,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private view: Views = Views.NowPlaying;
     private albumToViewUri: AlbumUri;
     // private albumCache: Set<LibraryItem> = new Map();
+    private remembers: string[] | null = null;
 
     constructor() {
         super();
@@ -321,4 +322,10 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
     getAlbumToView = () => this.albumToViewUri;
 
+    setRemembers(remembers: string[]) {
+        this.remembers = remembers;
+        this.dispatchEboEvent("remembersChanged.eboplayer", {});
+    }
+
+    getRemembers = () => this.remembers;
 }

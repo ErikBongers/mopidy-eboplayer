@@ -8,7 +8,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -422,16 +422,34 @@ export class Controller extends Commands implements DataRequester{
         return await Promise.all(newListPromises);
     }
 
+    async lookupRemembersCached() {
+        let remembers = this.model.getRemembers();
+        if (remembers)
+            return remembers;
+        remembers = await this.webProxy.fetchRemembers();
+        this.model.setRemembers(remembers);
+        return remembers;
+    }
+
     async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)
             return null;
         let track = await this.lookupTrackCached(trackUri);
         if(track?.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
+            let remembers = await this.lookupRemembersCached();
+            let expandedStreamLines = streamLines.map(lines => {
+                let lineStr = lines.join("\n");
+                let expandedLineGroup: ExpandedHistoryLineGroup = {
+                    lines,
+                    remembered: remembers.includes(lineStr)
+                };
+                return expandedLineGroup;
+            });
             // noinspection UnnecessaryLocalVariableJS
             let streamModel: ExpandedStreamModel = {
                 stream: track,
-                historyLines: streamLines,
+                historyLines: expandedStreamLines,
             };
             return streamModel;
         }
@@ -601,7 +619,7 @@ export class Controller extends Commands implements DataRequester{
         this.model.setView(Views.Album);
     }
 
-    remember(s: string) {
-        this.webProxy.remember(s);
+    async remember(s: string) {
+        let _status = await this.webProxy.remember(s);
     }
 }
