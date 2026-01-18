@@ -2,7 +2,7 @@ import {EboComponent} from "./EboComponent";
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef} from "../modelTypes";
 import {EmptySearchResults, RefType, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
-import {assertUnreachable} from "../global";
+import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
 
@@ -247,7 +247,7 @@ export class EboBrowseComp extends EboComponent {
         }
         else if(crumb instanceof BreadCrumbHome)
             return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
-        return assertUnreachable(crumb);
+        return unreachable(crumb);
     }
 
     private filterToImg(filter: string) {

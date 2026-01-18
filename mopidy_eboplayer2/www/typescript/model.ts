@@ -67,11 +67,14 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private albumToViewUri: AlbumUri;
     // private albumCache: Set<LibraryItem> = new Map();
     private remembers: string[] | null = null;
+    private scanStatus: string = "";
 
     constructor() {
         super();
         this.initializeBreadcrumbStack();
     }
+
+    getScanStatus = () => this.scanStatus;
 
     getCurrentProgramTitle(): string {
         return this.currentProgramTitle;
@@ -328,4 +331,9 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
 
     getRemembers = () => this.remembers;
+
+    setScanStatus(status: string) {
+        this.scanStatus = status;
+        this.dispatchEboEvent("scanStatusChanged.eboplayer", {text: status});
+    }
 }

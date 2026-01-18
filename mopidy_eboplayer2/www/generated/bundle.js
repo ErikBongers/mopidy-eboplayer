@@ -141,24 +141,29 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 	handleWebSocketError(error) {
 		console.warn("WebSocket error:", error.stack || error);
 	}
-	send(message) {
+	send(message, type = "rpc") {
 		switch (this._webSocket?.readyState) {
 			case WebSocket.CONNECTING: return Promise.reject(new ConnectionError("WebSocket is still connecting"));
 			case WebSocket.CLOSING: return Promise.reject(new ConnectionError("WebSocket is closing"));
 			case WebSocket.CLOSED: return Promise.reject(new ConnectionError("WebSocket is closed"));
-			default: return new Promise((resolve, reject) => {
-				const jsonRpcMessage = {
-					...message,
-					jsonrpc: "2.0",
-					id: this._nextRequestId()
-				};
-				this._pendingRequests[jsonRpcMessage.id] = {
-					resolve,
-					reject
-				};
-				this._webSocket?.send(JSON.stringify(jsonRpcMessage));
-				this.emit("websocket:outgoingMessage", jsonRpcMessage);
-			});
+			default:
+				if (type === "fireAndForget") {
+					this._webSocket?.send(JSON.stringify(message));
+					return Promise.resolve();
+				}
+				return new Promise((resolve, reject) => {
+					const jsonRpcMessage = {
+						...message,
+						jsonrpc: "2.0",
+						id: this._nextRequestId()
+					};
+					this._pendingRequests[jsonRpcMessage.id] = {
+						resolve,
+						reject
+					};
+					this._webSocket?.send(JSON.stringify(jsonRpcMessage));
+					this.emit("websocket:outgoingMessage", jsonRpcMessage);
+				});
 		}
 	}
 	handleMessage(message) {
@@ -784,6 +789,7 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["NowPlaying"] = "#NowPlaying";
 	Views$1["Browse"] = "#Browse";
 	Views$1["Album"] = "#Album";
+	Views$1["Settings"] = "#Settings";
 	return Views$1;
 }({});
 
@@ -843,10 +849,12 @@ var Model = class extends EboEventTargetClass {
 	view = Views.NowPlaying;
 	albumToViewUri;
 	remembers = null;
+	scanStatus = "";
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
 	}
+	getScanStatus = () => this.scanStatus;
 	getCurrentProgramTitle() {
 		return this.currentProgramTitle;
 	}
@@ -1046,6 +1054,10 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("remembersChanged.eboplayer", {});
 	}
 	getRemembers = () => this.remembers;
+	setScanStatus(status) {
+		this.scanStatus = status;
+		this.dispatchEboEvent("scanStatusChanged.eboplayer", { text: status });
+	}
 };
 
 //#endregion
@@ -1506,7 +1518,7 @@ function transformTrackDataToModel(track) {
 function console_yellow(msg) {
 	console.log(`%c${msg}`, "background-color: yellow");
 }
-function assertUnreachable(x) {
+function unreachable(x) {
 	throw new Error("Didn't expect to get here");
 }
 
@@ -1579,18 +1591,20 @@ var Controller = class Controller extends Commands {
 	mopidyProxy;
 	webProxy;
 	localStorageProxy;
-	eboWebSocketCtrl;
+	eboWsFrontCtrl;
+	eboWsBackCtrl;
 	baseUrl;
 	static DEFAULT_IMG_URL = "images/default_cover.png";
 	player;
-	constructor(model, mopidy, eboWebSocketCtrl, mopdyProxy, player) {
+	constructor(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopdyProxy, player) {
 		super(mopidy);
 		this.model = model;
 		this.player = player;
 		this.mopidyProxy = mopdyProxy;
 		this.webProxy = new WebProxy(getHostAndPort());
 		this.localStorageProxy = new LocalStorageProxy(model);
-		this.eboWebSocketCtrl = eboWebSocketCtrl;
+		this.eboWsFrontCtrl = eboWsFrontCtrl;
+		this.eboWsBackCtrl = eboWsBackCtrl;
 		let portDefs = getHostAndPortDefs();
 		this.baseUrl = "";
 		if (portDefs.altHost && portDefs.altHost != portDefs.host) this.baseUrl = "http://" + portDefs.altHost;
@@ -1649,15 +1663,27 @@ var Controller = class Controller extends Commands {
 			}
 			console.log(data);
 		});
-		this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data) => {
+		this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data) => {
 			let streamTitles = data.stream_titles;
 			this.model.setActiveStreamLinesHistory(streamTitles);
 		});
-		this.eboWebSocketCtrl.on("event:programTitleChanged", (data) => {
+		this.eboWsFrontCtrl.on("event:programTitleChanged", (data) => {
 			this.model.setCurrentProgramTitle(data.program_title);
 		});
 		this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
 			await this.updateStreamLines();
+		});
+		this.eboWsBackCtrl.on((data) => {
+			console.log(data);
+		});
+		this.eboWsBackCtrl.on("event:scanStarted", (data) => {
+			this.model.setScanStatus("Scan started...\n");
+		});
+		this.eboWsBackCtrl.on("event:scanStatus", (data) => {
+			this.model.setScanStatus(this.model.getScanStatus() + data.message + "\n");
+		});
+		this.eboWsBackCtrl.on("event:scanFinished", (data) => {
+			this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
 		});
 	}
 	async fetchRequiredData(dataType) {
@@ -2050,6 +2076,9 @@ var Controller = class Controller extends Commands {
 	}
 	async remember(s) {
 		await this.webProxy.remember(s);
+	}
+	async startScan() {
+		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
 	}
 };
 
@@ -3138,8 +3167,11 @@ var MainView = class extends View {
 		});
 	}
 	bind() {
-		document.getElementById("headerSearchBtn").addEventListener("click", () => {
+		document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
 			this.onBrowseButtonClick();
+		});
+		document.getElementById("settingsBtn")?.addEventListener("click", () => {
+			this.onSettingsButtonClick();
 		});
 		let browseComp = document.getElementById("browseView");
 		browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
@@ -3206,6 +3238,10 @@ var MainView = class extends View {
 		});
 		albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
 			await this.onSaveClicked(ev.detail);
+		});
+		playerState_default().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
+			let settingsComp = document.getElementById("settingsView");
+			settingsComp.scanStatus = ev.detail.text;
 		});
 	}
 	async onGuiBrowseFilterChanged(browseComp) {
@@ -3299,7 +3335,7 @@ var MainView = class extends View {
 			"bigTrack"
 		].includes(c))[0];
 		let browseComp = document.getElementById("browseView");
-		layout.classList.remove("browse", "bigAlbum", "bigTrack");
+		layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
 		switch (view) {
 			case Views.Browse:
 				layout.classList.add("browse");
@@ -3333,6 +3369,14 @@ var MainView = class extends View {
 				}
 				let albumComp = document.getElementById("bigAlbumView");
 				albumComp.btn_states = this.getListButtonStates(view);
+				break;
+			case Views.Settings:
+				layout.classList.add("settings");
+				location.hash = Views.Settings;
+				browseBtn.dataset.goto = Views.NowPlaying;
+				browseBtn.title = "Now playing";
+				break;
+			default: return unreachable(view);
 		}
 	}
 	getRequiredDataTypes() {
@@ -3456,6 +3500,9 @@ var MainView = class extends View {
 	}
 	async rememberStreamLines(lines) {
 		playerState_default().getController().remember(lines.join("\n"));
+	}
+	onSettingsButtonClick() {
+		this.showView(Views.Settings);
 	}
 };
 
@@ -3664,7 +3711,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			if (crumb.data.searchText) filterText = `"${crumb.data.searchText}"`;
 			return `<button data-id="${crumb.id}" class="breadcrumb filter">${imgTags}${filterText}</button>`;
 		} else if (crumb instanceof BreadCrumbHome) return `<button data-id="${crumb.id}" class="breadcrumb filter"><i class="fa fa-home"></i></button>`;
-		return assertUnreachable(crumb);
+		return unreachable(crumb);
 	}
 	filterToImg(filter) {
 		let imgUrl = "";
@@ -5038,6 +5085,56 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboSettingsComp.ts
+var EboSettingsComp = class EboSettingsComp extends EboComponent {
+	static tagName = "ebo-settings-view";
+	get scanStatus() {
+		return this._scanStatus;
+	}
+	set scanStatus(value) {
+		this._scanStatus = value;
+		this.update(this.shadow);
+	}
+	static observedAttributes = [];
+	_scanStatus;
+	static styleText = `
+        <style>
+            :host { 
+                display: flex;
+            } 
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+        </style>
+        `;
+	static htmlText = `
+        <div id="wrapper">
+        <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
+        <p id="scanStatus"></p>
+        </div>        
+        `;
+	constructor() {
+		super(EboSettingsComp.styleText, EboSettingsComp.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestRender();
+	}
+	render(shadow) {
+		shadow.getElementById("scanBtn").addEventListener("click", async (ev) => {
+			playerState_default().getController().startScan().then(() => {});
+			console_yellow("Just started....");
+		});
+	}
+	update(shadow) {
+		let scanStatus = shadow.getElementById("scanStatus");
+		scanStatus.innerText = this.scanStatus;
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5061,6 +5158,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboAlbumDetails);
 		EboComponent.define(EboRadioDetailsComp);
 		EboComponent.define(EboBrowseFilterComp);
+		EboComponent.define(EboSettingsComp);
 		setupStuff();
 	});
 });
@@ -5070,11 +5168,12 @@ function setupStuff() {
 		autoConnect: false
 	};
 	let mopidy = new Mopidy(connectOptions);
-	let eboWebSocketCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
+	let eboWsFrontCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
+	let eboWsBackCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboback/ws2/", 1e3, 64e3);
 	let model = new Model();
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);
-	let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
+	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
 	controller.initSocketevents();
 	let state$1 = new State(mopidy, model, controller, player);
 	setState(state$1);
@@ -5087,7 +5186,8 @@ function setupStuff() {
 	if (location.hash == Views.Browse) controller.setView(Views.Browse);
 	else controller.setView(Views.NowPlaying);
 	mopidy.connect();
-	eboWebSocketCtrl.connect();
+	eboWsFrontCtrl.connect();
+	eboWsBackCtrl.connect();
 }
 let rootDir = document.location.pathname.replace("index.html", "");
 

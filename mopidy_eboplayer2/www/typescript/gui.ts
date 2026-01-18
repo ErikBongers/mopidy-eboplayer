@@ -13,11 +13,11 @@ import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
 import {EboBrowseComp} from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
-import {getHostAndPort} from "./global";
+import {console_yellow, getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
 import {EboPlayerBar} from "./components/eboButtonBarComp";
-import {Views} from "./modelTypes";
+import {StreamTitles, Views} from "./modelTypes";
 import {EboMenuButton} from "./components/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
 import {PlayController} from "./controllers/playController";
@@ -27,6 +27,7 @@ import {EboDialog} from "./components/eboDialog";
 import {EboAlbumDetails} from "./components/eboAlbumDetails";
 import {EboRadioDetailsComp} from "./components/eboRadioDetailsComp";
 import {EboBrowseFilterComp} from "./components/eboBrowseFilterComp";
+import {EboSettingsComp} from "./components/eboSettingsComp";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -59,6 +60,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboAlbumDetails);
             EboComponent.define(EboRadioDetailsComp);
             EboComponent.define(EboBrowseFilterComp);
+            EboComponent.define(EboSettingsComp);
 
             setupStuff();
         });
@@ -71,12 +73,16 @@ function setupStuff() {
         autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
     };
     let mopidy = new Mopidy(connectOptions);
-    let wsUrl = "ws://192.168.1.111:6680/eboplayer2/ws/"; //iris socket: ws://192.168.1.111:6680/iris/ws/
-    let eboWebSocketCtrl = new JsonRpcController(wsUrl, 1000, 64000);
+    let wsFrontEndUrl = "ws://192.168.1.111:6680/eboplayer2/ws/";
+    let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1000, 64000);
+
+    let wsBackEndUrl = "ws://192.168.1.111:6680/eboback/ws2/";
+    let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1000, 64000);
+
     let model = new Model();
     let mopidyProxy = new MopidyProxy(new Commands(mopidy));
     let player = new PlayController(model, mopidyProxy)
-    let controller = new Controller(model, mopidy, eboWebSocketCtrl, mopidyProxy, player);
+    let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
 
     controller.initSocketevents();
 
@@ -96,7 +102,8 @@ function setupStuff() {
         controller.setView(Views.NowPlaying);
 
     mopidy.connect();
-    eboWebSocketCtrl.connect();
+    eboWsFrontCtrl.connect();
+    eboWsBackCtrl.connect();
 }
 
 function updateDocumentTitle (headline: string) {

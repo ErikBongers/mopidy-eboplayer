@@ -57,6 +57,9 @@ button, input {
         ebo-big-album-view {
             display: none;
         }
+        ebo-settings-view {
+            display: none;
+        }
     }
     .bigTrack &{
         ebo-browse-view {
@@ -65,12 +68,29 @@ button, input {
         ebo-big-album-view {
             display: none;
         }
+        ebo-settings-view {
+            display: none;
+        }
     }
     .bigAlbum &{
         ebo-browse-view {
             display: none;
         }
         ebo-big-track-view {
+            display: none;
+        }
+        ebo-settings-view {
+            display: none;
+        }
+    }
+    .settings &{
+        ebo-browse-view {
+            display: none;
+        }
+        ebo-big-track-view {
+            display: none;
+        }
+        ebo-big-album-view {
             display: none;
         }
     }

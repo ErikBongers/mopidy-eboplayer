@@ -4,6 +4,7 @@ import {EboDialog} from "./components/eboDialog";
 export interface EboEventHandlersEventMap {
     "remembersChanged.eboplayer"                : VoidArgs,
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
+    "scanStatusChanged.eboplayer"               : StringArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
@@ -79,6 +80,10 @@ export interface StreamLinesArgs extends EboEventArgs {
 
 export interface UriArgs extends EboEventArgs {
     uri: AllUris
+}
+
+export interface StringArgs extends EboEventArgs {
+    text: string
 }
 
 export interface DialogArgs extends EboEventArgs {

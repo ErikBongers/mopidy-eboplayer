@@ -3,12 +3,12 @@ import {EboPlayerDataType, View} from "./view";
 import {AlbumUri, AllUris, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaylistUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
-import {console_yellow} from "../global";
+import {console_yellow, unreachable} from "../global";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
-import {RefType} from "../refs";
 import EboBigTrackComp from "../components/eboBigTrackComp";
+import {EboSettingsComp} from "../components/eboSettingsComp";
 
 export class MainView extends View {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -26,9 +26,11 @@ export class MainView extends View {
     }
 
     bind() {
-        // @ts-ignore
-        document.getElementById("headerSearchBtn").addEventListener("click", () => {
+        document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
             this.onBrowseButtonClick();
+        });
+        document.getElementById("settingsBtn")?.addEventListener("click", () => {
+            this.onSettingsButtonClick();
         });
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
@@ -97,6 +99,11 @@ export class MainView extends View {
         albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });
+        getState().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
+            let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
+            settingsComp.scanStatus = ev.detail.text;
+        });
+
     }
 
     private async onGuiBrowseFilterChanged(browseComp: EboBrowseComp) {
@@ -207,7 +214,7 @@ export class MainView extends View {
         let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
-        layout.classList.remove("browse", "bigAlbum", "bigTrack");
+        layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
         switch (view) {
             case Views.Browse:
                 layout.classList.add("browse");
@@ -238,6 +245,15 @@ export class MainView extends View {
                 }
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.btn_states = this.getListButtonStates(view);
+                break;
+            case Views.Settings:
+                layout.classList.add("settings");
+                location.hash = Views.Settings;
+                browseBtn.dataset.goto = Views.NowPlaying;
+                browseBtn.title = "Now playing";
+                break;
+            default:
+                return unreachable(view);
         }
     }
 
@@ -403,5 +419,9 @@ export class MainView extends View {
 
     private async rememberStreamLines(lines: string[]) {
         getState().getController().remember(lines.join("\n"));
+    }
+
+    private onSettingsButtonClick() {
+        this.showView(Views.Settings);
     }
 }

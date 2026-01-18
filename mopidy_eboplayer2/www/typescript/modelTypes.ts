@@ -290,7 +290,8 @@ export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | Alb
 export enum Views {
     NowPlaying = "#NowPlaying",
     Browse = "#Browse",
-    Album = "#Album"
+    Album = "#Album",
+    Settings = "#Settings",
 }
 
 export interface GenreDef {

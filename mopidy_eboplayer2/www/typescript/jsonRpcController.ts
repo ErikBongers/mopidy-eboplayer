@@ -11,6 +11,8 @@ function snakeToCamel(name: string) {
 
 type PendingRequest = {resolve: (value: unknown) => void, reject: (reason?:any) => void};
 
+type SendType = "rpc" | "fireAndForget";
+
 type PendingRequests = { [k: string]: PendingRequest};
 
 export class JsonRpcController extends EventEmitter {
@@ -98,7 +100,7 @@ export class JsonRpcController extends EventEmitter {
         console.warn("WebSocket error:", error.stack || error);
     }
 
-    send(message: Object) {
+    send(message: Object, type: SendType = "rpc" ){
         switch (this._webSocket?.readyState) {
             case WebSocket.CONNECTING:
                 return Promise.reject(
@@ -113,6 +115,10 @@ export class JsonRpcController extends EventEmitter {
                     new ConnectionError("WebSocket is closed")
                 );
             default:
+                if (type === "fireAndForget") {
+                    this._webSocket?.send(JSON.stringify(message));
+                    return Promise.resolve();
+                }
                 return new Promise((resolve, reject) => {
                     const jsonRpcMessage = {
                         ...message,

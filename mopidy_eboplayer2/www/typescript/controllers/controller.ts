@@ -6,7 +6,7 @@ import {EboPlayerDataType} from "../views/view";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
+import {console_yellow, getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
 import {AllRefs, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
@@ -28,19 +28,21 @@ export class Controller extends Commands implements DataRequester{
     public mopidyProxy: MopidyProxy;
     public webProxy: WebProxy;
     public localStorageProxy: LocalStorageProxy;
-    private eboWebSocketCtrl: JsonRpcController;
+    private eboWsFrontCtrl: JsonRpcController;
+    private eboWsBackCtrl: JsonRpcController;
     readonly baseUrl: string;
     public static readonly DEFAULT_IMG_URL = "images/default_cover.png";
     protected player: PlayController;
 
-    constructor(model: Model, mopidy: Mopidy, eboWebSocketCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController) {
+    constructor(model: Model, mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController) {
         super(mopidy);
         this.model  = model;
         this.player = player;
         this.mopidyProxy = mopdyProxy;
         this.webProxy = new WebProxy(getHostAndPort());
         this.localStorageProxy = new LocalStorageProxy(model);
-        this.eboWebSocketCtrl = eboWebSocketCtrl;
+        this.eboWsFrontCtrl = eboWsFrontCtrl;
+        this.eboWsBackCtrl = eboWsBackCtrl;
         let portDefs = getHostAndPortDefs();
         this.baseUrl = "";
         if(portDefs.altHost && portDefs.altHost != portDefs.host)
@@ -133,15 +135,27 @@ export class Controller extends Commands implements DataRequester{
             }
             console.log(data);
         });
-        this.eboWebSocketCtrl.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
+        this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
             let streamTitles: StreamTitles = data.stream_titles;
             this.model.setActiveStreamLinesHistory(streamTitles);
         });
-        this.eboWebSocketCtrl.on("event:programTitleChanged", (data: {program_title: string}) => {
+        this.eboWsFrontCtrl.on("event:programTitleChanged", (data: {program_title: string}) => {
             this.model.setCurrentProgramTitle(data.program_title);
         });
         this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
             await this.updateStreamLines();
+        });
+        this.eboWsBackCtrl.on((data: any) => {
+            console.log(data);
+        });
+        this.eboWsBackCtrl.on("event:scanStarted", (data: any) => {
+            this.model.setScanStatus("Scan started...\n");
+        });
+        this.eboWsBackCtrl.on("event:scanStatus", (data: any) => {
+            this.model.setScanStatus(this.model.getScanStatus() + (data.message as string) + "\n");
+        });
+        this.eboWsBackCtrl.on("event:scanFinished", (data: any) => {
+            this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
         });
     }
 
@@ -621,5 +635,9 @@ export class Controller extends Commands implements DataRequester{
 
     async remember(s: string) {
         let _status = await this.webProxy.remember(s);
+    }
+
+    async startScan() {
+        await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
     }
 }
