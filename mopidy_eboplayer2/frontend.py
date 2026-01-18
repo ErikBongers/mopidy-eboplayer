@@ -72,12 +72,6 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def volume_changed(self, volume):
         self.storage.save('volume', volume)
 
-    def stream_history_changed2(self, data):
-        pass
-
-    def stream_history_changed(self, data):
-        pass
-
     def tracklist_changed(self):
         self.on_track_ended()
 
