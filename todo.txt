@@ -1,7 +1,4 @@
-Scan from client
------------------
-- command requires sudo, therefor a pwd.
-- websocket is on frontend, not backend.
+* after scan from client: show a ""Show what's new!" button.
 
 * implement streamline buttons.
  > add "Google search" buttn.

@@ -103,6 +103,10 @@ export class MainView extends View {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
             settingsComp.scanStatus = ev.detail.text;
         });
+        getState().getModel().addEboEventListener("scanFinished.eboplayer", (ev) => {
+            let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
+            settingsComp.setAttribute("show_whats_new", "");
+        });
 
     }
 

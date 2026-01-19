@@ -95,3 +95,7 @@ option {
 input {
     background-color: var(--edit-background);
 }
+
+.hidden {
+    display: none;
+}

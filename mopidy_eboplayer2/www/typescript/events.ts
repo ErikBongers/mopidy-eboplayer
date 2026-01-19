@@ -5,6 +5,7 @@ export interface EboEventHandlersEventMap {
     "remembersChanged.eboplayer"                : VoidArgs,
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
     "scanStatusChanged.eboplayer"               : StringArgs,
+    "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,

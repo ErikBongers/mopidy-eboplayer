@@ -156,6 +156,7 @@ export class Controller extends Commands implements DataRequester{
         });
         this.eboWsBackCtrl.on("event:scanFinished", (data: any) => {
             this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
+            this.model.dispatchEboEvent("scanFinished.eboplayer", {});
         });
     }
 

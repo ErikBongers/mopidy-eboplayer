@@ -18,9 +18,10 @@ export class EboSettingsComp extends EboComponent {
         this.update(this.shadow);//force!
     }
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes: string[] = [];
+    static observedAttributes: string[] = ["show_whats_new"];
 
     private _scanStatus: string;
+    private show_whats_new: boolean = false;
 
     static styleText= `
         <style>
@@ -33,14 +34,18 @@ export class EboSettingsComp extends EboComponent {
                 width: 100%;
                 height: 100%;
             }
+            #scanStatus {
+                font-size: .7rem;
+            }
         </style>
         `;
 
     // noinspection HtmlUnknownTarget
     static htmlText = `
-        <div id="wrapper">
-        <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
-        <p id="scanStatus"></p>
+        <div id="wrapper" class="flexColumn">
+            <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
+            <p id="scanStatus"></p>
+            <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
         </div>        
         `;
 
@@ -50,7 +55,12 @@ export class EboSettingsComp extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestRender();
+        switch (name) {
+            case "show_whats_new":
+                this.updateBoolProperty(name, newValue);
+                break;
+        }
+        this.requestUpdate();
         }
 
     render(shadow:ShadowRoot) {
@@ -64,5 +74,7 @@ export class EboSettingsComp extends EboComponent {
     override update(shadow:ShadowRoot) {
         let scanStatus = shadow.getElementById("scanStatus") as HTMLElement;
         scanStatus.innerText = this.scanStatus;
+        let whatsNewBtn = shadow.getElementById("whatsNewBtn") as EboButton;
+        whatsNewBtn.classList.toggle("hidden", !this.show_whats_new);
     }
 }

@@ -1684,6 +1684,7 @@ var Controller = class Controller extends Commands {
 		});
 		this.eboWsBackCtrl.on("event:scanFinished", (data) => {
 			this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
+			this.model.dispatchEboEvent("scanFinished.eboplayer", {});
 		});
 	}
 	async fetchRequiredData(dataType) {
@@ -3242,6 +3243,9 @@ var MainView = class extends View {
 		playerState_default().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
 			let settingsComp = document.getElementById("settingsView");
 			settingsComp.scanStatus = ev.detail.text;
+		});
+		playerState_default().getModel().addEboEventListener("scanFinished.eboplayer", (ev) => {
+			document.getElementById("settingsView").setAttribute("show_whats_new", "");
 		});
 	}
 	async onGuiBrowseFilterChanged(browseComp) {
@@ -5095,8 +5099,9 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		this._scanStatus = value;
 		this.update(this.shadow);
 	}
-	static observedAttributes = [];
+	static observedAttributes = ["show_whats_new"];
 	_scanStatus;
+	show_whats_new = false;
 	static styleText = `
         <style>
             :host { 
@@ -5108,19 +5113,28 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
                 width: 100%;
                 height: 100%;
             }
+            #scanStatus {
+                font-size: .7rem;
+            }
         </style>
         `;
 	static htmlText = `
-        <div id="wrapper">
-        <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
-        <p id="scanStatus"></p>
+        <div id="wrapper" class="flexColumn">
+            <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
+            <p id="scanStatus"></p>
+            <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
         </div>        
         `;
 	constructor() {
 		super(EboSettingsComp.styleText, EboSettingsComp.htmlText);
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestRender();
+		switch (name) {
+			case "show_whats_new":
+				this.updateBoolProperty(name, newValue);
+				break;
+		}
+		this.requestUpdate();
 	}
 	render(shadow) {
 		shadow.getElementById("scanBtn").addEventListener("click", async (ev) => {
@@ -5131,6 +5145,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 	update(shadow) {
 		let scanStatus = shadow.getElementById("scanStatus");
 		scanStatus.innerText = this.scanStatus;
+		shadow.getElementById("whatsNewBtn").classList.toggle("hidden", !this.show_whats_new);
 	}
 };
 
