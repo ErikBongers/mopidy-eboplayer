@@ -7,7 +7,7 @@ import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {console_yellow, getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
-import {AllRefs, SomeRefs} from "../refs";
+import {AllRefs, createAllRefs, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
@@ -484,7 +484,13 @@ export class Controller extends Commands implements DataRequester{
         let album =  (await this.lookupAlbumsCached([albumUri]))[0];
         let meta = await this.getMetaDataCached(albumUri) ?? null;
         let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
-        return new ExpandedAlbumModel(album, tracks, meta);
+        let mostRecentTrackModifiedDate = tracks
+            .filter(t => t.track.last_modified)
+            .map(t => t.track.last_modified)
+            .sort()[0]
+            ?? null;
+
+        return new ExpandedAlbumModel(album, tracks, meta, mostRecentTrackModifiedDate);
     }
 
     async getMetaDataCached(albumUri: string) {
@@ -492,8 +498,7 @@ export class Controller extends Commands implements DataRequester{
         if(cachedMeta)
             return cachedMeta.meta;
         let meta = await this.webProxy.fetchMetaData(albumUri);
-        if(meta)
-            this.model.addToMetaCache(albumUri, meta);
+        this.model.addToMetaCache(albumUri, meta);
         return meta;
     }
 
@@ -525,7 +530,7 @@ export class Controller extends Commands implements DataRequester{
             radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri) as models.Ref<RadioUri>[];
         }
 
-        return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
+        return createAllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
     }
 
     async filterBrowseResults() {

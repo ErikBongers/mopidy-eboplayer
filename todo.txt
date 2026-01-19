@@ -1,4 +1,9 @@
-* In music > My Playlists, there was an emppty file brol.nada, that was somehow added as a track!
+* Search is slow because of fetch of expanded data.
+  > prefetch expanded data in initial results
+    > In the typedRef?
+    > rename it expandedRef?
+    > whatever...
+
 * after scan from client: show a ""Show what's new!" button.
 
 * implement streamline buttons.

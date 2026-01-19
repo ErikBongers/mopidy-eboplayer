@@ -279,7 +279,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
 
     //Doesn't overwrite
-    addToMetaCache(albumUri: string, item: AlbumMetaData) {
+    addToMetaCache(albumUri: string, item: AlbumMetaData | null) {
         if(!this.metaCache.has(albumUri))
             this.metaCache.set(albumUri, {meta: item});
     }

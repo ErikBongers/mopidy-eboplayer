@@ -154,18 +154,20 @@ export interface AlbumMetaData {
 }
 
 export interface CachedAlbumMetaData {
-    meta?: AlbumMetaData,
+    meta: AlbumMetaData | null,
 }
 
 export class ExpandedAlbumModel {
     album: AlbumModel;
     tracks: FileTrackModel[];
     meta: AlbumMetaData | null;
+    mostRecentTrackModifiedDate: number | null;
 
-    constructor(album: AlbumModel, tracks: FileTrackModel[], meta: AlbumMetaData | null) {
+    constructor(album: AlbumModel, tracks: FileTrackModel[], meta: AlbumMetaData | null, mostRecentTrackModifiedDate: number | null) {
         this.album = album;
         this.tracks = tracks;
         this.meta = meta;
+        this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
     }
 
     get genres(): string[] {

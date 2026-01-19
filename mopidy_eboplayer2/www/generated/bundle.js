@@ -450,15 +450,14 @@ var Refs = class {
 		if (!browseFilter.searchText) result.weight += 1;
 		if (result.weight == 0) return;
 		if (browseFilter.addedSince == 0) return;
-		if (result.type != "ref") return;
-		if ((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.type == "album") {
-			let mostRecentTrackModifiedDate = (await playerState_default().getController().getExpandedAlbumModel(result.item.ref.uri)).tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0];
-			this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter, thresholdDate);
+		if (result.type != "ref") {
+			result.weight = 0;
+			return;
 		}
-		if ((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.type == "track") {
-			let expandedTrack = await playerState_default().getController().getExpandedTrackModel(result.item.ref.uri);
-			this.calculateDateFilter(expandedTrack.track?.track?.last_modified, result, browseFilter, thresholdDate);
-		}
+		if (browseFilter.addedSince == 0) return;
+		if ((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.type == "album") this.calculateDateFilter(result.item.lastModified, result, browseFilter, thresholdDate);
+		if ((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.type == "track") this.calculateDateFilter(result.item.lastModified, result, browseFilter, thresholdDate);
+		if (browseFilter.addedSince > 0 && result.item.type != "album" && result.item.type != "track") result.weight = 0;
 	}
 	calculateDateFilter(modifiedDate, result, browseFilter, thresholdDate) {
 		if (!modifiedDate) return;
@@ -532,6 +531,35 @@ var Refs = class {
 		return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
 	}
 };
+async function createAllRefs(roots, sub, tracks, albums, artists, genres, radios, playlists) {
+	let mappedTracks = tracks.map((track) => ({
+		item: {
+			type: "track",
+			ref: track,
+			lastModified: null
+		},
+		type: "ref",
+		weight: 0
+	}));
+	for (let trackRef of mappedTracks) if (trackRef.item.type == "track") {
+		let track = await playerState_default().getController().lookupTrackCached(trackRef.item.ref.uri);
+		trackRef.item.lastModified = track?.track?.last_modified ?? null;
+	}
+	let mappedAlbums = albums.map((album) => ({
+		item: {
+			type: "album",
+			ref: album,
+			lastModified: null
+		},
+		type: "ref",
+		weight: 0
+	}));
+	for (let albumRef of mappedAlbums) {
+		let album = await playerState_default().getController().getExpandedAlbumModel(albumRef.item.ref.uri);
+		albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
+	}
+	return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genres, radios, playlists);
+}
 var AllRefs = class extends Refs {
 	roots;
 	sub;
@@ -546,26 +574,13 @@ var AllRefs = class extends Refs {
 		super();
 		this.roots = roots;
 		this.sub = sub;
-		this.tracks = tracks.map((track) => ({
-			item: {
-				type: "track",
-				ref: track
-			},
-			type: "ref",
-			weight: 0
-		}));
-		this.albums = albums.map((album) => ({
-			item: {
-				type: "album",
-				ref: album
-			},
-			type: "ref",
-			weight: 0
-		}));
+		this.tracks = tracks;
+		this.albums = albums;
 		this.artists = artists.map((artist) => ({
 			item: {
 				type: "artist",
-				ref: artist
+				ref: artist,
+				lastModified: null
 			},
 			type: "ref",
 			weight: 0
@@ -578,7 +593,8 @@ var AllRefs = class extends Refs {
 		this.radios = radios.map((radio) => ({
 			item: {
 				type: "radio",
-				ref: radio
+				ref: radio,
+				lastModified: null
 			},
 			type: "ref",
 			weight: 0
@@ -586,7 +602,8 @@ var AllRefs = class extends Refs {
 		this.playlists = playlists.map((album) => ({
 			item: {
 				type: "playlist",
-				ref: album
+				ref: album,
+				lastModified: null
 			},
 			type: "ref",
 			weight: 0
@@ -735,10 +752,12 @@ var ExpandedAlbumModel = class {
 	album;
 	tracks;
 	meta;
-	constructor(album, tracks, meta) {
+	mostRecentTrackModifiedDate;
+	constructor(album, tracks, meta, mostRecentTrackModifiedDate) {
 		this.album = album;
 		this.tracks = tracks;
 		this.meta = meta;
+		this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
 	}
 	get genres() {
 		return [...new Set(this.tracks.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))];
@@ -1962,13 +1981,14 @@ var Controller = class Controller extends Commands {
 		let album = (await this.lookupAlbumsCached([albumUri]))[0];
 		let meta = await this.getMetaDataCached(albumUri) ?? null;
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
-		return new ExpandedAlbumModel(album, tracks, meta);
+		let mostRecentTrackModifiedDate = tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0] ?? null;
+		return new ExpandedAlbumModel(album, tracks, meta, mostRecentTrackModifiedDate);
 	}
 	async getMetaDataCached(albumUri) {
 		let cachedMeta = this.model.getFromMetaCache(albumUri);
 		if (cachedMeta) return cachedMeta.meta;
 		let meta = await this.webProxy.fetchMetaData(albumUri);
-		if (meta) this.model.addToMetaCache(albumUri, meta);
+		this.model.addToMetaCache(albumUri, meta);
 		return meta;
 	}
 	setSelectedTrack(uri) {
@@ -1991,7 +2011,7 @@ var Controller = class Controller extends Commands {
 		let playlists = playLists.filter((playlist) => playlist.name != "[Radio Streams]");
 		let radioStreams = [];
 		if (radioStreamsPlayList) radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
-		return new AllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
+		return createAllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
 	}
 	async filterBrowseResults() {
 		await this.model.filterCurrentRefs();

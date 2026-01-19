@@ -5,14 +5,15 @@ import getState from "./playerState";
 import Ref = models.Ref;
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
-export interface TypedRef {
+export interface ExpandedRef {
     ref: Ref<AllUris>,
-    type: RefType
+    type: RefType,
+    lastModified: number | null,
 }
 
 export type RefSearchResult  = {
     type: "ref";
-    item: TypedRef;
+    item: ExpandedRef;
     weight: number;
 }
 export type GenreSearchResult  = {
@@ -59,23 +60,23 @@ export abstract class Refs {
             return;
         if(browseFilter.addedSince == 0)
             return;
-        if(result.type != "ref")
+        if(result.type != "ref") {
+            result.weight = 0;
+            return;
+        }
+        if(browseFilter.addedSince == 0)
             return;
         if((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.type == "album") {
-            let expandedAlbum = await getState().getController().getExpandedAlbumModel(result.item.ref.uri as AlbumUri);
-            let mostRecentTrackModifiedDate = expandedAlbum.tracks
-                .filter(t => t.track.last_modified)
-                .map(t => t.track.last_modified)
-                .sort()[0];
-            this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter, thresholdDate);
+            this.calculateDateFilter(result.item.lastModified, result, browseFilter, thresholdDate);
         }
         if((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.type == "track") {
-            let expandedTrack = await getState().getController().getExpandedTrackModel(result.item.ref.uri as TrackUri) as ExpandedFileTrackModel;
-            this.calculateDateFilter(expandedTrack.track?.track?.last_modified, result, browseFilter, thresholdDate);
+            this.calculateDateFilter(result.item.lastModified, result, browseFilter, thresholdDate);
         }
+        if(browseFilter.addedSince > 0 && result.item.type != "album" && result.item.type != "track")
+            result.weight = 0;
     }
 
-    protected calculateDateFilter(modifiedDate: number|undefined, result: SearchResult, browseFilter: BrowseFilter, thresholdDate: number) {
+    protected calculateDateFilter(modifiedDate: number|null, result: SearchResult, browseFilter: BrowseFilter, thresholdDate: number) {
         if(!modifiedDate)
             return;
         modifiedDate /= 1000;
@@ -181,6 +182,22 @@ export abstract class Refs {
     }
 }
 
+export async function createAllRefs( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
+    let mappedTracks: RefSearchResult[] = tracks.map(track => ({item: {type: "track" as RefType, ref: track, lastModified: null}, type: "ref", weight: 0}));
+    for(let trackRef of mappedTracks) {
+        if (trackRef.item.type == 'track') {
+            let track = await getState().getController().lookupTrackCached(trackRef.item.ref.uri as TrackUri);
+            trackRef.item.lastModified = track?.track?.last_modified??null;
+        }
+    }
+    let mappedAlbums: RefSearchResult[] = albums.map(album => ({item: {type: "album" as RefType, ref: album, lastModified: null}, type: "ref", weight: 0}));
+    for(let albumRef of mappedAlbums) {
+        let album = await getState().getController().getExpandedAlbumModel(albumRef.item.ref.uri as AlbumUri);
+        albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
+    }
+    return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genres, radios, playlists);
+}
+
 export class AllRefs extends Refs {
     roots: Ref<AllUris>[]; //todo: is DirectoryUri
     sub: Ref<AllUris>[];
@@ -192,18 +209,18 @@ export class AllRefs extends Refs {
     playlists: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
+    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: RefSearchResult[], albums: RefSearchResult[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
         super();
         this.roots = roots;
         this.sub = sub;
-        this.tracks = tracks.map(track => ({item: {type: "track" as RefType, ref: track}, type: "ref", weight: 0}));
-        this.albums = albums.map(album => ({item: {type: "album" as RefType, ref: album}, type: "ref", weight: 0}));
-        this.artists = artists.map(artist => ({item: {type: "artist" as RefType, ref: artist}, type: "ref", weight: 0}));
+        this.tracks = tracks;
+        this.albums = albums;
+        this.artists = artists.map(artist => ({item: {type: "artist" as RefType, ref: artist, lastModified: null}, type: "ref", weight: 0}));
         this.genres = Refs.reduceResults(
             genres.map(ref => ({item: ref, type: "genreDef", weight: 0}))
         );
-        this.radios = radios.map(radio => ({item: {type: "radio" as RefType, ref: radio}, type: "ref", weight: 0}));
-        this.playlists = playlists.map(album => ({item: {type: "playlist" as RefType, ref: album}, type: "ref", weight: 0}));
+        this.radios = radios.map(radio => ({item: {type: "radio" as RefType, ref: radio, lastModified: null}, type: "ref", weight: 0}));
+        this.playlists = playlists.map(album => ({item: {type: "playlist" as RefType, ref: album, lastModified: null}, type: "ref", weight: 0}));
         this.availableRefTypes = new Set();
 
         this.getAvailableRefTypes(this.tracks).forEach(type => this.availableRefTypes.add(type));
