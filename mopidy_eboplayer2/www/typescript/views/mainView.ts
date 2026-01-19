@@ -271,7 +271,7 @@ export class MainView extends View {
         let expandedTrackInfo = await getState().getController().getExpandedTrackModel(selectedTrack);
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-            if(expandedTrackInfo.album.albumInfo)
+            if(expandedTrackInfo.album?.albumInfo)
                 getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
             //todo: else?
             return;
@@ -380,7 +380,7 @@ export class MainView extends View {
     private async onAddTrackClicked(uri: TrackUri) {
         let trackModel = await getState().getController().getExpandedTrackModel(uri);
         if(isInstanceOfExpandedTrackModel(trackModel)) {
-            if(trackModel.album.albumInfo) {
+            if(trackModel.album?.albumInfo) {
                 let res = await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
                 let text = await res.text();
             }

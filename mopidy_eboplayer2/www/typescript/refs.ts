@@ -48,7 +48,7 @@ export abstract class Refs {
 
     abstract filter(): Promise<void>;
 
-    protected async calculateWeight(result: SearchResult, browseFilter: BrowseFilter) {
+    protected async calculateWeight(result: SearchResult, browseFilter: BrowseFilter, thresholdDate: number) {
         if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
@@ -61,27 +61,25 @@ export abstract class Refs {
             return;
         if(result.type != "ref")
             return;
-        if(browseFilter.album && result.item.type == "album") {
+        if((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.type == "album") {
             let expandedAlbum = await getState().getController().getExpandedAlbumModel(result.item.ref.uri as AlbumUri);
             let mostRecentTrackModifiedDate = expandedAlbum.tracks
                 .filter(t => t.track.last_modified)
                 .map(t => t.track.last_modified)
                 .sort()[0];
-            this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter);
+            this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter, thresholdDate);
         }
-        if(browseFilter.track && result.item.type == "track") {
+        if((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.type == "track") {
             let expandedTrack = await getState().getController().getExpandedTrackModel(result.item.ref.uri as TrackUri) as ExpandedFileTrackModel;
-            this.calculateDateFilter(expandedTrack.track.track.last_modified, result, browseFilter);
+            this.calculateDateFilter(expandedTrack.track?.track?.last_modified, result, browseFilter, thresholdDate);
         }
     }
 
-    protected calculateDateFilter(modifiedDate: number|undefined, result: SearchResult, browseFilter: BrowseFilter) {
+    protected calculateDateFilter(modifiedDate: number|undefined, result: SearchResult, browseFilter: BrowseFilter, thresholdDate: number) {
         if(!modifiedDate)
             return;
         modifiedDate /= 1000;
-        let currentPosixDate = Math.floor(Date.now() / 1000);
-        let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
-        if(currentPosixDate - modifiedDate > addedSinceInSeconds)
+        if(thresholdDate > modifiedDate)
             result.weight = 0;
     }
 
@@ -93,8 +91,13 @@ export abstract class Refs {
         searchResults.forEach(result => {
             result.weight = 0;
         });
+
+        let currentPosixDate = Math.floor(Date.now() / 1000);
+        let addedSinceInSeconds = this.browseFilter.addedSince * 60 * 60 * 24;
+        let thresholdDate = currentPosixDate - addedSinceInSeconds;
+
         for (const result of searchResults) {
-            await this.calculateWeight(result, this.browseFilter);
+            await this.calculateWeight(result, this.browseFilter, thresholdDate);
         }
         return searchResults
             .filter(result => result.weight > 0)

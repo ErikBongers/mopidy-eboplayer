@@ -1,3 +1,4 @@
+* In music > My Playlists, there was an emppty file brol.nada, that was somehow added as a track!
 * after scan from client: show a ""Show what's new!" button.
 
 * implement streamline buttons.

@@ -144,7 +144,7 @@ export const TrackNone = {type: "none"} as NoneTrackModel;
 
 export interface ExpandedFileTrackModel {
     track: FileTrackModel,
-    album: AlbumModel,
+    album: AlbumModel | null,
 }
 
 export interface AlbumMetaData {

@@ -470,10 +470,12 @@ export class Controller extends Commands implements DataRequester{
         }
         if(track) {
             let uri = track?.track?.album?.uri;
-            if(!uri)
-                throw new Error("trackUri is null");
-            let album = await this.lookupAlbumsCached([uri]);
-            return {track, album: album[0]};
+            let album: AlbumModel | null = null;
+            if(uri) {
+                let albums = await this.lookupAlbumsCached([uri]);
+                album = albums[0];
+            }
+            return {track, album};
         }
         throw new Error("trackUri not found in library");
     }

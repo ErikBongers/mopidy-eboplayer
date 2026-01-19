@@ -444,28 +444,26 @@ var Refs = class {
 		this._browseFilter = value;
 	}
 	_browseFilter;
-	async calculateWeight(result, browseFilter) {
+	async calculateWeight(result, browseFilter, thresholdDate) {
 		if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
 		if (result.weight == 0) return;
 		if (browseFilter.addedSince == 0) return;
 		if (result.type != "ref") return;
-		if (browseFilter.album && result.item.type == "album") {
+		if ((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.type == "album") {
 			let mostRecentTrackModifiedDate = (await playerState_default().getController().getExpandedAlbumModel(result.item.ref.uri)).tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0];
-			this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter);
+			this.calculateDateFilter(mostRecentTrackModifiedDate, result, browseFilter, thresholdDate);
 		}
-		if (browseFilter.track && result.item.type == "track") {
+		if ((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.type == "track") {
 			let expandedTrack = await playerState_default().getController().getExpandedTrackModel(result.item.ref.uri);
-			this.calculateDateFilter(expandedTrack.track.track.last_modified, result, browseFilter);
+			this.calculateDateFilter(expandedTrack.track?.track?.last_modified, result, browseFilter, thresholdDate);
 		}
 	}
-	calculateDateFilter(modifiedDate, result, browseFilter) {
+	calculateDateFilter(modifiedDate, result, browseFilter, thresholdDate) {
 		if (!modifiedDate) return;
 		modifiedDate /= 1e3;
-		let currentPosixDate = Math.floor(Date.now() / 1e3);
-		let addedSinceInSeconds = browseFilter.addedSince * 60 * 60 * 24;
-		if (currentPosixDate - modifiedDate > addedSinceInSeconds) result.weight = 0;
+		if (thresholdDate > modifiedDate) result.weight = 0;
 	}
 	setFilter(browseFilter) {
 		this._browseFilter = browseFilter;
@@ -474,7 +472,10 @@ var Refs = class {
 		searchResults.forEach((result) => {
 			result.weight = 0;
 		});
-		for (const result of searchResults) await this.calculateWeight(result, this.browseFilter);
+		let currentPosixDate = Math.floor(Date.now() / 1e3);
+		let addedSinceInSeconds = this.browseFilter.addedSince * 60 * 60 * 24;
+		let thresholdDate = currentPosixDate - addedSinceInSeconds;
+		for (const result of searchResults) await this.calculateWeight(result, this.browseFilter, thresholdDate);
 		return searchResults.filter((result) => result.weight > 0).sort((a, b) => {
 			if (b.weight === a.weight) return a.item.ref.name?.localeCompare(b.item.ref.name ?? "") ?? 0;
 			return b.weight - a.weight;
@@ -1493,7 +1494,7 @@ function getHostAndPortDefs() {
 	};
 }
 function isStream(track) {
-	return (track?.length ?? 0) == 0;
+	return !track.last_modified;
 }
 function transformTrackDataToModel(track) {
 	if (isStream(track)) return {
@@ -1948,11 +1949,11 @@ var Controller = class Controller extends Commands {
 		}
 		if (track) {
 			let uri = track?.track?.album?.uri;
-			if (!uri) throw new Error("trackUri is null");
-			let album = await this.lookupAlbumsCached([uri]);
+			let album = null;
+			if (uri) album = (await this.lookupAlbumsCached([uri]))[0];
 			return {
 				track,
-				album: album[0]
+				album
 			};
 		}
 		throw new Error("trackUri not found in library");
@@ -2172,7 +2173,7 @@ var PlayerBarView = class extends View {
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.album.imageUrl);
+				comp.setAttribute("image_url", trackModel.album?.imageUrl ?? Controller.DEFAULT_IMG_URL);
 				comp.setAttribute("stop_or_pause", "pause");
 			}
 		}
@@ -2876,10 +2877,10 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 			imageUrl = this.track.stream.imageUrl;
 		} else {
 			name = this.track.track.title;
-			info = this.track.album.albumInfo?.name ?? "--no name--";
+			info = this.track.album?.albumInfo?.name ?? "--no name--";
 			position = "60";
 			button = "true";
-			imageUrl = this.track.album.imageUrl;
+			imageUrl = this.track.album?.imageUrl ?? "";
 			let artists = this.track.track.track.artists.map((a) => a.name).join(", ");
 			let composers = this.track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
 			if (artists) info += "<br>" + artists;
@@ -3392,7 +3393,7 @@ var MainView = class extends View {
 		let expandedTrackInfo = await playerState_default().getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
 		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-			if (expandedTrackInfo.album.albumInfo) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+			if (expandedTrackInfo.album?.albumInfo) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
 			return;
 		}
 		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("currentTrackBigView").setAttribute("show_back", "true");
@@ -3474,7 +3475,7 @@ var MainView = class extends View {
 	async onAddTrackClicked(uri) {
 		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
 		if (isInstanceOfExpandedTrackModel(trackModel)) {
-			if (trackModel.album.albumInfo) await (await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri)).text();
+			if (trackModel.album?.albumInfo) await (await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri)).text();
 		}
 	}
 	async onSaveClicked(detail) {

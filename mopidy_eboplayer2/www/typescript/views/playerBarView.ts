@@ -3,6 +3,7 @@ import {EboPlayerDataType, View} from "./view";
 import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} from "../modelTypes";
 import {MainView} from "./mainView";
 import {EboPlayerBar} from "../components/eboButtonBarComp";
+import {Controller} from "../controllers/controller";
 
 export class PlayerBarView extends View {
     private componentId: string;
@@ -103,7 +104,7 @@ export class PlayerBarView extends View {
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.album.imageUrl);
+                comp.setAttribute("image_url", trackModel.album?.imageUrl?? Controller.DEFAULT_IMG_URL);
                 comp.setAttribute("stop_or_pause", "pause");
             }
         }

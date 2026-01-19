@@ -38,7 +38,7 @@ export function getHostAndPortDefs() {
 }
 
 export function isStream(track: models.Track) {
-    return (track?.length ?? 0) == 0;
+    return !track.last_modified;
 }
 
 export function transformTrackDataToModel(track: (models.Track)): FileTrackModel | PartialStreamTrackModel {
