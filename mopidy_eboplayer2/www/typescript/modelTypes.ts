@@ -294,6 +294,7 @@ export enum Views {
     Browse = "#Browse",
     Album = "#Album",
     Settings = "#Settings",
+    WhatsNew = "#WhatsNew"
 }
 
 export interface GenreDef {

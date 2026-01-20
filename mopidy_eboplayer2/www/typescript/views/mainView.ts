@@ -63,8 +63,8 @@ export class MainView extends View {
         getState().getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
             await this.onTrackListChanged();
         });
-        getState().getModel().addEboEventListener("viewChanged.eboplayer", () => {
-            this.setCurrentView();
+        getState().getModel().addEboEventListener("viewChanged.eboplayer", async () => {
+            await this.setCurrentView();
         });
         getState().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
             await this.onAlbumToViewChanged();
@@ -107,7 +107,11 @@ export class MainView extends View {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
             settingsComp.setAttribute("show_whats_new", "");
         });
-
+        let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
+        settingsComp.addEboEventListener("whatsNewRequested.eboplayer", () => {
+            window.location.hash = "#WhatsNew";
+            window.location.reload();
+        });
     }
 
     private async onGuiBrowseFilterChanged(browseComp: EboBrowseComp) {
@@ -208,25 +212,28 @@ export class MainView extends View {
         }
     }
 
-    setCurrentView() {
+    async setCurrentView() {
         let view = getState().getModel().getView();
-        this.showView(view);
+        await this.showView(view);
     }
 
-    private showView(view: Views) {
+    private async showView(view: Views) {
         let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
         let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
         let browseComp = document.getElementById("browseView") as EboBrowseComp;
         layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
         switch (view) {
+            case Views.WhatsNew:
+                await getState().getController().setWhatsNewFilter();
+                //fall through
             case Views.Browse:
                 layout.classList.add("browse");
-                location.hash = Views.Browse;
+                location.hash = view;
                 browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
                 browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
-                browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()};
+                browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()}; //todo: the default should be provided by getCurrentSearchResults()
                 browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
                 browseComp.setFocusAndSelect();
                 browseComp.action_btn_states = this.getListButtonStates(view);

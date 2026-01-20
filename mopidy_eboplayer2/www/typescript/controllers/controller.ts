@@ -298,6 +298,18 @@ export class Controller extends Commands implements DataRequester{
         await this.filterBrowseResults();
     }
 
+    async setWhatsNewFilter() {
+        await this.clearBreadCrumbs();
+        let browseFilter = new BrowseFilter();
+        browseFilter.addedSince = 1;
+        this.localStorageProxy.saveCurrentBrowseFilter(browseFilter);
+        this.model.setCurrentBrowseFilter(browseFilter);
+    }
+
+    async clearBreadCrumbs() {
+        this.model.resetBreadCrumbsTo(this.model.getBreadCrumbs()[0].id);
+    }
+
     async resetToBreadCrumb(id: number) {
         let breadCrumb = getState().getModel().getBreadCrumbs().get(id);
         let breadCrumbs = getState().getModel().getBreadCrumbs();

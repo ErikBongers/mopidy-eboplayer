@@ -66,6 +66,12 @@ document.addEventListener("DOMContentLoaded",function () {
         });
 });
 
+function updateDocumentTitle (headline: string) {
+    // @ts-ignore
+    headline = headline || document.getElementById('contentHeadline').textContent;
+    document.title = headline + ' | ' + document.body.dataset.title;
+}
+
 function setupStuff() {
     let webSocketUrl = getWebSocketUrl();
     let connectOptions: Options = {
@@ -96,20 +102,14 @@ function setupStuff() {
     let historyView = new TimelineView();
     getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 
-    if(location.hash == Views.Browse)
-        controller.setView(Views.Browse);
-    else
+    if(location.hash == Views.Album)
         controller.setView(Views.NowPlaying);
+    else
+        controller.setView(location.hash as Views);
 
     mopidy.connect();
     eboWsFrontCtrl.connect();
     eboWsBackCtrl.connect();
-}
-
-function updateDocumentTitle (headline: string) {
-    // @ts-ignore
-    headline = headline || document.getElementById('contentHeadline').textContent;
-    document.title = headline + ' | ' + document.body.dataset.title;
 }
 
 //intellij live preview hack because they don't allow to set a root folder for the built-in server:

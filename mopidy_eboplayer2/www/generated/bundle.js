@@ -810,6 +810,7 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["Browse"] = "#Browse";
 	Views$1["Album"] = "#Album";
 	Views$1["Settings"] = "#Settings";
+	Views$1["WhatsNew"] = "#WhatsNew";
 	return Views$1;
 }({});
 
@@ -1820,6 +1821,16 @@ var Controller = class Controller extends Commands {
 		await this.setAndSaveBrowseFilter(newBrowseFilter);
 		await this.fetchRefsForCurrentBreadCrumbs();
 		await this.filterBrowseResults();
+	}
+	async setWhatsNewFilter() {
+		await this.clearBreadCrumbs();
+		let browseFilter = new BrowseFilter();
+		browseFilter.addedSince = 1;
+		this.localStorageProxy.saveCurrentBrowseFilter(browseFilter);
+		this.model.setCurrentBrowseFilter(browseFilter);
+	}
+	async clearBreadCrumbs() {
+		this.model.resetBreadCrumbsTo(this.model.getBreadCrumbs()[0].id);
 	}
 	async resetToBreadCrumb(id) {
 		let breadCrumb = playerState_default().getModel().getBreadCrumbs().get(id);
@@ -3226,8 +3237,8 @@ var MainView = class extends View {
 		playerState_default().getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
 			await this.onTrackListChanged();
 		});
-		playerState_default().getModel().addEboEventListener("viewChanged.eboplayer", () => {
-			this.setCurrentView();
+		playerState_default().getModel().addEboEventListener("viewChanged.eboplayer", async () => {
+			await this.setCurrentView();
 		});
 		playerState_default().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
 			await this.onAlbumToViewChanged();
@@ -3267,6 +3278,10 @@ var MainView = class extends View {
 		});
 		playerState_default().getModel().addEboEventListener("scanFinished.eboplayer", (ev) => {
 			document.getElementById("settingsView").setAttribute("show_whats_new", "");
+		});
+		document.getElementById("settingsView").addEboEventListener("whatsNewRequested.eboplayer", () => {
+			window.location.hash = "#WhatsNew";
+			window.location.reload();
 		});
 	}
 	async onGuiBrowseFilterChanged(browseComp) {
@@ -3347,11 +3362,11 @@ var MainView = class extends View {
 				break;
 		}
 	}
-	setCurrentView() {
+	async setCurrentView() {
 		let view = playerState_default().getModel().getView();
-		this.showView(view);
+		await this.showView(view);
 	}
-	showView(view) {
+	async showView(view) {
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let layout = document.getElementById("layout");
 		let prevViewClass = [...layout.classList].filter((c) => [
@@ -3362,9 +3377,10 @@ var MainView = class extends View {
 		let browseComp = document.getElementById("browseView");
 		layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
 		switch (view) {
+			case Views.WhatsNew: await playerState_default().getController().setWhatsNewFilter();
 			case Views.Browse:
 				layout.classList.add("browse");
-				location.hash = Views.Browse;
+				location.hash = view;
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
 				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
@@ -5162,6 +5178,9 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 			playerState_default().getController().startScan().then(() => {});
 			console_yellow("Just started....");
 		});
+		shadow.getElementById("whatsNewBtn").addEventListener("click", async (ev) => {
+			this.dispatchEboEvent("whatsNewRequested.eboplayer", {});
+		});
 	}
 	update(shadow) {
 		let scanStatus = shadow.getElementById("scanStatus");
@@ -5219,8 +5238,8 @@ function setupStuff() {
 	let buttonBarView = new PlayerBarView("buttonBar", mainView);
 	let historyView = new TimelineView();
 	playerState_default().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
-	if (location.hash == Views.Browse) controller.setView(Views.Browse);
-	else controller.setView(Views.NowPlaying);
+	if (location.hash == Views.Album) controller.setView(Views.NowPlaying);
+	else controller.setView(location.hash);
 	mopidy.connect();
 	eboWsFrontCtrl.connect();
 	eboWsBackCtrl.connect();

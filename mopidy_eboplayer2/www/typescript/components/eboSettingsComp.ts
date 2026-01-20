@@ -69,6 +69,10 @@ export class EboSettingsComp extends EboComponent {
             getState().getController().startScan().then(() => {});
             console_yellow("Just started....");
         });
+        let whatsNewBtn = shadow.getElementById("whatsNewBtn") as EboButton;
+        whatsNewBtn.addEventListener("click", async (ev) => {
+            this.dispatchEboEvent("whatsNewRequested.eboplayer", {});
+        });
     }
 
     override update(shadow:ShadowRoot) {
