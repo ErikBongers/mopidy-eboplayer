@@ -1,42 +1,10 @@
+* Show something while loading the whole database.
+  > test in Whats new.
+
 * implement streamline buttons.
  > add "Google search" buttn.
 
 * Album view: highlight current/playing track.
-
-* *New*s screen: how?
-  > Some popup: "New"
-    > Goes to pre-filled browse filter
-      > filter on date: how?
-* Radio streams: filter out certain texts, like the radio name.
-
-* Is there a date a track/album is added via scan?
-  > if not, add it and use it to show a "New" section.
-  > Yes: last_modified!
-  : t = datetime.fromtimestamp(track.last_modified/1000, UTC)
-    print(t.strftime('%Y-%m-%dT%H:%M:%SZ'))
-
-
-* Browse allow filter on date
-  > only show data "since".
-    > that's the only date filter.
-
-* Make scan command callable from outside the command.
-  > create a separte python module?
-  > pipe user-friendly progress messages to websocket.
-  > start command in separate thread?
-  > use a pipe to get the info?
-https://www.geeksforgeeks.org/python/python-communicating-between-threads-set-1/
-
-
-
-* reload all caches after scan.
-
-New albums
-----------
-* Allow scanning from the app.
-  > progress indicator
-    > improve scan messaging.
-    > send messages via ebo websocket.
 
 Playlists vs Genres
 ====================

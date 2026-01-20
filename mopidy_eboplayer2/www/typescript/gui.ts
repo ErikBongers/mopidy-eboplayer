@@ -105,7 +105,7 @@ function setupStuff() {
     if(location.hash == Views.Album)
         controller.setView(Views.NowPlaying);
     else
-        controller.setView(location.hash as Views);
+        controller.setView((location.hash!="" ? location.hash : Views.NowPlaying) as Views);
 
     mopidy.connect();
     eboWsFrontCtrl.connect();

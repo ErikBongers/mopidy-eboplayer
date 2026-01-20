@@ -5239,7 +5239,7 @@ function setupStuff() {
 	let historyView = new TimelineView();
 	playerState_default().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
 	if (location.hash == Views.Album) controller.setView(Views.NowPlaying);
-	else controller.setView(location.hash);
+	else controller.setView(location.hash != "" ? location.hash : Views.NowPlaying);
 	mopidy.connect();
 	eboWsFrontCtrl.connect();
 	eboWsBackCtrl.connect();
