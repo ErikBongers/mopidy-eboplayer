@@ -1,3 +1,36 @@
+* Create a history table
+  > mopidy history has these fields:
+    - timestamp
+    - ref
+      - type
+      - uri
+      - name
+  > use the same?
+    > add a count field that is default 1
+      > when "archiving" history, lines older than 1 year or so can be accumulated into one line.
+  > should be able to get favourites based on :
+    - count(uri)
+    - count(uri) since a date
+
+* Empty browse filter shows most recent list.
+  > and/or favourites?
+  > backend.py already has a play_back_started listener
+    > store in database.
+      > log EACH play start.
+      > this allows fine-tuned starting, not affected by too old history.
+  > replace mopidy history with own history.
+    > limit to last n, with option to look further.
+    > allow cleanup of history, full or partial (older than..., remove track/album, scheme other than eboback...)
+
+* Allow setting/changing the sole genre of a track/album
+  > Allow free typing but show a wiki-ok checkmark, and base suggestions on wiki.
+    > pref-filled list from wiki should show the items collapsed.
+    > allow list to be customized
+      > hide certain items, allowing hidden items to be revealed if wanted.
+      > already used ones, obviously at the top.
+
+
+
 * Show something while loading the whole database.
   > test in Whats new.
 

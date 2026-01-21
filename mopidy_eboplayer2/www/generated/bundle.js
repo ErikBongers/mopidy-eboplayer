@@ -1602,6 +1602,10 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_remembers`);
 		return await (await fetch(url)).json();
 	}
+	async fetchHistory() {
+		let url = this.ebobackUrl(`get_history`);
+		return await (await fetch(url)).json();
+	}
 };
 
 //#endregion
@@ -1641,6 +1645,7 @@ var Controller = class Controller extends Commands {
 			this.model.setConnectionState(ConnectionState.Online);
 			await playerState_default().getRequiredData();
 			this.model.setHistory(await this.mopidyProxy.fetchHistory());
+			await this.getHistory();
 		});
 		this.mopidy.on("state:offline", () => {
 			this.model.setConnectionState(ConnectionState.Offline);
@@ -2112,6 +2117,11 @@ var Controller = class Controller extends Commands {
 	}
 	async startScan() {
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
+	}
+	async getHistory() {
+		let history = await this.webProxy.fetchHistory();
+		debugger;
+		console.log(history);
 	}
 };
 

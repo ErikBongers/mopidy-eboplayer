@@ -61,6 +61,7 @@ export class Controller extends Commands implements DataRequester{
             this.model.setConnectionState(ConnectionState.Online);
             await getState().getRequiredData();
             this.model.setHistory(await this.mopidyProxy.fetchHistory());
+            await this.getHistory();
         });
 
         this.mopidy.on('state:offline', () => {
@@ -659,5 +660,11 @@ export class Controller extends Commands implements DataRequester{
 
     async startScan() {
         await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
+    }
+
+    async getHistory() {
+        let history = await this.webProxy.fetchHistory();
+        debugger;
+        console.log(history);
     }
 }

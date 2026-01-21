@@ -301,3 +301,11 @@ export interface GenreDef {
     ref: Ref<GenreUri>;
     replacement: string | null;
 }
+
+export interface HistoryLineDef {
+    moment: Date;
+    type: "track"; //todo: other types?
+    uri: TrackUri;
+    name: string;
+    ref_count: number;
+}
