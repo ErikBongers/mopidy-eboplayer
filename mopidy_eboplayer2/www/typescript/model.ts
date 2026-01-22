@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {EmptySearchResults, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLine, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -14,7 +14,7 @@ export interface ViewModel extends EboEventTargetClass {
     getVolume: () => number;
     getPlayState: () => PlayState;
     getActiveStreamLines: () => StreamTitles;
-    getHistory: () => HistoryLine[];
+    getHistory: () => HistoryLineDef[];
     getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel | null);
     getCurrentBrowseFilter: () => BrowseFilter;
     getCurrentSearchResults(): SearchResults;
@@ -50,7 +50,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
     private playState: PlayState = "unknown";
     private activeStreamLines: StreamTitles;
-    private history: HistoryLine[];
+    private history: HistoryLineDef[];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, (FileTrackModel | StreamTrackModel | AlbumModel)> = new Map();
     private imageCache: Map<string, string> = new Map();
@@ -255,7 +255,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
 
     getActiveStreamLines = () => this.activeStreamLines;
 
-    setHistory(history: HistoryLine[]) {
+    setHistory(history: HistoryLineDef[]) {
         this.history = history;
         this.dispatchEboEvent("historyChanged.eboplayer", {});
     }

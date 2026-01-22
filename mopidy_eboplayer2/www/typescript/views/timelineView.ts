@@ -1,7 +1,7 @@
 import getState from "../playerState";
 import {EboPlayerDataType, View} from "./view";
 import {TlId} from "../../js/mopidy";
-import {FileTrackModel, HistoryLine, StreamTrackModel, TrackUri} from "../modelTypes";
+import {FileTrackModel, HistoryLineDef, StreamTrackModel, TrackModel, TrackUri} from "../modelTypes";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
@@ -29,7 +29,7 @@ export class TimelineView extends View {
         let body = timelineTable.tBodies[0];
         body.innerHTML = "";
 
-        if(history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri)
+        if(history.length > 0 && trackList.length > 0 && history[0].uri == trackList[0].track.uri)
             history.shift(); //remove most recent history line if it's the first track in the playlist.
 
         // if we want to limit the number of history lines we can do so here.
@@ -45,7 +45,6 @@ export class TimelineView extends View {
         }
 
         let uris = trackList.map(tl => tl.track.uri) as TrackUri[];
-        uris = [...uris, ...history.map(h => h.ref.uri)] as TrackUri[];
         uris = [...new Set(uris)];
         await this.lookupAllTracksAndUpdateRows(uris);
 
@@ -98,29 +97,28 @@ export class TimelineView extends View {
 
     private async setCurrentTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
-        let currentTrack = await getState().getController().getCurrertTrackInfoCached();
-        if(!currentTrack)
-            return;
-        if (currentTrack.type == "none")
-            return; // don't clear the screen as this is probably temporary and will cause a flicker.
-        let currentUri = currentTrack.track.uri;
+        let focusTrack = await getState().getController().lookupTrackCached(getState().getModel().getCurrentTrack());
+        if(!focusTrack) {
+            focusTrack = await getState().getController().lookupTrackCached(getState().getModel().getSelectedTrack());
+            if(!focusTrack)
+                return;
+        }
+        let currentUri = focusTrack.track.uri;
         let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
         if(trs.length == 0)
             return;
         let tr = trs[trs.length - 1];
-        if(this.clickedRow?.dataset?.uri != currentTrack.track.uri)
+        if(this.clickedRow?.dataset?.uri != focusTrack.track.uri)
             tr.scrollIntoView( { block: "nearest" });
         timelineTable.querySelectorAll("tr").forEach(tr  => tr.classList.remove("current", "textGlow"));
         tr.classList.add("current", "textGlow");
     }
 
-    private insertHistoryLine(line: HistoryLine, body: HTMLTableSectionElement) {
-        let slices = line.ref.name.split(" - ");
-        let title = slices.pop() ?? "???";
-        this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
+    private insertHistoryLine(line: HistoryLineDef, body: HTMLTableSectionElement) {
+        this.insertTrackLine(line.name, line.uri, body, ["historyLine"], undefined, line.album, line.artist);
     }
 
-    private insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = [], tlid?: number) {
+    private insertTrackLine(title: string, uri: string, body: HTMLTableSectionElement, classes: string[] = [], tlid?: number, album?: string, artist?: string) {
         let tr = document.createElement("tr");
         body.appendChild(tr);
         tr.classList.add("trackLine", ...classes);
@@ -129,7 +127,7 @@ export class TimelineView extends View {
         tr.dataset.uri = uri;
         if(tlid)
             tr.dataset.tlid = tlid.toString();
-        this.setTrackLineContent(tr, title);
+        this.setTrackLineContent(tr, title, artist, album);
         body.insertAdjacentHTML('beforeend', `
 <tr>
     <td colspan="2">

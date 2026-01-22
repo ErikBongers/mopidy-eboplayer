@@ -1,3 +1,5 @@
+* track.artists: perhaps split into separate table if multiple artists are allowed?
+
 * Create a history table
   > mopidy history has these fields:
     - timestamp

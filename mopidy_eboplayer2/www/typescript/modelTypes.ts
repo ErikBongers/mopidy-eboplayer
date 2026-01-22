@@ -243,7 +243,7 @@ export interface HistoryRef {
     uri: string;
 }
 
-export interface HistoryLine {
+export interface MopidyHistoryLine {
     timestamp: number;
     ref: HistoryRef;
 }
@@ -308,4 +308,6 @@ export interface HistoryLineDef {
     uri: TrackUri;
     name: string;
     ref_count: number;
+    album: string;
+    artist: string;
 }

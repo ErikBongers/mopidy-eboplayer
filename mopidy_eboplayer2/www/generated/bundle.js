@@ -1644,8 +1644,7 @@ var Controller = class Controller extends Commands {
 		this.mopidy.on("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
 			await playerState_default().getRequiredData();
-			this.model.setHistory(await this.mopidyProxy.fetchHistory());
-			await this.getHistory();
+			this.model.setHistory(await this.webProxy.fetchHistory());
 		});
 		this.mopidy.on("state:offline", () => {
 			this.model.setConnectionState(ConnectionState.Offline);
@@ -2010,11 +2009,6 @@ var Controller = class Controller extends Commands {
 	setSelectedTrack(uri) {
 		this.model.setSelectedTrack(uri);
 	}
-	async getCurrertTrackInfoCached() {
-		let trackUri = this.model.getCurrentTrack();
-		if (!trackUri) return TrackNone;
-		return await this.lookupTrackCached(trackUri);
-	}
 	async fetchAllRefs() {
 		let roots = await this.mopidyProxy.fetchRootDirs();
 		let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
@@ -2117,11 +2111,6 @@ var Controller = class Controller extends Commands {
 	}
 	async startScan() {
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
-	}
-	async getHistory() {
-		let history = await this.webProxy.fetchHistory();
-		debugger;
-		console.log(history);
 	}
 };
 
@@ -2498,11 +2487,10 @@ var TimelineView = class extends View {
 		let trackList = playerState_default().getModel().getTrackList() ?? [];
 		let body = document.getElementById("timelineTable").tBodies[0];
 		body.innerHTML = "";
-		if (history.length > 0 && trackList.length > 0 && history[0].ref.uri == trackList[0].track.uri) history.shift();
+		if (history.length > 0 && trackList.length > 0 && history[0].uri == trackList[0].track.uri) history.shift();
 		for (let i = history.length - 1; i >= 0; i--) this.insertHistoryLine(history[i], body);
 		for (let track of trackList) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, body, [], track.tlid);
 		let uris = trackList.map((tl) => tl.track.uri);
-		uris = [...uris, ...history.map((h) => h.ref.uri)];
 		uris = [...new Set(uris)];
 		await this.lookupAllTracksAndUpdateRows(uris);
 		await this.setCurrentTrack();
@@ -2536,29 +2524,30 @@ var TimelineView = class extends View {
 	}
 	async setCurrentTrack() {
 		let timelineTable = document.getElementById("timelineTable");
-		let currentTrack = await playerState_default().getController().getCurrertTrackInfoCached();
-		if (!currentTrack) return;
-		if (currentTrack.type == "none") return;
-		let currentUri = currentTrack.track.uri;
+		let focusTrack = await playerState_default().getController().lookupTrackCached(playerState_default().getModel().getCurrentTrack());
+		if (!focusTrack) {
+			focusTrack = await playerState_default().getController().lookupTrackCached(playerState_default().getModel().getSelectedTrack());
+			if (!focusTrack) return;
+		}
+		let currentUri = focusTrack.track.uri;
 		let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
 		if (trs.length == 0) return;
 		let tr = trs[trs.length - 1];
-		if (this.clickedRow?.dataset?.uri != currentTrack.track.uri) tr.scrollIntoView({ block: "nearest" });
+		if (this.clickedRow?.dataset?.uri != focusTrack.track.uri) tr.scrollIntoView({ block: "nearest" });
 		timelineTable.querySelectorAll("tr").forEach((tr$1) => tr$1.classList.remove("current", "textGlow"));
 		tr.classList.add("current", "textGlow");
 	}
 	insertHistoryLine(line, body) {
-		let title = line.ref.name.split(" - ").pop() ?? "???";
-		this.insertTrackLine(title, line.ref.uri, body, ["historyLine"]);
+		this.insertTrackLine(line.name, line.uri, body, ["historyLine"], void 0, line.album, line.artist);
 	}
-	insertTrackLine(title, uri, body, classes = [], tlid) {
+	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
 		let tr = document.createElement("tr");
 		body.appendChild(tr);
 		tr.classList.add("trackLine", ...classes);
 		if (!uri.startsWith("eboback")) tr.classList.add("italic");
 		tr.dataset.uri = uri;
 		if (tlid) tr.dataset.tlid = tlid.toString();
-		this.setTrackLineContent(tr, title);
+		this.setTrackLineContent(tr, title, artist, album);
 		body.insertAdjacentHTML("beforeend", `
 <tr>
     <td colspan="2">

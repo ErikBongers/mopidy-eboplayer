@@ -1,6 +1,6 @@
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {AllUris, HistoryLine, HistoryRef, ImageLookup, PlaylistUri} from "../modelTypes";
+import {AllUris, MopidyHistoryLine, HistoryRef, ImageLookup, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
@@ -69,7 +69,7 @@ export class MopidyProxy {
             return {
                 timestamp: line[0],
                 ref: line[1]
-            } as HistoryLine;
+            } as MopidyHistoryLine;
         });
 
 

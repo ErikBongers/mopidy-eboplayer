@@ -1,4 +1,4 @@
-import {AlbumMetaData, AllUris, GenreDef, HistoryLine, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
+import {AlbumMetaData, AllUris, GenreDef, HistoryLineDef, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
 
 export class WebProxy {
     private ebobackBase: string;
@@ -73,6 +73,6 @@ export class WebProxy {
     async fetchHistory() {
         let url = this.ebobackUrl(`get_history`);
         let res = await fetch(url);
-        return await res.json() as HistoryLine[];
+        return await res.json() as HistoryLineDef[];
     }
 }

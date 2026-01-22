@@ -60,8 +60,7 @@ export class Controller extends Commands implements DataRequester{
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await getState().getRequiredData();
-            this.model.setHistory(await this.mopidyProxy.fetchHistory());
-            await this.getHistory();
+            this.model.setHistory(await this.webProxy.fetchHistory());
         });
 
         this.mopidy.on('state:offline', () => {
@@ -519,14 +518,6 @@ export class Controller extends Commands implements DataRequester{
         this.model.setSelectedTrack(uri);
     }
 
-    async getCurrertTrackInfoCached() {
-        let trackUri = this.model.getCurrentTrack();
-        if(!trackUri)
-            return TrackNone;
-        return await this.lookupTrackCached(trackUri) as TrackModel;
-    }
-
-
     async fetchAllRefs() {
         let roots = await this.mopidyProxy.fetchRootDirs();
         let subDir1 = await this.mopidyProxy.browse<AllUris>(roots[1].uri);
@@ -662,9 +653,4 @@ export class Controller extends Commands implements DataRequester{
         await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
     }
 
-    async getHistory() {
-        let history = await this.webProxy.fetchHistory();
-        debugger;
-        console.log(history);
-    }
 }
