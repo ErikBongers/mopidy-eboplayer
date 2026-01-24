@@ -5,6 +5,7 @@ import {GuiSource} from "../events";
 import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
+import {EboListItemComp} from "./eboListItemComp";
 
 export class EboBrowseComp extends EboComponent {
     get genreDefs(){
@@ -115,15 +116,11 @@ export class EboBrowseComp extends EboComponent {
                 width: 100%;
                 overflow: scroll;
                 scrollbar-width: none;
+                flex-direction: column;
                 td {
                     padding-top: .2em;
                     padding-bottom: .2em;
                 }
-            }
-            #searchResults {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
             }
             .breadcrumb {
                 background-color: var(--highlight-background);
@@ -156,13 +153,7 @@ export class EboBrowseComp extends EboComponent {
         <div id="searchInfo">
         </div>  
         <div id="tableWrapper" class="">
-            <table id="searchResultsTable">
-                <colgroup>
-                    <col span="1" style="width: auto;">
-                    <col span="1" style="width: 1em;">
-                </colgroup>
-                <tbody></tbody>
-            </table>
+            Wait for it...
         </div>
     </div>
 </div>        
@@ -267,26 +258,28 @@ export class EboBrowseComp extends EboComponent {
             return;
         this.setSearchInfo("");
 
-        let table = this.getShadow().getElementById("searchResultsTable") as HTMLTableElement;
-        let body = table.tBodies[0];
-        body.innerHTML = "";
+        let tableWrapper = this.getShadow().getElementById("tableWrapper") as HTMLDivElement;
+        tableWrapper.innerHTML = "--no results--";
 
         if(this.results.refs.length == 0)
             return;
 
-        body.innerHTML = this.results.refs
+        tableWrapper.innerHTML = "";
+
+        tableWrapper.innerHTML = this.results.refs
             .map(result => {
                 let refType = result.item.ref.type;
                 return `
-                    <tr data-uri="${result.item.ref.uri}" data-type="${refType}">
-                    <td>${result.item.ref.name + this.getGenreAlias(result)}</td>
-                    <td>...</td>
-                    </tr>`;
+                    <ebo-list-item 
+                        data-uri="${result.item.ref.uri}" 
+                        data-type="${refType}"
+                        text="${result.item.ref.name + this.getGenreAlias(result)}">
+                    </ebo-list-item>`;
             })
             .join("\n");
-        body.querySelectorAll("tr").forEach(tr => {
-            tr.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
-            tr.addEventListener("click", ev => {this.onRowClicked(ev)});
+        tableWrapper.querySelectorAll("ebo-list-item").forEach((row: HTMLElement) => {
+            row.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
+            row.addEventListener("click", ev => {this.onRowClicked(ev)});
         });
         this.requestUpdate();
     }
@@ -303,12 +296,12 @@ export class EboBrowseComp extends EboComponent {
     }
 
     private onRowClicked(ev: MouseEvent) {
-        let row = ev.currentTarget as HTMLTableRowElement;
-        this.dispatchEboEvent("browseResultClick.eboplayer", {"label": row.cells[0].innerText, "uri": row.dataset.uri as AllUris, "type": <string>row.dataset.type});
+        let row = ev.currentTarget as EboListItemComp;
+        this.dispatchEboEvent("browseResultClick.eboplayer", {"label": row.getAttribute("text")??"", "uri": row.dataset.uri as AllUris, "type": <string>row.dataset.type});
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
-        let row = ev.currentTarget as HTMLTableRowElement;
+        let row = ev.currentTarget as EboListItemComp;
         this.dispatchEboEvent("browseResultDblClick.eboplayer", {uri: row.dataset.uri as AllUris});
     }
 

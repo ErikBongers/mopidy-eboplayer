@@ -1,15 +1,89 @@
+* create a listItemComp
+  > unaware of size
+    > can be 2 or 3 in a row.
+    > Icon resizes, other things not.
+  > 2 display states: line or icon
+  > a selected state
+  > a selection mode
+  > line size should put 3 dots to the most right.
+
+
+
+* create a big icon list view.
+  > Same behaviour for line and icon view!
+    - single click: goto item.
+    - dbl click: popupmenu
+      > Play, Add, Select,...
+  > An item has visuals:
+    - select mark (maybe just hightlight color)
+    - type icon: or subtle different font/color for genre, artist, album?
+      - genre is a tag like thing: show a dim rounded corner rectangle
+      - artist: italic?
+      - album: bold?
+    - album icon
+    - title
+    - subtitle (artist + album)
+
+  > and a button to switch to line view.
+
+* Create a favorites view
+  - has title
+  - has a loading bar ABOVE it, that is shown when the user starts filltering and all refs are being loaded.
+    > the favorites remain visible.
+
+* Add loading bar
+  > Load favorates one by one and stop if all refs are requested.
+    - show "loading" above favorites
+    - mark favorites as not-yet-loaded (or perhaps the individual items)
+      > make sure to continue loading them if favorites are shown again (on clear filter)
+
+* Add button to show favorites at any time.
+
+Rething browsing data
+----------------------
+Perhaps only fetch a list of data that is needed to filter.
+That means only thenames (and uris) of refs, but not any other metadata.
+However for display (of a track) we may need some extra info like artist and album.
+For genres we may want to see if it's an alias or not.
+
+This is still much less data than having all the album's tracks, artists, with uris.
+
+Such a browse list may look like this:
+  - type
+  - name
+  - uri
+  - album (may be empty)
+  - artist (may be empty)
+  - alias or original.
+  - ...
+  > let's call it ExpandedRefs?
+  > fetch all in one go?
+  > create a view for it?
+
+Slow loading
+-------------
+Perhaps wrap slow loading data in a discriminated union with states Loading,...
+
+Favorites
+----------
+Sql view has been created:
+* create a screen
+  > in browse show favourites when empty filter.
+  > when filtering, replace it with all refs (filtered)
+  > disadvantage: user may think that filtering will happen within favorites.
+    > Show a title "Favorites" and disappear this when filtering.
+    > show favorites as big icons with very small titles?
+      > allow switching to list view?
+
+* Lazy load all refs
+  > loading all albums seems to be fast..
+  > currently all refs are fetched when browse window is showing all refs.
+    > only load all refs if browse window is actually visible
+      > perhaps load all refs in a less blocking way?
+        > priority of await?
+
 * track.artists: perhaps split into separate table if multiple artists are allowed?
 
-* Create a history table
-  > mopidy history has these fields:
-    - timestamp
-    - ref
-      - type
-      - uri
-      - name
-  > use the same?
-    > add a count field that is default 1
-      > when "archiving" history, lines older than 1 year or so can be accumulated into one line.
   > should be able to get favourites based on :
     - count(uri)
     - count(uri) since a date

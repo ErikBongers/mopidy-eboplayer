@@ -28,6 +28,7 @@ import {EboAlbumDetails} from "./components/eboAlbumDetails";
 import {EboRadioDetailsComp} from "./components/eboRadioDetailsComp";
 import {EboBrowseFilterComp} from "./components/eboBrowseFilterComp";
 import {EboSettingsComp} from "./components/eboSettingsComp";
+import {EboListItemComp} from "./components/eboListItemComp";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -61,6 +62,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboRadioDetailsComp);
             EboComponent.define(EboBrowseFilterComp);
             EboComponent.define(EboSettingsComp);
+            EboComponent.define(EboListItemComp);
 
             setupStuff();
         });

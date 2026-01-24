@@ -141,6 +141,22 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             el.classList.remove(attName);
     }
 
+    setTextFromAttribute(attName: string) {
+        let el = this.shadow.getElementById(attName);
+        if(!el) {
+            console.warn(`Element with id "${attName}" not found.`);
+            return;
+        }
+
+        // @ts-ignore
+        if (this[attName])
+            { // @ts-ignore
+                el.textContent = this[attName];
+            }
+        else
+            el.textContent = "";
+    }
+
     protected updateStringProperty(name: string, newValue: string) {
         // @ts-ignore
         this[name] = newValue;

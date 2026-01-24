@@ -2348,6 +2348,15 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (this[attName] == true) el.classList.add(attName);
 		else el.classList.remove(attName);
 	}
+	setTextFromAttribute(attName) {
+		let el = this.shadow.getElementById(attName);
+		if (!el) {
+			console.warn(`Element with id "${attName}" not found.`);
+			return;
+		}
+		if (this[attName]) el.textContent = this[attName];
+		else el.textContent = "";
+	}
 	updateStringProperty(name, newValue) {
 		this[name] = newValue;
 	}
@@ -3641,15 +3650,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 width: 100%;
                 overflow: scroll;
                 scrollbar-width: none;
+                flex-direction: column;
                 td {
                     padding-top: .2em;
                     padding-bottom: .2em;
                 }
-            }
-            #searchResults {
-                height: 100%;
-                display: flex;
-                flex-direction: column;
             }
             .breadcrumb {
                 background-color: var(--highlight-background);
@@ -3680,13 +3685,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
         <div id="searchInfo">
         </div>  
         <div id="tableWrapper" class="">
-            <table id="searchResultsTable">
-                <colgroup>
-                    <col span="1" style="width: auto;">
-                    <col span="1" style="width: 1em;">
-                </colgroup>
-                <tbody></tbody>
-            </table>
+            Wait for it...
         </div>
     </div>
 </div>        
@@ -3780,22 +3779,24 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	renderResults() {
 		if (!this.isRendered) return;
 		this.setSearchInfo("");
-		let body = this.getShadow().getElementById("searchResultsTable").tBodies[0];
-		body.innerHTML = "";
+		let tableWrapper = this.getShadow().getElementById("tableWrapper");
+		tableWrapper.innerHTML = "--no results--";
 		if (this.results.refs.length == 0) return;
-		body.innerHTML = this.results.refs.map((result) => {
+		tableWrapper.innerHTML = "";
+		tableWrapper.innerHTML = this.results.refs.map((result) => {
 			let refType = result.item.ref.type;
 			return `
-                    <tr data-uri="${result.item.ref.uri}" data-type="${refType}">
-                    <td>${result.item.ref.name + this.getGenreAlias(result)}</td>
-                    <td>...</td>
-                    </tr>`;
+                    <ebo-list-item 
+                        data-uri="${result.item.ref.uri}" 
+                        data-type="${refType}"
+                        text="${result.item.ref.name + this.getGenreAlias(result)}">
+                    </ebo-list-item>`;
 		}).join("\n");
-		body.querySelectorAll("tr").forEach((tr) => {
-			tr.addEventListener("dblclick", (ev) => {
+		tableWrapper.querySelectorAll("ebo-list-item").forEach((row) => {
+			row.addEventListener("dblclick", (ev) => {
 				this.onRowDoubleClicked(ev).then((r) => {});
 			});
-			tr.addEventListener("click", (ev) => {
+			row.addEventListener("click", (ev) => {
 				this.onRowClicked(ev);
 			});
 		});
@@ -3811,7 +3812,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	onRowClicked(ev) {
 		let row = ev.currentTarget;
 		this.dispatchEboEvent("browseResultClick.eboplayer", {
-			"label": row.cells[0].innerText,
+			"label": row.getAttribute("text") ?? "",
 			"uri": row.dataset.uri,
 			"type": row.dataset.type
 		});
@@ -5189,6 +5190,92 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboListItemComp.ts
+var EboListItemComp = class EboListItemComp extends EboComponent {
+	static tagName = "ebo-list-item";
+	static observedAttributes = [
+		"selected",
+		"img",
+		"selection_mode",
+		"display",
+		"text"
+	];
+	selected = false;
+	img;
+	selection_mode;
+	display = "line";
+	text = "";
+	static styleText = `
+        <style>
+            img {
+                width: 2rem;
+                height: 2rem;
+                margin-right: 0.5rem;
+            }
+            :host {
+                opacity: 1;
+            }
+            :host([selected]) { 
+                background-color: var(--selected-background); 
+            }
+            #text {
+                flex-grow: 1;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: wrap;
+            }
+            #button {
+                flex-shrink: 1;
+                flex-grow: 0;
+                padding: 0;
+            }
+        </style>
+    `;
+	static htmlText = `
+        <div id="wrapper" class="flexRow">
+            <img id="img" src="" alt="track image">
+            <div id="text"></div>
+            <button id="button">...</button>
+        </div>       
+        `;
+	constructor() {
+		super(EboListItemComp.styleText, EboListItemComp.htmlText);
+		this.img = "";
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "img":
+			case "text":
+				this[name] = newValue;
+				break;
+			case "display":
+				this.display = newValue;
+				break;
+			case "selection_mode":
+			case "selected":
+				this.updateBoolProperty(name, newValue);
+				break;
+		}
+		this.requestUpdate();
+	}
+	render(shadow) {
+		this.requestUpdate();
+	}
+	update(shadow) {
+		this.setClassFromBoolAttribute(shadow.getElementById("wrapper"), "selected");
+		this.setImage("img", this.img);
+		this.setTextFromAttribute("text");
+	}
+	setImage(id, uri) {
+		let imgTag = this.getShadow().getElementById("img");
+		if (uri) {
+			imgTag.src = uri;
+			imgTag.style.display = "";
+		} else imgTag.style.display = "none";
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5213,6 +5300,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboRadioDetailsComp);
 		EboComponent.define(EboBrowseFilterComp);
 		EboComponent.define(EboSettingsComp);
+		EboComponent.define(EboListItemComp);
 		setupStuff();
 	});
 });
