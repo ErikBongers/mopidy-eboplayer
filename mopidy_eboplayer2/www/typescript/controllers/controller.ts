@@ -364,9 +364,11 @@ export class Controller extends Commands implements DataRequester{
         }
 
         //fetch remaining albums
-        let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
-        this.model.addItemsToLibraryCache(fetchedAlbums);
-        albums = albums.concat(fetchedAlbums);
+        if(albumUrisToFetch.length > 0) {
+            let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
+            this.model.addItemsToLibraryCache(fetchedAlbums);
+            albums = albums.concat(fetchedAlbums);
+        }
         return albums;
     }
 

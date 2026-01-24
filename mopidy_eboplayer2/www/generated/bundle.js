@@ -1878,9 +1878,11 @@ var Controller = class Controller extends Commands {
 			if (album) albums.push(album);
 			else albumUrisToFetch.push(albumUri);
 		}
-		let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
-		this.model.addItemsToLibraryCache(fetchedAlbums);
-		albums = albums.concat(fetchedAlbums);
+		if (albumUrisToFetch.length > 0) {
+			let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
+			this.model.addItemsToLibraryCache(fetchedAlbums);
+			albums = albums.concat(fetchedAlbums);
+		}
 		return albums;
 	}
 	async fetchAlbums(albumUris) {
@@ -3663,7 +3665,14 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 width: 100%;
                 overflow: scroll;
                 scrollbar-width: none;
-                flex-direction: column;
+                &.lines {
+                    display: flex;
+                    flex-direction: column;
+                }
+                &.icons {
+                    display: grid;
+                    grid-template-columns: repeat(3, auto);
+                }
                 td {
                     padding-top: .2em;
                     padding-bottom: .2em;
@@ -3697,7 +3706,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
         <ebo-list-button-bar list_source="${this.listSource}"></ebo-list-button-bar>
         <div id="searchInfo">
         </div>  
-        <div id="tableWrapper" class="">
+        <div id="tableWrapper">
             Wait for it...
         </div>
     </div>
@@ -5275,6 +5284,9 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
                     overflow: auto;
                     text-overflow: ellipsis;
                     }
+                    #button {
+                        display: none;
+                    }           
                 }
                 &.selected {
                     background-color: var(--selected-background); 
