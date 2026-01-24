@@ -10,7 +10,7 @@ export class EboListItemComp extends EboComponent {
     private selected: boolean = false;
     private img: string;
     private selection_mode: boolean;
-    private display: DisplayMode = "line";
+    private display: DisplayMode = "icon";
     private text: string = "";
 
     // noinspection CssUnresolvedCustomProperty
@@ -38,11 +38,42 @@ export class EboListItemComp extends EboComponent {
                 flex-grow: 0;
                 padding: 0;
             }
+            #wrapper {
+                display: flex;
+                &.line {
+                    flex-direction: row;
+                    img {
+                        display: none;
+                    }
+                }
+                &.icon {
+                    flex-direction: column;
+                    align-items: center;
+                    img {
+                        margin-right: 0;
+                        width: 5rem;
+                        height: 5rem;
+                    }
+                    font-size: .5rem;
+                    #text {
+                    width: 5rem;
+                    text-align: center;
+                    overflow: auto;
+                    text-overflow: ellipsis;
+                    }
+                    #button {
+                        display: none;
+                    }           
+                }
+                &.selected {
+                    background-color: var(--selected-background); 
+                }           
+            }
         </style>
     `;
 
     static htmlText = `
-        <div id="wrapper" class="flexRow">
+        <div id="wrapper">
             <img id="img" src="" alt="track image">
             <div id="text"></div>
             <button id="button">...</button>
@@ -77,7 +108,10 @@ export class EboListItemComp extends EboComponent {
     }
 
     override update(shadow: ShadowRoot) {
-        this.setClassFromBoolAttribute(shadow.getElementById("wrapper") as HTMLElement, "selected");
+        let wrapper = shadow.getElementById("wrapper") as HTMLElement;
+        this.setClassFromBoolAttribute(wrapper, "selected");
+        wrapper.classList.remove("line", "icon");
+        wrapper.classList.add(this.display);
         this.setImage("img", this.img);
         this.setTextFromAttribute("text");
     }

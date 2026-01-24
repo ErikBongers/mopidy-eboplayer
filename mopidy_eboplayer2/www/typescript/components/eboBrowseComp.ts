@@ -119,7 +119,14 @@ export class EboBrowseComp extends EboComponent {
                 width: 100%;
                 overflow: scroll;
                 scrollbar-width: none;
-                flex-direction: column;
+                &.lines {
+                    display: flex;
+                    flex-direction: column;
+                }
+                &.icons {
+                    display: grid;
+                    grid-template-columns: repeat(3, auto);
+                }
                 td {
                     padding-top: .2em;
                     padding-bottom: .2em;
@@ -155,7 +162,7 @@ export class EboBrowseComp extends EboComponent {
         <ebo-list-button-bar list_source="${this.listSource}"></ebo-list-button-bar>
         <div id="searchInfo">
         </div>  
-        <div id="tableWrapper" class="">
+        <div id="tableWrapper">
             Wait for it...
         </div>
     </div>

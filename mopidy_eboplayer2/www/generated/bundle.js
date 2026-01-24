@@ -5226,7 +5226,7 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 	selected = false;
 	img;
 	selection_mode;
-	display = "line";
+	display = "icon";
 	text = "";
 	static styleText = `
         <style>
@@ -5252,10 +5252,38 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
                 flex-grow: 0;
                 padding: 0;
             }
+            #wrapper {
+                display: flex;
+                &.line {
+                    flex-direction: row;
+                    img {
+                        display: none;
+                    }
+                }
+                &.icon {
+                    flex-direction: column;
+                    align-items: center;
+                    img {
+                        margin-right: 0;
+                        width: 5rem;
+                        height: 5rem;
+                    }
+                    font-size: .5rem;
+                    #text {
+                    width: 5rem;
+                    text-align: center;
+                    overflow: auto;
+                    text-overflow: ellipsis;
+                    }
+                }
+                &.selected {
+                    background-color: var(--selected-background); 
+                }           
+            }
         </style>
     `;
 	static htmlText = `
-        <div id="wrapper" class="flexRow">
+        <div id="wrapper">
             <img id="img" src="" alt="track image">
             <div id="text"></div>
             <button id="button">...</button>
@@ -5285,7 +5313,10 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 		this.requestUpdate();
 	}
 	update(shadow) {
-		this.setClassFromBoolAttribute(shadow.getElementById("wrapper"), "selected");
+		let wrapper = shadow.getElementById("wrapper");
+		this.setClassFromBoolAttribute(wrapper, "selected");
+		wrapper.classList.remove("line", "icon");
+		wrapper.classList.add(this.display);
 		this.setImage("img", this.img);
 		this.setTextFromAttribute("text");
 	}
