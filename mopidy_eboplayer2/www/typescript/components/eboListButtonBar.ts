@@ -56,6 +56,13 @@ export class EboListButtonBar extends EboComponent {
                 img {
                     height: 1.2rem;
                 }
+                ebo-button {
+                    height: 1.2rem;
+                    width: 1.4rem;
+                    position: relative;
+                    top: .4rem;
+                    margin-inline-start: .5rem;
+                }
             }
         </style>
     `;
@@ -77,6 +84,7 @@ export class EboListButtonBar extends EboComponent {
                     *            
                 </div>            
             </button>
+            <ebo-button toggle id="btnDisplayMode" img="images/icons/IconView.svg" class="whiteIcon"></ebo-button>
         </div>                   
     `;
 
@@ -121,11 +129,11 @@ export class EboListButtonBar extends EboComponent {
             if(this.btn_states.new_playlist != "show") return;
             this.dispatchEboEvent("newPlaylistClicked.eboplayer", {source: this.list_source});
         });
+        this.shadow.getElementById("btnDisplayMode")?.addEventListener("pressedChange", (ev) => {
+            let pressed = this.shadow.getElementById("btnDisplayMode")?.getAttribute("pressed") as string;
+            this.dispatchEboEvent("displayModeChanged.eboplayer", {mode: pressed == "true"? "icon" : "line"});
+        });
         this.requestUpdate();
-    }
-
-    updateButtonState(name: ListButtonName, newValue: string) {
-        this.btn_states[name] = newValue as ListButtonState;
     }
 
     override update(shadow: ShadowRoot) {

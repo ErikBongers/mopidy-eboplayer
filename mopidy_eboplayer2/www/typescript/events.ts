@@ -1,5 +1,6 @@
 import {AllUris, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
+import {DisplayMode} from "./components/eboListItemComp";
 
 export interface EboEventHandlersEventMap {
     "remembersChanged.eboplayer"                : VoidArgs,
@@ -10,6 +11,7 @@ export interface EboEventHandlersEventMap {
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
+    "displayModeChanged.eboplayer"              : DisplayModeArgs,
     "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "addTrackClicked.eboplayer"                 : TrackUriArgs,
     "albumToViewChanged.eboplayer"              : VoidArgs,
@@ -94,6 +96,10 @@ export interface DialogArgs extends EboEventArgs {
 
 export interface TrackUriArgs extends EboEventArgs {
     uri: TrackUri
+}
+
+export interface DisplayModeArgs extends EboEventArgs {
+    mode: DisplayMode
 }
 
 export interface SaveUriArgs extends EboEventArgs {

@@ -5,10 +5,14 @@ import {GuiSource} from "../events";
 import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
-import {EboListItemComp} from "./eboListItemComp";
+import {DisplayMode, EboListItemComp} from "./eboListItemComp";
 import getState from "../playerState";
 
 export class EboBrowseComp extends EboComponent {
+    static override readonly tagName=  "ebo-browse-view";
+    // noinspection JSUnusedGlobalSymbols
+    static observedAttributes: string[] = ["display_mode"];
+
     get genreDefs(){
         return this._genreDefs;
     }
@@ -19,19 +23,18 @@ export class EboBrowseComp extends EboComponent {
     get action_btn_states(): ListButtonStates {
         return this._action_btn_states;
     }
-
     set action_btn_states(value: ListButtonStates) {
         this._action_btn_states = value;
         this.requestUpdate();
     }
-    static override readonly tagName=  "ebo-browse-view";
+
     private static listSource: GuiSource = "browseView";
 
     private _action_btn_states: ListButtonStates = ListButtonState_AllHidden();
-
     get breadCrumbs(): FilterBreadCrumb[] {
         return this._breadCrumbs;
     }
+
     set breadCrumbs(value: FilterBreadCrumb[]) {
         this._breadCrumbs = value;
         this.renderBreadCrumbs(); // don't render all, as user may be typing a search text.
@@ -62,12 +65,10 @@ export class EboBrowseComp extends EboComponent {
         this.requestUpdate();
     }
 
+    private display_mode: DisplayMode = "line";
     private _browseFilter: BrowseFilter;
 
     private _genreDefs: Map<string, GenreDef>;
-
-    // noinspection JSUnusedGlobalSymbols
-    static observedAttributes: string[] = [];
 
     static styleText= `
         <style>
@@ -119,18 +120,18 @@ export class EboBrowseComp extends EboComponent {
                 width: 100%;
                 overflow: scroll;
                 scrollbar-width: none;
-                &.lines {
-                    display: flex;
-                    flex-direction: column;
-                }
-                &.icons {
-                    display: grid;
-                    grid-template-columns: repeat(3, auto);
-                }
                 td {
                     padding-top: .2em;
                     padding-bottom: .2em;
                 }
+            }
+            :host(.line) #tableWrapper {
+                display: flex;
+                flex-direction: column;
+            }
+            :host(.icon) #tableWrapper {
+                display: grid;
+                grid-template-columns: repeat(3, auto);
             }
             .breadcrumb {
                 background-color: var(--highlight-background);
@@ -178,17 +179,11 @@ export class EboBrowseComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
-            case "name":
-            case "stream_lines":
-            case "extra":
+            case "display_mode":
                 this.updateStringProperty(name, newValue);
                 break;
-            case "enabled":
-            case "show_back":
-                this.updateBoolProperty(name, newValue);
-                break;
         }
-        this.requestRender();
+        this.requestUpdate();
         }
 
     setFocusAndSelect() {
@@ -210,6 +205,10 @@ export class EboBrowseComp extends EboComponent {
         let browseFilterComp = shadow.querySelector("ebo-browse-filter") as EboBrowseFilterComp;
         browseFilterComp.browseFilter = this._browseFilter;
         browseFilterComp.availableRefTypes = this.results.availableRefTypes;
+        let lines = shadow.querySelectorAll("ebo-list-item");
+        lines.forEach(line => line.setAttribute("display", this.display_mode));
+        this.classList.remove("icon", "line");
+        this.classList.add(this.display_mode);
     }
 
     setSearchInfo(text: string) {

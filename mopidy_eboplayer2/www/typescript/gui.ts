@@ -29,6 +29,7 @@ import {EboRadioDetailsComp} from "./components/eboRadioDetailsComp";
 import {EboBrowseFilterComp} from "./components/eboBrowseFilterComp";
 import {EboSettingsComp} from "./components/eboSettingsComp";
 import {EboListItemComp} from "./components/eboListItemComp";
+import {BrowseView} from "./views/browseView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -97,7 +98,8 @@ function setupStuff() {
     let state = new State(mopidy, model, controller, player);
     setState(state);
 
-    let mainView = new MainView(document.getElementById("dialog") as EboDialog);
+    let browseView = new BrowseView();
+    let mainView = new MainView(document.getElementById("dialog") as EboDialog, browseView);
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
     let buttonBarView = new PlayerBarView("buttonBar", mainView);

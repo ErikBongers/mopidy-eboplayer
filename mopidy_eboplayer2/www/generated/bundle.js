@@ -3110,6 +3110,12 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                 img {
                     height: 1.2rem;
                 }
+                ebo-button {
+                    height: 1.2rem;
+                    width: 1.4rem;
+                    position: relative;
+                    top: .3rem;
+                }
             }
         </style>
     `;
@@ -3131,6 +3137,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     *            
                 </div>            
             </button>
+            <ebo-button toggle id="btnDisplayMode" img="images/icons/IconView.svg" class="whiteIcon"></ebo-button>
         </div>                   
     `;
 	constructor() {
@@ -3175,10 +3182,11 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			if (this.btn_states.new_playlist != "show") return;
 			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
 		});
+		this.shadow.getElementById("btnDisplayMode")?.addEventListener("pressedChange", (ev) => {
+			let pressed = this.shadow.getElementById("btnDisplayMode")?.getAttribute("pressed");
+			this.dispatchEboEvent("displayModeChanged.eboplayer", { mode: pressed == "true" ? "icon" : "line" });
+		});
 		this.requestUpdate();
-	}
-	updateButtonState(name, newValue) {
-		this.btn_states[name] = newValue;
 	}
 	update(shadow) {
 		this.updateButtonVisibility("btnPlay", this._btn_states.play);
@@ -3211,9 +3219,11 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 var MainView = class extends View {
 	onDialogOkClickedCallback = () => true;
 	dialog;
-	constructor(dialog) {
+	browseView;
+	constructor(dialog, browseView) {
 		super();
 		this.dialog = dialog;
+		this.browseView = browseView;
 		this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
 			console_yellow("dialogOkClicked.eboplayer");
 			let innnerDialog = ev.detail.dialog;
@@ -3221,36 +3231,12 @@ var MainView = class extends View {
 		});
 	}
 	bind() {
+		this.browseView.bind();
 		document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
 			this.onBrowseButtonClick();
 		});
-		document.getElementById("settingsBtn")?.addEventListener("click", () => {
-			this.onSettingsButtonClick();
-		});
-		let browseComp = document.getElementById("browseView");
-		browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
-			await this.onGuiBrowseFilterChanged(browseComp);
-		});
-		browseComp.addEboEventListener("breadCrumbClick.eboplayer", (ev) => {
-			this.onBreadcrumbClick(ev.detail.breadcrumbId);
-		});
-		browseComp.addEboEventListener("browseResultClick.eboplayer", (ev) => {
-			this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
-		});
-		browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
-			await this.onBrowseResultDblClick(ev.detail.uri);
-		});
-		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
-			await this.onGenreDefsChanged();
-		});
-		playerState_default().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
-			this.onRefsFiltered();
-		});
-		playerState_default().getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
-			this.onBreadCrumbsChanged();
-		});
-		playerState_default().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
-			this.onModelBrowseFilterChanged();
+		document.getElementById("settingsBtn")?.addEventListener("click", async () => {
+			await this.onSettingsButtonClick();
 		});
 		playerState_default().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
 			await this.onSelectedTrackChanged();
@@ -3274,15 +3260,6 @@ var MainView = class extends View {
 		currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
-		addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
-			await this.onPlayItemListClick(ev.detail);
-		});
-		addEboEventListener(document.body, "addItemListClicked.eboplayer", async (ev) => {
-			await this.onAddItemListClick(ev.detail);
-		});
-		addEboEventListener(document.body, "replaceItemListClicked.eboplayer", async (ev) => {
-			await this.onReplaceItemListClick(ev.detail);
-		});
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
 			await this.onPlayTrackClicked(ev.detail.uri);
@@ -3297,7 +3274,7 @@ var MainView = class extends View {
 			let settingsComp = document.getElementById("settingsView");
 			settingsComp.scanStatus = ev.detail.text;
 		});
-		playerState_default().getModel().addEboEventListener("scanFinished.eboplayer", (ev) => {
+		playerState_default().getModel().addEboEventListener("scanFinished.eboplayer", () => {
 			document.getElementById("settingsView").setAttribute("show_whats_new", "");
 		});
 		document.getElementById("settingsView").addEboEventListener("whatsNewRequested.eboplayer", () => {
@@ -3305,53 +3282,13 @@ var MainView = class extends View {
 			window.location.reload();
 		});
 	}
-	async onGuiBrowseFilterChanged(browseComp) {
-		await playerState_default().getController().setAndSaveBrowseFilter(browseComp.browseFilter);
-	}
-	onRefsFiltered() {
-		let browseComp = document.getElementById("browseView");
-		browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
-			refs: [],
-			availableRefTypes: /* @__PURE__ */ new Set()
-		};
-		browseComp.renderResults();
-		browseComp.action_btn_states = this.getListButtonStates(playerState_default().getModel().getView());
-	}
 	getListButtonStates(currentView) {
 		let states = ListButtonState_AllHidden();
-		if (currentView == Views.Browse) return this.setBrowseViewListButtonStates(states);
 		if (currentView == Views.Album) {
 			states = this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "hide";
 			return states;
 		}
-		return states;
-	}
-	setBrowseViewListButtonStates(states) {
-		let searchResults = playerState_default().getModel().getCurrentSearchResults();
-		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
-		if (searchResults.refs.length == 0) {
-			this.showHideTrackAndAlbumButtons(states, "hide");
-			states.new_playlist = "hide";
-			return states;
-		}
-		if (browseFilter.searchText == "") {
-			this.showHideTrackAndAlbumButtons(states, "show");
-			states.new_playlist = "hide";
-			return states;
-		}
-		if ([...searchResults.availableRefTypes].filter((t) => t == "track" || t == "album").length == searchResults.availableRefTypes.size) {
-			this.showHideTrackAndAlbumButtons(states, "show");
-			states.new_playlist = "show";
-			return states;
-		}
-		if ([...searchResults.availableRefTypes].filter((t) => t == "playlist").length == searchResults.availableRefTypes.size) {
-			states.new_playlist = "show";
-			this.showHideTrackAndAlbumButtons(states, "hide");
-			return states;
-		}
-		this.showHideTrackAndAlbumButtons(states, "hide");
-		states.new_playlist = "show";
 		return states;
 	}
 	showHideTrackAndAlbumButtons(states, state$1) {
@@ -3361,14 +3298,6 @@ var MainView = class extends View {
 		states.save = state$1;
 		states.edit = state$1;
 		return states;
-	}
-	onBreadCrumbsChanged() {
-		let browseComp = document.getElementById("browseView");
-		browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
-	}
-	onModelBrowseFilterChanged() {
-		let browseComp = document.getElementById("browseView");
-		browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
 	}
 	onBrowseButtonClick() {
 		switch (document.getElementById("headerSearchBtn").dataset.goto) {
@@ -3395,23 +3324,18 @@ var MainView = class extends View {
 			"bigAlbum",
 			"bigTrack"
 		].includes(c))[0];
-		let browseComp = document.getElementById("browseView");
 		layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
+		let resultsDisplayMode = "line";
 		switch (view) {
-			case Views.WhatsNew: await playerState_default().getController().setWhatsNewFilter();
+			case Views.WhatsNew:
+				await playerState_default().getController().setWhatsNewFilter();
+				resultsDisplayMode = "icon";
 			case Views.Browse:
 				layout.classList.add("browse");
 				location.hash = view;
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
-				browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
-				browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
-					refs: [],
-					availableRefTypes: /* @__PURE__ */ new Set()
-				};
-				browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
-				browseComp.setFocusAndSelect();
-				browseComp.action_btn_states = this.getListButtonStates(view);
+				this.browseView.updateCompFromState(resultsDisplayMode);
 				break;
 			case Views.NowPlaying:
 				layout.classList.add("bigTrack");
@@ -3493,46 +3417,13 @@ var MainView = class extends View {
 			albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
 		}
 	}
-	async onPlayItemListClick(detail) {
-		if (detail.source == "albumView") {
-			let albumUri = playerState_default().getModel().getAlbumToView();
-			let album = (await playerState_default().getController().lookupAlbumsCached([albumUri]))[0];
-			if (album.albumInfo) await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
-			return;
-		}
-		if (detail.source == "browseView") {
-			await playerState_default().getPlayer().clear();
-			await playerState_default().getController().addCurrentSearchResultsToPlayer();
-			await playerState_default().getPlayer().play();
-		}
-	}
-	async onAddItemListClick(detail) {
-		if (detail.source == "albumView") {
-			let albumComp = document.getElementById("bigAlbumView");
-			await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
-		}
-		if (detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
-	}
-	async onReplaceItemListClick(detail) {
-		await playerState_default().getPlayer().clear();
-		await this.onAddItemListClick(detail);
-	}
-	async onBrowseResultDblClick(uri) {
-		await playerState_default().getPlayer().clearAndPlay([uri]);
-	}
-	onBrowseResultClick(label, uri, type) {
-		playerState_default().getController().diveIntoBrowseResult(label, uri, type, true);
-	}
-	onBreadcrumbClick(breadcrumbId) {
-		playerState_default().getController().resetToBreadCrumb(breadcrumbId);
-	}
 	async onPlayTrackClicked(uri) {
 		await playerState_default().getPlayer().clearAndPlay([uri]);
 	}
 	async onAddTrackClicked(uri) {
 		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
 		if (isInstanceOfExpandedTrackModel(trackModel)) {
-			if (trackModel.album?.albumInfo) await (await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri)).text();
+			if (trackModel.album?.albumInfo) await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
 		}
 	}
 	async onSaveClicked(detail) {
@@ -3556,21 +3447,19 @@ var MainView = class extends View {
 		this.dialog.showModal();
 		this.dialog.setAttribute("ok_text", okButtonText);
 	}
-	async onGenreDefsChanged() {
-		let browseComp = document.getElementById("browseView");
-		browseComp.genreDefs = await playerState_default().getController().getGenreDefsCached();
-	}
 	async rememberStreamLines(lines) {
-		playerState_default().getController().remember(lines.join("\n"));
+		await playerState_default().getController().remember(lines.join("\n"));
 	}
-	onSettingsButtonClick() {
-		this.showView(Views.Settings);
+	async onSettingsButtonClick() {
+		await this.showView(Views.Settings);
 	}
 };
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
+	static tagName = "ebo-browse-view";
+	static observedAttributes = ["display_mode"];
 	get genreDefs() {
 		return this._genreDefs;
 	}
@@ -3584,7 +3473,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this._action_btn_states = value;
 		this.requestUpdate();
 	}
-	static tagName = "ebo-browse-view";
 	static listSource = "browseView";
 	_action_btn_states = ListButtonState_AllHidden();
 	get breadCrumbs() {
@@ -3612,9 +3500,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this._browseFilter = value;
 		this.requestUpdate();
 	}
+	display_mode = "line";
 	_browseFilter;
 	_genreDefs;
-	static observedAttributes = [];
 	static styleText = `
         <style>
             :host { 
@@ -3665,18 +3553,18 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 width: 100%;
                 overflow: scroll;
                 scrollbar-width: none;
-                &.lines {
-                    display: flex;
-                    flex-direction: column;
-                }
-                &.icons {
-                    display: grid;
-                    grid-template-columns: repeat(3, auto);
-                }
                 td {
                     padding-top: .2em;
                     padding-bottom: .2em;
                 }
+            }
+            :host(.line) #tableWrapper {
+                display: flex;
+                flex-direction: column;
+            }
+            :host(.icon) #tableWrapper {
+                display: grid;
+                grid-template-columns: repeat(3, auto);
             }
             .breadcrumb {
                 background-color: var(--highlight-background);
@@ -3719,17 +3607,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
-			case "name":
-			case "stream_lines":
-			case "extra":
+			case "display_mode":
 				this.updateStringProperty(name, newValue);
 				break;
-			case "enabled":
-			case "show_back":
-				this.updateBoolProperty(name, newValue);
-				break;
 		}
-		this.requestRender();
+		this.requestUpdate();
 	}
 	setFocusAndSelect() {
 		let searchText = this.getShadow().getElementById("searchText");
@@ -3747,6 +3629,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		let browseFilterComp = shadow.querySelector("ebo-browse-filter");
 		browseFilterComp.browseFilter = this._browseFilter;
 		browseFilterComp.availableRefTypes = this.results.availableRefTypes;
+		shadow.querySelectorAll("ebo-list-item").forEach((line) => line.setAttribute("display", this.display_mode));
+		this.classList.remove("icon", "line");
+		this.classList.add(this.display_mode);
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
@@ -5342,6 +5227,153 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/views/browseView.ts
+var BrowseView = class extends View {
+	browseComp;
+	constructor() {
+		super();
+		this.browseComp = document.getElementById("browseView");
+	}
+	bind() {
+		this.browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
+			await this.onGuiBrowseFilterChanged();
+		});
+		this.browseComp.addEboEventListener("breadCrumbClick.eboplayer", async (ev) => {
+			await this.onBreadcrumbClick(ev.detail.breadcrumbId);
+		});
+		this.browseComp.addEboEventListener("browseResultClick.eboplayer", async (ev) => {
+			await this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
+		});
+		this.browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
+			await this.onBrowseResultDblClick(ev.detail.uri);
+		});
+		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+			await this.onGenreDefsChanged();
+		});
+		playerState_default().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
+			this.onRefsFiltered();
+		});
+		playerState_default().getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
+			this.onBreadCrumbsChanged();
+		});
+		playerState_default().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
+			this.onModelBrowseFilterChanged();
+		});
+		addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
+			await this.onPlayItemListClick(ev.detail);
+		});
+		addEboEventListener(document.body, "addItemListClicked.eboplayer", async (ev) => {
+			await this.onAddItemListClick(ev.detail);
+		});
+		addEboEventListener(document.body, "replaceItemListClicked.eboplayer", async (ev) => {
+			await this.onReplaceItemListClick(ev.detail);
+		});
+		this.browseComp.addEboEventListener("displayModeChanged.eboplayer", async (ev) => {
+			this.browseComp.setAttribute("display_mode", ev.detail.mode);
+		});
+	}
+	async onGuiBrowseFilterChanged() {
+		await playerState_default().getController().setAndSaveBrowseFilter(this.browseComp.browseFilter);
+	}
+	onRefsFiltered() {
+		this.browseComp.results = playerState_default().getModel().getCurrentSearchResults();
+		this.browseComp.action_btn_states = this.getListButtonStates();
+	}
+	getListButtonStates() {
+		let states = ListButtonState_AllHidden();
+		let searchResults = playerState_default().getModel().getCurrentSearchResults();
+		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		if (searchResults.refs.length == 0) {
+			this.showHideTrackAndAlbumButtons(states, "hide");
+			states.new_playlist = "hide";
+			return states;
+		}
+		if (browseFilter.searchText == "") {
+			this.showHideTrackAndAlbumButtons(states, "show");
+			states.new_playlist = "hide";
+			return states;
+		}
+		if ([...searchResults.availableRefTypes].filter((t) => t == "track" || t == "album").length == searchResults.availableRefTypes.size) {
+			this.showHideTrackAndAlbumButtons(states, "show");
+			states.new_playlist = "show";
+			return states;
+		}
+		if ([...searchResults.availableRefTypes].filter((t) => t == "playlist").length == searchResults.availableRefTypes.size) {
+			states.new_playlist = "show";
+			this.showHideTrackAndAlbumButtons(states, "hide");
+			return states;
+		}
+		this.showHideTrackAndAlbumButtons(states, "hide");
+		states.new_playlist = "show";
+		return states;
+	}
+	updateCompFromState(displayMode) {
+		this.browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		this.browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
+			refs: [],
+			availableRefTypes: /* @__PURE__ */ new Set()
+		};
+		this.browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
+		this.browseComp.setFocusAndSelect();
+		this.browseComp.action_btn_states = this.getListButtonStates();
+		this.browseComp.setAttribute("display_mode", displayMode);
+	}
+	showHideTrackAndAlbumButtons(states, state$1) {
+		states.add = state$1;
+		states.replace = state$1;
+		states.play = state$1;
+		states.save = state$1;
+		states.edit = state$1;
+		return states;
+	}
+	onBreadCrumbsChanged() {
+		this.browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
+	}
+	onModelBrowseFilterChanged() {
+		this.browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+	}
+	getRequiredDataTypes() {
+		return [EboPlayerDataType.TrackList];
+	}
+	async onPlayItemListClick(detail) {
+		if (detail.source == "albumView") {
+			let albumUri = playerState_default().getModel().getAlbumToView();
+			let album = (await playerState_default().getController().lookupAlbumsCached([albumUri]))[0];
+			if (album.albumInfo) await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
+			return;
+		}
+		if (detail.source == "browseView") {
+			await playerState_default().getPlayer().clear();
+			await playerState_default().getController().addCurrentSearchResultsToPlayer();
+			await playerState_default().getPlayer().play();
+		}
+	}
+	async onAddItemListClick(detail) {
+		if (detail.source == "albumView") {
+			let albumComp = document.getElementById("bigAlbumView");
+			await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
+		}
+		if (detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
+	}
+	async onReplaceItemListClick(detail) {
+		await playerState_default().getPlayer().clear();
+		await this.onAddItemListClick(detail);
+	}
+	async onBrowseResultDblClick(uri) {
+		await playerState_default().getPlayer().clearAndPlay([uri]);
+	}
+	async onBrowseResultClick(label, uri, type) {
+		await playerState_default().getController().diveIntoBrowseResult(label, uri, type, true);
+	}
+	async onBreadcrumbClick(breadcrumbId) {
+		await playerState_default().getController().resetToBreadCrumb(breadcrumbId);
+	}
+	async onGenreDefsChanged() {
+		this.browseComp.genreDefs = await playerState_default().getController().getGenreDefsCached();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5385,7 +5417,8 @@ function setupStuff() {
 	controller.initSocketevents();
 	let state$1 = new State(mopidy, model, controller, player);
 	setState(state$1);
-	let mainView = new MainView(document.getElementById("dialog"));
+	let browseView = new BrowseView();
+	let mainView = new MainView(document.getElementById("dialog"), browseView);
 	let headerView = new HeaderView();
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
 	let buttonBarView = new PlayerBarView("buttonBar", mainView);
