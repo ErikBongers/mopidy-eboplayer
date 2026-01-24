@@ -1,3 +1,5 @@
+* separate Cache from Controller.
+
 * create a listItemComp
   > unaware of size
     > can be 2 or 3 in a row.

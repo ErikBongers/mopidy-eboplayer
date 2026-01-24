@@ -541,6 +541,8 @@ async function createAllRefs(roots, sub, tracks, albums, artists, genres, radios
 		type: "ref",
 		weight: 0
 	}));
+	let trackUris = tracks.map((track) => track.uri);
+	await playerState_default().getController().lookupTracksCached(trackUris);
 	for (let trackRef of mappedTracks) if (trackRef.item.type == "track") {
 		let track = await playerState_default().getController().lookupTrackCached(trackRef.item.ref.uri);
 		trackRef.item.lastModified = track?.track?.last_modified ?? null;
@@ -1862,6 +1864,24 @@ var Controller = class Controller extends Commands {
 			await this.filterBrowseResults();
 		}
 	}
+	async lookupTracksCached(trackUris) {
+		let foundItems = [];
+		let notFoundItems = [];
+		for (let trackUri of trackUris) {
+			let item = this.model.getFromLibraryCache(trackUri);
+			if (item) foundItems.push(item);
+			else notFoundItems.push(trackUri);
+		}
+		if (notFoundItems.length > 0) {
+			await this.lookupAllTracks(notFoundItems);
+			for (let trackUri of notFoundItems) {
+				let item = this.model.getFromLibraryCache(trackUri);
+				if (item) foundItems.push(item);
+				else console.error("trackUri not found in library: " + trackUri);
+			}
+		}
+		return foundItems;
+	}
 	async lookupTrackCached(trackUri) {
 		if (!trackUri) return null;
 		let item = this.model.getFromLibraryCache(trackUri);
@@ -1918,8 +1938,10 @@ var Controller = class Controller extends Commands {
 		let fileModels = partialModels.filter((m) => m.type == "file");
 		let partialStreamModels = partialModels.filter((m) => m.type == "stream");
 		let streamUris = partialStreamModels.map((stream) => stream.track.uri);
-		let images = await this.fetchLargestImagesOrDefault(streamUris);
-		this.model.addImagesToCache(images);
+		if (streamUris.length > 0) {
+			let images = await this.fetchLargestImagesOrDefault(streamUris);
+			this.model.addImagesToCache(images);
+		}
 		let streamModels = partialStreamModels.map((m) => {
 			return {
 				...m,
@@ -3114,7 +3136,8 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     height: 1.2rem;
                     width: 1.4rem;
                     position: relative;
-                    top: .3rem;
+                    top: .4rem;
+                    margin-inline-start: .5rem;
                 }
             }
         </style>

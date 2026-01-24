@@ -339,6 +339,29 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
+    async lookupTracksCached(trackUris: (TrackUri | StreamUri)[]) {
+        let foundItems: (FileTrackModel | StreamTrackModel)[] = [];
+        let notFoundItems: (TrackUri | StreamUri)[] = [];
+        for(let trackUri of trackUris) {
+            let item = this.model.getFromLibraryCache(trackUri);
+            if(item)
+                foundItems.push(item as FileTrackModel | StreamTrackModel);
+            else
+                notFoundItems.push(trackUri);
+        }
+        if(notFoundItems.length > 0) {
+            await this.lookupAllTracks(notFoundItems);
+            for(let trackUri of notFoundItems) {
+                let item = this.model.getFromLibraryCache(trackUri);
+                if(item)
+                    foundItems.push(item as FileTrackModel | StreamTrackModel);
+                else
+                    console.error("trackUri not found in library: " + trackUri);
+            }
+        }
+        return foundItems;
+    }
+
     async lookupTrackCached(trackUri: TrackUri | StreamUri | null) {
         if(!trackUri)
             return null;
@@ -408,8 +431,10 @@ export class Controller extends Commands implements DataRequester{
         let fileModels = partialModels.filter(m => m.type == "file");
         let partialStreamModels = partialModels.filter(m => m.type == "stream");
         let streamUris = partialStreamModels.map(stream => stream.track.uri) as TrackUri[];
-        let images = await this.fetchLargestImagesOrDefault(streamUris);
-        this.model.addImagesToCache(images);
+        if(streamUris.length > 0) {
+            let images = await this.fetchLargestImagesOrDefault(streamUris);
+            this.model.addImagesToCache(images);
+        }
         let streamModels = partialStreamModels
             .map(m => {
                 return {...m, imageUrl:this.model.getImageFromCache(m.track.uri as TrackUri)} as StreamTrackModel;

@@ -184,6 +184,9 @@ export abstract class Refs {
 
 export async function createAllRefs( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
     let mappedTracks: RefSearchResult[] = tracks.map(track => ({item: {type: "track" as RefType, ref: track, lastModified: null}, type: "ref", weight: 0}));
+    let trackUris = tracks.map(track => track.uri);
+
+    await getState().getController().lookupTracksCached(trackUris); //pre-fetch
     for(let trackRef of mappedTracks) {
         if (trackRef.item.type == 'track') {
             let track = await getState().getController().lookupTrackCached(trackRef.item.ref.uri as TrackUri);
