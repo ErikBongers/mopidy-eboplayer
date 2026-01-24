@@ -1963,6 +1963,17 @@ var Controller = class Controller extends Commands {
 		this.model.setRemembers(remembers);
 		return remembers;
 	}
+	async getExpandedModel(ref) {
+		switch (ref.type) {
+			case "track": return this.getExpandedTrackModel(ref.ref.uri);
+			case "album": return this.getExpandedAlbumModel(ref.ref.uri);
+			case "radio": return this.getExpandedTrackModel(ref.ref.uri);
+			case "playlist": return null;
+			case "artist": return null;
+			case "genre": return null;
+			default: unreachable(ref.type);
+		}
+	}
 	async getExpandedTrackModel(trackUri) {
 		if (!trackUri) return null;
 		let track = await this.lookupTrackCached(trackUri);
@@ -3641,9 +3652,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
                 object-fit: contain;
                 margin-right: .5em;
             }
-            #searchResultsTable {
-                width: 100%;
-                border-collapse: collapse;
+            #searchResults {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                height: 100%;
             }
             #tableWrapper {
                 height: 100%;
@@ -3776,22 +3789,32 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		}
 		return `<img class="filterButton" src="${imgUrl}" alt="">`;
 	}
-	renderResults() {
+	async renderResults() {
 		if (!this.isRendered) return;
 		this.setSearchInfo("");
 		let tableWrapper = this.getShadow().getElementById("tableWrapper");
 		tableWrapper.innerHTML = "--no results--";
 		if (this.results.refs.length == 0) return;
 		tableWrapper.innerHTML = "";
-		tableWrapper.innerHTML = this.results.refs.map((result) => {
+		let html = "";
+		for (let result of this.results.refs) {
+			let imgUrl = "";
+			if (result.type == "ref") {
+				let model = await playerState_default().getController().getExpandedModel(result.item);
+				if (model) if (isInstanceOfExpandedTrackModel(model)) imgUrl = model.album?.imageUrl ?? "";
+				else if (isInstanceOfExpandedStreamModel(model)) imgUrl = model.stream.imageUrl;
+				else imgUrl = model.album.imageUrl;
+			}
 			let refType = result.item.ref.type;
-			return `
+			html += `
                     <ebo-list-item 
                         data-uri="${result.item.ref.uri}" 
                         data-type="${refType}"
-                        text="${result.item.ref.name + this.getGenreAlias(result)}">
+                        text="${result.item.ref.name + this.getGenreAlias(result)}"
+                        img="${imgUrl}">
                     </ebo-list-item>`;
-		}).join("\n");
+		}
+		tableWrapper.innerHTML = html;
 		tableWrapper.querySelectorAll("ebo-list-item").forEach((row) => {
 			row.addEventListener("dblclick", (ev) => {
 				this.onRowDoubleClicked(ev).then((r) => {});
@@ -5270,8 +5293,8 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 		let imgTag = this.getShadow().getElementById("img");
 		if (uri) {
 			imgTag.src = uri;
-			imgTag.style.display = "";
-		} else imgTag.style.display = "none";
+			imgTag.style.visibility = "visible";
+		} else imgTag.style.visibility = "hidden";
 	}
 };
 

@@ -86,9 +86,9 @@ export class EboListItemComp extends EboComponent {
         let imgTag = this.getShadow().getElementById("img") as HTMLImageElement;
         if(uri) {
             imgTag.src = uri;
-            imgTag.style.display = "";
+            imgTag.style.visibility = "visible";
         } else {
-            imgTag.style.display = "none";
+            imgTag.style.visibility = "hidden";
         }
     }
 }

@@ -6,8 +6,8 @@ import {EboPlayerDataType} from "../views/view";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {console_yellow, getHostAndPort, getHostAndPortDefs, transformTrackDataToModel} from "../global";
-import {AllRefs, createAllRefs, SomeRefs} from "../refs";
+import {console_yellow, getHostAndPort, getHostAndPortDefs, transformTrackDataToModel, unreachable} from "../global";
+import {AllRefs, createAllRefs, ExpandedRef, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
@@ -457,6 +457,26 @@ export class Controller extends Commands implements DataRequester{
         this.model.setRemembers(remembers);
         return remembers;
     }
+
+    async getExpandedModel(ref: ExpandedRef) {
+        switch (ref.type) {
+            case "track":
+                return this.getExpandedTrackModel(ref.ref.uri as TrackUri); //todo: make expandedRef a discriminated union on type, to avoid this cast.
+            case "album":
+                return this.getExpandedAlbumModel(ref.ref.uri as AlbumUri);
+            case "radio":
+                return this.getExpandedTrackModel(ref.ref.uri as StreamUri);
+            case "playlist":
+                return null; //todo?
+            case "artist":
+                return null;//todo?
+            case "genre":
+                return null;//todo?
+            default:
+                unreachable(ref.type);
+        }
+    }
+
 
     async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)

@@ -1,11 +1,12 @@
 import {EboComponent} from "./EboComponent";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef} from "../modelTypes";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ExpandedAlbumModel, FilterBreadCrumb, GenreDef, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel} from "../modelTypes";
 import {EmptySearchResults, RefType, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
 import {EboListItemComp} from "./eboListItemComp";
+import getState from "../playerState";
 
 export class EboBrowseComp extends EboComponent {
     get genreDefs(){
@@ -107,9 +108,11 @@ export class EboBrowseComp extends EboComponent {
                 object-fit: contain;
                 margin-right: .5em;
             }
-            #searchResultsTable {
-                width: 100%;
-                border-collapse: collapse;
+            #searchResults {
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                height: 100%;
             }
             #tableWrapper {
                 height: 100%;
@@ -253,7 +256,8 @@ export class EboBrowseComp extends EboComponent {
         }
         return `<img class="filterButton" src="${imgUrl}" alt="">`;
     }
-    renderResults() {
+
+    async renderResults() {
         if(!this.isRendered) //may be called directly, before initialization.
             return;
         this.setSearchInfo("");
@@ -266,17 +270,32 @@ export class EboBrowseComp extends EboComponent {
 
         tableWrapper.innerHTML = "";
 
-        tableWrapper.innerHTML = this.results.refs
-            .map(result => {
-                let refType = result.item.ref.type;
-                return `
+        let html = "";
+        for(let result of this.results.refs) {
+            let imgUrl = "";
+            if(result.type == "ref") {
+                let model = await getState().getController().getExpandedModel(result.item);
+                if (model) {
+                    if(isInstanceOfExpandedTrackModel(model))
+                        imgUrl = model.album?.imageUrl??"";
+                    else if(isInstanceOfExpandedStreamModel(model))
+                        imgUrl = model.stream.imageUrl;
+                    else //album track model
+                       imgUrl = model.album.imageUrl;
+                }
+            }
+            let refType = result.item.ref.type;
+            html += `
                     <ebo-list-item 
                         data-uri="${result.item.ref.uri}" 
                         data-type="${refType}"
-                        text="${result.item.ref.name + this.getGenreAlias(result)}">
+                        text="${result.item.ref.name + this.getGenreAlias(result)}"
+                        img="${imgUrl}">
                     </ebo-list-item>`;
-            })
-            .join("\n");
+
+        }
+
+        tableWrapper.innerHTML = html;
         tableWrapper.querySelectorAll("ebo-list-item").forEach((row: HTMLElement) => {
             row.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
             row.addEventListener("click", ev => {this.onRowClicked(ev)});
