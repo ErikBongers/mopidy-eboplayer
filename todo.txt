@@ -1,3 +1,4 @@
+* Bundle album meta fetches.
 * separate Cache from Controller.
 
 * create a listItemComp

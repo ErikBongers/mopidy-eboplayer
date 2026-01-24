@@ -194,6 +194,8 @@ export async function createAllRefs( roots: Ref<AllUris>[], sub: Ref<AllUris>[],
         }
     }
     let mappedAlbums: RefSearchResult[] = albums.map(album => ({item: {type: "album" as RefType, ref: album, lastModified: null}, type: "ref", weight: 0}));
+    let albumUris = albums.map(album => album.uri);
+    await getState().getController().getMetaDatasCached(albumUris); //pre-fetch
     for(let albumRef of mappedAlbums) {
         let album = await getState().getController().getExpandedAlbumModel(albumRef.item.ref.uri as AlbumUri);
         albumRef.item.lastModified = album.mostRecentTrackModifiedDate;

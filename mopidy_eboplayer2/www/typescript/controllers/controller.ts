@@ -511,7 +511,7 @@ export class Controller extends Commands implements DataRequester{
         let track = await this.lookupTrackCached(trackUri);
         if(track?.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
-            let remembers = await this.lookupRemembersCached();
+            let remembers = await this.lookupRemembersCached(); //todo: put this in a pre-fetch
             let expandedStreamLines = streamLines.map(lines => {
                 let lineStr = lines.join("\n");
                 let expandedLineGroup: ExpandedHistoryLineGroup = {
@@ -550,6 +550,26 @@ export class Controller extends Commands implements DataRequester{
             ?? null;
 
         return new ExpandedAlbumModel(album, tracks, meta, mostRecentTrackModifiedDate);
+    }
+
+    async getMetaDatasCached(albumUris: AlbumUri[]) {
+        let foundMetas = [];
+        let notFoundMetas: AlbumUri[] = [];
+        for(let albumUri of albumUris) {
+            let cachedMeta = this.model.getFromMetaCache(albumUri);
+            if(cachedMeta)
+                foundMetas.push(cachedMeta.meta);
+            else
+                notFoundMetas.push(albumUri);
+        }
+        let metas = await this.webProxy.fetchMetaDatas(notFoundMetas);
+        for(let albumUri of notFoundMetas) {
+            let meta = metas[albumUri];
+            if(meta)
+                this.model.addToMetaCache(albumUri, meta);
+            else
+                this.model.addToMetaCache(albumUri, null);
+        }
     }
 
     async getMetaDataCached(albumUri: string) {

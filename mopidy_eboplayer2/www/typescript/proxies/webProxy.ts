@@ -1,4 +1,6 @@
-import {AlbumMetaData, AllUris, GenreDef, HistoryLineDef, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
+import {AlbumMetaData, AlbumUri, AllUris, GenreDef, HistoryLineDef, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
+
+export type AlbumMetaDict = {[uri: AlbumUri]: AlbumMetaData};
 
 export class WebProxy {
     private ebobackBase: string;
@@ -28,6 +30,19 @@ export class WebProxy {
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as string[];
+    }
+
+    async fetchMetaDatas(albumUris: AlbumUri[]) {
+        let url = this.ebobackUrl(`get_album_metas`);
+        //don't use url params, as max url lenght is 2048
+        //don't use get aa it's body is meaningless
+        let data = new FormData();
+        data.append("uris", albumUris.join(","));
+        let res = await fetch(url, {method: 'POST', body: data});
+        let text = await res.text();
+        if(text)
+            return JSON.parse(text) as AlbumMetaDict;
+        return {};
     }
 
     async fetchMetaData(albumUri: string) {

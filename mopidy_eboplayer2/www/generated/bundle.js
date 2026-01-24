@@ -556,6 +556,8 @@ async function createAllRefs(roots, sub, tracks, albums, artists, genres, radios
 		type: "ref",
 		weight: 0
 	}));
+	let albumUris = albums.map((album) => album.uri);
+	await playerState_default().getController().getMetaDatasCached(albumUris);
 	for (let albumRef of mappedAlbums) {
 		let album = await playerState_default().getController().getExpandedAlbumModel(albumRef.item.ref.uri);
 		albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
@@ -1570,6 +1572,17 @@ var WebProxy = class {
 		url.searchParams.set("uri", uri);
 		return await (await fetch(url)).json();
 	}
+	async fetchMetaDatas(albumUris) {
+		let url = this.ebobackUrl(`get_album_metas`);
+		let data = new FormData();
+		data.append("uris", albumUris.join(","));
+		let text = await (await fetch(url, {
+			method: "POST",
+			body: data
+		})).text();
+		if (text) return JSON.parse(text);
+		return {};
+	}
 	async fetchMetaData(albumUri) {
 		let url = this.ebobackUrl(`get_album_meta`);
 		url.searchParams.set("uri", albumUri);
@@ -2033,6 +2046,21 @@ var Controller = class Controller extends Commands {
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
 		let mostRecentTrackModifiedDate = tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0] ?? null;
 		return new ExpandedAlbumModel(album, tracks, meta, mostRecentTrackModifiedDate);
+	}
+	async getMetaDatasCached(albumUris) {
+		let foundMetas = [];
+		let notFoundMetas = [];
+		for (let albumUri of albumUris) {
+			let cachedMeta = this.model.getFromMetaCache(albumUri);
+			if (cachedMeta) foundMetas.push(cachedMeta.meta);
+			else notFoundMetas.push(albumUri);
+		}
+		let metas = await this.webProxy.fetchMetaDatas(notFoundMetas);
+		for (let albumUri of notFoundMetas) {
+			let meta = metas[albumUri];
+			if (meta) this.model.addToMetaCache(albumUri, meta);
+			else this.model.addToMetaCache(albumUri, null);
+		}
 	}
 	async getMetaDataCached(albumUri) {
 		let cachedMeta = this.model.getFromMetaCache(albumUri);
