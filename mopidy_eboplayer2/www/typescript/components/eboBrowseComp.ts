@@ -192,7 +192,7 @@ export class EboBrowseComp extends EboComponent {
         searchText?.select();
     }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         this.renderBreadCrumbs();
         this.renderResults();
         this.requestUpdate();

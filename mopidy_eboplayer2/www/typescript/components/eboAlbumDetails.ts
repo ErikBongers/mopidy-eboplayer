@@ -77,7 +77,7 @@ export class EboAlbumDetails extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) { //todo: make override method instead of abstract (and thus required)
+    override render(shadow:ShadowRoot) { //todo: make override method instead of abstract (and thus required)
         let imageTag = shadow.getElementById("bigImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {
             this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});

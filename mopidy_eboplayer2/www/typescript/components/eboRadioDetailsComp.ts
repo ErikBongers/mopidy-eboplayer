@@ -78,9 +78,6 @@ export class EboRadioDetailsComp extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) { //todo: make overridable.
-    }
-
     override update(shadow:ShadowRoot) {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";

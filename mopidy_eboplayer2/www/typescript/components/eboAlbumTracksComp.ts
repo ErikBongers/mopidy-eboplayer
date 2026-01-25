@@ -80,7 +80,7 @@ export class EboAlbumTracksComp extends EboComponent {
         this.requestRender();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         this.renderTrackList(shadow);
     }
 

@@ -67,9 +67,6 @@ export class EboMenuButton extends EboComponent {
         this.requestRender();
         }
 
-    render() {
-    }
-
     closeMenu() {
         (this.getShadow().getElementById("menu") as HTMLElement).hidePopover();
     }

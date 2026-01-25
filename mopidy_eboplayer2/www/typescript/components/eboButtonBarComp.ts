@@ -131,7 +131,7 @@ export class EboPlayerBar extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         let slider = shadow.getElementById("volumeSlider") as HTMLInputElement;
         slider.oninput = (ev) => {
             this.isVolumeSliding = true;

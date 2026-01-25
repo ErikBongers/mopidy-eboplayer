@@ -127,7 +127,9 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         this._isRendered = true;
     }
 
-    abstract render(shadow: ShadowRoot): void;
+    render(shadow: ShadowRoot): void {
+        this.requestUpdate();
+    };
 
     getShadow(){
         return this.shadow;

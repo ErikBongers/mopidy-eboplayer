@@ -104,7 +104,7 @@ export class EboListButtonBar extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", (ev) => {
             if(this.btn_states.play != "show") return;
             this.dispatchEboEvent("playItemListClicked.eboplayer", {source: this.list_source});

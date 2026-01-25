@@ -85,7 +85,7 @@ export class EboProgressBar extends EboComponent {
         this.requestRender();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         let percent = (this.position - this.min) / (this.max-this.min) * 100;
         let styleElement = shadow.appendChild(document.createElement("style"));
         styleElement.innerHTML = `.movingGradient { width: ${percent}%; } `;

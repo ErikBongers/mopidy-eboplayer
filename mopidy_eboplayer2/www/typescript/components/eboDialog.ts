@@ -60,7 +60,7 @@ export class EboDialog extends EboComponent {
         this.requestUpdate();//don't request render or the dialog may not show.
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         let okButton = shadow.getElementById("OkBtn") as HTMLButtonElement;
         okButton.addEventListener("click", (ev) => {
             this.onOkButtonClick(ev);

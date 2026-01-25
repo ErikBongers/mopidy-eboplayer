@@ -1,16 +1,4 @@
-* Bundle album meta fetches.
 * separate Cache from Controller.
-
-* create a listItemComp
-  > unaware of size
-    > can be 2 or 3 in a row.
-    > Icon resizes, other things not.
-  > 2 display states: line or icon
-  > a selected state
-  > a selection mode
-  > line size should put 3 dots to the most right.
-
-
 
 * create a big icon list view.
   > Same behaviour for line and icon view!

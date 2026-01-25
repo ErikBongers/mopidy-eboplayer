@@ -103,10 +103,6 @@ export class EboListItemComp extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
-        this.requestUpdate();
-    }
-
     override update(shadow: ShadowRoot) {
         let wrapper = shadow.getElementById("wrapper") as HTMLElement;
         this.setClassFromBoolAttribute(wrapper, "selected");

@@ -63,7 +63,7 @@ export class EboSettingsComp extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         let scanBtn = shadow.getElementById("scanBtn") as EboButton;
         scanBtn.addEventListener("click", async (ev) => {
             getState().getController().startScan().then(() => {});

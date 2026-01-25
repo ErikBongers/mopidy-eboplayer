@@ -138,7 +138,7 @@ export class EboBrowseFilterComp extends EboComponent {
         searchText?.select();
     }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         // @ts-ignore
         shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             //todo: is this button even needed?

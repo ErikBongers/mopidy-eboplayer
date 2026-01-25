@@ -78,7 +78,7 @@ export class EboButton extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         let button = shadow.querySelector("button") as HTMLButtonElement;
         button.addEventListener("mousedown", (ev) => {
             this.pressTimer.onMouseDown(ev);

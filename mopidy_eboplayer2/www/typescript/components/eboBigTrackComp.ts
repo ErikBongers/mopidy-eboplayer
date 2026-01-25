@@ -173,7 +173,7 @@ class EboBigTrackComp extends EboComponent {
         this.requestUpdate();
         }
 
-    render(shadow:ShadowRoot) {
+    override render(shadow:ShadowRoot) {
         this.addShadowEventListener("bigImage","click", (ev) => {
             this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
         });

@@ -2404,6 +2404,9 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.render(this.shadow);
 		this._isRendered = true;
 	}
+	render(shadow) {
+		this.requestUpdate();
+	}
 	getShadow() {
 		return this.shadow;
 	}
@@ -4420,7 +4423,6 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		this.requestRender();
 	}
-	render() {}
 	closeMenu() {
 		this.getShadow().getElementById("menu").hidePopover();
 	}
@@ -4792,7 +4794,6 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
 		this.requestUpdate();
 	}
-	render(shadow) {}
 	update(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
@@ -5255,9 +5256,6 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 				this.updateBoolProperty(name, newValue);
 				break;
 		}
-		this.requestUpdate();
-	}
-	render(shadow) {
 		this.requestUpdate();
 	}
 	update(shadow) {
