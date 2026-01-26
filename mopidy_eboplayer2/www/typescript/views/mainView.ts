@@ -90,6 +90,7 @@ export class MainView extends View {
         if(currentView == Views.Album) {
             states = this.showHideTrackAndAlbumButtons(states, "show");
             states.new_playlist = "hide";
+            states.line_or_icon = "hide";
             return states;
         }
         return states;
@@ -183,7 +184,7 @@ export class MainView extends View {
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
             if(expandedTrackInfo.album?.albumInfo)
-                getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+                getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
             //todo: else?
             return;
         }
@@ -208,7 +209,7 @@ export class MainView extends View {
                 if(track?.type == "file") {
                     if(track.track.album) {
                         let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
-                        this.setAlbumComponentData(albumModel);
+                        this.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
                     }
                     //todo: else?
                 }
@@ -225,13 +226,17 @@ export class MainView extends View {
     }
 
     private async onAlbumToViewChanged() {
-        let albumModel = await getState().getController().getExpandedAlbumModel(getState().getModel().getAlbumToView());
-        this.setAlbumComponentData(albumModel);
+        let albumToView = getState().getModel().getAlbumToView();
+        if(!albumToView)
+            return;
+        let albumModel = await getState().getController().getExpandedAlbumModel(albumToView.albumUri);
+        this.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
     }
 
-    private setAlbumComponentData(albumModel: ExpandedAlbumModel) {
+    private setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
+        albumComp.setAttribute("selected_track_uri", selectedTrackUri ?? "");
         albumComp.setAttribute("img", albumModel.album.imageUrl);
         if(albumModel.album.albumInfo) {
             albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);

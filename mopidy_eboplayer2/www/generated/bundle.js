@@ -872,7 +872,7 @@ var Model = class extends EboEventTargetClass {
 	allRefs = null;
 	currentRefs = null;
 	view = Views.NowPlaying;
-	albumToViewUri;
+	albumToView = null;
 	remembers = null;
 	scanStatus = "";
 	constructor() {
@@ -1069,11 +1069,14 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("viewChanged.eboplayer", {});
 	}
 	getView = () => this.view;
-	setAlbumToView(uri) {
-		this.albumToViewUri = uri;
+	setAlbumToView(uri, selectedTrackUri) {
+		this.albumToView = {
+			albumUri: uri,
+			selectedTrackUri
+		};
 		this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
 	}
-	getAlbumToView = () => this.albumToViewUri;
+	getAlbumToView = () => this.albumToView;
 	setRemembers(remembers) {
 		this.remembers = remembers;
 		this.dispatchEboEvent("remembersChanged.eboplayer", {});
@@ -1801,7 +1804,7 @@ var Controller = class Controller extends Commands {
 	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
 		if (type == "track" || type == "radio") return;
 		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
-			this.showAlbum(uri);
+			this.showAlbum(uri, null);
 		});
 		if (addTextFilterBreadcrumb) {
 			let browseFilter = this.model.getCurrentBrowseFilter();
@@ -1863,7 +1866,7 @@ var Controller = class Controller extends Commands {
 			await this.filterBrowseResults();
 		} else if (breadCrumb instanceof BreadCrumbRef) {
 			if (isBreadCrumbForAlbum(breadCrumb)) {
-				this.showAlbum(breadCrumb.data.uri);
+				this.showAlbum(breadCrumb.data.uri, null);
 				return;
 			}
 			this.model.resetBreadCrumbsTo(id);
@@ -2165,8 +2168,8 @@ var Controller = class Controller extends Commands {
 	getGenreDef(name) {
 		return this.model.getGenreDefs()?.get(name);
 	}
-	showAlbum(albumUri) {
-		this.model.setAlbumToView(albumUri);
+	showAlbum(albumUri, selectedTrackUri) {
+		this.model.setAlbumToView(albumUri, selectedTrackUri);
 		this.model.setView(Views.Album);
 	}
 	async remember(s) {
@@ -3009,6 +3012,8 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboAlbumTracksComp.ts
 var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
+	static tagName = "ebo-album-tracks-view";
+	static observedAttributes = ["img", "selected_track_uri"];
 	set activeTrackUri(value) {
 		this._activeTrackUri = value;
 		this.highLightActiveTrack();
@@ -3021,9 +3026,8 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 		this.requestRender();
 	}
 	_activeTrackUri = null;
-	static tagName = "ebo-album-tracks-view";
-	static observedAttributes = ["img"];
 	_albumInfo = null;
+	selected_track_uri = "";
 	constructor() {
 		super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 		this.albumInfo = null;
@@ -3056,6 +3060,9 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                         border-bottom: 1px solid #ffffff80;
                     }
                 }
+                .selected {
+                    background-color: var(--selected-background);
+                }
             </style>
         `;
 	static htmlText = `
@@ -3071,13 +3078,15 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
               Tadaaa....
             </dialog>        
         `;
-	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
-		this.requestRender();
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "selected_track_uri":
+				this.selected_track_uri = newValue;
+				break;
+		}
+		this.requestUpdate();
 	}
 	render(shadow) {
-		this.renderTrackList(shadow);
-	}
-	renderTrackList(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
 		if (this.albumInfo) this.albumInfo.tracks.forEach((track) => {
@@ -3114,11 +3123,18 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 			});
 		});
 		this.highLightActiveTrack();
+		this.requestUpdate();
 	}
 	highLightActiveTrack() {
 		if (!this._activeTrackUri) return;
 		let tr = this.getShadow().querySelector(`tr[data-uri="${this._activeTrackUri}"]`);
 		if (tr) tr.classList.add("current", "textGlow");
+	}
+	update(shadow) {
+		shadow.querySelectorAll("tr").forEach((tr) => {
+			if (tr.dataset.uri == this.selected_track_uri) tr.classList.add("selected");
+			else tr.classList.remove("selected");
+		});
 	}
 };
 
@@ -3131,7 +3147,8 @@ function ListButtonState_AllHidden() {
 		edit: "hide",
 		replace: "hide",
 		save: "hide",
-		new_playlist: "hide"
+		new_playlist: "hide",
+		line_or_icon: "hide"
 	};
 }
 var EboListButtonBar = class EboListButtonBar extends EboComponent {
@@ -3209,34 +3226,34 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		this.addShadowEventListener("btnPlay", "click", (ev) => {
+		this.addShadowEventListener("btnPlay", "click", () => {
 			if (this.btn_states.play != "show") return;
 			this.dispatchEboEvent("playItemListClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnAdd", "click", (ev) => {
+		this.addShadowEventListener("btnAdd", "click", () => {
 			if (this.btn_states.add != "show") return;
 			this.dispatchEboEvent("addItemListClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnReplace", "click", (ev) => {
+		this.addShadowEventListener("btnReplace", "click", () => {
 			if (this.btn_states.replace != "show") return;
 			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnEdit", "click", (ev) => {
+		this.addShadowEventListener("btnEdit", "click", () => {
 			if (this.btn_states.edit != "show") return;
 			this.dispatchEboEvent("editClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnSave", "click", (ev) => {
+		this.addShadowEventListener("btnSave", "click", () => {
 			if (this.btn_states.save != "show") return;
 			this.dispatchEboEvent("saveClicked.eboplayer", {
 				source: this.list_source,
 				uri: this.uri
 			});
 		});
-		this.addShadowEventListener("btnNewPlaylist", "click", (ev) => {
+		this.addShadowEventListener("btnNewPlaylist", "click", () => {
 			if (this.btn_states.new_playlist != "show") return;
 			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
 		});
-		this.shadow.getElementById("btnDisplayMode")?.addEventListener("pressedChange", (ev) => {
+		this.shadow.getElementById("btnDisplayMode")?.addEventListener("pressedChange", () => {
 			let pressed = this.shadow.getElementById("btnDisplayMode")?.getAttribute("pressed");
 			this.dispatchEboEvent("displayModeChanged.eboplayer", { mode: pressed == "true" ? "icon" : "line" });
 		});
@@ -3249,6 +3266,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		this.updateButtonVisibility("btnEdit", this._btn_states.edit);
 		this.updateButtonVisibility("btnSave", this._btn_states.save);
 		this.updateButtonVisibility("btnNewPlaylist", this._btn_states.new_playlist);
+		this.updateButtonVisibility("btnDisplayMode", this._btn_states.line_or_icon);
 	}
 	updateButtonVisibility(id, state$1) {
 		let btn = this.shadow.getElementById(id);
@@ -3341,6 +3359,7 @@ var MainView = class extends View {
 		if (currentView == Views.Album) {
 			states = this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "hide";
+			states.line_or_icon = "hide";
 			return states;
 		}
 		return states;
@@ -3428,7 +3447,7 @@ var MainView = class extends View {
 		let expandedTrackInfo = await playerState_default().getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
 		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-			if (expandedTrackInfo.album?.albumInfo) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri);
+			if (expandedTrackInfo.album?.albumInfo) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
 			return;
 		}
 		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("currentTrackBigView").setAttribute("show_back", "true");
@@ -3445,7 +3464,7 @@ var MainView = class extends View {
 			if (track?.type == "file") {
 				if (track.track.album) {
 					let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
-					this.setAlbumComponentData(albumModel);
+					this.setAlbumComponentData(albumModel, track.track.uri);
 				}
 			} else if (track?.type == "stream") {
 				let albumComp = document.getElementById("bigAlbumView");
@@ -3459,12 +3478,15 @@ var MainView = class extends View {
 		});
 	}
 	async onAlbumToViewChanged() {
-		let albumModel = await playerState_default().getController().getExpandedAlbumModel(playerState_default().getModel().getAlbumToView());
-		this.setAlbumComponentData(albumModel);
+		let albumToView = playerState_default().getModel().getAlbumToView();
+		if (!albumToView) return;
+		let albumModel = await playerState_default().getController().getExpandedAlbumModel(albumToView.albumUri);
+		this.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
 	}
-	setAlbumComponentData(albumModel) {
+	setAlbumComponentData(albumModel, selectedTrackUri) {
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.albumInfo = albumModel;
+		albumComp.setAttribute("selected_track_uri", selectedTrackUri ?? "");
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
 		if (albumModel.album.albumInfo) {
 			albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
@@ -3982,6 +4004,14 @@ var EboButton = class EboButton extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboBigAlbumComp.ts
 var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
+	static tagName = "ebo-big-album-view";
+	static observedAttributes = [
+		"name",
+		"extra",
+		"img",
+		"disabled",
+		"selected_track_uri"
+	];
 	get btn_states() {
 		return this._btn_states;
 	}
@@ -4004,7 +4034,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		this.requestUpdate();
 	}
 	_activeTrackUri = null;
-	static tagName = "ebo-big-album-view";
 	static progressBarAttributes = [
 		"position",
 		"min",
@@ -4012,18 +4041,13 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		"button",
 		"active"
 	];
-	static observedAttributes = [
-		"name",
-		"extra",
-		"img",
-		"disabled"
-	];
 	name = "";
 	extra = "";
 	img = "";
 	albumClickEvent;
 	_albumInfo = null;
 	_btn_states = ListButtonState_AllHidden();
+	selected_track_uri = "";
 	static styleText = `
         <style>
             :host { 
@@ -4129,6 +4153,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			case "name":
 			case "extra":
 			case "img":
+			case "selected_track_uri":
 				this[name] = newValue;
 				break;
 		}
@@ -4152,6 +4177,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		}
 		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
 		listButtonBar.btn_states = this.btn_states;
+		shadow.querySelector("ebo-album-tracks-view").setAttribute("selected_track_uri", this.selected_track_uri);
 	}
 	render(shadow) {
 		this.shadow.getElementById("bigImage").addEventListener("click", () => {
@@ -5401,8 +5427,8 @@ var BrowseView = class extends View {
 	}
 	async onPlayItemListClick(detail) {
 		if (detail.source == "albumView") {
-			let albumUri = playerState_default().getModel().getAlbumToView();
-			let album = (await playerState_default().getController().lookupAlbumsCached([albumUri]))[0];
+			let albumToView = playerState_default().getModel().getAlbumToView();
+			let album = (await playerState_default().getController().lookupAlbumsCached([albumToView.albumUri]))[0];
 			if (album.albumInfo) await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
 			return;
 		}

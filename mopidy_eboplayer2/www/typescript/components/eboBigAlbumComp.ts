@@ -7,6 +7,10 @@ import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./e
 
 
 export class EboBigAlbumComp extends EboComponent {
+    static override readonly tagName=  "ebo-big-album-view";
+    // noinspection JSUnusedGlobalSymbols
+    static observedAttributes = ["name", "extra", "img", "disabled", "selected_track_uri"];
+
     get btn_states(): ListButtonStates {
         return this._btn_states;
     }
@@ -32,18 +36,14 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     private _activeTrackUri: string | null = null;
-    static override readonly tagName=  "ebo-big-album-view";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
-    // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [
-        "name", "extra", "img", "disabled"
-    ];
     private name: string = "";
     private extra: string = "";
     private img: string  = "";
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: ExpandedAlbumModel | null = null;
     private _btn_states: ListButtonStates = ListButtonState_AllHidden();
+    private selected_track_uri: string = "";
 
     static styleText= `
         <style>
@@ -155,6 +155,7 @@ export class EboBigAlbumComp extends EboComponent {
             case "name":
             case "extra":
             case "img":
+            case "selected_track_uri":
                 this[name] = newValue;
                 break;
         }
@@ -182,6 +183,8 @@ export class EboBigAlbumComp extends EboComponent {
         }
         let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
         listButtonBar.btn_states = this.btn_states;
+        let tracksView = shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
+        tracksView.setAttribute("selected_track_uri", this.selected_track_uri);
     }
 
     override render(shadow:ShadowRoot) {

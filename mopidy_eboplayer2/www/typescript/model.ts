@@ -21,9 +21,14 @@ export interface ViewModel extends EboEventTargetClass {
     getTrackList(): TlTrack[];
     getBreadCrumbs(): BrowseFilterBreadCrumbStack;
     getView(): Views;
-    getAlbumToView(): AlbumUri;
+    getAlbumToView(): AlbumToView | null;
     getGenreDefs(): Map<string, GenreDef> | null;
     getCurrentProgramTitle(): string;
+}
+
+export interface AlbumToView {
+    albumUri: AlbumUri;
+    selectedTrackUri: TrackUri | null;
 }
 
 export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrumbTypeName, FilterBreadCrumb>{}
@@ -64,7 +69,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private allRefs: Refs | null = null;
     private currentRefs: Refs | null = null;
     private view: Views = Views.NowPlaying;
-    private albumToViewUri: AlbumUri;
+    private albumToView: AlbumToView | null = null;
     // private albumCache: Set<LibraryItem> = new Map();
     private remembers: string[] | null = null;
     private scanStatus: string = "";
@@ -319,11 +324,11 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
     getView = () => this.view;
 
-    setAlbumToView(uri: AlbumUri) {
-        this.albumToViewUri = uri;
+    setAlbumToView(uri: AlbumUri, selectedTrackUri: TrackUri | null) {
+        this.albumToView = {albumUri: uri, selectedTrackUri: selectedTrackUri};
         this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
     }
-    getAlbumToView = () => this.albumToViewUri;
+    getAlbumToView = () => this.albumToView;
 
     setRemembers(remembers: string[]) {
         this.remembers = remembers;

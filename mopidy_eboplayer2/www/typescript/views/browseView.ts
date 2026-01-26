@@ -6,6 +6,7 @@ import {EboBrowseComp} from "../components/eboBrowseComp";
 import {addEboEventListener, GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {DisplayMode} from "../components/eboListItemComp";
+import {AlbumToView} from "../model";
 
 export class BrowseView extends View {
     private browseComp: EboBrowseComp;
@@ -136,8 +137,8 @@ export class BrowseView extends View {
     private async onPlayItemListClick(detail: GuiSourceArgs) {
         if(detail.source == "albumView") {
             let model = getState().getModel();
-            let albumUri = model.getAlbumToView();
-            let album = (await getState().getController().lookupAlbumsCached([albumUri]))[0];
+            let albumToView = model.getAlbumToView() as AlbumToView; //Shouldn't be null.'
+            let album = (await getState().getController().lookupAlbumsCached([albumToView.albumUri]))[0];
             if(album.albumInfo) {
                 await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
             }

@@ -3,6 +3,10 @@ import {ExpandedAlbumModel, ExpandedStreamModel, TrackUri} from "../modelTypes";
 import {EboMenuButton} from "./eboMenuButton";
 
 export class EboAlbumTracksComp extends EboComponent {
+    static override readonly tagName=  "ebo-album-tracks-view";
+    // noinspection JSUnusedGlobalSymbols
+    static observedAttributes = ["img", "selected_track_uri"];
+
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
         this.highLightActiveTrack();
@@ -17,13 +21,8 @@ export class EboAlbumTracksComp extends EboComponent {
     }
 
     private _activeTrackUri: string | null = null;
-
-    static override readonly tagName=  "ebo-album-tracks-view";
-    // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [
-        "img",
-    ];
     private _albumInfo: ExpandedAlbumModel | null = null;
+    private selected_track_uri: string = "";
 
     constructor() {
         super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
@@ -59,6 +58,9 @@ export class EboAlbumTracksComp extends EboComponent {
                         border-bottom: 1px solid #ffffff80;
                     }
                 }
+                .selected {
+                    background-color: var(--selected-background);
+                }
             </style>
         `;
         static htmlText = `
@@ -76,15 +78,16 @@ export class EboAlbumTracksComp extends EboComponent {
         `;
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(_name: string, _oldValue: string, _newValue: string) {
-        this.requestRender();
+    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+        switch (name) {
+            case "selected_track_uri":
+                this.selected_track_uri = newValue;
+                break;
+        }
+        this.requestUpdate();
         }
 
     override render(shadow:ShadowRoot) {
-        this.renderTrackList(shadow);
-    }
-
-    renderTrackList(shadow:ShadowRoot) {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.albumInfo) {
@@ -127,6 +130,7 @@ export class EboAlbumTracksComp extends EboComponent {
             });
         }
         this.highLightActiveTrack();
+        this.requestUpdate();
     }
 
     private highLightActiveTrack() {
@@ -136,5 +140,14 @@ export class EboAlbumTracksComp extends EboComponent {
         if(tr) {
             tr.classList.add("current", "textGlow");
         }
+    }
+
+    override update(shadow:ShadowRoot) {
+        shadow.querySelectorAll("tr").forEach(tr => {
+            if(tr.dataset.uri == this.selected_track_uri)
+                tr.classList.add("selected");
+            else
+                tr.classList.remove("selected");
+        });
     }
 }
