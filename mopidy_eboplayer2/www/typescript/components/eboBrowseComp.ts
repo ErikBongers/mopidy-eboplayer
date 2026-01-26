@@ -233,7 +233,6 @@ export class EboBrowseComp extends EboComponent {
     }
 
     private renderBreadcrumb(crumb: FilterBreadCrumb) {
-        //todo: make switch statement:  https://stackoverflow.com/a/36332700/1311434
         if(crumb instanceof BreadCrumbRef)
             return `<button data-id="${crumb.id}" class="breadcrumb uri">${crumb.label}</button>`;
         else if(crumb instanceof BreadCrumbBrowseFilter) {
