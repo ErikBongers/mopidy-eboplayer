@@ -36,10 +36,11 @@ export class EboListButtonBar extends EboComponent {
     }
     static override readonly tagName=  "ebo-list-button-bar";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["list_source", "uri"];
+    static observedAttributes = ["list_source", "uri", "use_selected_color"];
     private _btn_states: ListButtonStates = ListButtonState_AllHidden();
     list_source: GuiSource;
     uri: string;
+    use_selected_color: boolean = false;
     static styleText = `
         <style>
             #buttons {
@@ -50,7 +51,7 @@ export class EboListButtonBar extends EboComponent {
                     opacity: 0.2;
                 }
                 button.playButton {
-                    background-color: var(--highlight-background);
+                    background-color: var(--playing-background);
                     border: none;
                 }
                 img {
@@ -62,6 +63,9 @@ export class EboListButtonBar extends EboComponent {
                     position: relative;
                     top: .4rem;
                     margin-inline-start: .5rem;
+                }
+                button.selected {
+                    background-color: var(--selected-background);
                 }
             }
         </style>
@@ -100,6 +104,8 @@ export class EboListButtonBar extends EboComponent {
             case "uri":
                 this[name] = newValue;
                 break;
+            case "use_selected_color":
+                this.updateBoolProperty(name, newValue);
         }
         this.requestUpdate();
         }
@@ -144,6 +150,10 @@ export class EboListButtonBar extends EboComponent {
         this.updateButtonVisibility("btnSave", this._btn_states.save);
         this.updateButtonVisibility("btnNewPlaylist", this._btn_states.new_playlist);
         this.updateButtonVisibility("btnDisplayMode", this._btn_states.line_or_icon);
+        let playButtons = shadow.querySelectorAll("button.playButton");
+        playButtons.forEach(button => {
+            button.classList.toggle("selected", this.use_selected_color);
+        });
     }
 
     private updateButtonVisibility(id: string, state: ListButtonState) {

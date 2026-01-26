@@ -3,9 +3,9 @@
     --header-background: #2a1c2a;
     --panel-background: black;
     --panel-button-background: transparent;
-    --panel-button-selected: purple;
-    --highlight-background: rgba(184, 134, 11, 0.53);
-    --selected-background: rgba(184, 134, 11, 0.3);
+    --highlight-background: rgba(184, 134, 11, 0.3);
+    --playing-background: rgba(184, 134, 11, 0.53);
+    --selected-background: rgba(84, 193, 251, 0.39);
     --edit-background: rgba(255, 255, 255, 0.07);
     font-family: "Sofia Sans", sans-serif;
     font-optical-sizing: auto;

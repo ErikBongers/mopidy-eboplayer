@@ -3,7 +3,7 @@ import {EboPlayerDataType, View} from "./view";
 import {ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaylistUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
-import {console_yellow, unreachable} from "../global";
+import {arrayToggle, console_yellow, unreachable} from "../global";
 import {SaveUriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
@@ -82,6 +82,9 @@ export class MainView extends View {
         settingsComp.addEboEventListener("whatsNewRequested.eboplayer", () => {
             window.location.hash = "#WhatsNew";
             window.location.reload();
+        });
+        albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
+            albumComp.selected_track_uris = arrayToggle<TrackUri>(albumComp.selected_track_uris, ev.detail.uri as TrackUri);
         });
     }
 
@@ -237,7 +240,7 @@ export class MainView extends View {
     private setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
-        albumComp.setAttribute("selected_track_uri", selectedTrackUri ?? "");
+        albumComp.selected_track_uris = [selectedTrackUri ?? "" as TrackUri];
         albumComp.setAttribute("img", albumModel.album.imageUrl);
         if(albumModel.album.albumInfo) {
             albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);

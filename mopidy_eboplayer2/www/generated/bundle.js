@@ -1549,6 +1549,10 @@ function console_yellow(msg) {
 function unreachable(x) {
 	throw new Error("Didn't expect to get here");
 }
+function arrayToggle(arr, item) {
+	if (arr.includes(item)) return arr.filter((i) => i !== item);
+	else return [...arr, item];
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
@@ -3012,8 +3016,15 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboAlbumTracksComp.ts
 var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
+	get selected_track_uris() {
+		return this._selected_track_uris;
+	}
+	set selected_track_uris(value) {
+		this._selected_track_uris = value;
+		this.requestUpdate();
+	}
 	static tagName = "ebo-album-tracks-view";
-	static observedAttributes = ["img", "selected_track_uri"];
+	static observedAttributes = ["img"];
 	set activeTrackUri(value) {
 		this._activeTrackUri = value;
 		this.highLightActiveTrack();
@@ -3027,7 +3038,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	}
 	_activeTrackUri = null;
 	_albumInfo = null;
-	selected_track_uri = "";
+	_selected_track_uris = [];
 	constructor() {
 		super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
 		this.albumInfo = null;
@@ -3079,11 +3090,6 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
             </dialog>        
         `;
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		switch (name) {
-			case "selected_track_uri":
-				this.selected_track_uri = newValue;
-				break;
-		}
 		this.requestUpdate();
 	}
 	render(shadow) {
@@ -3121,6 +3127,10 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 				ev.target.closest("ebo-menu-button").closeMenu();
 				this.dispatchEboEvent("playTrackClicked.eboplayer", { uri: track.track.uri });
 			});
+			tr.addEventListener("click", (ev) => {
+				tr.classList.toggle("selected");
+				this.dispatchEboEvent("trackClicked.eboplayer", { uri: tr.dataset.uri });
+			});
 		});
 		this.highLightActiveTrack();
 		this.requestUpdate();
@@ -3132,9 +3142,14 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	}
 	update(shadow) {
 		shadow.querySelectorAll("tr").forEach((tr) => {
-			if (tr.dataset.uri == this.selected_track_uri) tr.classList.add("selected");
+			if (this._selected_track_uris.includes(tr.dataset.uri)) tr.classList.add("selected");
 			else tr.classList.remove("selected");
 		});
+	}
+	getSelectedUris() {
+		return [...this.getShadow().querySelectorAll("tr.selected")].map((tr) => {
+			return tr.dataset.uri;
+		}).filter((uri) => uri != null && uri != "" && uri != void 0);
 	}
 };
 
@@ -3160,10 +3175,15 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		this.requestUpdate();
 	}
 	static tagName = "ebo-list-button-bar";
-	static observedAttributes = ["list_source", "uri"];
+	static observedAttributes = [
+		"list_source",
+		"uri",
+		"use_selected_color"
+	];
 	_btn_states = ListButtonState_AllHidden();
 	list_source;
 	uri;
+	use_selected_color = false;
 	static styleText = `
         <style>
             #buttons {
@@ -3174,7 +3194,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     opacity: 0.2;
                 }
                 button.playButton {
-                    background-color: var(--highlight-background);
+                    background-color: var(--playing-background);
                     border: none;
                 }
                 img {
@@ -3186,6 +3206,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     position: relative;
                     top: .4rem;
                     margin-inline-start: .5rem;
+                }
+                button.selected {
+                    background-color: var(--selected-background);
                 }
             }
         </style>
@@ -3222,6 +3245,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			case "uri":
 				this[name] = newValue;
 				break;
+			case "use_selected_color": this.updateBoolProperty(name, newValue);
 		}
 		this.requestUpdate();
 	}
@@ -3267,6 +3291,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		this.updateButtonVisibility("btnSave", this._btn_states.save);
 		this.updateButtonVisibility("btnNewPlaylist", this._btn_states.new_playlist);
 		this.updateButtonVisibility("btnDisplayMode", this._btn_states.line_or_icon);
+		shadow.querySelectorAll("button.playButton").forEach((button) => {
+			button.classList.toggle("selected", this.use_selected_color);
+		});
 	}
 	updateButtonVisibility(id, state$1) {
 		let btn = this.shadow.getElementById(id);
@@ -3352,6 +3379,9 @@ var MainView = class extends View {
 		document.getElementById("settingsView").addEboEventListener("whatsNewRequested.eboplayer", () => {
 			window.location.hash = "#WhatsNew";
 			window.location.reload();
+		});
+		albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
+			albumComp.selected_track_uris = arrayToggle(albumComp.selected_track_uris, ev.detail.uri);
 		});
 	}
 	getListButtonStates(currentView) {
@@ -3487,7 +3517,7 @@ var MainView = class extends View {
 	setAlbumComponentData(albumModel, selectedTrackUri) {
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.albumInfo = albumModel;
-		albumComp.setAttribute("selected_track_uri", selectedTrackUri ?? "");
+		albumComp.selected_track_uris = [selectedTrackUri ?? ""];
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
 		if (albumModel.album.albumInfo) {
 			albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
@@ -4010,9 +4040,15 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		"name",
 		"extra",
 		"img",
-		"disabled",
-		"selected_track_uri"
+		"disabled"
 	];
+	get selected_track_uris() {
+		return this.getShadow().querySelector("ebo-album-tracks-view").selected_track_uris;
+	}
+	set selected_track_uris(value) {
+		this.getShadow().querySelector("ebo-album-tracks-view").selected_track_uris = value;
+		this.requestUpdate();
+	}
 	get btn_states() {
 		return this._btn_states;
 	}
@@ -4048,7 +4084,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	albumClickEvent;
 	_albumInfo = null;
 	_btn_states = ListButtonState_AllHidden();
-	selected_track_uri = "";
 	static styleText = `
         <style>
             :host { 
@@ -4154,11 +4189,22 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			case "name":
 			case "extra":
 			case "img":
-			case "selected_track_uri":
 				this[name] = newValue;
 				break;
 		}
 		this.requestUpdate();
+	}
+	render(shadow) {
+		this.shadow.getElementById("bigImage").addEventListener("click", () => {
+			let wrapper = this.getShadow().querySelector("#wrapper");
+			wrapper.classList.toggle("front");
+			wrapper.classList.toggle("back");
+		});
+		this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
+			let wrapper = this.getShadow().querySelector("#wrapper");
+			wrapper.classList.add("front");
+			wrapper.classList.remove("back");
+		});
 	}
 	update(shadow) {
 		["name", "extra"].forEach((attName) => {
@@ -4178,19 +4224,8 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		}
 		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
 		listButtonBar.btn_states = this.btn_states;
-		shadow.querySelector("ebo-album-tracks-view").setAttribute("selected_track_uri", this.selected_track_uri);
-	}
-	render(shadow) {
-		this.shadow.getElementById("bigImage").addEventListener("click", () => {
-			let wrapper = this.getShadow().querySelector("#wrapper");
-			wrapper.classList.toggle("front");
-			wrapper.classList.toggle("back");
-		});
-		this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
-			let wrapper = this.getShadow().querySelector("#wrapper");
-			wrapper.classList.add("front");
-			wrapper.classList.remove("back");
-		});
+		if (this.selected_track_uris.length > 0) listButtonBar.setAttribute("use_selected_color", "true");
+		else listButtonBar.removeAttribute("use_selected_color");
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view");
@@ -4232,7 +4267,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
             }
         
             .playing {
-                background-color: var(--highlight-background);
+                background-color: var(--playing-background);
             }
             #buttonBar  {
                 display: flex;
@@ -5224,7 +5259,7 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
                 opacity: 1;
             }
             :host([selected]) { 
-                background-color: var(--selected-background); 
+                background-color: var(--playing-background); 
             }
             #text {
                 flex-grow: 1;
@@ -5265,7 +5300,7 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
                     }           
                 }
                 &.selected {
-                    background-color: var(--selected-background); 
+                    background-color: var(--playing-background); 
                 }           
             }
         </style>

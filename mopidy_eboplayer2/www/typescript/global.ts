@@ -92,3 +92,14 @@ export function console_yellow(msg: string) {
 export function unreachable(x: never): never {
     throw new Error("Didn't expect to get here");
 }
+
+// Source - https://stackoverflow.com/a/51389944
+// Posted by YairTawil, modified by community. See post 'Timeline' for change history
+// Retrieved 2026-01-26, License - CC BY-SA 4.0
+
+export function arrayToggle<T>(arr: Array<T>, item: T) {
+    if (arr.includes(item))
+        return arr.filter(i => i !== item);
+    else
+        return [...arr, item];
+}

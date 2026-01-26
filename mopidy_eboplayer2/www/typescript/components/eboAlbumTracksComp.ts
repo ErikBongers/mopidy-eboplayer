@@ -3,9 +3,17 @@ import {ExpandedAlbumModel, ExpandedStreamModel, TrackUri} from "../modelTypes";
 import {EboMenuButton} from "./eboMenuButton";
 
 export class EboAlbumTracksComp extends EboComponent {
+    get selected_track_uris(): TrackUri[] {
+        return this._selected_track_uris;
+    }
+
+    set selected_track_uris(value: TrackUri[]) {
+        this._selected_track_uris = value;
+        this.requestUpdate();
+    }
     static override readonly tagName=  "ebo-album-tracks-view";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["img", "selected_track_uri"];
+    static observedAttributes = ["img"];
 
     set activeTrackUri(value: string | null) {
         this._activeTrackUri = value;
@@ -22,7 +30,7 @@ export class EboAlbumTracksComp extends EboComponent {
 
     private _activeTrackUri: string | null = null;
     private _albumInfo: ExpandedAlbumModel | null = null;
-    private selected_track_uri: string = "";
+    private _selected_track_uris: TrackUri[] = [];
 
     constructor() {
         super(EboAlbumTracksComp.styleText, EboAlbumTracksComp.htmlText);
@@ -79,11 +87,6 @@ export class EboAlbumTracksComp extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        switch (name) {
-            case "selected_track_uri":
-                this.selected_track_uri = newValue;
-                break;
-        }
         this.requestUpdate();
         }
 
@@ -127,6 +130,10 @@ export class EboAlbumTracksComp extends EboComponent {
                     button.closeMenu();
                     this.dispatchEboEvent("playTrackClicked.eboplayer", {uri: track.track.uri as TrackUri});
                 });
+                tr.addEventListener("click", (ev) => {
+                    tr.classList.toggle("selected");
+                    this.dispatchEboEvent("trackClicked.eboplayer", {uri: tr.dataset.uri as TrackUri});
+                })
             });
         }
         this.highLightActiveTrack();
@@ -144,10 +151,18 @@ export class EboAlbumTracksComp extends EboComponent {
 
     override update(shadow:ShadowRoot) {
         shadow.querySelectorAll("tr").forEach(tr => {
-            if(tr.dataset.uri == this.selected_track_uri)
+            if(this._selected_track_uris.includes(tr.dataset.uri as TrackUri)) {
                 tr.classList.add("selected");
-            else
+            } else
                 tr.classList.remove("selected");
         });
+    }
+
+    private getSelectedUris() {
+        return [...this.getShadow().querySelectorAll("tr.selected") as NodeListOf<HTMLTableRowElement>]
+            .map((tr) => {
+                return tr.dataset.uri;
+            })
+            .filter((uri: string) => uri != null && uri != "" && uri != undefined) as TrackUri[];
     }
 }

@@ -26,7 +26,7 @@ export class EboListItemComp extends EboComponent {
                 opacity: 1;
             }
             :host([selected]) { 
-                background-color: var(--selected-background); 
+                background-color: var(--playing-background); 
             }
             #text {
                 flex-grow: 1;
@@ -67,7 +67,7 @@ export class EboListItemComp extends EboComponent {
                     }           
                 }
                 &.selected {
-                    background-color: var(--selected-background); 
+                    background-color: var(--playing-background); 
                 }           
             }
         </style>

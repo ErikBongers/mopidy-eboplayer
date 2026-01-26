@@ -1,15 +1,24 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
+import {ExpandedAlbumModel, TrackUri} from "../modelTypes";
 import {GuiSource} from "../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
+import {arrayToggle} from "../global";
 
 
 export class EboBigAlbumComp extends EboComponent {
     static override readonly tagName=  "ebo-big-album-view";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["name", "extra", "img", "disabled", "selected_track_uri"];
+    static observedAttributes = ["name", "extra", "img", "disabled"];
+
+    get selected_track_uris(): TrackUri[] {
+        return (this.getShadow().querySelector("ebo-album-tracks-view") as EboAlbumTracksComp).selected_track_uris;
+    }
+    set selected_track_uris(value: TrackUri[]) {
+        (this.getShadow().querySelector("ebo-album-tracks-view") as EboAlbumTracksComp).selected_track_uris = value;
+        this.requestUpdate();
+    }
 
     get btn_states(): ListButtonStates {
         return this._btn_states;
@@ -43,7 +52,6 @@ export class EboBigAlbumComp extends EboComponent {
     private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: ExpandedAlbumModel | null = null;
     private _btn_states: ListButtonStates = ListButtonState_AllHidden();
-    private selected_track_uri: string = "";
 
     static styleText= `
         <style>
@@ -155,12 +163,25 @@ export class EboBigAlbumComp extends EboComponent {
             case "name":
             case "extra":
             case "img":
-            case "selected_track_uri":
                 this[name] = newValue;
                 break;
         }
         this.requestUpdate();
         }
+
+    override render(shadow:ShadowRoot) {
+        let image = this.shadow.getElementById("bigImage") as HTMLImageElement;
+        image.addEventListener("click", () => {
+            let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
+            wrapper.classList.toggle("front");
+            wrapper.classList.toggle("back");
+        });
+        this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
+            let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
+            wrapper.classList.add("front");
+            wrapper.classList.remove("back");
+        });
+    }
 
     override update(shadow:ShadowRoot) {
         ["name", "extra"].forEach(attName => {
@@ -183,22 +204,10 @@ export class EboBigAlbumComp extends EboComponent {
         }
         let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
         listButtonBar.btn_states = this.btn_states;
-        let tracksView = shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
-        tracksView.setAttribute("selected_track_uri", this.selected_track_uri);
-    }
-
-    override render(shadow:ShadowRoot) {
-        let image = this.shadow.getElementById("bigImage") as HTMLImageElement;
-        image.addEventListener("click", () => {
-            let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
-            wrapper.classList.toggle("front");
-            wrapper.classList.toggle("back");
-        });
-        this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
-            let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
-            wrapper.classList.add("front");
-            wrapper.classList.remove("back");
-        })
+        if(this.selected_track_uris.length > 0)
+            listButtonBar.setAttribute("use_selected_color", "true");
+        else
+            listButtonBar.removeAttribute("use_selected_color");
     }
 
     private onActiveTrackChanged() {
