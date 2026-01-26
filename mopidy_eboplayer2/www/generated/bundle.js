@@ -836,9 +836,6 @@ var EboEventTargetClass = class extends EventTarget {
 		super.addEventListener(type, listener, options);
 	}
 };
-function addEboEventListener(target, type, listener, options) {
-	target.addEventListener(type, listener, options);
-}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/model.ts
@@ -3383,6 +3380,15 @@ var MainView = class extends View {
 		albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
 			albumComp.selected_track_uris = arrayToggle(albumComp.selected_track_uris, ev.detail.uri);
 		});
+		albumComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+			await this.onPlayItemListClick(ev.detail);
+		});
+		albumComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+			await this.onAddItemListClick(ev.detail);
+		});
+		albumComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+			await this.onReplaceItemListClick(ev.detail);
+		});
 	}
 	getListButtonStates(currentView) {
 		let states = ListButtonState_AllHidden();
@@ -3559,6 +3565,21 @@ var MainView = class extends View {
 	}
 	async onSettingsButtonClick() {
 		await this.showView(Views.Settings);
+	}
+	async getSelectedUriForAlbum() {
+		let trackUris = document.getElementById("bigAlbumView").selected_track_uris;
+		if (trackUris.length != 0) return trackUris;
+		return [playerState_default().getModel().getAlbumToView().albumUri];
+	}
+	async onPlayItemListClick(detail) {
+		await playerState_default().getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
+	}
+	async onAddItemListClick(detail) {
+		await playerState_default().getPlayer().add(await this.getSelectedUriForAlbum());
+	}
+	async onReplaceItemListClick(detail) {
+		await playerState_default().getPlayer().clear();
+		await this.onAddItemListClick(detail);
 	}
 };
 
@@ -5385,13 +5406,13 @@ var BrowseView = class extends View {
 		playerState_default().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
 			this.onModelBrowseFilterChanged();
 		});
-		addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
+		this.browseComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
-		addEboEventListener(document.body, "addItemListClicked.eboplayer", async (ev) => {
+		this.browseComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
 			await this.onAddItemListClick(ev.detail);
 		});
-		addEboEventListener(document.body, "replaceItemListClicked.eboplayer", async (ev) => {
+		this.browseComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
 			await this.onReplaceItemListClick(ev.detail);
 		});
 		this.browseComp.addEboEventListener("displayModeChanged.eboplayer", async (ev) => {
@@ -5462,24 +5483,12 @@ var BrowseView = class extends View {
 		return [EboPlayerDataType.TrackList];
 	}
 	async onPlayItemListClick(detail) {
-		if (detail.source == "albumView") {
-			let albumToView = playerState_default().getModel().getAlbumToView();
-			let album = (await playerState_default().getController().lookupAlbumsCached([albumToView.albumUri]))[0];
-			if (album.albumInfo) await playerState_default().getPlayer().clearAndPlay([album.albumInfo.uri]);
-			return;
-		}
-		if (detail.source == "browseView") {
-			await playerState_default().getPlayer().clear();
-			await playerState_default().getController().addCurrentSearchResultsToPlayer();
-			await playerState_default().getPlayer().play();
-		}
+		await playerState_default().getPlayer().clear();
+		await playerState_default().getController().addCurrentSearchResultsToPlayer();
+		await playerState_default().getPlayer().play();
 	}
 	async onAddItemListClick(detail) {
-		if (detail.source == "albumView") {
-			let albumComp = document.getElementById("bigAlbumView");
-			await playerState_default().getPlayer().add([albumComp.dataset.albumUri]);
-		}
-		if (detail.source == "browseView") await playerState_default().getController().addCurrentSearchResultsToPlayer();
+		await playerState_default().getController().addCurrentSearchResultsToPlayer();
 	}
 	async onReplaceItemListClick(detail) {
 		await playerState_default().getPlayer().clear();

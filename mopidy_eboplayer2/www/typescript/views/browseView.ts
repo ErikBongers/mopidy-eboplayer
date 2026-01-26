@@ -40,13 +40,13 @@ export class BrowseView extends View {
         getState().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
             this.onModelBrowseFilterChanged();
         });
-        addEboEventListener(document.body, "playItemListClicked.eboplayer", async (ev) => {
+        this.browseComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
-        addEboEventListener(document.body, "addItemListClicked.eboplayer", async (ev) => {
+        this.browseComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
             await this.onAddItemListClick(ev.detail);
         });
-        addEboEventListener(document.body, "replaceItemListClicked.eboplayer", async (ev) => {
+        this.browseComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
             await this.onReplaceItemListClick(ev.detail);
         });
         this.browseComp.addEboEventListener("displayModeChanged.eboplayer", async (ev) => {
@@ -135,31 +135,13 @@ export class BrowseView extends View {
     }
 
     private async onPlayItemListClick(detail: GuiSourceArgs) {
-        if(detail.source == "albumView") {
-            let model = getState().getModel();
-            let albumToView = model.getAlbumToView() as AlbumToView; //Shouldn't be null.'
-            let album = (await getState().getController().lookupAlbumsCached([albumToView.albumUri]))[0];
-            if(album.albumInfo) {
-                await getState().getPlayer().clearAndPlay([album.albumInfo.uri]);
-            }
-            //todo: else?
-            return;
-        }
-        if(detail.source == "browseView") {
-            await getState().getPlayer().clear();
-            await getState().getController().addCurrentSearchResultsToPlayer();
-            await getState().getPlayer().play();
-        }
+        await getState().getPlayer().clear();
+        await getState().getController().addCurrentSearchResultsToPlayer();
+        await getState().getPlayer().play();
     }
 
     private async onAddItemListClick(detail: GuiSourceArgs) {
-        if(detail.source == "albumView") {
-            let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-            await getState().getPlayer().add([albumComp.dataset.albumUri as AlbumUri]);
-        }
-        if(detail.source == "browseView") {
-            await getState().getController().addCurrentSearchResultsToPlayer();
-        }
+        await getState().getController().addCurrentSearchResultsToPlayer();
     }
 
     private async onReplaceItemListClick(detail: GuiSourceArgs) {
