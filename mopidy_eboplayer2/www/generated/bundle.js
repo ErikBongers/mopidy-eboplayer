@@ -3514,6 +3514,7 @@ var MainView = class extends View {
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	static tagName = "ebo-browse-view";
 	static observedAttributes = ["display_mode"];
+	currentResultHasImages = false;
 	get genreDefs() {
 		return this._genreDefs;
 	}
@@ -3683,9 +3684,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		let browseFilterComp = shadow.querySelector("ebo-browse-filter");
 		browseFilterComp.browseFilter = this._browseFilter;
 		browseFilterComp.availableRefTypes = this.results.availableRefTypes;
-		shadow.querySelectorAll("ebo-list-item").forEach((line) => line.setAttribute("display", this.display_mode));
+		let activeDisplayMode = this.display_mode;
+		if (!this.currentResultHasImages) activeDisplayMode = "line";
+		shadow.querySelectorAll("ebo-list-item").forEach((line) => line.setAttribute("display", activeDisplayMode));
 		this.classList.remove("icon", "line");
-		this.classList.add(this.display_mode);
+		this.classList.add(activeDisplayMode);
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
@@ -3745,21 +3748,28 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		if (this.results.refs.length == 0) return;
 		tableWrapper.innerHTML = "";
 		let html = "";
+		this.currentResultHasImages = false;
 		for (let result of this.results.refs) {
-			let imgUrl = "";
 			if (result.type == "ref") {
 				let model = await playerState_default().getController().getExpandedModel(result.item);
-				if (model) if (isInstanceOfExpandedTrackModel(model)) imgUrl = model.album?.imageUrl ?? "";
-				else if (isInstanceOfExpandedStreamModel(model)) imgUrl = model.stream.imageUrl;
-				else imgUrl = model.album.imageUrl;
-			}
+				if (model) if (isInstanceOfExpandedTrackModel(model)) result.imageUrl = model.album?.imageUrl ?? "";
+				else if (isInstanceOfExpandedStreamModel(model)) result.imageUrl = model.stream.imageUrl;
+				else result.imageUrl = model.album.imageUrl;
+			} else result.defaultImageUrl = "images/icons/Genre.svg";
+			if (result.imageUrl) this.currentResultHasImages = true;
+		}
+		for (let result of this.results.refs) {
 			let refType = result.item.ref.type;
+			let imageUrl = result.imageUrl ?? result.defaultImageUrl ?? "";
+			let imageClass = "";
+			if (this.currentResultHasImages && imageUrl.endsWith(".svg")) imageClass = "whiteIcon";
 			html += `
-                    <ebo-list-item 
-                        data-uri="${result.item.ref.uri}" 
+                    <ebo-list-item
+                        data-uri="${result.item.ref.uri}"
                         data-type="${refType}"
                         text="${result.item.ref.name + this.getGenreAlias(result)}"
-                        img="${imgUrl}">
+                        img="${imageUrl}"
+                        image_class="${imageClass}">
                     </ebo-list-item>`;
 		}
 		tableWrapper.innerHTML = html;
@@ -5167,13 +5177,15 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 		"img",
 		"selection_mode",
 		"display",
-		"text"
+		"text",
+		"image_class"
 	];
 	selected = false;
 	img;
 	selection_mode;
 	display = "icon";
 	text = "";
+	image_class = "";
 	static styleText = `
         <style>
             img {
@@ -5246,6 +5258,7 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 		switch (name) {
 			case "img":
 			case "text":
+			case "image_class":
 				this[name] = newValue;
 				break;
 			case "display":
@@ -5264,6 +5277,8 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 		wrapper.classList.remove("line", "icon");
 		wrapper.classList.add(this.display);
 		this.setImage("img", this.img);
+		let img = shadow.getElementById("img");
+		if (this.image_class) img.classList.add(this.image_class);
 		this.setTextFromAttribute("text");
 	}
 	setImage(id, uri) {

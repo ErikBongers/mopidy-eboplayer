@@ -15,11 +15,15 @@ export type RefSearchResult  = {
     type: "ref";
     item: ExpandedRef;
     weight: number;
+    imageUrl?: string;
+    defaultImageUrl?: string;
 }
 export type GenreSearchResult  = {
     type: "genreDef";
     item: GenreDef;
     weight: number;
+    imageUrl?: string;
+    defaultImageUrl?: string;
 }
 
 export type SearchResult = RefSearchResult | GenreSearchResult;

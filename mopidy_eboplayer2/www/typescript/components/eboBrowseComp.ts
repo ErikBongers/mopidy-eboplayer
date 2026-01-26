@@ -12,6 +12,7 @@ export class EboBrowseComp extends EboComponent {
     static override readonly tagName=  "ebo-browse-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = ["display_mode"];
+    currentResultHasImages: boolean = false;
 
     get genreDefs(){
         return this._genreDefs;
@@ -199,16 +200,19 @@ export class EboBrowseComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-
         let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
         listButtonBar.btn_states = this.action_btn_states;
         let browseFilterComp = shadow.querySelector("ebo-browse-filter") as EboBrowseFilterComp;
         browseFilterComp.browseFilter = this._browseFilter;
         browseFilterComp.availableRefTypes = this.results.availableRefTypes;
+        let activeDisplayMode: DisplayMode = this.display_mode;
+        if(!this.currentResultHasImages)
+            activeDisplayMode = "line";
+
         let lines = shadow.querySelectorAll("ebo-list-item");
-        lines.forEach(line => line.setAttribute("display", this.display_mode));
+        lines.forEach(line => line.setAttribute("display", activeDisplayMode));
         this.classList.remove("icon", "line");
-        this.classList.add(this.display_mode);
+        this.classList.add(activeDisplayMode);
     }
 
     setSearchInfo(text: string) {
@@ -276,26 +280,38 @@ export class EboBrowseComp extends EboComponent {
         tableWrapper.innerHTML = "";
 
         let html = "";
+        this.currentResultHasImages = false;
         for(let result of this.results.refs) {
-            let imgUrl = "";
             if(result.type == "ref") {
                 let model = await getState().getController().getExpandedModel(result.item);
                 if (model) {
                     if(isInstanceOfExpandedTrackModel(model))
-                        imgUrl = model.album?.imageUrl??"";
+                        result.imageUrl = model.album?.imageUrl??"";
                     else if(isInstanceOfExpandedStreamModel(model))
-                        imgUrl = model.stream.imageUrl;
+                        result.imageUrl = model.stream.imageUrl;
                     else //album track model
-                       imgUrl = model.album.imageUrl;
+                       result.imageUrl = model.album.imageUrl;
                 }
+            } else {
+                result.defaultImageUrl = "images/icons/Genre.svg";
             }
+            if(result.imageUrl) {
+                this.currentResultHasImages = true;
+            }
+        }
+        for(let result of this.results.refs) {
             let refType = result.item.ref.type;
+            let imageUrl = result.imageUrl??result.defaultImageUrl??"";
+            let imageClass = "";
+            if(this.currentResultHasImages && imageUrl.endsWith(".svg"))
+                imageClass = "whiteIcon";
             html += `
-                    <ebo-list-item 
-                        data-uri="${result.item.ref.uri}" 
+                    <ebo-list-item
+                        data-uri="${result.item.ref.uri}"
                         data-type="${refType}"
                         text="${result.item.ref.name + this.getGenreAlias(result)}"
-                        img="${imgUrl}">
+                        img="${imageUrl}"
+                        image_class="${imageClass}">
                     </ebo-list-item>`;
 
         }

@@ -6,12 +6,13 @@ export type DisplayMode = "line" | "icon";
 export class EboListItemComp extends EboComponent {
     static override readonly tagName=  "ebo-list-item";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["selected", "img", "selection_mode", "display", "text"];
+    static observedAttributes = ["selected", "img", "selection_mode", "display", "text", 'image_class'];
     private selected: boolean = false;
     private img: string;
     private selection_mode: boolean;
     private display: DisplayMode = "icon";
     private text: string = "";
+    private image_class: string = "";
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -90,6 +91,7 @@ export class EboListItemComp extends EboComponent {
         switch (name) {
             case "img":
             case "text":
+            case "image_class":
                 this[name] = newValue;
                 break;
             case "display":
@@ -109,6 +111,9 @@ export class EboListItemComp extends EboComponent {
         wrapper.classList.remove("line", "icon");
         wrapper.classList.add(this.display);
         this.setImage("img", this.img);
+        let img = shadow.getElementById("img") as HTMLImageElement;
+        if(this.image_class)
+            img.classList.add(this.image_class);
         this.setTextFromAttribute("text");
     }
 

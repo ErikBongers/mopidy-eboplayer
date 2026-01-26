@@ -3,8 +3,6 @@
 * create a big icon list view.
   > Same behaviour for line and icon view!
     - single click: goto item.
-    - dbl click: popupmenu
-      > Play, Add, Select,...
   > An item has visuals:
     - select mark (maybe just hightlight color)
     - type icon: or subtle different font/color for genre, artist, album?
