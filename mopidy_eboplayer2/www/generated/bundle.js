@@ -3359,6 +3359,7 @@ var MainView = class extends View {
 		if (currentView == Views.Album) {
 			states = this.showHideTrackAndAlbumButtons(states, "show");
 			states.new_playlist = "hide";
+			states.edit = "hide";
 			states.line_or_icon = "hide";
 			return states;
 		}
