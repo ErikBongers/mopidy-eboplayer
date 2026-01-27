@@ -141,7 +141,8 @@ export class EboBrowseFilterComp extends EboComponent {
     override render(shadow:ShadowRoot) {
         // @ts-ignore
         shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
-            //todo: is this button even needed?
+            this._browseFilter.searchText = inputElement.value;
+            this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
         });
         let inputElement = shadow.getElementById("searchText") as HTMLInputElement;
         inputElement.addEventListener("keyup", (ev: KeyboardEvent) => {
@@ -229,15 +230,8 @@ export class EboBrowseFilterComp extends EboComponent {
         let propName = btn.id
                 .replace("filter", "").charAt(0).toLowerCase()
                + btn.id.replace("filter", "").slice(1) as RefType;
-        if(this._browseFilter[propName])
-            btn.setAttribute("pressed", "");
-        else
-            btn.removeAttribute("pressed");
-        if(this.availableRefTypes.has(propName))
-            btn.removeAttribute("disabled");
-        else
-            btn.setAttribute("disabled", "");
-        //todo: use toggleAttribute?
+        btn.toggleAttribute("pressed", this._browseFilter[propName]);
+        btn.toggleAttribute("disabled", !this.availableRefTypes.has(propName));
     }
 
     setSearchInfo(text: string) {

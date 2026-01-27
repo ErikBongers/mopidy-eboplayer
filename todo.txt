@@ -1,3 +1,7 @@
+* Add a Remembered view
+  > accessible via big stream, but also via...settings, browse??
+
+* Add google search on as much as possible
 * See if we can get rid of bigTrackView
   > clicking on an timline item should go immediately to
     - big album

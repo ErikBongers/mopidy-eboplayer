@@ -5074,7 +5074,10 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		searchText?.select();
 	}
 	render(shadow) {
-		shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {});
+		shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
+			this._browseFilter.searchText = inputElement.value;
+			this.dispatchEboEvent("guiBrowseFilterChanged.eboplayer", {});
+		});
 		let inputElement = shadow.getElementById("searchText");
 		inputElement.addEventListener("keyup", (ev) => {
 			this._browseFilter.searchText = inputElement.value;
@@ -5142,10 +5145,8 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 	}
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
-		if (this._browseFilter[propName]) btn.setAttribute("pressed", "");
-		else btn.removeAttribute("pressed");
-		if (this.availableRefTypes.has(propName)) btn.removeAttribute("disabled");
-		else btn.setAttribute("disabled", "");
+		btn.toggleAttribute("pressed", this._browseFilter[propName]);
+		btn.toggleAttribute("disabled", !this.availableRefTypes.has(propName));
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
