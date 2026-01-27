@@ -54,6 +54,16 @@ export abstract class Refs {
     abstract filter(): Promise<void>;
 
     protected async calculateWeight(result: SearchResult, browseFilter: BrowseFilter, thresholdDate: number) {
+        if (result.type == "ref") {
+            if (result.item.type == "album" && !browseFilter.album
+                || result.item.type == "track" && !browseFilter.track
+                || result.item.type == "artist" && !browseFilter.artist
+                || result.item.type == "playlist" && !browseFilter.playlist
+                || result.item.type == "radio" && !browseFilter.radio)
+                return;
+        }
+        if(result.type == "genreDef" && !browseFilter.genre)
+            return;
         if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
