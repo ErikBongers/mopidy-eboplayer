@@ -24,8 +24,10 @@ export class EboAlbumTracksComp extends EboComponent {
     }
 
     set albumInfo(value: ExpandedAlbumModel | null) {
-        this._albumInfo = value;
-        this.requestRender();
+        if(value != this._albumInfo) {
+            this._albumInfo = value;
+            this.requestRender();
+        }
     }
 
     private _activeTrackUri: string | null = null;

@@ -252,7 +252,7 @@ export class MainView extends View {
     private setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         albumComp.albumInfo = albumModel;
-        albumComp.selected_track_uris = [selectedTrackUri ?? "" as TrackUri];
+        albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
         albumComp.setAttribute("img", albumModel.album.imageUrl);
         if(albumModel.album.albumInfo) {
             albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);

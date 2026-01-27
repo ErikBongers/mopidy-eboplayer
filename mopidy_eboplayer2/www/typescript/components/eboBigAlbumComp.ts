@@ -85,6 +85,8 @@ export class EboBigAlbumComp extends EboComponent {
                 width: 100%;
                 #bottom {
                     overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
                 }
             }
             #wrapper.front {
@@ -101,7 +103,7 @@ export class EboBigAlbumComp extends EboComponent {
                 font-size: .7em;
             }
             #albumTableWrapper {
-                height: 100%;
+                overflow: hidden;
             }
             ebo-album-tracks-view {
                 height: 100%;

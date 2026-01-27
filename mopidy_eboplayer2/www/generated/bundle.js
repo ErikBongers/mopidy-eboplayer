@@ -3036,8 +3036,10 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 		return this._albumInfo;
 	}
 	set albumInfo(value) {
-		this._albumInfo = value;
-		this.requestRender();
+		if (value != this._albumInfo) {
+			this._albumInfo = value;
+			this.requestRender();
+		}
 	}
 	_activeTrackUri = null;
 	_albumInfo = null;
@@ -3529,7 +3531,7 @@ var MainView = class extends View {
 	setAlbumComponentData(albumModel, selectedTrackUri) {
 		let albumComp = document.getElementById("bigAlbumView");
 		albumComp.albumInfo = albumModel;
-		albumComp.selected_track_uris = [selectedTrackUri ?? ""];
+		albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
 		albumComp.setAttribute("img", albumModel.album.imageUrl);
 		if (albumModel.album.albumInfo) {
 			albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
@@ -4143,6 +4145,8 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 width: 100%;
                 #bottom {
                     overflow: hidden;
+                    display: flex;
+                    flex-direction: column;
                 }
             }
             #wrapper.front {
@@ -4159,7 +4163,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 font-size: .7em;
             }
             #albumTableWrapper {
-                height: 100%;
+                overflow: hidden;
             }
             ebo-album-tracks-view {
                 height: 100%;
