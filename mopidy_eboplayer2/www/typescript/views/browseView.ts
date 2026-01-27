@@ -68,6 +68,8 @@ export class BrowseView extends View {
         let searchResults = getState().getModel().getCurrentSearchResults();
         let browseFilter = getState().getModel().getCurrentBrowseFilter();
 
+        states.line_or_icon = "show";
+
         //list ref types state 1
         if (searchResults.refs.length == 0) {
             this.showHideTrackAndAlbumButtons(states, "hide");

@@ -1,3 +1,10 @@
+* See if we can get rid of bigTrackView
+  > clicking on an timline item should go immediately to
+    - big album
+    - a stream/radio view?
+      > perhaps this should stay in Playing Now?
+
+
 * separate Cache from Controller.
 
 * create a big icon list view.

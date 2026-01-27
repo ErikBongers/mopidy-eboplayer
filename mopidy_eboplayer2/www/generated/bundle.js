@@ -5430,6 +5430,7 @@ var BrowseView = class extends View {
 		let states = ListButtonState_AllHidden();
 		let searchResults = playerState_default().getModel().getCurrentSearchResults();
 		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		states.line_or_icon = "show";
 		if (searchResults.refs.length == 0) {
 			this.showHideTrackAndAlbumButtons(states, "hide");
 			states.new_playlist = "hide";
