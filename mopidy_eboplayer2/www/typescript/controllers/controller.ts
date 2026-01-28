@@ -248,8 +248,15 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
-        if(type == "track"  ||  type  == "radio") {
+        if(type  == "radio") { //todo
             return; //don't dive.
+        }
+        if(type == "track") {
+            let track = await getState().getController().getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
+            if(track.album?.albumInfo?.uri)
+                this.showAlbum(track.album?.albumInfo?.uri, uri as TrackUri);
+            //else: don't dive
+            return; //don't change the breadcrumb and filter.
         }
 
         if(type == "album") {

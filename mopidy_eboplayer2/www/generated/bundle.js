@@ -1809,7 +1809,12 @@ var Controller = class Controller extends Commands {
 		await this.filterBrowseResults();
 	}
 	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
-		if (type == "track" || type == "radio") return;
+		if (type == "radio") return;
+		if (type == "track") {
+			let track = await playerState_default().getController().getExpandedTrackModel(uri);
+			if (track.album?.albumInfo?.uri) this.showAlbum(track.album?.albumInfo?.uri, uri);
+			return;
+		}
 		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
 			this.showAlbum(uri, null);
 		});
