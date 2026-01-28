@@ -2,14 +2,13 @@ import tornado.websocket
 import logging
 
 logger = logging.getLogger(__name__)
-active_clients = set() #todo: make class variable.
 
 
-def broadcast(message):
-    for client in active_clients:
-        client.ioloop.add_callback(WebsocketHandler.write_message, client, message)
+def broadcast_to_websockets(message: str):
+    for websocket_handler in socket_handlers_to_broadcast_to:
+        websocket_handler.ioloop.add_callback(EboWebsocketHandler.write_message, websocket_handler, message)
 
-class WebsocketHandler(tornado.websocket.WebSocketHandler):
+class EboWebsocketHandler(tornado.websocket.WebSocketHandler):
 
     def initialize(self, config):
         self.config = config
@@ -19,11 +18,13 @@ class WebsocketHandler(tornado.websocket.WebSocketHandler):
         return True #allows cross-domain requests
 
     def open(self):
-        active_clients.add(self)
+        socket_handlers_to_broadcast_to.add(self)
 
     def on_message(self, message):
         logger.info("eboplayer websocket message received: " + message)
 
     def on_close(self):
-        active_clients.remove(self)
+        socket_handlers_to_broadcast_to.remove(self)
 
+
+socket_handlers_to_broadcast_to: set[EboWebsocketHandler] = set()

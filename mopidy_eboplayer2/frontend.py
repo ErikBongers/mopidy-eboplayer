@@ -4,7 +4,7 @@ import json
 from mopidy import core
 import urllib.request
 from mopidy_eboplayer2.Storage import Storage
-from mopidy_eboplayer2.webSocketHandler import broadcast
+from mopidy_eboplayer2.webSocketHandler import broadcast_to_websockets
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +59,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
                 "event" : "program_title_changed",
                 "program_title" : title
             }
-            broadcast(json.dumps(the_event))
+            broadcast_to_websockets(json.dumps(the_event))
             return
 
         if self.storage.write_title(title):
@@ -68,7 +68,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
                 "event" : "stream_history_changed",
                 "stream_titles" : stream_titles
             }
-            broadcast(json.dumps(the_event))
+            broadcast_to_websockets(json.dumps(the_event))
 
     def volume_changed(self, volume):
         self.storage.save('volume', volume)
