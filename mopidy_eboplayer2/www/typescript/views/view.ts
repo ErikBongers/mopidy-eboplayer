@@ -2,13 +2,6 @@ import {NestedDataRequester} from "./dataRequester";
 import {EboComponent} from "../components/EboComponent";
 import EboEventTarget, {EboEventHandlersEventMap, EboplayerEvent} from "../events";
 
-export enum EboPlayerDataType {//todo: move to types.
-    Volume,
-    CurrentTrack,
-    PlayState,
-    TrackList,
-}
-
 export abstract class View extends NestedDataRequester<View> {
     abstract bind(): void;
 

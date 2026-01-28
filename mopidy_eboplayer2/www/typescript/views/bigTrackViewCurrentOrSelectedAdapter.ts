@@ -1,7 +1,6 @@
 import getState from "../playerState";
-import {EboPlayerDataType} from "./view";
 import {ComponentViewAdapter} from "./componentViewAdapter";
-import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
+import {EboPlayerDataType, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
 import EboBigTrackComp from "../components/eboBigTrackComp";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {

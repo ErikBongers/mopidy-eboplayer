@@ -1,6 +1,6 @@
 import getState from "../playerState";
-import {EboPlayerDataType, View} from "./view";
-import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} from "../modelTypes";
+import {View} from "./view";
+import {EboPlayerDataType, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} from "../modelTypes";
 import {MainView} from "./mainView";
 import {EboPlayerBar} from "../components/eboButtonBarComp";
 import {Controller} from "../controllers/controller";

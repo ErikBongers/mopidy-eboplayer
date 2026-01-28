@@ -1,6 +1,6 @@
 import getState from "../playerState";
-import {ComponentView, EboPlayerDataType} from "./view";
-import {AllUris} from "../modelTypes";
+import {ComponentView} from "./view";
+import {AllUris, EboPlayerDataType} from "../modelTypes";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";

@@ -1,7 +1,7 @@
 import getState from "../playerState";
-import {EboPlayerDataType, View} from "./view";
+import {View} from "./view";
 import {TlId} from "../../js/mopidy";
-import {FileTrackModel, HistoryLineDef, StreamTrackModel, TrackModel, TrackUri} from "../modelTypes";
+import {EboPlayerDataType, FileTrackModel, HistoryLineDef, StreamTrackModel, TrackModel, TrackUri} from "../modelTypes";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;

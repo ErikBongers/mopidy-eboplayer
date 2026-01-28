@@ -1,4 +1,5 @@
-import {EboPlayerDataType, View} from "./view";
+import {View} from "./view";
+import {EboPlayerDataType} from "../modelTypes";
 
 export class ComponentViewAdapter extends View {
     protected componentId: string;

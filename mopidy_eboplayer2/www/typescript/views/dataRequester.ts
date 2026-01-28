@@ -1,4 +1,4 @@
-import {EboPlayerDataType} from "./view";
+import {EboPlayerDataType} from "../modelTypes";
 
 export interface Parent<Child> {
     addChildren(...children: Child[]): void;

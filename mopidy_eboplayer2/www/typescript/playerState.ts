@@ -1,8 +1,8 @@
 import {Mopidy} from "../js/mopidy";
 import {ViewModel} from "./model";
-import {EboPlayerDataType, View} from "./views/view";
+import {View} from "./views/view";
 import {Controller} from "./controllers/controller";
-import {DeepReadonly} from "./modelTypes";
+import {DeepReadonly, EboPlayerDataType} from "./modelTypes";
 import {PlayController} from "./controllers/playController";
 
 export class State {

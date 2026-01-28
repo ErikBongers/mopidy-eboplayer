@@ -311,3 +311,10 @@ export interface HistoryLineDef {
     album: string;
     artist: string;
 }
+
+export enum EboPlayerDataType {//todo: move to types.
+    Volume,
+    CurrentTrack,
+    PlayState,
+    TrackList,
+}
