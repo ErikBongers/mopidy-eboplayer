@@ -25,40 +25,8 @@ export class State {
         this.controller = controller;
         this.player = player;
     }
-    views: View[] = [];
     getModel = (): DeepReadonly<ViewModel> => this.model;
     getController = () => this.controller;
     getPlayer = () => this.player;
 
-    addViews(...views:View[]) {
-        this.views.push(...views);
-        views.forEach(v => v.bindRecursive());
-    }
-
-    async getRequiredData()  {
-        let requiredData = new Set<EboPlayerDataType>();
-        this.views.forEach(v => {
-            v.getRequiredDataTypesRecursive().forEach((dataType: EboPlayerDataType) => requiredData.add(dataType));
-        });
-        this.controller.getRequiredDataTypesRecursive().forEach((dataType => requiredData.add(dataType)));
-
-        for (const dataType of requiredData) {
-            await this.controller.fetchRequiredData(dataType);
-        }
-
-        await this.controller.fetchAllAlbums();
-        this.controller.localStorageProxy.loadCurrentBrowseFilter();
-        this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-        await this.controller.fetchRefsForCurrentBreadCrumbs();
-        await this.controller.filterBrowseResults();
-        await this.controller.getGenreDefsCached();
-    }
 }
-
-// @ts-ignore
-let state: State = null; //todo: assuming here that all calls to getState() will receive a valid state object.
-
-export function setState(newState: State) { state = newState; }
-const getState = () => state;
-
-export default getState;

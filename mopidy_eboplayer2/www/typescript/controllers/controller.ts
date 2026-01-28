@@ -1,5 +1,4 @@
-import getState from "../playerState";
-import {Model} from "../model";
+import {Model, ViewModel} from "../model";
 import {Commands} from "../commands";
 import models, {core, Mopidy} from "../../js/mopidy";
 import {DataRequester} from "../views/dataRequester";
@@ -16,6 +15,8 @@ import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
 import Album = models.Album;
+import {State} from "../playerState";
+import {View} from "../views/view";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -55,10 +56,31 @@ export class Controller extends Commands implements DataRequester{
         return this.getRequiredDataTypes();
     }
 
-    initSocketevents () {
+    async getRequiredData(views: View[])  {
+        let requiredData = new Set<EboPlayerDataType>();
+        views.forEach(v => {
+            v.getRequiredDataTypesRecursive().forEach((dataType: EboPlayerDataType) => requiredData.add(dataType));
+        });
+        this.getRequiredDataTypesRecursive().forEach((dataType => requiredData.add(dataType)));
+
+        for (const dataType of requiredData) {
+            await this.fetchRequiredData(dataType);
+        }
+
+        await this.fetchAllAlbums();
+        this.localStorageProxy.loadCurrentBrowseFilter();
+        this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
+        await this.fetchRefsForCurrentBreadCrumbs();
+        await this.filterBrowseResults();
+        await this.getGenreDefsCached();
+    }
+
+    initialize (views: View[]) {
+        views.forEach(v => v.bindRecursive());
+
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
-            await getState().getRequiredData();
+            await this.getRequiredData(views);
             this.model.setHistory(await this.webProxy.fetchHistory());
         });
 
@@ -87,12 +109,12 @@ export class Controller extends Commands implements DataRequester{
         });
 
         this.mopidy.on('event:playlistChanged', (data: {playlist: Playlist}) => {
-            // delete getState().playlists[data.playlist.uri];
+            // delete this.stateplaylists[data.playlist.uri];
             // library.getPlaylists();
         });
 
         this.mopidy.on('event:playlistDeleted', (data: {uir: PlaylistUri}) => {
-            // delete getState().playlists[data.uri];
+            // delete this.stateplaylists[data.uri];
             // library.getPlaylists();
         });
 
@@ -251,7 +273,7 @@ export class Controller extends Commands implements DataRequester{
             return; //don't dive.
         }
         if(type == "track") {
-            let track = await getState().getController().getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
+            let track = await this.getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
             if(track.album?.albumInfo?.uri)
                 this.showAlbum(track.album?.albumInfo?.uri, uri as TrackUri);
             //else: don't dive
@@ -259,7 +281,7 @@ export class Controller extends Commands implements DataRequester{
         }
 
         if(type == "album") {
-            getState().getController().getExpandedAlbumModel(uri as AlbumUri).then(() => { //fetch before changing view, to avoid flicker.
+            this.getExpandedAlbumModel(uri as AlbumUri).then(() => { //fetch before changing view, to avoid flicker.
                 this.showAlbum(uri as AlbumUri, null);
             });
         }
@@ -317,8 +339,8 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async resetToBreadCrumb(id: number) {
-        let breadCrumb = getState().getModel().getBreadCrumbs().get(id);
-        let breadCrumbs = getState().getModel().getBreadCrumbs();
+        let breadCrumb = this.model.getBreadCrumbs().get(id);
+        let breadCrumbs = this.model.getBreadCrumbs();
 
         //if the breadCrumb is a browseFilter, reset to the previous breadCrumb and set the current browseFilter to the one in the breadCrumb.
         if(breadCrumb instanceof BreadCrumbBrowseFilter) {
@@ -555,7 +577,7 @@ export class Controller extends Commands implements DataRequester{
             .sort()[0]
             ?? null;
 
-        return new ExpandedAlbumModel(album, tracks, meta, mostRecentTrackModifiedDate);
+        return new ExpandedAlbumModel(this.model, album, tracks, meta, mostRecentTrackModifiedDate);
     }
 
     async getMetaDatasCached(albumUris: AlbumUri[]) {
@@ -591,14 +613,13 @@ export class Controller extends Commands implements DataRequester{
         this.model.setSelectedTrack(uri);
     }
 
-    async fetchAllRefs() {
+    async fetchAllRefs(controller: Controller) {
         let roots = await this.mopidyProxy.fetchRootDirs();
         let subDir1 = await this.mopidyProxy.browse<AllUris>(roots[1].uri);
         let allTracks = await this.mopidyProxy.browse<TrackUri>(LIBRARY_PROTOCOL+"directory?type=track");
         let allAlbums = await this.mopidyProxy.browse<AlbumUri>(LIBRARY_PROTOCOL+"directory?type=album");
         let allArtists = await this.mopidyProxy.browse<ArtistUri>(LIBRARY_PROTOCOL+"directory?type=artist");
         let allGenres = await this.getGenreDefsCached();
-        let genreArray = [...allGenres.values()];
         let playLists = await this.mopidyProxy.fetchPlayLists();
         let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
         let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
@@ -607,7 +628,7 @@ export class Controller extends Commands implements DataRequester{
             radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri) as models.Ref<RadioUri>[];
         }
 
-        return createAllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
+        return createAllRefs(controller, roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
     }
 
     async filterBrowseResults() {
@@ -646,19 +667,19 @@ export class Controller extends Commands implements DataRequester{
                         ref.name = ref.name.split(".").slice(0, -1).join(".");
                     }
                 });
-                this.model.setCurrentRefs(new SomeRefs(playlistItems));
+                this.model.setCurrentRefs(new SomeRefs(this, playlistItems));
                 return;
             }
 
             let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
-            this.model.setCurrentRefs(new SomeRefs(refs));
+            this.model.setCurrentRefs(new SomeRefs(this, refs));
             return;
         }
     }
 
     private async setAllRefsAsCurrent() {
         if (!this.model.getAllRefs()) {
-            let allRefs = await this.fetchAllRefs();
+            let allRefs = await this.fetchAllRefs(this);
             this.model.setAllRefs(allRefs);
         }
         this.model.setCurrentRefs(this.model.getAllRefs()?? null);
@@ -689,7 +710,7 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async addCurrentSearchResultsToPlayer() {
-        let results = getState()?.getModel()?.getCurrentSearchResults();
+        let results = this.model.getCurrentSearchResults();
         await this.player.add(results.refs.map(r => r.item.ref.uri));
     }
 
@@ -702,15 +723,16 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async getGenreDefsCached() {
-        if(this.model.getGenreDefs())
+        if(this.model.getGenreDefs().size > 0)
             return this.model.getGenreDefs() as Map<string, GenreDef>;
         let genreDefs = await this.webProxy.fetchGenreDefs();
         this.model.setGenreDefs(genreDefs);
         return this.model.getGenreDefs() as Map<string, GenreDef>;
     }
 
-    getGenreDef(name: string) {
-        return this.model.getGenreDefs()?.get(name);
+    async getGenreDefCached(name: string) {
+        let defs = await this.getGenreDefsCached();
+        return defs.get(name)?? null;
     }
 
     showAlbum(albumUri: AlbumUri, selectedTrackUri: TrackUri | null) {
@@ -725,5 +747,4 @@ export class Controller extends Commands implements DataRequester{
     async startScan() {
         await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
     }
-
 }

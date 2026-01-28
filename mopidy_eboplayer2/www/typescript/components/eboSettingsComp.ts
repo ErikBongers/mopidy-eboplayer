@@ -1,12 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef} from "../modelTypes";
-import {EmptySearchResults, RefType, SearchResult, SearchResults} from "../refs";
-import {GuiSource} from "../events";
-import {console_yellow, unreachable} from "../global";
-import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
-import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
+import {console_yellow} from "../global";
 import {EboButton} from "./eboButton";
-import getState from "../playerState";
 
 export class EboSettingsComp extends EboComponent {
     static override readonly tagName=  "ebo-settings-view";
@@ -66,8 +60,7 @@ export class EboSettingsComp extends EboComponent {
     override render(shadow:ShadowRoot) {
         let scanBtn = shadow.getElementById("scanBtn") as EboButton;
         scanBtn.addEventListener("click", async (ev) => {
-            getState().getController().startScan().then(() => {});
-            console_yellow("Just started....");
+            this.dispatchEboEvent("scanRequested.eboplayer", {});
         });
         let whatsNewBtn = shadow.getElementById("whatsNewBtn") as EboButton;
         whatsNewBtn.addEventListener("click", async (ev) => {

@@ -1,7 +1,7 @@
-import getState from "../playerState";
 import {ComponentViewAdapter} from "./componentViewAdapter";
 import {EboPlayerDataType, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
 import EboBigTrackComp from "../components/eboBigTrackComp";
+import { State } from "../playerState";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     private streamLines: string;
@@ -9,29 +9,29 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     private uri: string | null = null;
     private track: ExpandedStreamModel | ExpandedFileTrackModel | null;
 
-    constructor(id: string) {
-        super(id);
+    constructor(state: State, id: string) {
+        super(state, id);
     }
 
     override bind() {
         super.bind();
-        getState().getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
             await this.onCurrentOrSelectedChanged();
         });
-        getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
             await this.onCurrentOrSelectedChanged();
         });
-        getState().getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
+        this.state.getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
             this.onStreamLinesChanged();
         });
-        getState().getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
+        this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
         });
     }
 
     private async onCurrentOrSelectedChanged() {
-        let currentTrackUri = getState().getModel().getCurrentTrack();
-        let selectedTrackUri = getState().getModel().getSelectedTrack();
+        let currentTrackUri = this.state.getModel().getCurrentTrack();
+        let selectedTrackUri = this.state.getModel().getSelectedTrack();
         await this.setUri(selectedTrackUri ?? currentTrackUri);
     }
 
@@ -40,11 +40,11 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     }
 
     protected onStreamLinesChanged() {
-        let selectedTrackUri = getState().getModel().getSelectedTrack();
-        let currentTrackUri = getState().getModel().getCurrentTrack();
+        let selectedTrackUri = this.state.getModel().getSelectedTrack();
+        let currentTrackUri = this.state.getModel().getCurrentTrack();
         this.streamLines = "";
         if(selectedTrackUri == currentTrackUri) {
-            let linesObject = getState().getModel().getActiveStreamLines();
+            let linesObject = this.state.getModel().getActiveStreamLines();
             if (this.uri && linesObject?.uri == this.uri)
                 this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
         }
@@ -54,7 +54,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
 
     async setUri(uri: TrackUri | StreamUri | null) {
         this.uri = uri;
-        this.track = await getState().getController().getExpandedTrackModel(uri);
+        this.track = await this.state.getController().getExpandedTrackModel(uri);
         this.setComponentData();
     }
 
@@ -101,7 +101,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     }
 
     private onProgramTitleChanged() {
-        this.programTitle = getState().getModel().getCurrentProgramTitle();
+        this.programTitle = this.state.getModel().getCurrentProgramTitle();
         this.setComponentData();
     }
 }

@@ -63,7 +63,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private currentBrowseFilter= new BrowseFilter();
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-    private genreDefs: Map<string, GenreDef> | null = null;
+    private genreDefs: Map<string, GenreDef> = new Map();
     private currentProgramTitle: string = "";
 
     private allRefs: Refs | null = null;

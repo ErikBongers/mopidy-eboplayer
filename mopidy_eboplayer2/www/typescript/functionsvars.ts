@@ -1,11 +1,3 @@
-// import * as controls from "./controls";
-import getState from "./playerState";
-import models from "../js/mopidy";
-import TlTrack = models.TlTrack;
-
-
-export const CURRENT_PLAYLIST_TABLE = '#currenttable';
-
 // the first part of Mopidy extensions which serve radio streams
 let radioExtensionsList = ['somafm', 'tunein', 'dirble', 'audioaddict']
 

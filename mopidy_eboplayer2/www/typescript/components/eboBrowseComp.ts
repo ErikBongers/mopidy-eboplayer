@@ -6,7 +6,6 @@ import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
 import {DisplayMode, EboListItemComp} from "./eboListItemComp";
-import getState from "../playerState";
 
 export class EboBrowseComp extends EboComponent {
     static override readonly tagName=  "ebo-browse-view";
@@ -283,7 +282,7 @@ export class EboBrowseComp extends EboComponent {
         this.currentResultHasImages = false;
         for(let result of this.results.refs) {
             if(result.type == "ref") {
-                let model = await getState().getController().getExpandedModel(result.item);
+                let model = await result.getExpandedModel();
                 if (model) {
                     if(isInstanceOfExpandedTrackModel(model))
                         result.imageUrl = model.album?.imageUrl??"";

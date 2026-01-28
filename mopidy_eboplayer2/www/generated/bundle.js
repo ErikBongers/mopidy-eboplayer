@@ -378,52 +378,6 @@ var Mopidy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/playerState.ts
-var State = class {
-	mopidy;
-	play = false;
-	random = false;
-	repeat = false;
-	model;
-	controller;
-	player;
-	constructor(mopidy, model, controller, player) {
-		this.mopidy = mopidy;
-		this.model = model;
-		this.controller = controller;
-		this.player = player;
-	}
-	views = [];
-	getModel = () => this.model;
-	getController = () => this.controller;
-	getPlayer = () => this.player;
-	addViews(...views) {
-		this.views.push(...views);
-		views.forEach((v) => v.bindRecursive());
-	}
-	async getRequiredData() {
-		let requiredData = /* @__PURE__ */ new Set();
-		this.views.forEach((v) => {
-			v.getRequiredDataTypesRecursive().forEach((dataType) => requiredData.add(dataType));
-		});
-		this.controller.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
-		for (const dataType of requiredData) await this.controller.fetchRequiredData(dataType);
-		await this.controller.fetchAllAlbums();
-		this.controller.localStorageProxy.loadCurrentBrowseFilter();
-		this.controller.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-		await this.controller.fetchRefsForCurrentBreadCrumbs();
-		await this.controller.filterBrowseResults();
-		await this.controller.getGenreDefsCached();
-	}
-};
-let state = null;
-function setState(newState) {
-	state = newState;
-}
-const getState = () => state;
-var playerState_default = getState;
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/refs.ts
 const EmptySearchResults = {
 	refs: [],
@@ -498,77 +452,108 @@ var Refs = class {
 		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
 		return ref.type;
 	}
-	static transformRefsToSearchResults(refs) {
-		let results = refs.map((ref) => {
-			if (SomeRefs.toRefType(ref) == "genre") {
-				let genreDefs = playerState_default().getModel().getGenreDefs();
-				if (!genreDefs) throw new Error("No genre defs found!");
+	static transformRefsToSearchResults(controller, refs) {
+		return refs.map((ref) => {
+			let refType = SomeRefs.toRefType(ref);
+			if (refType == "genre") {
+				let expandedRef$1 = {
+					ref,
+					type: refType,
+					lastModified: null
+				};
 				return {
 					type: "genreDef",
-					item: genreDefs.get(ref.name ?? "???"),
-					weight: -1
+					item: expandedRef$1,
+					weight: -1,
+					getExpandedModel: () => controller.getGenreDefCached(expandedRef$1.ref.name ?? "???")
 				};
 			}
+			let expandedRef = {
+				ref,
+				type: refType,
+				lastModified: null
+			};
 			return {
 				type: "ref",
-				item: {
-					ref,
-					type: SomeRefs.toRefType(ref)
-				},
-				weight: -1
+				item: expandedRef,
+				weight: -1,
+				getExpandedModel: () => controller.getExpandedModel(expandedRef)
 			};
 		});
-		return this.reduceResults(results);
 	}
-	static reduceResults(results) {
+	static async reduceResults(results) {
 		let resultsWithoutGenreDefs = results.filter((result) => result.type != "genreDef");
 		let onlyGenreDefResults = results.filter((result) => result.type == "genreDef");
-		let onlyWithoutReplacementResults = onlyGenreDefResults.filter((r) => r.item.replacement == null);
+		let onlyWithoutReplacementResults = (await Promise.all(onlyGenreDefResults.map(async (r) => {
+			return {
+				result: r,
+				genreDef: await r.getExpandedModel()
+			};
+		}))).filter((r) => r.genreDef != null && r.genreDef.replacement == null).map((r) => r.result);
 		let onlyWithoutReplacementResultsMap = /* @__PURE__ */ new Map();
 		onlyWithoutReplacementResults.forEach((result) => {
 			onlyWithoutReplacementResultsMap.set(result.item.ref.name ?? "???", result);
 		});
-		onlyGenreDefResults.forEach((result) => {
+		for (const result of onlyGenreDefResults) {
 			let name;
-			if (result.item.replacement != null) name = result.item.replacement;
+			let def = await result.getExpandedModel();
+			if (def?.replacement != null) name = def.replacement;
 			else name = result.item.ref.name ?? "???";
 			if (!onlyWithoutReplacementResultsMap.has(name)) onlyWithoutReplacementResultsMap.set(name, result);
-		});
+		}
 		return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
 	}
 };
-async function createAllRefs(roots, sub, tracks, albums, artists, genres, radios, playlists) {
+async function createAllRefs(controller, roots, sub, tracks, albums, artists, genres, radios, playlists) {
 	let mappedTracks = tracks.map((track) => ({
-		item: {
-			type: "track",
-			ref: track,
-			lastModified: null
-		},
-		type: "ref",
-		weight: 0
-	}));
+		type: "track",
+		ref: track,
+		lastModified: null
+	})).map((expandedRef) => {
+		return {
+			item: expandedRef,
+			type: "ref",
+			weight: 0,
+			getExpandedModel: () => controller.getExpandedModel(expandedRef)
+		};
+	});
 	let trackUris = tracks.map((track) => track.uri);
-	await playerState_default().getController().lookupTracksCached(trackUris);
+	await controller.lookupTracksCached(trackUris);
 	for (let trackRef of mappedTracks) if (trackRef.item.type == "track") {
-		let track = await playerState_default().getController().lookupTrackCached(trackRef.item.ref.uri);
+		let track = await controller.lookupTrackCached(trackRef.item.ref.uri);
 		trackRef.item.lastModified = track?.track?.last_modified ?? null;
 	}
 	let mappedAlbums = albums.map((album) => ({
-		item: {
-			type: "album",
-			ref: album,
-			lastModified: null
-		},
-		type: "ref",
-		weight: 0
-	}));
+		type: "album",
+		ref: album,
+		lastModified: null
+	})).map((expandedRef) => {
+		return {
+			item: expandedRef,
+			type: "ref",
+			weight: 0,
+			getExpandedModel: () => controller.getExpandedAlbumModel(expandedRef.ref.uri)
+		};
+	});
 	let albumUris = albums.map((album) => album.uri);
-	await playerState_default().getController().getMetaDatasCached(albumUris);
+	await controller.getMetaDatasCached(albumUris);
 	for (let albumRef of mappedAlbums) {
-		let album = await playerState_default().getController().getExpandedAlbumModel(albumRef.item.ref.uri);
+		let album = await controller.getExpandedAlbumModel(albumRef.item.ref.uri);
 		albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
 	}
-	return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genres, radios, playlists);
+	let genreResults = await Refs.reduceResults([...genres.values()].map((ref) => {
+		return {
+			item: {
+				ref: ref.ref,
+				type: "genre",
+				lastModified: null
+			},
+			type: "genreDef",
+			weight: 0,
+			getExpandedModel: () => Promise.resolve(genres.get(ref.ref.name ?? "???") ?? null)
+		};
+	}));
+	return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genreResults, radios, playlists);
 }
 var AllRefs = class extends Refs {
 	roots;
@@ -587,37 +572,42 @@ var AllRefs = class extends Refs {
 		this.tracks = tracks;
 		this.albums = albums;
 		this.artists = artists.map((artist) => ({
-			item: {
-				type: "artist",
-				ref: artist,
-				lastModified: null
-			},
-			type: "ref",
-			weight: 0
-		}));
-		this.genres = Refs.reduceResults(genres.map((ref) => ({
-			item: ref,
-			type: "genreDef",
-			weight: 0
-		})));
+			type: "artist",
+			ref: artist,
+			lastModified: null
+		})).map((expandedRef) => {
+			return {
+				item: expandedRef,
+				type: "ref",
+				weight: 0,
+				getExpandedModel: () => Promise.resolve(null)
+			};
+		});
+		this.genres = genres;
 		this.radios = radios.map((radio) => ({
-			item: {
-				type: "radio",
-				ref: radio,
-				lastModified: null
-			},
-			type: "ref",
-			weight: 0
-		}));
+			type: "radio",
+			ref: radio,
+			lastModified: null
+		})).map((expandedRef) => {
+			return {
+				item: expandedRef,
+				type: "ref",
+				weight: 0,
+				getExpandedModel: () => Promise.resolve(null)
+			};
+		});
 		this.playlists = playlists.map((album) => ({
-			item: {
-				type: "playlist",
-				ref: album,
-				lastModified: null
-			},
-			type: "ref",
-			weight: 0
-		}));
+			type: "playlist",
+			ref: album,
+			lastModified: null
+		})).map((expandedRef) => {
+			return {
+				item: expandedRef,
+				type: "ref",
+				weight: 0,
+				getExpandedModel: () => Promise.resolve(null)
+			};
+		});
 		this.availableRefTypes = /* @__PURE__ */ new Set();
 		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
@@ -646,9 +636,9 @@ var AllRefs = class extends Refs {
 var SomeRefs = class extends Refs {
 	allresults;
 	availableRefTypes;
-	constructor(refs) {
+	constructor(controller, refs) {
 		super();
-		this.allresults = Refs.transformRefsToSearchResults(refs);
+		this.allresults = Refs.transformRefsToSearchResults(controller, refs);
 		this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
 	}
 	async filter() {
@@ -763,14 +753,16 @@ var ExpandedAlbumModel = class {
 	tracks;
 	meta;
 	mostRecentTrackModifiedDate;
-	constructor(album, tracks, meta, mostRecentTrackModifiedDate) {
+	_genres;
+	constructor(model, album, tracks, meta, mostRecentTrackModifiedDate) {
 		this.album = album;
 		this.tracks = tracks;
 		this.meta = meta;
 		this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
+		this._genres = [...new Set(this.tracks.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map((genre) => model.getGenreDefs()?.get(genre)).filter((genre) => genre != void 0);
 	}
 	get genres() {
-		return [...new Set(this.tracks.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))];
+		return this._genres;
 	}
 	get artists() {
 		let artistMap = /* @__PURE__ */ new Map();
@@ -877,7 +869,7 @@ var Model = class extends EboEventTargetClass {
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-	genreDefs = null;
+	genreDefs = /* @__PURE__ */ new Map();
 	currentProgramTitle = "";
 	allRefs = null;
 	currentRefs = null;
@@ -947,8 +939,8 @@ var Model = class extends EboEventTargetClass {
 	addImagesToCache(map) {
 		for (let [uri, image] of map) this.addImageToCache(uri, image);
 	}
-	setConnectionState(state$1) {
-		this.connectionState = state$1;
+	setConnectionState(state) {
+		this.connectionState = state;
 		if (this.connectionState == ConnectionState.Online) this.clearMessage();
 		else this.setErrorMessage("Offline");
 		this.dispatchEboEvent("connectionChanged.eboplayer", {});
@@ -1018,16 +1010,16 @@ var Model = class extends EboEventTargetClass {
 			message
 		});
 	}
-	setPlaybackState(state$1) {
-		this.playbackModesState = { ...state$1 };
+	setPlaybackState(state) {
+		this.playbackModesState = { ...state };
 		this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
 	}
 	getVolume = () => this.volume;
 	getPlayState() {
 		return this.playState;
 	}
-	setPlayState(state$1) {
-		this.playState = state$1;
+	setPlayState(state) {
+		this.playState = state;
 		this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
 	}
 	setActiveStreamLinesHistory(streamTitles) {
@@ -1116,6 +1108,11 @@ var NestedDataRequester = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/view.ts
 var View = class extends NestedDataRequester {
+	state;
+	constructor(state) {
+		super();
+		this.state = state;
+	}
 	bindRecursive() {
 		this.children.forEach((child) => child.bindRecursive());
 		this.bind();
@@ -1123,8 +1120,8 @@ var View = class extends NestedDataRequester {
 };
 var ComponentView = class extends View {
 	component;
-	constructor(component) {
-		super();
+	constructor(state, component) {
+		super(state);
 		this.component = component;
 	}
 	on(type, listener, options) {
@@ -1136,12 +1133,12 @@ var ComponentView = class extends View {
 //#region mopidy_eboplayer2/www/typescript/views/headerView.ts
 var HeaderView = class extends View {
 	bind() {
-		playerState_default().getModel().addEboEventListener("messageChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("messageChanged.eboplayer", () => {
 			this.onMessageChanged();
 		});
 	}
 	onMessageChanged() {
-		let msg = playerState_default().getModel().getCurrentMessage();
+		let msg = this.state.getModel().getCurrentMessage();
 		let headerSpan = document.getElementById("contentHeadline");
 		headerSpan.innerText = msg.message;
 		switch (msg.type) {
@@ -1672,10 +1669,25 @@ var Controller = class Controller extends Commands {
 	getRequiredDataTypesRecursive() {
 		return this.getRequiredDataTypes();
 	}
-	initSocketevents() {
+	async getRequiredData(views) {
+		let requiredData = /* @__PURE__ */ new Set();
+		views.forEach((v) => {
+			v.getRequiredDataTypesRecursive().forEach((dataType) => requiredData.add(dataType));
+		});
+		this.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
+		for (const dataType of requiredData) await this.fetchRequiredData(dataType);
+		await this.fetchAllAlbums();
+		this.localStorageProxy.loadCurrentBrowseFilter();
+		this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
+		await this.fetchRefsForCurrentBreadCrumbs();
+		await this.filterBrowseResults();
+		await this.getGenreDefsCached();
+	}
+	initialize(views) {
+		views.forEach((v) => v.bindRecursive());
 		this.mopidy.on("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
-			await playerState_default().getRequiredData();
+			await this.getRequiredData(views);
 			this.model.setHistory(await this.webProxy.fetchHistory());
 		});
 		this.mopidy.on("state:offline", () => {
@@ -1755,8 +1767,8 @@ var Controller = class Controller extends Commands {
 				await this.setCurrentTrackAndFetchDetails(track);
 				break;
 			case EboPlayerDataType.PlayState:
-				let state$1 = await this.mopidyProxy.fetchPlayState();
-				this.model.setPlayState(state$1);
+				let state = await this.mopidyProxy.fetchPlayState();
+				this.model.setPlayState(state);
 				break;
 			case EboPlayerDataType.TrackList:
 				this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
@@ -1818,11 +1830,11 @@ var Controller = class Controller extends Commands {
 	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
 		if (type == "radio") return;
 		if (type == "track") {
-			let track = await playerState_default().getController().getExpandedTrackModel(uri);
+			let track = await this.getExpandedTrackModel(uri);
 			if (track.album?.albumInfo?.uri) this.showAlbum(track.album?.albumInfo?.uri, uri);
 			return;
 		}
-		if (type == "album") playerState_default().getController().getExpandedAlbumModel(uri).then(() => {
+		if (type == "album") this.getExpandedAlbumModel(uri).then(() => {
 			this.showAlbum(uri, null);
 		});
 		if (addTextFilterBreadcrumb) {
@@ -1874,8 +1886,8 @@ var Controller = class Controller extends Commands {
 		this.model.resetBreadCrumbsTo(this.model.getBreadCrumbs()[0].id);
 	}
 	async resetToBreadCrumb(id) {
-		let breadCrumb = playerState_default().getModel().getBreadCrumbs().get(id);
-		let breadCrumbs = playerState_default().getModel().getBreadCrumbs();
+		let breadCrumb = this.model.getBreadCrumbs().get(id);
+		let breadCrumbs = this.model.getBreadCrumbs();
 		if (breadCrumb instanceof BreadCrumbBrowseFilter) {
 			this.model.resetBreadCrumbsTo(id);
 			let browseFilter = this.model.popBreadCrumb()?.data;
@@ -2067,7 +2079,7 @@ var Controller = class Controller extends Commands {
 		let meta = await this.getMetaDataCached(albumUri) ?? null;
 		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
 		let mostRecentTrackModifiedDate = tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0] ?? null;
-		return new ExpandedAlbumModel(album, tracks, meta, mostRecentTrackModifiedDate);
+		return new ExpandedAlbumModel(this.model, album, tracks, meta, mostRecentTrackModifiedDate);
 	}
 	async getMetaDatasCached(albumUris) {
 		let foundMetas = [];
@@ -2094,19 +2106,19 @@ var Controller = class Controller extends Commands {
 	setSelectedTrack(uri) {
 		this.model.setSelectedTrack(uri);
 	}
-	async fetchAllRefs() {
+	async fetchAllRefs(controller) {
 		let roots = await this.mopidyProxy.fetchRootDirs();
 		let subDir1 = await this.mopidyProxy.browse(roots[1].uri);
 		let allTracks = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=track");
 		let allAlbums = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
 		let allArtists = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=artist");
-		let genreArray = [...(await this.getGenreDefsCached()).values()];
+		let allGenres = await this.getGenreDefsCached();
 		let playLists = await this.mopidyProxy.fetchPlayLists();
 		let radioStreamsPlayList = playLists.find((playlist) => playlist.name == "[Radio Streams]");
 		let playlists = playLists.filter((playlist) => playlist.name != "[Radio Streams]");
 		let radioStreams = [];
 		if (radioStreamsPlayList) radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri);
-		return createAllRefs(roots, subDir1, allTracks, allAlbums, allArtists, genreArray, radioStreams, playlists);
+		return createAllRefs(controller, roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
 	}
 	async filterBrowseResults() {
 		await this.model.filterCurrentRefs();
@@ -2134,17 +2146,17 @@ var Controller = class Controller extends Commands {
 						ref.name = ref.name.split(".").slice(0, -1).join(".");
 					}
 				});
-				this.model.setCurrentRefs(new SomeRefs(playlistItems));
+				this.model.setCurrentRefs(new SomeRefs(this, playlistItems));
 				return;
 			}
 			let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
-			this.model.setCurrentRefs(new SomeRefs(refs));
+			this.model.setCurrentRefs(new SomeRefs(this, refs));
 			return;
 		}
 	}
 	async setAllRefsAsCurrent() {
 		if (!this.model.getAllRefs()) {
-			let allRefs = await this.fetchAllRefs();
+			let allRefs = await this.fetchAllRefs(this);
 			this.model.setAllRefs(allRefs);
 		}
 		this.model.setCurrentRefs(this.model.getAllRefs() ?? null);
@@ -2169,7 +2181,7 @@ var Controller = class Controller extends Commands {
 		return await this.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
 	}
 	async addCurrentSearchResultsToPlayer() {
-		let results = playerState_default()?.getModel()?.getCurrentSearchResults();
+		let results = this.model.getCurrentSearchResults();
 		await this.player.add(results.refs.map((r) => r.item.ref.uri));
 	}
 	async createPlaylist(name) {
@@ -2179,13 +2191,13 @@ var Controller = class Controller extends Commands {
 		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
 	}
 	async getGenreDefsCached() {
-		if (this.model.getGenreDefs()) return this.model.getGenreDefs();
+		if (this.model.getGenreDefs().size > 0) return this.model.getGenreDefs();
 		let genreDefs = await this.webProxy.fetchGenreDefs();
 		this.model.setGenreDefs(genreDefs);
 		return this.model.getGenreDefs();
 	}
-	getGenreDef(name) {
-		return this.model.getGenreDefs()?.get(name);
+	async getGenreDefCached(name) {
+		return (await this.getGenreDefsCached()).get(name) ?? null;
 	}
 	showAlbum(albumUri, selectedTrackUri) {
 		this.model.setAlbumToView(albumUri, selectedTrackUri);
@@ -2204,54 +2216,54 @@ var Controller = class Controller extends Commands {
 var PlayerBarView = class extends View {
 	componentId;
 	parent;
-	constructor(containerId, parent) {
-		super();
+	constructor(state, containerId, parent) {
+		super(state);
 		this.parent = parent;
 		this.componentId = containerId;
 	}
 	bind() {
-		playerState_default().getModel().addEboEventListener("playbackStateChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("playbackStateChanged.eboplayer", async () => {
 			await this.onPlaybackStateChanged();
 		});
-		playerState_default().getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
 			await this.onCurrentTrackChanged();
 		});
-		playerState_default().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
 			await this.onSelectedTrackChanged();
 		});
-		playerState_default().getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", () => {
 			this.onActiveStreamLinesChanged();
 		});
 		let comp = document.getElementById(this.componentId);
 		comp.addEboEventListener("playPressed.eboplayer", async () => {
-			await playerState_default().getController().mopidyProxy.sendPlay();
+			await this.state.getController().mopidyProxy.sendPlay();
 		});
 		comp.addEboEventListener("stopPressed.eboplayer", async () => {
-			await playerState_default().getController().mopidyProxy.sendStop();
+			await this.state.getController().mopidyProxy.sendStop();
 		});
 		comp.addEboEventListener("pausePressed.eboplayer", async () => {
-			await playerState_default().getController().mopidyProxy.sendPause();
+			await this.state.getController().mopidyProxy.sendPause();
 		});
 		comp.addEboEventListener("buttonBarAlbumImgClicked.eboplayer", () => {
 			this.onButtonBarImgClicked();
 		});
-		playerState_default().getModel().addEboEventListener("volumeChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("volumeChanged.eboplayer", () => {
 			this.onVolumeChanged();
 		});
 		comp.addEboEventListener("changingVolume.eboplayer", async (ev) => {
 			let value = ev.detail.volume;
-			await playerState_default().getController().mopidyProxy.sendVolume(value);
+			await this.state.getController().mopidyProxy.sendVolume(value);
 		});
-		playerState_default().getModel().addEboEventListener("viewChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("viewChanged.eboplayer", () => {
 			this.showHideInfo();
 		});
 	}
 	onVolumeChanged() {
-		let volume = playerState_default().getModel().getVolume();
+		let volume = this.state.getModel().getVolume();
 		document.getElementById(this.componentId).setAttribute("volume", volume.toString());
 	}
 	async onPlaybackStateChanged() {
-		let playState = playerState_default().getModel().getPlayState();
+		let playState = this.state.getModel().getPlayState();
 		document.getElementById(this.componentId).setAttribute("play_state", playState);
 		await this.updateComponent();
 	}
@@ -2262,7 +2274,7 @@ var PlayerBarView = class extends View {
 		await this.updateComponent();
 	}
 	async updateComponent() {
-		let track = playerState_default().getModel().getCurrentTrack();
+		let track = this.state.getModel().getCurrentTrack();
 		let comp = document.getElementById(this.componentId);
 		if (!track) {
 			comp.setAttribute("text", "");
@@ -2272,10 +2284,10 @@ var PlayerBarView = class extends View {
 			comp.setAttribute("image_url", "");
 			comp.setAttribute("stop_or_pause", "stop");
 		} else {
-			let trackModel = await playerState_default().getController().getExpandedTrackModel(track);
+			let trackModel = await this.state.getController().getExpandedTrackModel(track);
 			if (isInstanceOfExpandedStreamModel(trackModel)) {
 				let active_titles = "";
-				let activeStreamLines = playerState_default().getModel().getActiveStreamLines();
+				let activeStreamLines = this.state.getModel().getActiveStreamLines();
 				if (activeStreamLines) active_titles = activeStreamLines.active_titles.join("\n");
 				comp.setAttribute("text", active_titles);
 				comp.setAttribute("allow_play", "true");
@@ -2295,9 +2307,9 @@ var PlayerBarView = class extends View {
 		this.showHideInfo();
 	}
 	showHideInfo() {
-		let currentTrack = playerState_default().getModel().getCurrentTrack();
-		let selectedTrack = playerState_default().getModel().getSelectedTrack();
-		let currentView = playerState_default().getModel().getView();
+		let currentTrack = this.state.getModel().getCurrentTrack();
+		let selectedTrack = this.state.getModel().getSelectedTrack();
+		let currentView = this.state.getModel().getView();
 		let show_info = false;
 		if (selectedTrack && currentTrack != selectedTrack) show_info = true;
 		if (currentView != Views.NowPlaying) show_info = true;
@@ -2307,11 +2319,11 @@ var PlayerBarView = class extends View {
 		return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];
 	}
 	onButtonBarImgClicked() {
-		playerState_default().getController().setSelectedTrack(playerState_default().getModel().getCurrentTrack());
-		playerState_default().getController().setView(Views.NowPlaying);
+		this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
+		this.state.getController().setView(Views.NowPlaying);
 	}
 	onActiveStreamLinesChanged() {
-		let lines = playerState_default().getModel().getActiveStreamLines();
+		let lines = this.state.getModel().getActiveStreamLines();
 		document.getElementById(this.componentId).setAttribute("text", lines.active_titles.join("\n"));
 	}
 };
@@ -2565,23 +2577,26 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 //#region mopidy_eboplayer2/www/typescript/views/timelineView.ts
 var TimelineView = class extends View {
 	clickedRow;
+	constructor(state) {
+		super(state);
+	}
 	bind() {
-		playerState_default().getModel().addEboEventListener("historyChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("historyChanged.eboplayer", () => {
 			this.rebuildTimeline().then((r) => {});
 		});
-		playerState_default().getModel().addEboEventListener("trackListChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("trackListChanged.eboplayer", () => {
 			this.rebuildTimeline().then((r) => {});
 		});
-		playerState_default().getModel().addEboEventListener("currentTrackChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", () => {
 			this.onCurrentTrackChanged();
 		});
-		playerState_default().getModel().addEboEventListener("selectedTrackChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", () => {
 			this.onSelectedTrackChanged();
 		});
 	}
 	async rebuildTimeline() {
-		let history = playerState_default().getModel().getHistory() ?? [];
-		let trackList = playerState_default().getModel().getTrackList() ?? [];
+		let history = this.state.getModel().getHistory() ?? [];
+		let trackList = this.state.getModel().getTrackList() ?? [];
 		let body = document.getElementById("timelineTable").tBodies[0];
 		body.innerHTML = "";
 		if (history.length > 0 && trackList.length > 0 && history[0].uri == trackList[0].track.uri) history.shift();
@@ -2603,12 +2618,12 @@ var TimelineView = class extends View {
 	onRowClicked(ev) {
 		let row = ev.currentTarget;
 		this.setRowsClass(row, ["clicked"]);
-		playerState_default().getController().setSelectedTrack(row.dataset.uri);
+		this.state.getController().setSelectedTrack(row.dataset.uri);
 	}
 	async onRowDoubleClicked(ev) {
 		this.clickedRow = ev.currentTarget;
-		if (this.clickedRow.dataset.tlid) await playerState_default().getPlayer().play(parseInt(this.clickedRow.dataset.tlid));
-		else await playerState_default().getPlayer().clearAndPlay([this.clickedRow.dataset.uri]);
+		if (this.clickedRow.dataset.tlid) await this.state.getPlayer().play(parseInt(this.clickedRow.dataset.tlid));
+		else await this.state.getPlayer().clearAndPlay([this.clickedRow.dataset.uri]);
 	}
 	setRowsClass(rowOrSelector, classes) {
 		document.getElementById("timelineTable").querySelectorAll(`tr`).forEach((tr) => tr.classList.remove(...classes));
@@ -2616,14 +2631,14 @@ var TimelineView = class extends View {
 		else document.getElementById("timelineTable").querySelectorAll(rowOrSelector).forEach((tr) => tr.classList.add(...classes));
 	}
 	setSelectedTrack() {
-		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
+		let selectedTrackUri = this.state.getModel().getSelectedTrack();
 		this.setRowsClass(`tr[data-uri="${selectedTrackUri}"]`, ["selected"]);
 	}
 	async setCurrentTrack() {
 		let timelineTable = document.getElementById("timelineTable");
-		let focusTrack = await playerState_default().getController().lookupTrackCached(playerState_default().getModel().getCurrentTrack());
+		let focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getCurrentTrack());
 		if (!focusTrack) {
-			focusTrack = await playerState_default().getController().lookupTrackCached(playerState_default().getModel().getSelectedTrack());
+			focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getSelectedTrack());
 			if (!focusTrack) return;
 		}
 		let currentUri = focusTrack.track.uri;
@@ -2654,9 +2669,9 @@ var TimelineView = class extends View {
             `);
 	}
 	async lookupAllTracksAndUpdateRows(uris) {
-		await playerState_default().getController().lookupAllTracks(uris);
+		await this.state.getController().lookupAllTracks(uris);
 		for (const uri of uris) {
-			const track = await playerState_default().getController().lookupTrackCached(uri);
+			const track = await this.state.getController().lookupTrackCached(uri);
 			if (!track) continue;
 			document.querySelectorAll(`tr[data-uri="${uri}"]`).forEach((tr) => this.updateTrackLineFromLookup(tr, track));
 		}
@@ -2923,8 +2938,8 @@ var eboBigTrackComp_default = EboBigTrackComp;
 //#region mopidy_eboplayer2/www/typescript/views/componentViewAdapter.ts
 var ComponentViewAdapter = class extends View {
 	componentId;
-	constructor(id) {
-		super();
+	constructor(state, id) {
+		super(state);
 		this.componentId = id;
 	}
 	bind() {}
@@ -2940,27 +2955,27 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 	programTitle = "";
 	uri = null;
 	track;
-	constructor(id) {
-		super(id);
+	constructor(state, id) {
+		super(state, id);
 	}
 	bind() {
 		super.bind();
-		playerState_default().getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
 			await this.onCurrentOrSelectedChanged();
 		});
-		playerState_default().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
 			await this.onCurrentOrSelectedChanged();
 		});
-		playerState_default().getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
+		this.state.getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
 			this.onStreamLinesChanged();
 		});
-		playerState_default().getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
+		this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
 			this.onProgramTitleChanged();
 		});
 	}
 	async onCurrentOrSelectedChanged() {
-		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
-		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
+		let currentTrackUri = this.state.getModel().getCurrentTrack();
+		let selectedTrackUri = this.state.getModel().getSelectedTrack();
 		await this.setUri(selectedTrackUri ?? currentTrackUri);
 	}
 	getRequiredDataTypes() {
@@ -2971,18 +2986,18 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		];
 	}
 	onStreamLinesChanged() {
-		let selectedTrackUri = playerState_default().getModel().getSelectedTrack();
-		let currentTrackUri = playerState_default().getModel().getCurrentTrack();
+		let selectedTrackUri = this.state.getModel().getSelectedTrack();
+		let currentTrackUri = this.state.getModel().getCurrentTrack();
 		this.streamLines = "";
 		if (selectedTrackUri == currentTrackUri) {
-			let linesObject = playerState_default().getModel().getActiveStreamLines();
+			let linesObject = this.state.getModel().getActiveStreamLines();
 			if (this.uri && linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
 		}
 		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
 	}
 	async setUri(uri) {
 		this.uri = uri;
-		this.track = await playerState_default().getController().getExpandedTrackModel(uri);
+		this.track = await this.state.getController().getExpandedTrackModel(uri);
 		this.setComponentData();
 	}
 	setComponentData() {
@@ -3023,7 +3038,7 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		this.onStreamLinesChanged();
 	}
 	onProgramTitleChanged() {
-		this.programTitle = playerState_default().getModel().getCurrentProgramTitle();
+		this.programTitle = this.state.getModel().getCurrentProgramTitle();
 		this.setComponentData();
 	}
 };
@@ -3312,9 +3327,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			button.classList.toggle("selected", this.use_selected_color);
 		});
 	}
-	updateButtonVisibility(id, state$1) {
+	updateButtonVisibility(id, state) {
 		let btn = this.shadow.getElementById(id);
-		switch (state$1) {
+		switch (state) {
 			case "show":
 				btn.style.display = "";
 				break;
@@ -3335,8 +3350,8 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 var MainView = class extends View {
 	browseView;
 	albumView;
-	constructor(browseView, albumView) {
-		super();
+	constructor(state, browseView, albumView) {
+		super(state);
 		this.browseView = browseView;
 		this.albumView = albumView;
 	}
@@ -3348,16 +3363,16 @@ var MainView = class extends View {
 		document.getElementById("settingsBtn")?.addEventListener("click", async () => {
 			await this.onSettingsButtonClick();
 		});
-		playerState_default().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
 			await this.onSelectedTrackChanged();
 		});
-		playerState_default().getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
 			await this.onTrackListChanged();
 		});
-		playerState_default().getModel().addEboEventListener("viewChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("viewChanged.eboplayer", async () => {
 			await this.setCurrentView();
 		});
-		playerState_default().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
 			await this.onAlbumToViewChanged();
 		});
 		let currentTrackBigViewComp = document.getElementById("currentTrackBigView");
@@ -3370,14 +3385,18 @@ var MainView = class extends View {
 		currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
-		playerState_default().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
-			let settingsComp = document.getElementById("settingsView");
-			settingsComp.scanStatus = ev.detail.text;
+		this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
+			let settingsComp$1 = document.getElementById("settingsView");
+			settingsComp$1.scanStatus = ev.detail.text;
 		});
-		playerState_default().getModel().addEboEventListener("scanFinished.eboplayer", () => {
+		this.state.getModel().addEboEventListener("scanFinished.eboplayer", () => {
 			document.getElementById("settingsView").setAttribute("show_whats_new", "");
 		});
-		document.getElementById("settingsView").addEboEventListener("whatsNewRequested.eboplayer", () => {
+		let settingsComp = document.getElementById("settingsView");
+		settingsComp.addEboEventListener("scanRequested.eboplayer", async () => {
+			await this.state.getController().startScan();
+		});
+		settingsComp.addEboEventListener("whatsNewRequested.eboplayer", () => {
 			window.location.hash = "#WhatsNew";
 			window.location.reload();
 		});
@@ -3393,29 +3412,29 @@ var MainView = class extends View {
 		}
 		return states;
 	}
-	showHideTrackAndAlbumButtons(states, state$1) {
-		states.add = state$1;
-		states.replace = state$1;
-		states.play = state$1;
-		states.save = state$1;
-		states.edit = state$1;
+	showHideTrackAndAlbumButtons(states, state) {
+		states.add = state;
+		states.replace = state;
+		states.play = state;
+		states.save = state;
+		states.edit = state;
 		return states;
 	}
 	onBrowseButtonClick() {
 		switch (document.getElementById("headerSearchBtn").dataset.goto) {
 			case Views.Browse:
-				playerState_default().getController().setView(Views.Browse);
+				this.state.getController().setView(Views.Browse);
 				break;
 			case Views.NowPlaying:
-				playerState_default().getController().setView(Views.NowPlaying);
+				this.state.getController().setView(Views.NowPlaying);
 				break;
 			case Views.Album:
-				playerState_default().getController().setView(Views.Album);
+				this.state.getController().setView(Views.Album);
 				break;
 		}
 	}
 	async setCurrentView() {
-		let view = playerState_default().getModel().getView();
+		let view = this.state.getModel().getView();
 		await this.showView(view);
 	}
 	async showView(view) {
@@ -3430,7 +3449,7 @@ var MainView = class extends View {
 		let resultsDisplayMode = "line";
 		switch (view) {
 			case Views.WhatsNew:
-				await playerState_default().getController().setWhatsNewFilter();
+				await this.state.getController().setWhatsNewFilter();
 				resultsDisplayMode = "icon";
 			case Views.Browse:
 				layout.classList.add("browse");
@@ -3471,33 +3490,33 @@ var MainView = class extends View {
 		return [EboPlayerDataType.TrackList];
 	}
 	async onBigTrackAlbumImgClick() {
-		let selectedTrack = playerState_default().getModel().getSelectedTrack();
+		let selectedTrack = this.state.getModel().getSelectedTrack();
 		if (!selectedTrack) return;
-		let expandedTrackInfo = await playerState_default().getController().getExpandedTrackModel(selectedTrack);
+		let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
 		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-			if (expandedTrackInfo.album?.albumInfo) playerState_default().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
+			if (expandedTrackInfo.album?.albumInfo) this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
 			return;
 		}
 		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("currentTrackBigView").setAttribute("show_back", "true");
 	}
 	async onTrackListChanged() {
-		if (!playerState_default().getModel().getCurrentTrack()) {
-			let trackList = playerState_default().getModel().getTrackList();
-			if (trackList.length > 0) await playerState_default().getController().setCurrentTrackAndFetchDetails(trackList[0]);
+		if (!this.state.getModel().getCurrentTrack()) {
+			let trackList = this.state.getModel().getTrackList();
+			if (trackList.length > 0) await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
 		}
 	}
 	async onSelectedTrackChanged() {
-		let uri = playerState_default().getModel().getSelectedTrack();
-		playerState_default().getController().lookupTrackCached(uri).then(async (track) => {
+		let uri = this.state.getModel().getSelectedTrack();
+		this.state.getController().lookupTrackCached(uri).then(async (track) => {
 			if (track?.type == "file") {
 				if (track.track.album) {
-					let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
+					let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
 					this.albumView.setAlbumComponentData(albumModel, track.track.uri);
 				}
 			} else if (track?.type == "stream") {
 				let albumComp = document.getElementById("bigAlbumView");
-				let streamModel = await playerState_default().getController().getExpandedTrackModel(track.track.uri);
+				let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri);
 				albumComp.albumInfo = null;
 				albumComp.setAttribute("img", streamModel.stream.imageUrl);
 				albumComp.setAttribute("name", streamModel.stream.name);
@@ -3507,13 +3526,13 @@ var MainView = class extends View {
 		});
 	}
 	async onAlbumToViewChanged() {
-		let albumToView = playerState_default().getModel().getAlbumToView();
+		let albumToView = this.state.getModel().getAlbumToView();
 		if (!albumToView) return;
-		let albumModel = await playerState_default().getController().getExpandedAlbumModel(albumToView.albumUri);
+		let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
 		this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
 	}
 	async rememberStreamLines(lines) {
-		await playerState_default().getController().remember(lines.join("\n"));
+		await this.state.getController().remember(lines.join("\n"));
 	}
 	async onSettingsButtonClick() {
 		await this.showView(Views.Settings);
@@ -3762,7 +3781,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.currentResultHasImages = false;
 		for (let result of this.results.refs) {
 			if (result.type == "ref") {
-				let model = await playerState_default().getController().getExpandedModel(result.item);
+				let model = await result.getExpandedModel();
 				if (model) if (isInstanceOfExpandedTrackModel(model)) result.imageUrl = model.album?.imageUrl ?? "";
 				else if (isInstanceOfExpandedStreamModel(model)) result.imageUrl = model.stream.imageUrl;
 				else result.imageUrl = model.album.imageUrl;
@@ -4734,14 +4753,11 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
 			this.addMetaDataRow(body, "Artists:", this.albumInfo.artists.map((artist) => artist.name).join(", "));
 			this.addMetaDataRow(body, "Composers:", this.albumInfo.composers.map((artist) => artist.name).join(","));
-			let genreDefs = this.albumInfo.genres.map((genre) => ({
-				genre,
-				def: playerState_default().getController().getGenreDef(genre)
-			}));
+			let genreDefs = this.albumInfo.genres;
 			let genresHtml = "";
 			genreDefs.forEach((def) => {
 				let defHtml = "";
-				if (def.def) defHtml += `<span class="replaced">${def.genre}</span> &gt; ${def.def.replacement}`;
+				if (def.replacement) defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
 				genresHtml += defHtml;
 			});
 			this.addMetaDataRow(body, "Genres", genresHtml);
@@ -5177,8 +5193,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 	}
 	render(shadow) {
 		shadow.getElementById("scanBtn").addEventListener("click", async (ev) => {
-			playerState_default().getController().startScan().then(() => {});
-			console_yellow("Just started....");
+			this.dispatchEboEvent("scanRequested.eboplayer", {});
 		});
 		shadow.getElementById("whatsNewBtn").addEventListener("click", async (ev) => {
 			this.dispatchEboEvent("whatsNewRequested.eboplayer", {});
@@ -5316,8 +5331,8 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/browseView.ts
 var BrowseView = class extends ComponentView {
-	constructor(component) {
-		super(component);
+	constructor(state, component) {
+		super(state, component);
 	}
 	bind() {
 		this.on("guiBrowseFilterChanged.eboplayer", async () => {
@@ -5332,16 +5347,16 @@ var BrowseView = class extends ComponentView {
 		this.on("browseResultDblClick.eboplayer", async (ev) => {
 			await this.onBrowseResultDblClick(ev.detail.uri);
 		});
-		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+		this.state.getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
 			await this.onGenreDefsChanged();
 		});
-		playerState_default().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
+		this.state.getModel().addEboEventListener("refsFiltered.eboplayer", () => {
 			this.onRefsFiltered();
 		});
-		playerState_default().getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
 			this.onBreadCrumbsChanged();
 		});
-		playerState_default().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
+		this.state.getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
 			this.onModelBrowseFilterChanged();
 		});
 		this.on("playItemListClicked.eboplayer", async (ev) => {
@@ -5358,16 +5373,16 @@ var BrowseView = class extends ComponentView {
 		});
 	}
 	async onGuiBrowseFilterChanged() {
-		await playerState_default().getController().setAndSaveBrowseFilter(this.component.browseFilter);
+		await this.state.getController().setAndSaveBrowseFilter(this.component.browseFilter);
 	}
 	onRefsFiltered() {
-		this.component.results = playerState_default().getModel().getCurrentSearchResults();
+		this.component.results = this.state.getModel().getCurrentSearchResults();
 		this.component.action_btn_states = this.getListButtonStates();
 	}
 	getListButtonStates() {
 		let states = ListButtonState_AllHidden();
-		let searchResults = playerState_default().getModel().getCurrentSearchResults();
-		let browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		let searchResults = this.state.getModel().getCurrentSearchResults();
+		let browseFilter = this.state.getModel().getCurrentBrowseFilter();
 		states.line_or_icon = "show";
 		if (searchResults.refs.length == 0) {
 			this.showHideTrackAndAlbumButtons(states, "hide");
@@ -5394,56 +5409,56 @@ var BrowseView = class extends ComponentView {
 		return states;
 	}
 	updateCompFromState(displayMode) {
-		this.component.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
-		this.component.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
+		this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
+		this.component.results = this.state.getModel()?.getCurrentSearchResults() ?? {
 			refs: [],
 			availableRefTypes: /* @__PURE__ */ new Set()
 		};
-		this.component.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
+		this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
 		this.component.setFocusAndSelect();
 		this.component.action_btn_states = this.getListButtonStates();
 		this.component.setAttribute("display_mode", displayMode);
 	}
-	showHideTrackAndAlbumButtons(states, state$1) {
-		states.add = state$1;
-		states.replace = state$1;
-		states.play = state$1;
-		states.save = state$1;
-		states.edit = state$1;
+	showHideTrackAndAlbumButtons(states, state) {
+		states.add = state;
+		states.replace = state;
+		states.play = state;
+		states.save = state;
+		states.edit = state;
 		return states;
 	}
 	onBreadCrumbsChanged() {
-		this.component.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
+		this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
 	}
 	onModelBrowseFilterChanged() {
-		this.component.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.TrackList];
 	}
 	async onPlayItemListClick(detail) {
-		await playerState_default().getPlayer().clear();
-		await playerState_default().getController().addCurrentSearchResultsToPlayer();
-		await playerState_default().getPlayer().play();
+		await this.state.getPlayer().clear();
+		await this.state.getController().addCurrentSearchResultsToPlayer();
+		await this.state.getPlayer().play();
 	}
 	async onAddItemListClick(detail) {
-		await playerState_default().getController().addCurrentSearchResultsToPlayer();
+		await this.state.getController().addCurrentSearchResultsToPlayer();
 	}
 	async onReplaceItemListClick(detail) {
-		await playerState_default().getPlayer().clear();
+		await this.state.getPlayer().clear();
 		await this.onAddItemListClick(detail);
 	}
 	async onBrowseResultDblClick(uri) {
-		await playerState_default().getPlayer().clearAndPlay([uri]);
+		await this.state.getPlayer().clearAndPlay([uri]);
 	}
 	async onBrowseResultClick(label, uri, type) {
-		await playerState_default().getController().diveIntoBrowseResult(label, uri, type, true);
+		await this.state.getController().diveIntoBrowseResult(label, uri, type, true);
 	}
 	async onBreadcrumbClick(breadcrumbId) {
-		await playerState_default().getController().resetToBreadCrumb(breadcrumbId);
+		await this.state.getController().resetToBreadCrumb(breadcrumbId);
 	}
 	async onGenreDefsChanged() {
-		this.component.genreDefs = await playerState_default().getController().getGenreDefsCached();
+		this.component.genreDefs = await this.state.getController().getGenreDefsCached();
 	}
 };
 
@@ -5455,8 +5470,8 @@ var AlbumView = class extends ComponentView {
 	}
 	onDialogOkClickedCallback = () => true;
 	dialog;
-	constructor(dialog, component) {
-		super(component);
+	constructor(state, dialog, component) {
+		super(state, component);
 		this.dialog = dialog;
 		this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
 			console_yellow("dialogOkClicked.eboplayer");
@@ -5503,20 +5518,20 @@ var AlbumView = class extends ComponentView {
 		}
 	}
 	async onPlayItemListClick(_detail) {
-		await playerState_default().getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
+		await this.state.getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
 	}
 	async onAddItemListClick(_detail) {
-		await playerState_default().getPlayer().add(await this.getSelectedUriForAlbum());
+		await this.state.getPlayer().add(await this.getSelectedUriForAlbum());
 	}
 	async onReplaceItemListClick(detail) {
-		await playerState_default().getPlayer().clear();
+		await this.state.getPlayer().clear();
 		await this.onAddItemListClick(detail);
 	}
 	async onPlayTrackClicked(uri) {
-		await playerState_default().getPlayer().clearAndPlay([uri]);
+		await this.state.getPlayer().clearAndPlay([uri]);
 	}
 	async onAddTrackClicked(uri) {
-		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
+		let trackModel = await this.state.getController().getExpandedTrackModel(uri);
 		if (isInstanceOfExpandedTrackModel(trackModel)) {
 			if (trackModel.album?.albumInfo) await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
 		}
@@ -5524,7 +5539,7 @@ var AlbumView = class extends ComponentView {
 	async getSelectedUriForAlbum() {
 		let trackUris = document.getElementById("bigAlbumView").selected_track_uris;
 		if (trackUris.length != 0) return trackUris;
-		return [playerState_default().getModel().getAlbumToView().albumUri];
+		return [this.state.getModel().getAlbumToView().albumUri];
 	}
 	async onSaveClicked(detail) {
 		if (detail.source == "albumView") this.showDialog(`
@@ -5543,10 +5558,31 @@ var AlbumView = class extends ComponentView {
 	}
 	async saveAlbumAsPlaylist(name, detail) {
 		console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
-		let playlist = await playerState_default().getController().createPlaylist(name);
-		await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
+		let playlist = await this.state.getController().createPlaylist(name);
+		await this.state.getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
 		return true;
 	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/playerState.ts
+var State = class {
+	mopidy;
+	play = false;
+	random = false;
+	repeat = false;
+	model;
+	controller;
+	player;
+	constructor(mopidy, model, controller, player) {
+		this.mopidy = mopidy;
+		this.model = model;
+		this.controller = controller;
+		this.player = player;
+	}
+	getModel = () => this.model;
+	getController = () => this.controller;
+	getPlayer = () => this.player;
 };
 
 //#endregion
@@ -5590,17 +5626,21 @@ function setupStuff() {
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);
 	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
-	controller.initSocketevents();
-	let state$1 = new State(mopidy, model, controller, player);
-	setState(state$1);
-	let browseView = new BrowseView(document.getElementById("browseView"));
-	let albumView = new AlbumView(document.getElementById("dialog"), document.getElementById("albumView"));
-	let mainView = new MainView(browseView, albumView);
-	let headerView = new HeaderView();
-	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
-	let buttonBarView = new PlayerBarView("buttonBar", mainView);
-	let historyView = new TimelineView();
-	playerState_default().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
+	let state = new State(mopidy, model, controller, player);
+	let browseView = new BrowseView(state, document.getElementById("browseView"));
+	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("albumView"));
+	let mainView = new MainView(state, browseView, albumView);
+	let headerView = new HeaderView(state);
+	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, "currentTrackBigView");
+	let buttonBarView = new PlayerBarView(state, "buttonBar", mainView);
+	let historyView = new TimelineView(state);
+	controller.initialize([
+		mainView,
+		headerView,
+		currentTrackView,
+		buttonBarView,
+		historyView
+	]);
 	if (location.hash == Views.Album) controller.setView(Views.NowPlaying);
 	else controller.setView(location.hash != "" ? location.hash : Views.NowPlaying);
 	mopidy.connect();

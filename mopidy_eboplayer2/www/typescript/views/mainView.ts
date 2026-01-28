@@ -1,4 +1,3 @@
-import getState from "../playerState";
 import {View} from "./view";
 import {EboPlayerDataType, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
@@ -10,13 +9,14 @@ import {EboSettingsComp} from "../components/eboSettingsComp";
 import {BrowseView} from "./browseView";
 import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
+import { State } from "../playerState";
 
 export class MainView extends View {
     private browseView: BrowseView;
     private albumView: AlbumView;
 
-    constructor(browseView: BrowseView, albumView: AlbumView) {
-        super();
+    constructor(state: State, browseView: BrowseView, albumView: AlbumView) {
+        super(state);
         this.browseView = browseView;
         this.albumView = albumView;
     }
@@ -29,16 +29,16 @@ export class MainView extends View {
         document.getElementById("settingsBtn")?.addEventListener("click", async () => {
             await this.onSettingsButtonClick();
         });
-        getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
             await this.onSelectedTrackChanged();
         });
-        getState().getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("trackListChanged.eboplayer", async () => {
             await this.onTrackListChanged();
         });
-        getState().getModel().addEboEventListener("viewChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("viewChanged.eboplayer", async () => {
             await this.setCurrentView();
         });
-        getState().getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
             await this.onAlbumToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
@@ -52,19 +52,23 @@ export class MainView extends View {
             await this.rememberStreamLines(ev.detail.lines);
         });
 
-        getState().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
+        this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
             settingsComp.scanStatus = ev.detail.text;
         });
-        getState().getModel().addEboEventListener("scanFinished.eboplayer", () => {
+        this.state.getModel().addEboEventListener("scanFinished.eboplayer", () => {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
             settingsComp.setAttribute("show_whats_new", "");
         });
         let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
+        settingsComp.addEboEventListener("scanRequested.eboplayer", async () => {
+            await this.state.getController().startScan();
+        });
         settingsComp.addEboEventListener("whatsNewRequested.eboplayer", () => {
             window.location.hash = "#WhatsNew";
             window.location.reload();
         });
+
     }
 
     private getListButtonStates(currentView: Views) {
@@ -92,19 +96,19 @@ export class MainView extends View {
         let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
         switch (browseBtn.dataset.goto) {
             case Views.Browse:
-                getState().getController().setView(Views.Browse);
+                this.state.getController().setView(Views.Browse);
                 break;
             case Views.NowPlaying:
-                getState().getController().setView(Views.NowPlaying);
+                this.state.getController().setView(Views.NowPlaying);
                 break;
             case Views.Album:
-                getState().getController().setView(Views.Album);
+                this.state.getController().setView(Views.Album);
                 break;
         }
     }
 
     async setCurrentView() {
-        let view = getState().getModel().getView();
+        let view = this.state.getModel().getView();
         await this.showView(view);
     }
 
@@ -116,7 +120,7 @@ export class MainView extends View {
         let resultsDisplayMode: DisplayMode = "line"; //todo: get from model.
         switch (view) {
             case Views.WhatsNew:
-                await getState().getController().setWhatsNewFilter();
+                await this.state.getController().setWhatsNewFilter();
                 resultsDisplayMode = "icon";
                 //fall through
             case Views.Browse:
@@ -161,13 +165,13 @@ export class MainView extends View {
     }
 
     private async onBigTrackAlbumImgClick() {
-        let selectedTrack = getState().getModel().getSelectedTrack();
+        let selectedTrack = this.state.getModel().getSelectedTrack();
         if (!selectedTrack) return;
-        let expandedTrackInfo = await getState().getController().getExpandedTrackModel(selectedTrack);
+        let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
             if(expandedTrackInfo.album?.albumInfo)
-                getState().getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
+                this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
             //todo: else?
             return;
         }
@@ -178,27 +182,27 @@ export class MainView extends View {
     }
 
     private async onTrackListChanged() {
-        if(!getState().getModel().getCurrentTrack()) {
-            let trackList = getState().getModel().getTrackList();
+        if(!this.state.getModel().getCurrentTrack()) {
+            let trackList = this.state.getModel().getTrackList();
             if(trackList.length > 0)
-                await getState().getController().setCurrentTrackAndFetchDetails(trackList[0]);
+                await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
         }
     }
 
     private async onSelectedTrackChanged() {
-        let uri = getState().getModel().getSelectedTrack();
-        getState().getController().lookupTrackCached(uri)
+        let uri = this.state.getModel().getSelectedTrack();
+        this.state.getController().lookupTrackCached(uri)
             .then(async track => {
                 if(track?.type == "file") {
                     if(track.track.album) {
-                        let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
+                        let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
                         this.albumView.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
                     }
                     //todo: else?
                 }
                 else if(track?.type == "stream") {
                     let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                    let streamModel = await getState().getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
+                    let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
                     albumComp.albumInfo = null;
                     albumComp.setAttribute("img", streamModel.stream.imageUrl);
                     albumComp.setAttribute("name", streamModel.stream.name);
@@ -209,15 +213,15 @@ export class MainView extends View {
     }
 
     private async onAlbumToViewChanged() {
-        let albumToView = getState().getModel().getAlbumToView();
+        let albumToView = this.state.getModel().getAlbumToView();
         if(!albumToView)
             return;
-        let albumModel = await getState().getController().getExpandedAlbumModel(albumToView.albumUri);
+        let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
         this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
     }
 
     private async rememberStreamLines(lines: string[]) {
-        await getState().getController().remember(lines.join("\n"));
+        await this.state.getController().remember(lines.join("\n"));
     }
 
     private async onSettingsButtonClick() {

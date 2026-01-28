@@ -1,8 +1,9 @@
 import models from "../js/mopidy";
 
-import {AlbumUri, AllUris, ArtistUri, BrowseFilter, ExpandedFileTrackModel, ExpandedStreamModel, GenreDef, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
-import getState from "./playerState";
+import {AlbumUri, AllUris, ArtistUri, BrowseFilter, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, GenreDef, GenreUri, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
 import Ref = models.Ref;
+import {Controller} from "./controllers/controller";
+import {ViewModel} from "./model";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
 export interface ExpandedRef {
@@ -17,13 +18,15 @@ export type RefSearchResult  = {
     weight: number;
     imageUrl?: string;
     defaultImageUrl?: string;
+    getExpandedModel: () => Promise<ExpandedStreamModel | ExpandedFileTrackModel | ExpandedAlbumModel | null>;
 }
 export type GenreSearchResult  = {
     type: "genreDef";
-    item: GenreDef;
+    item: ExpandedRef;
     weight: number;
     imageUrl?: string;
     defaultImageUrl?: string;
+    getExpandedModel: () => Promise<GenreDef | null>;
 }
 
 export type SearchResult = RefSearchResult | GenreSearchResult;
@@ -147,76 +150,93 @@ export abstract class Refs {
         return ref.type as RefType; //WARNING: this really is an unknown type!
     }
 
-    static transformRefsToSearchResults(refs: Ref<AllUris>[]): SearchResult[] {
+    static transformRefsToSearchResults(controller: Controller, refs: Ref<AllUris>[]): SearchResult[] {
         let results = refs.map(ref => {
             let refType = SomeRefs.toRefType(ref);
             if(refType == "genre") {
-                let genreDefs = getState().getModel().getGenreDefs();
-                if(!genreDefs)
-                    throw new Error("No genre defs found!");
-                let genreDef = genreDefs.get(ref.name?? "???");
+                let expandedRef: ExpandedRef = {ref: ref, type: refType, lastModified: null};
                 return {
                     type: "genreDef",
-                    item: genreDef,
-                    weight: -1
-                } as GenreSearchResult;
+                    item: expandedRef,
+                    weight: -1,
+                    getExpandedModel: () => controller.getGenreDefCached(expandedRef.ref.name?? "???")
+                } satisfies GenreSearchResult;
             }
+            let expandedRef: ExpandedRef = {ref: ref, type: refType, lastModified: null};
             return {
                 type: "ref",
-                item: {
-                    ref: ref,
-                    type:SomeRefs.toRefType(ref)
-                },
-                weight: -1
-            } as RefSearchResult;
+                item: expandedRef,
+                weight: -1,
+                getExpandedModel: () => controller.getExpandedModel(expandedRef)
+            } satisfies RefSearchResult;
         });
         // make genreDefs distinct and keep removed defs separate.
-        return this.reduceResults(results);
+        return results;
     }
 
-    static reduceResults(results: (GenreSearchResult | RefSearchResult)[]) {
+    static async reduceResults(results: (GenreSearchResult | RefSearchResult)[]) {
         let resultsWithoutGenreDefs = results.filter(result => result.type != "genreDef"); //todo: return this list as well.
         let onlyGenreDefResults = results.filter(result => result.type == "genreDef");
 
-        let onlyWithoutReplacementResults = onlyGenreDefResults.filter(r => r.item.replacement == null);
+        let onlyWithoutReplacementResults = (await Promise.all(onlyGenreDefResults
+            .map(async r => {
+                return {result: r, genreDef: await r.getExpandedModel()};
+            })))
+            .filter(r => r.genreDef != null && r.genreDef.replacement == null)
+            .map(r => r.result);
         let onlyWithoutReplacementResultsMap = new Map<string, GenreSearchResult>();
         onlyWithoutReplacementResults.forEach(result => {
             onlyWithoutReplacementResultsMap.set(result.item.ref.name?? "???", result);
         });
 
-        onlyGenreDefResults.forEach(result => {
+        for (const result of onlyGenreDefResults) {
             let name: string;
-            if (result.item.replacement != null) {
-                name = result.item.replacement;
+            let def = await result.getExpandedModel();
+            if (def?.replacement != null) {
+                name = def.replacement;
             } else {
                 name = result.item.ref.name ?? "???";
             }
             if(!onlyWithoutReplacementResultsMap.has(name))
                 onlyWithoutReplacementResultsMap.set(name, result);
-        })
+        }
         return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
     }
 }
 
-export async function createAllRefs( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
-    let mappedTracks: RefSearchResult[] = tracks.map(track => ({item: {type: "track" as RefType, ref: track, lastModified: null}, type: "ref", weight: 0}));
+export async function createAllRefs(controller: Controller, roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: Map<string, GenreDef>, radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
+    let mappedTracks: RefSearchResult[] = tracks
+        .map(track => ({type: "track" as RefType, ref: track, lastModified: null} as ExpandedRef))
+        .map(expandedRef => {
+            return {item: expandedRef, type: "ref", weight: 0, getExpandedModel: () => controller.getExpandedModel(expandedRef)};
+        });
     let trackUris = tracks.map(track => track.uri);
 
-    await getState().getController().lookupTracksCached(trackUris); //pre-fetch
+    await controller.lookupTracksCached(trackUris); //pre-fetch
     for(let trackRef of mappedTracks) {
         if (trackRef.item.type == 'track') {
-            let track = await getState().getController().lookupTrackCached(trackRef.item.ref.uri as TrackUri);
+            let track = await controller.lookupTrackCached(trackRef.item.ref.uri as TrackUri);
             trackRef.item.lastModified = track?.track?.last_modified??null;
         }
     }
-    let mappedAlbums: RefSearchResult[] = albums.map(album => ({item: {type: "album" as RefType, ref: album, lastModified: null}, type: "ref", weight: 0}));
+    let mappedAlbums: RefSearchResult[] = albums
+        .map(album => ({type: "album" as RefType, ref: album, lastModified: null} as ExpandedRef))
+        .map(expandedRef => {
+            return { item: expandedRef, type: "ref", weight: 0, getExpandedModel: () => controller.getExpandedAlbumModel(expandedRef.ref.uri as AlbumUri)};
+        });
     let albumUris = albums.map(album => album.uri);
-    await getState().getController().getMetaDatasCached(albumUris); //pre-fetch
+    await controller.getMetaDatasCached(albumUris); //pre-fetch
     for(let albumRef of mappedAlbums) {
-        let album = await getState().getController().getExpandedAlbumModel(albumRef.item.ref.uri as AlbumUri);
+        let album = await controller.getExpandedAlbumModel(albumRef.item.ref.uri as AlbumUri);
         albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
     }
-    return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genres, radios, playlists);
+    let genreResults = await Refs.reduceResults(
+        [...genres.values()].map(ref => {
+            let expandedRef: ExpandedRef = {ref: ref.ref, type: "genre", lastModified: null};
+            return {item: expandedRef, type: "genreDef", weight: 0, getExpandedModel: () => Promise.resolve(genres.get(ref.ref.name ?? "???")?? null)};
+        })
+    );
+    return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genreResults, radios, playlists);
 }
 
 export class AllRefs extends Refs {
@@ -230,18 +250,25 @@ export class AllRefs extends Refs {
     playlists: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: RefSearchResult[], albums: RefSearchResult[], artists: Ref<ArtistUri>[], genres: GenreDef[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
+    constructor( roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: RefSearchResult[], albums: RefSearchResult[], artists: Ref<ArtistUri>[], genres: SearchResult[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
         super();
         this.roots = roots;
         this.sub = sub;
         this.tracks = tracks;
         this.albums = albums;
-        this.artists = artists.map(artist => ({item: {type: "artist" as RefType, ref: artist, lastModified: null}, type: "ref", weight: 0}));
-        this.genres = Refs.reduceResults(
-            genres.map(ref => ({item: ref, type: "genreDef", weight: 0}))
-        );
-        this.radios = radios.map(radio => ({item: {type: "radio" as RefType, ref: radio, lastModified: null}, type: "ref", weight: 0}));
-        this.playlists = playlists.map(album => ({item: {type: "playlist" as RefType, ref: album, lastModified: null}, type: "ref", weight: 0}));
+        this.artists = artists.map(artist => ({type: "artist" as RefType, ref: artist, lastModified: null}) as ExpandedRef)
+            .map(expandedRef => {
+                return {item: expandedRef, type: "ref", weight: 0, getExpandedModel: () => Promise.resolve(null)};
+            });
+        this.genres = genres;
+        this.radios = radios.map(radio => ({type: "radio" as RefType, ref: radio, lastModified: null} as ExpandedRef))
+            .map(expandedRef => {
+                return {item: expandedRef, type: "ref", weight: 0, getExpandedModel: () => Promise.resolve(null)};
+            });
+        this.playlists = playlists.map(album => ({type: "playlist" as RefType, ref: album, lastModified: null} as ExpandedRef))
+            .map(expandedRef => {
+                return { item: expandedRef, type: "ref", weight: 0, getExpandedModel: () => Promise.resolve(null)};
+            });
         this.availableRefTypes = new Set();
 
         this.getAvailableRefTypes(this.tracks).forEach(type => this.availableRefTypes.add(type));
@@ -280,11 +307,11 @@ export class AllRefs extends Refs {
 
 export class SomeRefs extends Refs {
     allresults: SearchResult[];
-    availableRefTypes: Set<RefType>
+    availableRefTypes: Set<RefType>;
 
-    constructor(refs: Ref<AllUris>[]) {
+    constructor(controller: Controller,  refs: Ref<AllUris>[]) {
         super();
-        this.allresults = Refs.transformRefsToSearchResults(refs);
+        this.allresults = Refs.transformRefsToSearchResults(controller, refs);
         this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
     }
 

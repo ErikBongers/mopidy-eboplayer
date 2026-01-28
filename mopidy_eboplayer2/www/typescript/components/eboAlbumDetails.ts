@@ -1,7 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
 import {ExpandedAlbumModel} from "../modelTypes";
-import getState from "../playerState";
 
 export class EboAlbumDetails extends EboComponent {
     get albumInfo(): ExpandedAlbumModel | null {
@@ -97,12 +96,12 @@ export class EboAlbumDetails extends EboComponent {
             this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
             this.addMetaDataRow(body, "Artists:", this.albumInfo.artists.map(artist => artist.name).join(", "));
             this.addMetaDataRow(body, "Composers:", this.albumInfo.composers.map(artist => artist.name).join(","))
-            let genreDefs = this.albumInfo.genres.map(genre => ({genre, def: getState().getController().getGenreDef(genre)}));
+            let genreDefs = this.albumInfo.genres;
             let genresHtml = "";
             genreDefs.forEach(def => {
                 let defHtml = "";
-                if(def.def)
-                    defHtml += `<span class="replaced">${def.genre}</span> &gt; ${def.def.replacement}`;
+                if(def.replacement)
+                    defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
                 genresHtml += defHtml;
             });
             this.addMetaDataRow(body, "Genres", genresHtml);

@@ -1,29 +1,34 @@
-import getState from "../playerState";
 import {View} from "./view";
 import {TlId} from "../../js/mopidy";
 import {EboPlayerDataType, FileTrackModel, HistoryLineDef, StreamTrackModel, TrackModel, TrackUri} from "../modelTypes";
+import {State} from "../playerState";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement;
+
+    constructor(state: State) {
+        super(state);
+    }
+
     bind() {
-        getState().getModel().addEboEventListener("historyChanged.eboplayer", () => {
+        this.state.getModel().addEboEventListener("historyChanged.eboplayer", () => {
             this.rebuildTimeline().then(r => {});
         });
-        getState().getModel().addEboEventListener("trackListChanged.eboplayer", () => {
+        this.state.getModel().addEboEventListener("trackListChanged.eboplayer", () => {
             this.rebuildTimeline().then(r => {});
         });
-        getState().getModel().addEboEventListener("currentTrackChanged.eboplayer", () => {
+        this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", () => {
             this.onCurrentTrackChanged();
         });
-        getState().getModel().addEboEventListener("selectedTrackChanged.eboplayer", () => {
+        this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", () => {
             this.onSelectedTrackChanged();
         });
     }
 
 
     private async rebuildTimeline() {
-        let history = getState().getModel().getHistory() ?? [];
-        let trackList = getState().getModel().getTrackList() ?? [];
+        let history = this.state.getModel().getHistory() ?? [];
+        let trackList = this.state.getModel().getTrackList() ?? [];
 
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
         let body = timelineTable.tBodies[0];
@@ -60,15 +65,15 @@ export class TimelineView extends View {
         let row = ev.currentTarget as HTMLTableRowElement;
         this.setRowsClass(row, ["clicked"]);
 
-        getState().getController().setSelectedTrack(row.dataset.uri as TrackUri);
+        this.state.getController().setSelectedTrack(row.dataset.uri as TrackUri);
     }
 
     private async onRowDoubleClicked(ev: MouseEvent) {
         this.clickedRow = ev.currentTarget as HTMLTableRowElement;
         if(this.clickedRow.dataset.tlid)
-            await getState().getPlayer().play(parseInt(this.clickedRow.dataset.tlid) as TlId);
+            await this.state.getPlayer().play(parseInt(this.clickedRow.dataset.tlid) as TlId);
         else
-            await getState().getPlayer().clearAndPlay([this.clickedRow.dataset.uri as TrackUri]);
+            await this.state.getPlayer().clearAndPlay([this.clickedRow.dataset.uri as TrackUri]);
     }
 
     private setRowsClass(rowOrSelector: HTMLTableRowElement | string, classes: string[]) {
@@ -91,15 +96,15 @@ export class TimelineView extends View {
     }
 
     private setSelectedTrack() {
-        let selectedTrackUri = getState().getModel().getSelectedTrack();
+        let selectedTrackUri = this.state.getModel().getSelectedTrack();
         this.setRowsClass(`tr[data-uri="${selectedTrackUri}"]`, ["selected"]);
     }
 
     private async setCurrentTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
-        let focusTrack = await getState().getController().lookupTrackCached(getState().getModel().getCurrentTrack());
+        let focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getCurrentTrack());
         if(!focusTrack) {
-            focusTrack = await getState().getController().lookupTrackCached(getState().getModel().getSelectedTrack());
+            focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getSelectedTrack());
             if(!focusTrack)
                 return;
         }
@@ -139,9 +144,9 @@ export class TimelineView extends View {
     }
 
     async lookupAllTracksAndUpdateRows(uris: TrackUri[]) {
-        await getState().getController().lookupAllTracks(uris);
+        await this.state.getController().lookupAllTracks(uris);
         for (const uri of uris) {
-            const track = await getState().getController().lookupTrackCached(uri);
+            const track = await this.state.getController().lookupTrackCached(uri);
             if(!track) continue;
             let trs = document.querySelectorAll(`tr[data-uri="${uri}"]`) as NodeListOf<HTMLTableRowElement>;
             trs.forEach(tr => this.updateTrackLineFromLookup(tr, track));

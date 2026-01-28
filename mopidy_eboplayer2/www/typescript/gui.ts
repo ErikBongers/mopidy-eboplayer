@@ -1,5 +1,4 @@
 import {Mopidy, Options} from "../js/mopidy";
-import getState, {setState, State} from "./playerState";
 import {Model} from "./model";
 import {HeaderView} from "./views/headerView";
 import {Controller} from "./controllers/controller";
@@ -31,6 +30,7 @@ import {EboSettingsComp} from "./components/eboSettingsComp";
 import {EboListItemComp} from "./components/eboListItemComp";
 import {BrowseView} from "./views/browseView";
 import {AlbumView} from "./views/albumView";
+import {State} from "./playerState";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -94,19 +94,17 @@ function setupStuff() {
     let player = new PlayController(model, mopidyProxy)
     let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
 
-    controller.initSocketevents();
-
     let state = new State(mopidy, model, controller, player);
-    setState(state);
 
-    let browseView = new BrowseView(document.getElementById("browseView") as EboBrowseComp);
-    let albumView = new AlbumView(document.getElementById("dialog") as EboDialog, document.getElementById("albumView") as EboBigAlbumComp);
-    let mainView = new MainView(browseView, albumView);
-    let headerView = new HeaderView();
-    let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
-    let buttonBarView = new PlayerBarView("buttonBar", mainView);
-    let historyView = new TimelineView();
-    getState().addViews(mainView, headerView, currentTrackView, buttonBarView, historyView);
+    let browseView = new BrowseView(state, document.getElementById("browseView") as EboBrowseComp);
+    let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("albumView") as EboBigAlbumComp);
+    let mainView = new MainView(state, browseView, albumView);
+    let headerView = new HeaderView(state);
+    let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state,"currentTrackBigView");
+    let buttonBarView = new PlayerBarView(state, "buttonBar", mainView);
+    let historyView = new TimelineView(state);
+
+    controller.initialize([mainView, headerView, currentTrackView, buttonBarView, historyView]);
 
     if(location.hash == Views.Album)
         controller.setView(Views.NowPlaying);

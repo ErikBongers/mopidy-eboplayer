@@ -3,6 +3,7 @@ import {BreadCrumb} from "./breadCrumb";
 import Ref = models.Ref;
 import Image = models.Image;
 import Artist = models.Artist;
+import {Model, ViewModel} from "./model";
 
 declare const __brand: unique symbol;
 
@@ -162,20 +163,25 @@ export class ExpandedAlbumModel {
     tracks: FileTrackModel[];
     meta: AlbumMetaData | null;
     mostRecentTrackModifiedDate: number | null;
+    private readonly _genres: GenreDef[];
 
-    constructor(album: AlbumModel, tracks: FileTrackModel[], meta: AlbumMetaData | null, mostRecentTrackModifiedDate: number | null) {
+    constructor(model: ViewModel, album: AlbumModel, tracks: FileTrackModel[], meta: AlbumMetaData | null, mostRecentTrackModifiedDate: number | null) {
         this.album = album;
         this.tracks = tracks;
         this.meta = meta;
         this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
+        this._genres = [...new Set(this.tracks
+            .filter(track => track.track.genre != undefined)
+            .map(track => track.track.genre as string))]
+            .map(genre => model.getGenreDefs()?.get(genre))
+            .filter(genre => genre != undefined);
     }
 
-    get genres(): string[] {
-        return [...new Set(this.tracks
-            .filter(track => track.track.genre != undefined)
-            .map(track => track.track.genre as string))];
+    get genres(): GenreDef[] {
+        return this._genres;
     }
-    get artists()  {
+
+    get artists()  { //todo: build in constructor? Or lazily here?
         let artistMap: Map<string, Artist> = new Map();
         this.tracks
             .map(track => track.track.artists?? [])

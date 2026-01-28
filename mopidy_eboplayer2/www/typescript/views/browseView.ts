@@ -1,14 +1,14 @@
-import getState from "../playerState";
 import {ComponentView} from "./view";
 import {AllUris, EboPlayerDataType} from "../modelTypes";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {DisplayMode} from "../components/eboListItemComp";
+import {State} from "../playerState";
 
 export class BrowseView extends ComponentView<EboBrowseComp> {
-    constructor(component: EboBrowseComp) {
-        super(component);
+    constructor(state: State, component: EboBrowseComp) {
+        super(state, component);
     }
 
     bind() {
@@ -24,16 +24,16 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.on("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
-        getState().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+        this.state.getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
             await this.onGenreDefsChanged();
         });
-        getState().getModel().addEboEventListener("refsFiltered.eboplayer", () => {
+        this.state.getModel().addEboEventListener("refsFiltered.eboplayer", () => {
             this.onRefsFiltered();
         });
-        getState().getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
+        this.state.getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
             this.onBreadCrumbsChanged();
         });
-        getState().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
+        this.state.getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
             this.onModelBrowseFilterChanged();
         });
         this.on("playItemListClicked.eboplayer", async (ev) => {
@@ -51,18 +51,18 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private async onGuiBrowseFilterChanged() {
-        await getState().getController().setAndSaveBrowseFilter(this.component.browseFilter);
+        await this.state.getController().setAndSaveBrowseFilter(this.component.browseFilter);
     }
 
     private onRefsFiltered() {
-        this.component.results = getState().getModel().getCurrentSearchResults();
+        this.component.results = this.state.getModel().getCurrentSearchResults();
         this.component.action_btn_states = this.getListButtonStates();
     }
 
     private getListButtonStates() {
         let states: ListButtonStates = ListButtonState_AllHidden();
-        let searchResults = getState().getModel().getCurrentSearchResults();
-        let browseFilter = getState().getModel().getCurrentBrowseFilter();
+        let searchResults = this.state.getModel().getCurrentSearchResults();
+        let browseFilter = this.state.getModel().getCurrentBrowseFilter();
 
         states.line_or_icon = "show";
 
@@ -103,9 +103,9 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     updateCompFromState(displayMode: DisplayMode) {
-        this.component.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
-        this.component.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()}; //todo: the default should be provided by getCurrentSearchResults()
-        this.component.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
+        this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter(); //todo: already set in controller?
+        this.component.results = this.state.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()}; //todo: the default should be provided by getCurrentSearchResults()
+        this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
         this.component.setFocusAndSelect();
         this.component.action_btn_states = this.getListButtonStates();
         this.component.setAttribute("display_mode", displayMode);
@@ -121,11 +121,11 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private onBreadCrumbsChanged() {
-        this.component.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
+        this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
     }
 
     private onModelBrowseFilterChanged() {
-        this.component.browseFilter = getState().getModel().getCurrentBrowseFilter();
+        this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -133,34 +133,34 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private async onPlayItemListClick(detail: GuiSourceArgs) {
-        await getState().getPlayer().clear();
-        await getState().getController().addCurrentSearchResultsToPlayer();
-        await getState().getPlayer().play();
+        await this.state.getPlayer().clear();
+        await this.state.getController().addCurrentSearchResultsToPlayer();
+        await this.state.getPlayer().play();
     }
 
     private async onAddItemListClick(detail: GuiSourceArgs) {
-        await getState().getController().addCurrentSearchResultsToPlayer();
+        await this.state.getController().addCurrentSearchResultsToPlayer();
     }
 
     private async onReplaceItemListClick(detail: GuiSourceArgs) {
-        await getState().getPlayer().clear();
+        await this.state.getPlayer().clear();
         await this.onAddItemListClick(detail);
     }
 
     private async onBrowseResultDblClick(uri: AllUris) {
-        await getState().getPlayer().clearAndPlay([uri]);
+        await this.state.getPlayer().clearAndPlay([uri]);
     }
 
     private async onBrowseResultClick(label: string, uri: AllUris, type: string) {
-        await getState().getController().diveIntoBrowseResult(label, uri, type, true);
+        await this.state.getController().diveIntoBrowseResult(label, uri, type, true);
     }
 
     private async onBreadcrumbClick(breadcrumbId: number) {
-        await getState().getController().resetToBreadCrumb(breadcrumbId);
+        await this.state.getController().resetToBreadCrumb(breadcrumbId);
     }
 
     private async onGenreDefsChanged() {
-        this.component.genreDefs = await getState().getController().getGenreDefsCached();
+        this.component.genreDefs = await this.state.getController().getGenreDefsCached();
     }
 
 }
