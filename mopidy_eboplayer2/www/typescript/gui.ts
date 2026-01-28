@@ -30,6 +30,7 @@ import {EboBrowseFilterComp} from "./components/eboBrowseFilterComp";
 import {EboSettingsComp} from "./components/eboSettingsComp";
 import {EboListItemComp} from "./components/eboListItemComp";
 import {BrowseView} from "./views/browseView";
+import {AlbumView} from "./views/albumView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -99,7 +100,8 @@ function setupStuff() {
     setState(state);
 
     let browseView = new BrowseView(document.getElementById("browseView") as EboBrowseComp);
-    let mainView = new MainView(document.getElementById("dialog") as EboDialog, browseView);
+    let albumView = new AlbumView(document.getElementById("dialog") as EboDialog, document.getElementById("albumView") as EboBigAlbumComp);
+    let mainView = new MainView(browseView, albumView);
     let headerView = new HeaderView();
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
     let buttonBarView = new PlayerBarView("buttonBar", mainView);

@@ -823,6 +823,13 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["WhatsNew"] = "#WhatsNew";
 	return Views$1;
 }({});
+let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
+	EboPlayerDataType$1[EboPlayerDataType$1["Volume"] = 0] = "Volume";
+	EboPlayerDataType$1[EboPlayerDataType$1["CurrentTrack"] = 1] = "CurrentTrack";
+	EboPlayerDataType$1[EboPlayerDataType$1["PlayState"] = 2] = "PlayState";
+	EboPlayerDataType$1[EboPlayerDataType$1["TrackList"] = 3] = "TrackList";
+	return EboPlayerDataType$1;
+}({});
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/events.ts
@@ -1108,13 +1115,6 @@ var NestedDataRequester = class {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/view.ts
-let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
-	EboPlayerDataType$1[EboPlayerDataType$1["Volume"] = 0] = "Volume";
-	EboPlayerDataType$1[EboPlayerDataType$1["CurrentTrack"] = 1] = "CurrentTrack";
-	EboPlayerDataType$1[EboPlayerDataType$1["PlayState"] = 2] = "PlayState";
-	EboPlayerDataType$1[EboPlayerDataType$1["TrackList"] = 3] = "TrackList";
-	return EboPlayerDataType$1;
-}({});
 var View = class extends NestedDataRequester {
 	bindRecursive() {
 		this.children.forEach((child) => child.bindRecursive());
@@ -3333,18 +3333,12 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/mainView.ts
 var MainView = class extends View {
-	onDialogOkClickedCallback = () => true;
-	dialog;
 	browseView;
-	constructor(dialog, browseView) {
+	albumView;
+	constructor(browseView, albumView) {
 		super();
-		this.dialog = dialog;
 		this.browseView = browseView;
-		this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
-			console_yellow("dialogOkClicked.eboplayer");
-			let innnerDialog = ev.detail.dialog;
-			if (this.onDialogOkClickedCallback(innnerDialog)) innnerDialog.close();
-		});
+		this.albumView = albumView;
 	}
 	bind() {
 		this.browseView.bind();
@@ -3376,16 +3370,6 @@ var MainView = class extends View {
 		currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
-		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
-			await this.onPlayTrackClicked(ev.detail.uri);
-		});
-		albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
-			await this.onAddTrackClicked(ev.detail.uri);
-		});
-		albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
-			await this.onSaveClicked(ev.detail);
-		});
 		playerState_default().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
 			let settingsComp = document.getElementById("settingsView");
 			settingsComp.scanStatus = ev.detail.text;
@@ -3396,18 +3380,6 @@ var MainView = class extends View {
 		document.getElementById("settingsView").addEboEventListener("whatsNewRequested.eboplayer", () => {
 			window.location.hash = "#WhatsNew";
 			window.location.reload();
-		});
-		albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
-			albumComp.selected_track_uris = arrayToggle(albumComp.selected_track_uris, ev.detail.uri);
-		});
-		albumComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
-			await this.onPlayItemListClick(ev.detail);
-		});
-		albumComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
-			await this.onAddItemListClick(ev.detail);
-		});
-		albumComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
-			await this.onReplaceItemListClick(ev.detail);
 		});
 	}
 	getListButtonStates(currentView) {
@@ -3521,7 +3493,7 @@ var MainView = class extends View {
 			if (track?.type == "file") {
 				if (track.track.album) {
 					let albumModel = await playerState_default().getController().getExpandedAlbumModel(track.track.album.uri);
-					this.setAlbumComponentData(albumModel, track.track.uri);
+					this.albumView.setAlbumComponentData(albumModel, track.track.uri);
 				}
 			} else if (track?.type == "stream") {
 				let albumComp = document.getElementById("bigAlbumView");
@@ -3538,68 +3510,13 @@ var MainView = class extends View {
 		let albumToView = playerState_default().getModel().getAlbumToView();
 		if (!albumToView) return;
 		let albumModel = await playerState_default().getController().getExpandedAlbumModel(albumToView.albumUri);
-		this.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
-	}
-	setAlbumComponentData(albumModel, selectedTrackUri) {
-		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.albumInfo = albumModel;
-		albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
-		albumComp.setAttribute("img", albumModel.album.imageUrl);
-		if (albumModel.album.albumInfo) {
-			albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
-			albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
-		}
-	}
-	async onPlayTrackClicked(uri) {
-		await playerState_default().getPlayer().clearAndPlay([uri]);
-	}
-	async onAddTrackClicked(uri) {
-		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
-		if (isInstanceOfExpandedTrackModel(trackModel)) {
-			if (trackModel.album?.albumInfo) await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
-		}
-	}
-	async onSaveClicked(detail) {
-		if (detail.source == "albumView") this.showDialog(`
-                <label for="playListName">Name</label>
-                <input type="text" id="playListName">
-            `, "Save", (dialog) => {
-			let name = dialog.querySelector("#playListName").value;
-			return this.saveAlbumAsPlaylist(name, detail);
-		});
-	}
-	async saveAlbumAsPlaylist(name, detail) {
-		console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
-		let playlist = await playerState_default().getController().createPlaylist(name);
-		await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
-		return true;
-	}
-	showDialog(contentHtml, okButtonText, onOkClicked) {
-		this.onDialogOkClickedCallback = onOkClicked;
-		this.dialog.innerHTML = contentHtml;
-		this.dialog.showModal();
-		this.dialog.setAttribute("ok_text", okButtonText);
+		this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
 	}
 	async rememberStreamLines(lines) {
 		await playerState_default().getController().remember(lines.join("\n"));
 	}
 	async onSettingsButtonClick() {
 		await this.showView(Views.Settings);
-	}
-	async getSelectedUriForAlbum() {
-		let trackUris = document.getElementById("bigAlbumView").selected_track_uris;
-		if (trackUris.length != 0) return trackUris;
-		return [playerState_default().getModel().getAlbumToView().albumUri];
-	}
-	async onPlayItemListClick(detail) {
-		await playerState_default().getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
-	}
-	async onAddItemListClick(detail) {
-		await playerState_default().getPlayer().add(await this.getSelectedUriForAlbum());
-	}
-	async onReplaceItemListClick(detail) {
-		await playerState_default().getPlayer().clear();
-		await this.onAddItemListClick(detail);
 	}
 };
 
@@ -5531,6 +5448,108 @@ var BrowseView = class extends ComponentView {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/views/albumView.ts
+var AlbumView = class extends ComponentView {
+	getRequiredDataTypes() {
+		throw new Error("Method not implemented.");
+	}
+	onDialogOkClickedCallback = () => true;
+	dialog;
+	constructor(dialog, component) {
+		super(component);
+		this.dialog = dialog;
+		this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+			console_yellow("dialogOkClicked.eboplayer");
+			let innnerDialog = ev.detail.dialog;
+			if (this.onDialogOkClickedCallback(innnerDialog)) innnerDialog.close();
+		});
+	}
+	bind() {
+		let currentTrackBigViewComp = document.getElementById("currentTrackBigView");
+		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+			currentTrackBigViewComp.setAttribute("show_back", "false");
+		});
+		let albumComp = document.getElementById("bigAlbumView");
+		albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
+			await this.onPlayTrackClicked(ev.detail.uri);
+		});
+		albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
+			await this.onAddTrackClicked(ev.detail.uri);
+		});
+		albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+			await this.onSaveClicked(ev.detail);
+		});
+		albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
+			albumComp.selected_track_uris = arrayToggle(albumComp.selected_track_uris, ev.detail.uri);
+		});
+		albumComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+			await this.onPlayItemListClick(ev.detail);
+		});
+		albumComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+			await this.onAddItemListClick(ev.detail);
+		});
+		albumComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+			await this.onReplaceItemListClick(ev.detail);
+		});
+	}
+	setAlbumComponentData(albumModel, selectedTrackUri) {
+		let albumComp = document.getElementById("bigAlbumView");
+		albumComp.albumInfo = albumModel;
+		albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
+		albumComp.setAttribute("img", albumModel.album.imageUrl);
+		if (albumModel.album.albumInfo) {
+			albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
+			albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
+		}
+	}
+	async onPlayItemListClick(_detail) {
+		await playerState_default().getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
+	}
+	async onAddItemListClick(_detail) {
+		await playerState_default().getPlayer().add(await this.getSelectedUriForAlbum());
+	}
+	async onReplaceItemListClick(detail) {
+		await playerState_default().getPlayer().clear();
+		await this.onAddItemListClick(detail);
+	}
+	async onPlayTrackClicked(uri) {
+		await playerState_default().getPlayer().clearAndPlay([uri]);
+	}
+	async onAddTrackClicked(uri) {
+		let trackModel = await playerState_default().getController().getExpandedTrackModel(uri);
+		if (isInstanceOfExpandedTrackModel(trackModel)) {
+			if (trackModel.album?.albumInfo) await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
+		}
+	}
+	async getSelectedUriForAlbum() {
+		let trackUris = document.getElementById("bigAlbumView").selected_track_uris;
+		if (trackUris.length != 0) return trackUris;
+		return [playerState_default().getModel().getAlbumToView().albumUri];
+	}
+	async onSaveClicked(detail) {
+		if (detail.source == "albumView") this.showDialog(`
+                <label for="playListName">Name</label>
+                <input type="text" id="playListName">
+            `, "Save", (dialog) => {
+			let name = dialog.querySelector("#playListName").value;
+			return this.saveAlbumAsPlaylist(name, detail);
+		});
+	}
+	showDialog(contentHtml, okButtonText, onOkClicked) {
+		this.onDialogOkClickedCallback = onOkClicked;
+		this.dialog.innerHTML = contentHtml;
+		this.dialog.showModal();
+		this.dialog.setAttribute("ok_text", okButtonText);
+	}
+	async saveAlbumAsPlaylist(name, detail) {
+		console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
+		let playlist = await playerState_default().getController().createPlaylist(name);
+		await playerState_default().getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
+		return true;
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5575,7 +5594,8 @@ function setupStuff() {
 	let state$1 = new State(mopidy, model, controller, player);
 	setState(state$1);
 	let browseView = new BrowseView(document.getElementById("browseView"));
-	let mainView = new MainView(document.getElementById("dialog"), browseView);
+	let albumView = new AlbumView(document.getElementById("dialog"), document.getElementById("albumView"));
+	let mainView = new MainView(browseView, albumView);
 	let headerView = new HeaderView();
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");
 	let buttonBarView = new PlayerBarView("buttonBar", mainView);

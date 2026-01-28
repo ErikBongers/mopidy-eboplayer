@@ -1,33 +1,24 @@
 import getState from "../playerState";
 import {View} from "./view";
-import {AlbumUri, EboPlayerDataType, ExpandedAlbumModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaylistUri, TrackUri, Views} from "../modelTypes";
+import {EboPlayerDataType, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
-import {arrayToggle, console_yellow, unreachable} from "../global";
-import {GuiSourceArgs, SaveUriArgs} from "../events";
-import {EboDialog} from "../components/eboDialog";
+import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import EboBigTrackComp from "../components/eboBigTrackComp";
 import {EboSettingsComp} from "../components/eboSettingsComp";
 import {BrowseView} from "./browseView";
 import {DisplayMode} from "../components/eboListItemComp";
-import {AlbumToView} from "../model";
+import {AlbumView} from "./albumView";
 
 export class MainView extends View {
-    private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
-    private dialog: EboDialog;
     private browseView: BrowseView;
+    private albumView: AlbumView;
 
-    constructor(dialog: EboDialog, browseView: BrowseView) {
+    constructor(browseView: BrowseView, albumView: AlbumView) {
         super();
-        this.dialog = dialog;
         this.browseView = browseView;
-        this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
-            console_yellow("dialogOkClicked.eboplayer");
-            let innnerDialog = ev.detail.dialog;
-            if(this.onDialogOkClickedCallback(innnerDialog))
-                innnerDialog.close();
-        });
+        this.albumView = albumView;
     }
 
     bind() {
@@ -61,16 +52,6 @@ export class MainView extends View {
             await this.rememberStreamLines(ev.detail.lines);
         });
 
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
-            await this.onPlayTrackClicked(ev.detail.uri);
-        });
-        albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
-            await this.onAddTrackClicked(ev.detail.uri);
-        });
-        albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
-            await this.onSaveClicked(ev.detail);
-        });
         getState().getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
             settingsComp.scanStatus = ev.detail.text;
@@ -84,20 +65,6 @@ export class MainView extends View {
             window.location.hash = "#WhatsNew";
             window.location.reload();
         });
-        albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
-            albumComp.selected_track_uris = arrayToggle<TrackUri>(albumComp.selected_track_uris, ev.detail.uri as TrackUri);
-        });
-        //todo: perhaps create an albumView ?
-        albumComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
-            await this.onPlayItemListClick(ev.detail);
-        });
-        albumComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
-            await this.onAddItemListClick(ev.detail);
-        });
-        albumComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
-            await this.onReplaceItemListClick(ev.detail);
-        });
-
     }
 
     private getListButtonStates(currentView: Views) {
@@ -225,7 +192,7 @@ export class MainView extends View {
                 if(track?.type == "file") {
                     if(track.track.album) {
                         let albumModel = await getState().getController().getExpandedAlbumModel(track.track.album.uri);
-                        this.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
+                        this.albumView.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
                     }
                     //todo: else?
                 }
@@ -246,60 +213,7 @@ export class MainView extends View {
         if(!albumToView)
             return;
         let albumModel = await getState().getController().getExpandedAlbumModel(albumToView.albumUri);
-        this.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
-    }
-
-    private setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.albumInfo = albumModel;
-        albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
-        albumComp.setAttribute("img", albumModel.album.imageUrl);
-        if(albumModel.album.albumInfo) {
-            albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
-            albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
-        }
-    }
-
-    private async onPlayTrackClicked(uri: TrackUri) {
-        await getState().getPlayer().clearAndPlay([uri]);
-    }
-
-    private async onAddTrackClicked(uri: TrackUri) {
-        let trackModel = await getState().getController().getExpandedTrackModel(uri);
-        if(isInstanceOfExpandedTrackModel(trackModel)) {
-            if(trackModel.album?.albumInfo) {
-                await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri); //todo: get rid of this?
-            }
-            //todo: else?
-        }
-    }
-
-    private async onSaveClicked(detail: SaveUriArgs) {
-        if (detail.source == "albumView") {
-            let dialogContent = `
-                <label for="playListName">Name</label>
-                <input type="text" id="playListName">
-            `;
-            this.showDialog(dialogContent, "Save", (dialog) => {
-                let playlistName = dialog.querySelector("#playListName") as HTMLInputElement;
-                let name = playlistName.value;
-                return this.saveAlbumAsPlaylist(name, detail);
-            });
-        }
-    }
-
-    async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
-        console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
-        let playlist = await getState().getController().createPlaylist(name);
-        await getState().getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
-        return true;
-    }
-
-    showDialog(contentHtml: string, okButtonText: string, onOkClicked: (dialog: EboDialog) => boolean | Promise<boolean>) {
-        this.onDialogOkClickedCallback = onOkClicked;
-        this.dialog.innerHTML = contentHtml;
-        this.dialog.showModal();
-        this.dialog.setAttribute("ok_text", okButtonText);
+        this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
     }
 
     private async rememberStreamLines(lines: string[]) {
@@ -309,34 +223,4 @@ export class MainView extends View {
     private async onSettingsButtonClick() {
         await this.showView(Views.Settings);
     }
-
-    private async getSelectedUriForAlbum() {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        let trackUris = albumComp.selected_track_uris;
-
-        if (trackUris.length != 0) {
-            return trackUris;
-        }
-
-        //No selection? Take the whole album.
-        let albumToView = getState().getModel().getAlbumToView() as AlbumToView; //Shouldn't be null.'
-        return [albumToView.albumUri];
-    }
-
-    private async onPlayItemListClick(detail: GuiSourceArgs) {
-        //todo: assuming this event is received from an album component!
-        await getState().getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
-    }
-
-    private async onAddItemListClick(detail: GuiSourceArgs) {
-        //todo: assuming this event is received from an album component!
-        await getState().getPlayer().add(await this.getSelectedUriForAlbum());
-    }
-
-    private async onReplaceItemListClick(detail: GuiSourceArgs) {
-        await getState().getPlayer().clear();
-        await this.onAddItemListClick(detail);
-    }
-
-
 }
