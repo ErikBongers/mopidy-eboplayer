@@ -1,6 +1,6 @@
 import {NestedDataRequester} from "./dataRequester";
 
-export enum EboPlayerDataType {
+export enum EboPlayerDataType {//todo: move to types.
     Volume,
     CurrentTrack,
     PlayState,
