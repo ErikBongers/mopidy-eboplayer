@@ -51,6 +51,7 @@ export interface EboEventHandlersEventMap {
     "dialogOkClicked.eboplayer"                 : DialogArgs,
     "genreDefsChanged.eboplayer"                : VoidArgs,
     "trackClicked.eboplayer"                    : UriArgs,
+    "pressedChange.eboplayer"                   : PressedArgs,
 }
 
 export default interface EboEventTarget {
@@ -86,6 +87,10 @@ export interface StreamLinesArgs extends EboEventArgs {
 
 export interface UriArgs extends EboEventArgs {
     uri: AllUris
+}
+
+export interface PressedArgs extends EboEventArgs {
+    pressed: boolean
 }
 
 export interface StringArgs extends EboEventArgs {

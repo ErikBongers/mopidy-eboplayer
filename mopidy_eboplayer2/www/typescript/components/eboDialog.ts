@@ -2,19 +2,6 @@ import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
 import {console_yellow} from "../global";
 
-export class PressedChangeEvent extends Event {
-    private _pressed: boolean;
-
-    constructor(pressed: boolean) {
-        super("pressedChange"); //todo: make ebo event.
-        this._pressed = pressed;
-    }
-
-    get pressed() {
-        return this._pressed;
-    }
-}
-
 export class EboDialog extends EboComponent {
     static override readonly tagName=  "ebo-dialog";
     // noinspection JSUnusedGlobalSymbols

@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {GuiSource} from "../events";
 import {AllUris} from "../modelTypes";
+import {EboButton} from "./eboButton";
 
 export type ListButtonState = "show" | "hide" | "disabled";
 export type ListButtonStates = {
@@ -135,9 +136,9 @@ export class EboListButtonBar extends EboComponent {
             if(this.btn_states.new_playlist != "show") return;
             this.dispatchEboEvent("newPlaylistClicked.eboplayer", {source: this.list_source});
         });
-        this.shadow.getElementById("btnDisplayMode")?.addEventListener("pressedChange", () => {
-            let pressed = this.shadow.getElementById("btnDisplayMode")?.getAttribute("pressed") as string;
-            this.dispatchEboEvent("displayModeChanged.eboplayer", {mode: pressed == "true"? "icon" : "line"});
+        let btnDisplayMode = this.shadow.getElementById("btnDisplayMode") as EboButton;
+        btnDisplayMode.addEboEventListener("pressedChange.eboplayer", (ev) => {
+           this.dispatchEboEvent("displayModeChanged.eboplayer", {mode: ev.detail.pressed ? "icon" : "line"});
         });
         this.requestUpdate();
     }

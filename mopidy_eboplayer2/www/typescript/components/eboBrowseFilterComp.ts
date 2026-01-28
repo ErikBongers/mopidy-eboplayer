@@ -1,8 +1,8 @@
 import {EboComponent} from "./EboComponent";
-import {EboButton, PressedChangeEvent} from "./eboButton";
+import {EboButton} from "./eboButton";
 import {BrowseFilter, BrowseFilterFlags} from "../modelTypes";
 import {RefType} from "../refs";
-import {GuiSource} from "../events";
+import {EboplayerEvent, GuiSource, PressedArgs} from "../events";
 
 export class EboBrowseFilterComp extends EboComponent {
     get availableRefTypes(): Set<RefType> {
@@ -14,7 +14,7 @@ export class EboBrowseFilterComp extends EboComponent {
         this.requestUpdate();
     }
 
-    static override readonly tagName=  "ebo-browse-filter";
+    static override readonly tagName = "ebo-browse-filter";
     private static listSource: GuiSource = "browseView";
 
     get browseFilter(): BrowseFilter {
@@ -33,7 +33,7 @@ export class EboBrowseFilterComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
 
-    static styleText= `
+    static styleText = `
         <style>
             :host { 
                 display: flex;
@@ -130,7 +130,7 @@ export class EboBrowseFilterComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         this.requestRender();
-        }
+    }
 
     setFocusAndSelect() {
         let searchText = this.getShadow().getElementById("searchText") as HTMLInputElement;
@@ -138,7 +138,7 @@ export class EboBrowseFilterComp extends EboComponent {
         searchText?.select();
     }
 
-    override render(shadow:ShadowRoot) {
+    override render(shadow: ShadowRoot) {
         // @ts-ignore
         shadow.getElementById("headerSearchBtn").addEventListener("click", async (ev) => {
             this._browseFilter.searchText = inputElement.value;
@@ -155,7 +155,7 @@ export class EboBrowseFilterComp extends EboComponent {
         });
         shadow.querySelectorAll("ebo-button")
             .forEach((btn: EboButton) => {
-                btn.addEventListener("pressedChange", async (ev: PressedChangeEvent) => {
+                btn.addEboEventListener("pressedChange.eboplayer", async (ev) => {
                     this.onFilterButtonPress(ev);
                 });
                 btn.addEboEventListener("longPress.eboplayer", (ev) => {
@@ -195,7 +195,7 @@ export class EboBrowseFilterComp extends EboComponent {
         this.browseFilter.artist = false;
     }
 
-    private onFilterButtonPress(ev: PressedChangeEvent) {
+    private onFilterButtonPress(ev: EboplayerEvent<"pressedChange.eboplayer", PressedArgs>) {
         let btn: EboButton = ev.target as EboButton;
         this.toggleFilterButton(btn);
     }

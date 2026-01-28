@@ -3309,9 +3309,8 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 			if (this.btn_states.new_playlist != "show") return;
 			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
 		});
-		this.shadow.getElementById("btnDisplayMode")?.addEventListener("pressedChange", () => {
-			let pressed = this.shadow.getElementById("btnDisplayMode")?.getAttribute("pressed");
-			this.dispatchEboEvent("displayModeChanged.eboplayer", { mode: pressed == "true" ? "icon" : "line" });
+		this.shadow.getElementById("btnDisplayMode").addEboEventListener("pressedChange.eboplayer", (ev) => {
+			this.dispatchEboEvent("displayModeChanged.eboplayer", { mode: ev.detail.pressed ? "icon" : "line" });
 		});
 		this.requestUpdate();
 	}
@@ -3896,16 +3895,6 @@ var MouseTimer = class {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboButton.ts
-var PressedChangeEvent = class extends Event {
-	_pressed;
-	constructor(pressed) {
-		super("pressedChange");
-		this._pressed = pressed;
-	}
-	get pressed() {
-		return this._pressed;
-	}
-};
 var EboButton = class EboButton extends EboComponent {
 	static tagName = "ebo-button";
 	static observedAttributes = [
@@ -3995,8 +3984,7 @@ var EboButton = class EboButton extends EboComponent {
 			this.setClassFromBoolAttribute(button, "pressed");
 			this.setAttribute("pressed", this.pressed.toString());
 		}
-		let event = new PressedChangeEvent(this.pressed);
-		this.dispatchEvent(event);
+		this.dispatchEboEvent("pressedChange.eboplayer", { pressed: this.pressed });
 	}
 	onFilterButtonTimeOut(source) {
 		this.dispatchEboEvent("longPress.eboplayer", {});
@@ -5043,7 +5031,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 			this.onShowAllTypesButtonPress();
 		});
 		shadow.querySelectorAll("ebo-button").forEach((btn) => {
-			btn.addEventListener("pressedChange", async (ev) => {
+			btn.addEboEventListener("pressedChange.eboplayer", async (ev) => {
 				this.onFilterButtonPress(ev);
 			});
 			btn.addEboEventListener("longPress.eboplayer", (ev) => {

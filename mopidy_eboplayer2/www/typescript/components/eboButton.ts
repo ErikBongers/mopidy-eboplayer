@@ -1,19 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
 
-export class PressedChangeEvent extends Event {
-    private _pressed: boolean;
-
-    constructor(pressed: boolean) {
-        super("pressedChange"); //todo: make ebo event.
-        this._pressed = pressed;
-    }
-
-    get pressed() {
-        return this._pressed;
-    }
-}
-
 export class EboButton extends EboComponent {
     static override readonly tagName=  "ebo-button";
     // noinspection JSUnusedGlobalSymbols
@@ -113,8 +100,7 @@ export class EboButton extends EboComponent {
             this.setClassFromBoolAttribute(button, "pressed");
             this.setAttribute("pressed", this.pressed.toString());
         }
-        let event = new PressedChangeEvent(this.pressed);
-        this.dispatchEvent(event);
+        this.dispatchEboEvent("pressedChange.eboplayer", { pressed: this.pressed });
     }
 
     onFilterButtonTimeOut(source: EboButton) {
