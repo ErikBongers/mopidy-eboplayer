@@ -1116,12 +1116,19 @@ let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
 	return EboPlayerDataType$1;
 }({});
 var View = class extends NestedDataRequester {
-	static getSubId(parentId, subId) {
-		return document.getElementById(`${parentId}.${subId}`);
-	}
 	bindRecursive() {
 		this.children.forEach((child) => child.bindRecursive());
 		this.bind();
+	}
+};
+var ComponentView = class extends View {
+	component;
+	constructor(component) {
+		super();
+		this.component = component;
+	}
+	on(type, listener, options) {
+		this.component.addEboEventListener(type, listener, options);
 	}
 };
 
@@ -5391,23 +5398,21 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/browseView.ts
-var BrowseView = class extends View {
-	browseComp;
-	constructor() {
-		super();
-		this.browseComp = document.getElementById("browseView");
+var BrowseView = class extends ComponentView {
+	constructor(component) {
+		super(component);
 	}
 	bind() {
-		this.browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
+		this.on("guiBrowseFilterChanged.eboplayer", async () => {
 			await this.onGuiBrowseFilterChanged();
 		});
-		this.browseComp.addEboEventListener("breadCrumbClick.eboplayer", async (ev) => {
+		this.on("breadCrumbClick.eboplayer", async (ev) => {
 			await this.onBreadcrumbClick(ev.detail.breadcrumbId);
 		});
-		this.browseComp.addEboEventListener("browseResultClick.eboplayer", async (ev) => {
+		this.on("browseResultClick.eboplayer", async (ev) => {
 			await this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
 		});
-		this.browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
+		this.on("browseResultDblClick.eboplayer", async (ev) => {
 			await this.onBrowseResultDblClick(ev.detail.uri);
 		});
 		playerState_default().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
@@ -5422,25 +5427,25 @@ var BrowseView = class extends View {
 		playerState_default().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
 			this.onModelBrowseFilterChanged();
 		});
-		this.browseComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+		this.on("playItemListClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
-		this.browseComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+		this.on("addItemListClicked.eboplayer", async (ev) => {
 			await this.onAddItemListClick(ev.detail);
 		});
-		this.browseComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+		this.on("replaceItemListClicked.eboplayer", async (ev) => {
 			await this.onReplaceItemListClick(ev.detail);
 		});
-		this.browseComp.addEboEventListener("displayModeChanged.eboplayer", async (ev) => {
-			this.browseComp.setAttribute("display_mode", ev.detail.mode);
+		this.on("displayModeChanged.eboplayer", async (ev) => {
+			this.component.setAttribute("display_mode", ev.detail.mode);
 		});
 	}
 	async onGuiBrowseFilterChanged() {
-		await playerState_default().getController().setAndSaveBrowseFilter(this.browseComp.browseFilter);
+		await playerState_default().getController().setAndSaveBrowseFilter(this.component.browseFilter);
 	}
 	onRefsFiltered() {
-		this.browseComp.results = playerState_default().getModel().getCurrentSearchResults();
-		this.browseComp.action_btn_states = this.getListButtonStates();
+		this.component.results = playerState_default().getModel().getCurrentSearchResults();
+		this.component.action_btn_states = this.getListButtonStates();
 	}
 	getListButtonStates() {
 		let states = ListButtonState_AllHidden();
@@ -5472,15 +5477,15 @@ var BrowseView = class extends View {
 		return states;
 	}
 	updateCompFromState(displayMode) {
-		this.browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
-		this.browseComp.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
+		this.component.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		this.component.results = playerState_default()?.getModel()?.getCurrentSearchResults() ?? {
 			refs: [],
 			availableRefTypes: /* @__PURE__ */ new Set()
 		};
-		this.browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
-		this.browseComp.setFocusAndSelect();
-		this.browseComp.action_btn_states = this.getListButtonStates();
-		this.browseComp.setAttribute("display_mode", displayMode);
+		this.component.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
+		this.component.setFocusAndSelect();
+		this.component.action_btn_states = this.getListButtonStates();
+		this.component.setAttribute("display_mode", displayMode);
 	}
 	showHideTrackAndAlbumButtons(states, state$1) {
 		states.add = state$1;
@@ -5491,10 +5496,10 @@ var BrowseView = class extends View {
 		return states;
 	}
 	onBreadCrumbsChanged() {
-		this.browseComp.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
+		this.component.breadCrumbs = playerState_default()?.getModel()?.getBreadCrumbs() ?? [];
 	}
 	onModelBrowseFilterChanged() {
-		this.browseComp.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
+		this.component.browseFilter = playerState_default().getModel().getCurrentBrowseFilter();
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.TrackList];
@@ -5521,7 +5526,7 @@ var BrowseView = class extends View {
 		await playerState_default().getController().resetToBreadCrumb(breadcrumbId);
 	}
 	async onGenreDefsChanged() {
-		this.browseComp.genreDefs = await playerState_default().getController().getGenreDefsCached();
+		this.component.genreDefs = await playerState_default().getController().getGenreDefsCached();
 	}
 };
 
@@ -5569,7 +5574,7 @@ function setupStuff() {
 	controller.initSocketevents();
 	let state$1 = new State(mopidy, model, controller, player);
 	setState(state$1);
-	let browseView = new BrowseView();
+	let browseView = new BrowseView(document.getElementById("browseView"));
 	let mainView = new MainView(document.getElementById("dialog"), browseView);
 	let headerView = new HeaderView();
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter("currentTrackBigView");

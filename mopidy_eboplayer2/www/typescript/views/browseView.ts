@@ -1,31 +1,27 @@
 import getState from "../playerState";
-import {EboPlayerDataType, View} from "./view";
-import {AlbumUri, AllUris} from "../modelTypes";
-import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
+import {ComponentView, EboPlayerDataType} from "./view";
+import {AllUris} from "../modelTypes";
 import {EboBrowseComp} from "../components/eboBrowseComp";
-import {addEboEventListener, GuiSourceArgs} from "../events";
+import {GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {DisplayMode} from "../components/eboListItemComp";
-import {AlbumToView} from "../model";
 
-export class BrowseView extends View {
-    private browseComp: EboBrowseComp;
-    constructor() {
-        super();
-        this.browseComp = document.getElementById("browseView") as EboBrowseComp;
+export class BrowseView extends ComponentView<EboBrowseComp> {
+    constructor(component: EboBrowseComp) {
+        super(component);
     }
 
     bind() {
-        this.browseComp.addEboEventListener("guiBrowseFilterChanged.eboplayer", async () => {
+        this.on("guiBrowseFilterChanged.eboplayer", async () => {
             await this.onGuiBrowseFilterChanged();
         });
-        this.browseComp.addEboEventListener("breadCrumbClick.eboplayer", async (ev) => {
+        this.on("breadCrumbClick.eboplayer", async (ev) => {
             await this.onBreadcrumbClick(ev.detail.breadcrumbId);
         });
-        this.browseComp.addEboEventListener("browseResultClick.eboplayer", async (ev) => {
+        this.on("browseResultClick.eboplayer", async (ev) => {
             await this.onBrowseResultClick(ev.detail.label, ev.detail.uri, ev.detail.type);
         });
-        this.browseComp.addEboEventListener("browseResultDblClick.eboplayer", async (ev) => {
+        this.on("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
         getState().getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
@@ -40,27 +36,27 @@ export class BrowseView extends View {
         getState().getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
             this.onModelBrowseFilterChanged();
         });
-        this.browseComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+        this.on("playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
-        this.browseComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+        this.on("addItemListClicked.eboplayer", async (ev) => {
             await this.onAddItemListClick(ev.detail);
         });
-        this.browseComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+        this.on("replaceItemListClicked.eboplayer", async (ev) => {
             await this.onReplaceItemListClick(ev.detail);
         });
-        this.browseComp.addEboEventListener("displayModeChanged.eboplayer", async (ev) => {
-            this.browseComp.setAttribute("display_mode", ev.detail.mode);
+        this.on("displayModeChanged.eboplayer", async (ev) => {
+            this.component.setAttribute("display_mode", ev.detail.mode);
         });
     }
 
     private async onGuiBrowseFilterChanged() {
-        await getState().getController().setAndSaveBrowseFilter(this.browseComp.browseFilter);
+        await getState().getController().setAndSaveBrowseFilter(this.component.browseFilter);
     }
 
     private onRefsFiltered() {
-        this.browseComp.results = getState().getModel().getCurrentSearchResults();
-        this.browseComp.action_btn_states = this.getListButtonStates();
+        this.component.results = getState().getModel().getCurrentSearchResults();
+        this.component.action_btn_states = this.getListButtonStates();
     }
 
     private getListButtonStates() {
@@ -107,12 +103,12 @@ export class BrowseView extends View {
     }
 
     updateCompFromState(displayMode: DisplayMode) {
-        this.browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
-        this.browseComp.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()}; //todo: the default should be provided by getCurrentSearchResults()
-        this.browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
-        this.browseComp.setFocusAndSelect();
-        this.browseComp.action_btn_states = this.getListButtonStates();
-        this.browseComp.setAttribute("display_mode", displayMode);
+        this.component.browseFilter = getState().getModel().getCurrentBrowseFilter(); //todo: already set in controller?
+        this.component.results = getState()?.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()}; //todo: the default should be provided by getCurrentSearchResults()
+        this.component.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
+        this.component.setFocusAndSelect();
+        this.component.action_btn_states = this.getListButtonStates();
+        this.component.setAttribute("display_mode", displayMode);
     }
 
     private showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState): ListButtonStates {
@@ -125,11 +121,11 @@ export class BrowseView extends View {
     }
 
     private onBreadCrumbsChanged() {
-        this.browseComp.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
+        this.component.breadCrumbs = getState()?.getModel()?.getBreadCrumbs() ?? [];
     }
 
     private onModelBrowseFilterChanged() {
-        this.browseComp.browseFilter = getState().getModel().getCurrentBrowseFilter();
+        this.component.browseFilter = getState().getModel().getCurrentBrowseFilter();
     }
 
     getRequiredDataTypes(): EboPlayerDataType[] {
@@ -164,7 +160,7 @@ export class BrowseView extends View {
     }
 
     private async onGenreDefsChanged() {
-        this.browseComp.genreDefs = await getState().getController().getGenreDefsCached();
+        this.component.genreDefs = await getState().getController().getGenreDefsCached();
     }
 
 }
