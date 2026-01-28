@@ -23,6 +23,7 @@ export class MainView extends View {
 
     bind() {
         this.browseView.bind();
+        this.albumView.bind();
         document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
             this.onBrowseButtonClick();
         });

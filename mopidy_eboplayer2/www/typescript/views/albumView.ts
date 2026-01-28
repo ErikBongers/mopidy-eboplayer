@@ -31,27 +31,26 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
             currentTrackBigViewComp.setAttribute("show_back", "false");
         });
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
+        this.component.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
             await this.onPlayTrackClicked(ev.detail.uri);
         });
-        albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
+        this.component.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
             await this.onAddTrackClicked(ev.detail.uri);
         });
-        albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+        this.component.addEboEventListener("saveClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });
-        albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
-            albumComp.selected_track_uris = arrayToggle<TrackUri>(albumComp.selected_track_uris, ev.detail.uri as TrackUri);
+        this.component.addEboEventListener("trackClicked.eboplayer", (ev) => {
+            this.component.selected_track_uris = arrayToggle<TrackUri>(this.component.selected_track_uris, ev.detail.uri as TrackUri);
         });
         //todo: perhaps create an albumView ?
-        albumComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+        this.component.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
-        albumComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+        this.component.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
             await this.onAddItemListClick(ev.detail);
         });
-        albumComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+        this.component.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
             await this.onReplaceItemListClick(ev.detail);
         });
 
@@ -59,12 +58,12 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
 
     setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        albumComp.albumInfo = albumModel;
-        albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
-        albumComp.setAttribute("img", albumModel.album.imageUrl);
+        this.component.albumInfo = albumModel;
+        this.component.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
+        this.component.setAttribute("img", albumModel.album.imageUrl);
         if(albumModel.album.albumInfo) {
-            albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
-            albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
+            this.component.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
+            this.component.dataset.albumUri = albumModel.album.albumInfo.uri;
         }
     }
 
@@ -99,7 +98,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
 
     private async getSelectedUriForAlbum() {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-        let trackUris = albumComp.selected_track_uris;
+        let trackUris = this.component.selected_track_uris;
 
         if (trackUris.length != 0) {
             return trackUris;

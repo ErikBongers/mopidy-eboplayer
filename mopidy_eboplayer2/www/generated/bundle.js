@@ -3357,6 +3357,7 @@ var MainView = class extends View {
 	}
 	bind() {
 		this.browseView.bind();
+		this.albumView.bind();
 		document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
 			this.onBrowseButtonClick();
 		});
@@ -5484,37 +5485,36 @@ var AlbumView = class extends ComponentView {
 		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
 			currentTrackBigViewComp.setAttribute("show_back", "false");
 		});
-		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
+		this.component.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
 			await this.onPlayTrackClicked(ev.detail.uri);
 		});
-		albumComp.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
+		this.component.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
 			await this.onAddTrackClicked(ev.detail.uri);
 		});
-		albumComp.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+		this.component.addEboEventListener("saveClicked.eboplayer", async (ev) => {
 			await this.onSaveClicked(ev.detail);
 		});
-		albumComp.addEboEventListener("trackClicked.eboplayer", (ev) => {
-			albumComp.selected_track_uris = arrayToggle(albumComp.selected_track_uris, ev.detail.uri);
+		this.component.addEboEventListener("trackClicked.eboplayer", (ev) => {
+			this.component.selected_track_uris = arrayToggle(this.component.selected_track_uris, ev.detail.uri);
 		});
-		albumComp.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+		this.component.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
-		albumComp.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+		this.component.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
 			await this.onAddItemListClick(ev.detail);
 		});
-		albumComp.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+		this.component.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
 			await this.onReplaceItemListClick(ev.detail);
 		});
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {
-		let albumComp = document.getElementById("bigAlbumView");
-		albumComp.albumInfo = albumModel;
-		albumComp.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
-		albumComp.setAttribute("img", albumModel.album.imageUrl);
+		document.getElementById("bigAlbumView");
+		this.component.albumInfo = albumModel;
+		this.component.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
+		this.component.setAttribute("img", albumModel.album.imageUrl);
 		if (albumModel.album.albumInfo) {
-			albumComp.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
-			albumComp.dataset.albumUri = albumModel.album.albumInfo.uri;
+			this.component.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
+			this.component.dataset.albumUri = albumModel.album.albumInfo.uri;
 		}
 	}
 	async onPlayItemListClick(_detail) {
@@ -5537,7 +5537,8 @@ var AlbumView = class extends ComponentView {
 		}
 	}
 	async getSelectedUriForAlbum() {
-		let trackUris = document.getElementById("bigAlbumView").selected_track_uris;
+		document.getElementById("bigAlbumView");
+		let trackUris = this.component.selected_track_uris;
 		if (trackUris.length != 0) return trackUris;
 		return [this.state.getModel().getAlbumToView().albumUri];
 	}
@@ -5628,7 +5629,7 @@ function setupStuff() {
 	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
 	let state = new State(mopidy, model, controller, player);
 	let browseView = new BrowseView(state, document.getElementById("browseView"));
-	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("albumView"));
+	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));
 	let mainView = new MainView(state, browseView, albumView);
 	let headerView = new HeaderView(state);
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, "currentTrackBigView");

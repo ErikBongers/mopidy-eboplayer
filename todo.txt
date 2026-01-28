@@ -1,7 +1,3 @@
-*  refs.reduceResults() should be called...somewhere. It's async.
-
-* retest scan: check immediate output.
-
 * create lazy ExpandedModels?
   > that fetch data when requested?
     >which they can do because they have a link to model/controller?

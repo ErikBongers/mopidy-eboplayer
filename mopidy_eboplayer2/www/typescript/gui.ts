@@ -97,7 +97,7 @@ function setupStuff() {
     let state = new State(mopidy, model, controller, player);
 
     let browseView = new BrowseView(state, document.getElementById("browseView") as EboBrowseComp);
-    let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("albumView") as EboBigAlbumComp);
+    let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp);
     let mainView = new MainView(state, browseView, albumView);
     let headerView = new HeaderView(state);
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state,"currentTrackBigView");
