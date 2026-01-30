@@ -379,6 +379,41 @@ var Mopidy = class {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/refs.ts
+var SearchResultParent = class {
+	type;
+	item;
+	weight;
+	imageUrl;
+	defaultImageUrl;
+	constructor(type, item, weight, imageUrl, defaultImageUrl) {
+		this.type = type;
+		this.item = item;
+		this.weight = weight;
+		this.imageUrl = imageUrl;
+		this.defaultImageUrl = defaultImageUrl;
+	}
+	getImageUrl() {
+		return this.imageUrl ?? this.defaultImageUrl ?? "";
+	}
+};
+var RefSearchResult = class extends SearchResultParent {
+	controller;
+	constructor(item, weight, controller, imageUrl, defaultImageUrl) {
+		super("ref", item, weight, imageUrl, defaultImageUrl);
+		this.controller = controller;
+	}
+	getExpandedModel = () => this.controller.getExpandedModel(this.item);
+};
+var GenreSearchResult = class extends SearchResultParent {
+	controller;
+	constructor(item, weight, controller, imageUrl) {
+		super("genreDef", item, weight, imageUrl, "images/icons/Genre.svg");
+		this.controller = controller;
+	}
+	getExpandedModel() {
+		return this.controller.getGenreDefCached(this.item.ref.name ?? "???");
+	}
+};
 const EmptySearchResults = {
 	refs: [],
 	availableRefTypes: /* @__PURE__ */ new Set()
@@ -400,17 +435,17 @@ var Refs = class {
 	_browseFilter;
 	async calculateWeight(result, browseFilter, thresholdDate) {
 		if (!browseFilter.isNoTypeSelected()) {
-			if (result.type == "ref") {
+			if (result instanceof RefSearchResult) {
 				if (result.item.type == "album" && !browseFilter.album || result.item.type == "track" && !browseFilter.track || result.item.type == "artist" && !browseFilter.artist || result.item.type == "playlist" && !browseFilter.playlist || result.item.type == "radio" && !browseFilter.radio) return;
 			}
-			if (result.type == "genreDef" && !browseFilter.genre) return;
+			if (result instanceof GenreSearchResult && !browseFilter.genre) return;
 		}
 		if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase())) result.weight += 100;
 		if (!browseFilter.searchText) result.weight += 1;
 		if (result.weight == 0) return;
 		if (browseFilter.addedSince == 0) return;
-		if (result.type != "ref") {
+		if (!(result instanceof RefSearchResult)) {
 			result.weight = 0;
 			return;
 		}
@@ -444,7 +479,7 @@ var Refs = class {
 		return this.searchResults;
 	}
 	getAvailableRefTypes(refs) {
-		return refs.map((r) => r.type == "ref" ? r.item.type : "genre").reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
+		return refs.map((r) => r instanceof RefSearchResult ? r.item.type : "genre").reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
 	}
 	static toRefType(ref) {
 		if (!["directory", "track"].includes(ref.type)) return ref.type;
@@ -455,35 +490,21 @@ var Refs = class {
 	static transformRefsToSearchResults(controller, refs) {
 		return refs.map((ref) => {
 			let refType = SomeRefs.toRefType(ref);
-			if (refType == "genre") {
-				let expandedRef$1 = {
-					ref,
-					type: refType,
-					lastModified: null
-				};
-				return {
-					type: "genreDef",
-					item: expandedRef$1,
-					weight: -1,
-					getExpandedModel: () => controller.getGenreDefCached(expandedRef$1.ref.name ?? "???")
-				};
-			}
-			let expandedRef = {
+			if (refType == "genre") return new GenreSearchResult({
 				ref,
 				type: refType,
 				lastModified: null
-			};
-			return {
-				type: "ref",
-				item: expandedRef,
-				weight: -1,
-				getExpandedModel: () => controller.getExpandedModel(expandedRef)
-			};
+			}, -1, controller);
+			return new RefSearchResult({
+				ref,
+				type: refType,
+				lastModified: null
+			}, -1, controller);
 		});
 	}
 	static async reduceResults(results) {
-		let resultsWithoutGenreDefs = results.filter((result) => result.type != "genreDef");
-		let onlyGenreDefResults = results.filter((result) => result.type == "genreDef");
+		let resultsWithoutGenreDefs = results.filter((result) => !(result instanceof GenreSearchResult));
+		let onlyGenreDefResults = results.filter((result) => result instanceof GenreSearchResult);
 		let onlyWithoutReplacementResults = (await Promise.all(onlyGenreDefResults.map(async (r) => {
 			return {
 				result: r,
@@ -510,12 +531,7 @@ async function createAllRefs(controller, roots, sub, tracks, albums, artists, ge
 		ref: track,
 		lastModified: null
 	})).map((expandedRef) => {
-		return {
-			item: expandedRef,
-			type: "ref",
-			weight: 0,
-			getExpandedModel: () => controller.getExpandedModel(expandedRef)
-		};
+		return new RefSearchResult(expandedRef, 0, controller);
 	});
 	let trackUris = tracks.map((track) => track.uri);
 	await controller.lookupTracksCached(trackUris);
@@ -528,12 +544,7 @@ async function createAllRefs(controller, roots, sub, tracks, albums, artists, ge
 		ref: album,
 		lastModified: null
 	})).map((expandedRef) => {
-		return {
-			item: expandedRef,
-			type: "ref",
-			weight: 0,
-			getExpandedModel: () => controller.getExpandedAlbumModel(expandedRef.ref.uri)
-		};
+		return new RefSearchResult(expandedRef, 0, controller);
 	});
 	let albumUris = albums.map((album) => album.uri);
 	await controller.getMetaDatasCached(albumUris);
@@ -542,18 +553,14 @@ async function createAllRefs(controller, roots, sub, tracks, albums, artists, ge
 		albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
 	}
 	let genreResults = await Refs.reduceResults([...genres.values()].map((ref) => {
-		return {
-			item: {
-				ref: ref.ref,
-				type: "genre",
-				lastModified: null
-			},
-			type: "genreDef",
-			weight: 0,
-			getExpandedModel: () => Promise.resolve(genres.get(ref.ref.name ?? "???") ?? null)
+		let expandedRef = {
+			ref: ref.ref,
+			type: "genre",
+			lastModified: null
 		};
+		return new GenreSearchResult(expandedRef, 0, controller);
 	}));
-	return new AllRefs(roots, sub, mappedTracks, mappedAlbums, artists, genreResults, radios, playlists);
+	return new AllRefs(controller, roots, sub, mappedTracks, mappedAlbums, artists, genreResults, radios, playlists);
 }
 var AllRefs = class extends Refs {
 	roots;
@@ -565,7 +572,7 @@ var AllRefs = class extends Refs {
 	radios;
 	playlists;
 	availableRefTypes;
-	constructor(roots, sub, tracks, albums, artists, genres, radios, playlists) {
+	constructor(controller, roots, sub, tracks, albums, artists, genres, radios, playlists) {
 		super();
 		this.roots = roots;
 		this.sub = sub;
@@ -575,39 +582,18 @@ var AllRefs = class extends Refs {
 			type: "artist",
 			ref: artist,
 			lastModified: null
-		})).map((expandedRef) => {
-			return {
-				item: expandedRef,
-				type: "ref",
-				weight: 0,
-				getExpandedModel: () => Promise.resolve(null)
-			};
-		});
+		})).map((expandedRef) => new RefSearchResult(expandedRef, 0, controller));
 		this.genres = genres;
 		this.radios = radios.map((radio) => ({
 			type: "radio",
 			ref: radio,
 			lastModified: null
-		})).map((expandedRef) => {
-			return {
-				item: expandedRef,
-				type: "ref",
-				weight: 0,
-				getExpandedModel: () => Promise.resolve(null)
-			};
-		});
+		})).map((expandedRef) => new RefSearchResult(expandedRef, 0, controller));
 		this.playlists = playlists.map((album) => ({
 			type: "playlist",
 			ref: album,
 			lastModified: null
-		})).map((expandedRef) => {
-			return {
-				item: expandedRef,
-				type: "ref",
-				weight: 0,
-				getExpandedModel: () => Promise.resolve(null)
-			};
-		});
+		})).map((expandedRef) => new RefSearchResult(expandedRef, 0, controller));
 		this.availableRefTypes = /* @__PURE__ */ new Set();
 		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
@@ -3780,17 +3766,17 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		let html = "";
 		this.currentResultHasImages = false;
 		for (let result of this.results.refs) {
-			if (result.type == "ref") {
+			if (result instanceof RefSearchResult) {
 				let model = await result.getExpandedModel();
 				if (model) if (isInstanceOfExpandedTrackModel(model)) result.imageUrl = model.album?.imageUrl ?? "";
 				else if (isInstanceOfExpandedStreamModel(model)) result.imageUrl = model.stream.imageUrl;
 				else result.imageUrl = model.album.imageUrl;
-			} else result.defaultImageUrl = "images/icons/Genre.svg";
+			}
 			if (result.imageUrl) this.currentResultHasImages = true;
 		}
 		for (let result of this.results.refs) {
 			let refType = result.item.ref.type;
-			let imageUrl = result.imageUrl ?? result.defaultImageUrl ?? "";
+			let imageUrl = result.getImageUrl();
 			let imageClass = "";
 			if (this.currentResultHasImages && imageUrl.endsWith(".svg")) imageClass = "whiteIcon";
 			html += `
@@ -3814,7 +3800,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		this.requestUpdate();
 	}
 	getGenreAlias(result) {
-		if (result.type != "genreDef") return "";
+		if (!(result instanceof GenreSearchResult)) return "";
 		let genreDef = this.genreDefs?.get(result.item.ref.name ?? "__undefined__");
 		if (!genreDef) return "";
 		if (genreDef.replacement != null) return ` (${genreDef.replacement})`;

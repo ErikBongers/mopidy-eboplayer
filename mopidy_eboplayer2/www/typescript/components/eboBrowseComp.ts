@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ExpandedAlbumModel, FilterBreadCrumb, GenreDef, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel} from "../modelTypes";
-import {EmptySearchResults, RefType, SearchResult, SearchResults} from "../refs";
+import {EmptySearchResults, GenreSearchResult, RefSearchResult, RefType, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
@@ -281,7 +281,7 @@ export class EboBrowseComp extends EboComponent {
         let html = "";
         this.currentResultHasImages = false;
         for(let result of this.results.refs) {
-            if(result.type == "ref") {
+            if(result instanceof RefSearchResult) {
                 let model = await result.getExpandedModel();
                 if (model) {
                     if(isInstanceOfExpandedTrackModel(model))
@@ -291,16 +291,15 @@ export class EboBrowseComp extends EboComponent {
                     else //album track model
                        result.imageUrl = model.album.imageUrl;
                 }
-            } else {
-                result.defaultImageUrl = "images/icons/Genre.svg";
             }
+            // else: GenreSearchResult already has a default imageUrl
             if(result.imageUrl) {
                 this.currentResultHasImages = true;
             }
         }
         for(let result of this.results.refs) {
             let refType = result.item.ref.type;
-            let imageUrl = result.imageUrl??result.defaultImageUrl??"";
+            let imageUrl = result.getImageUrl();
             let imageClass = "";
             if(this.currentResultHasImages && imageUrl.endsWith(".svg"))
                 imageClass = "whiteIcon";
@@ -324,7 +323,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     private getGenreAlias(result: SearchResult) {
-        if(result.type != "genreDef")
+        if(!(result instanceof GenreSearchResult))
             return "";
         let genreDef = this.genreDefs?.get(result.item.ref.name?? "__undefined__");
         if(!genreDef)

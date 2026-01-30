@@ -1,3 +1,22 @@
+* Data handling.
+  > data is async
+    > pre-fetched could only exists for genres, so let's not have pre-fetched data.
+  > data is looked-up (from async to live) in controllers and view.
+  > data is always live in components.
+  > should model be private and data only be accessible via lookups?
+    > in that case "model" should be renamed to "cache" or cacheModel.
+    > it's initial state should be empty.
+  > incomplete data
+    > data objects may have expand() functions.
+    > a component may 'get' expanded data and receive nada.
+      > component displays a place holder or some 'waiting' state.
+      > the component will receive the data later. How?
+        > a callback when requesting the expanded data?
+        : album.getExpanded((expanded_data, target_or_html_element) {show the data});
+        > what to do while waiting?
+          > the same function is called but with state PENDING or state COMPLETED (or even state ERROR?)
+
+
 * create lazy ExpandedModels?
   > that fetch data when requested?
     >which they can do because they have a link to model/controller?
