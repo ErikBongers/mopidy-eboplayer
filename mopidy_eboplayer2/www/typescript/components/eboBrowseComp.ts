@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ExpandedAlbumModel, FilterBreadCrumb, GenreDef, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel} from "../modelTypes";
-import {EmptySearchResults, GenreSearchResult, RefSearchResult, RefType, SearchResult, SearchResults} from "../refs";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel} from "../modelTypes";
+import {EmptySearchResults, GenreSearchResult, RefSearchResult, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
@@ -298,16 +298,16 @@ export class EboBrowseComp extends EboComponent {
             }
         }
         for(let result of this.results.refs) {
-            let refType = result.item.ref.type;
+            let refType = result.item.refType;
             let imageUrl = result.getImageUrl();
             let imageClass = "";
             if(this.currentResultHasImages && imageUrl.endsWith(".svg"))
                 imageClass = "whiteIcon";
             html += `
                     <ebo-list-item
-                        data-uri="${result.item.ref.uri}"
+                        data-uri="${result.item.uri}"
                         data-type="${refType}"
-                        text="${result.item.ref.name + this.getGenreAlias(result)}"
+                        text="${result.item.name + this.getGenreAlias(result)}"
                         img="${imageUrl}"
                         image_class="${imageClass}">
                     </ebo-list-item>`;
@@ -325,7 +325,7 @@ export class EboBrowseComp extends EboComponent {
     private getGenreAlias(result: SearchResult) {
         if(!(result instanceof GenreSearchResult))
             return "";
-        let genreDef = this.genreDefs?.get(result.item.ref.name?? "__undefined__");
+        let genreDef = this.genreDefs?.get(result.item.name);
         if(!genreDef)
             return "";
         if(genreDef.replacement != null)

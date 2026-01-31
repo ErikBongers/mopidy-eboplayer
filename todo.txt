@@ -1,3 +1,43 @@
+* get_all_refs query created.
+  > Use it to pre-fill AllRefs object.
+  > but...everything will break.
+    > Examine the data chain up to the html.
+      - html expects a SearchResult.
+      - AllRefs takes plain Refs and...
+        - converts it to an ExpandedRef:
+          - ref
+          - type
+          - null as last_modified -> but we already have that!!!
+        - convers ExpandedRef to a SearchResult with an expand() function.
+        - browseComp uses expand() data to...
+          - get imageURLs
+            > no need for expanded data
+          - genre alias
+            >
+
+* Add imageUrl to album/track data.
+  > use a short integer as key - no MD5 nonsense
+  > this implies that a re-scan will result in new ids!
+    > who cares...just reload the full page.
+      > no cache!!!
+       >>> https://stackoverflow.com/a/5721805/1311434
+
+* Browse comp: use getImageUrl() instead of calculating it with expanded() data.
+
+* Search: only show first...dunno...results.
+  > 30?
+    > 20 on phone, 30 or more on desktop.
+  > only expand those results!!!
+
+* Search/browse works on ALL data.
+  > move it to server?
+  > pre-fetch a very limited search results dataset?
+  > what is needed?
+    - all refs with
+      - uri
+      - name
+      - date
+
 * Data handling.
   > data is async
     > pre-fetched could only exists for genres, so let's not have pre-fetched data.

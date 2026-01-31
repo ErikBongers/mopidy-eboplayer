@@ -1,4 +1,5 @@
 import {AlbumMetaData, AlbumUri, AllUris, GenreDef, HistoryLineDef, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
+import {ExpandedRef} from "../refs";
 
 export type AlbumMetaDict = {[uri: AlbumUri]: AlbumMetaData};
 
@@ -89,5 +90,11 @@ export class WebProxy {
         let url = this.ebobackUrl(`get_history`);
         let res = await fetch(url);
         return await res.json() as HistoryLineDef[];
+    }
+
+    async fetchAllRefs() {
+        let url = this.ebobackUrl(`get_all_refs`);
+        let res = await fetch(url);
+        return await res.json() as ExpandedRef[];
     }
 }

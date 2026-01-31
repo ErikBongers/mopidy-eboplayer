@@ -1,15 +1,17 @@
 import models from "../js/mopidy";
 
-import {AlbumUri, AllUris, ArtistUri, BrowseFilter, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, GenreDef, GenreUri, PlaylistUri, RadioUri, TrackUri} from "./modelTypes";
-import Ref = models.Ref;
+import {AllUris, BrowseFilter} from "./modelTypes";
 import {Controller} from "./controllers/controller";
-import {ViewModel} from "./model";
+import Ref = models.Ref;
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
 export interface ExpandedRef {
-    ref: Ref<AllUris>,
-    type: RefType,
+    refType: RefType,
+    name: string,
+    uri: string,
     lastModified: number | null,
+    idMaxImage: number | null,
+    idMinImage: number | null
 }
 
 abstract class SearchResultParent {
@@ -47,7 +49,7 @@ export class GenreSearchResult  extends SearchResultParent {
         this.controller = controller;
     }
     getExpandedModel() {
-        return this.controller.getGenreDefCached(this.item.ref.name ?? "???");
+        return this.controller.getGenreDefCached(this.item.name ?? "???");
     }
 }
 
@@ -81,19 +83,19 @@ export abstract class Refs {
     protected async calculateWeight(result: SearchResult, browseFilter: BrowseFilter, thresholdDate: number) {
         if(!browseFilter.isNoTypeSelected()) {
             if (result instanceof RefSearchResult) {
-                if (result.item.type == "album" && !browseFilter.album
-                    || result.item.type == "track" && !browseFilter.track
-                    || result.item.type == "artist" && !browseFilter.artist
-                    || result.item.type == "playlist" && !browseFilter.playlist
-                    || result.item.type == "radio" && !browseFilter.radio)
+                if (result.item.refType == "album" && !browseFilter.album
+                    || result.item.refType == "track" && !browseFilter.track
+                    || result.item.refType == "artist" && !browseFilter.artist
+                    || result.item.refType == "playlist" && !browseFilter.playlist
+                    || result.item.refType == "radio" && !browseFilter.radio)
                     return;
             }
             if (result instanceof GenreSearchResult && !browseFilter.genre)
                 return;
         }
-        if (result.item.ref.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
+        if (result.item.name?.toLowerCase().startsWith(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
-        if (result.item.ref.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
+        if (result.item.name?.toLowerCase().includes(browseFilter.searchText.toLowerCase()))
             result.weight += 100;
         if (!browseFilter.searchText)
             result.weight += 1; //No search text? Give every result a weight of 1, so that they are always shown.
@@ -107,13 +109,13 @@ export abstract class Refs {
         }
         if(browseFilter.addedSince == 0)
             return;
-        if((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.type == "album") {
+        if((browseFilter.album || browseFilter.isNoTypeSelected()) && result.item.refType == "album") {
             this.calculateDateFilter(result.item.lastModified, result, browseFilter, thresholdDate);
         }
-        if((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.type == "track") {
+        if((browseFilter.track || browseFilter.isNoTypeSelected()) && result.item.refType == "track") {
             this.calculateDateFilter(result.item.lastModified, result, browseFilter, thresholdDate);
         }
-        if(browseFilter.addedSince > 0 && result.item.type != "album" && result.item.type != "track")
+        if(browseFilter.addedSince > 0 && result.item.refType != "album" && result.item.refType != "track")
             result.weight = 0;
     }
 
@@ -145,7 +147,7 @@ export abstract class Refs {
             .filter(result => result.weight > 0)
             .sort((a, b) => {
                 if (b.weight === a.weight) {
-                    return a.item.ref.name?.localeCompare(b.item.ref.name?? "")?? 0;
+                    return a.item.name?.localeCompare(b.item.name?? "")?? 0;
                 }
                 return b.weight - a.weight
             });
@@ -157,7 +159,7 @@ export abstract class Refs {
 
     protected getAvailableRefTypes(refs: SearchResult[]) {
         return refs
-            .map(r => r instanceof RefSearchResult ? r.item.type : "genre")
+            .map(r => r instanceof RefSearchResult ? r.item.refType : "genre")
             .reduce((typeSet, val) => typeSet.add(val), new Set<RefType>());
     }
 
@@ -176,10 +178,10 @@ export abstract class Refs {
         let results = refs.map(ref => {
             let refType = SomeRefs.toRefType(ref);
             if(refType == "genre") {
-                let expandedRef: ExpandedRef = {ref: ref, type: refType, lastModified: null};
+                let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? '???', uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
                 return new GenreSearchResult(expandedRef,-1, controller);
             }
-            let expandedRef: ExpandedRef = {ref: ref, type: refType, lastModified: null};
+            let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? "???", uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
             return new RefSearchResult(expandedRef,-1, controller);
         });
         // make genreDefs distinct and keep removed defs separate.
@@ -198,7 +200,7 @@ export abstract class Refs {
             .map(r => r.result);
         let onlyWithoutReplacementResultsMap = new Map<string, GenreSearchResult>();
         onlyWithoutReplacementResults.forEach(result => {
-            onlyWithoutReplacementResultsMap.set(result.item.ref.name?? "???", result);
+            onlyWithoutReplacementResultsMap.set(result.item.name?? "???", result);
         });
 
         for (const result of onlyGenreDefResults) {
@@ -207,7 +209,7 @@ export abstract class Refs {
             if (def?.replacement != null) {
                 name = def.replacement;
             } else {
-                name = result.item.ref.name ?? "???";
+                name = result.item.name ?? "???";
             }
             if(!onlyWithoutReplacementResultsMap.has(name))
                 onlyWithoutReplacementResultsMap.set(name, result);
@@ -216,44 +218,19 @@ export abstract class Refs {
     }
 }
 
-export async function createAllRefs(controller: Controller, roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: Ref<TrackUri>[], albums: Ref<AlbumUri>[], artists: Ref<ArtistUri>[], genres: Map<string, GenreDef>, radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
-    let mappedTracks: RefSearchResult[] = tracks
-        .map(track => ({type: "track" as RefType, ref: track, lastModified: null} as ExpandedRef))
-        .map(expandedRef => {
-            return new RefSearchResult(expandedRef, 0, controller);
-        });
-    let trackUris = tracks.map(track => track.uri);
+export async function createAllRefs(controller: Controller, allRefs: ExpandedRef[]) {
+    return new AllRefs(controller, allRefs);
+}
 
-    await controller.lookupTracksCached(trackUris); //pre-fetch
-    for(let trackRef of mappedTracks) {
-        if (trackRef.item.type == 'track') {
-            let track = await controller.lookupTrackCached(trackRef.item.ref.uri as TrackUri);
-            trackRef.item.lastModified = track?.track?.last_modified??null;
-        }
-    }
-    let mappedAlbums: RefSearchResult[] = albums
-        .map(album => ({type: "album" as RefType, ref: album, lastModified: null} as ExpandedRef))
+function filterRefsToResult(refs: ExpandedRef[], refType: RefType, controller: Controller) {
+    return refs
+        .filter(ref => ref.refType == refType)
         .map(expandedRef => {
             return new RefSearchResult(expandedRef, 0, controller);
         });
-    let albumUris = albums.map(album => album.uri);
-    await controller.getMetaDatasCached(albumUris); //pre-fetch
-    for(let albumRef of mappedAlbums) {
-        let album = await controller.getExpandedAlbumModel(albumRef.item.ref.uri as AlbumUri);
-        albumRef.item.lastModified = album.mostRecentTrackModifiedDate;
-    }
-    let genreResults = await Refs.reduceResults(
-        [...genres.values()].map(ref => {
-            let expandedRef: ExpandedRef = {ref: ref.ref, type: "genre", lastModified: null};
-            return  new GenreSearchResult(expandedRef, 0, controller);
-        })
-    );
-    return new AllRefs(controller, roots, sub, mappedTracks, mappedAlbums, artists, genreResults, radios, playlists);
 }
 
 export class AllRefs extends Refs {
-    roots: Ref<AllUris>[]; //todo: is DirectoryUri
-    sub: Ref<AllUris>[];
     tracks: SearchResult[];
     albums: SearchResult[];
     artists: SearchResult[];
@@ -262,30 +239,25 @@ export class AllRefs extends Refs {
     playlists: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor(controller: Controller, roots: Ref<AllUris>[], sub: Ref<AllUris>[], tracks: RefSearchResult[], albums: RefSearchResult[], artists: Ref<ArtistUri>[], genres: SearchResult[], radios: Ref<RadioUri>[], playlists: Ref<PlaylistUri>[]) {
+    constructor(controller: Controller, allRefs: ExpandedRef[]) {
         super();
-        this.roots = roots;
-        this.sub = sub;
-        this.tracks = tracks;
-        this.albums = albums;
-        this.artists = artists
-            .map(artist => ({type: "artist" as RefType, ref: artist, lastModified: null}) as ExpandedRef)
-            .map(expandedRef => new RefSearchResult(expandedRef, 0, controller));
-        this.genres = genres;
-        this.radios = radios
-            .map(radio => ({type: "radio" as RefType, ref: radio, lastModified: null} as ExpandedRef))
-            .map(expandedRef => new RefSearchResult(expandedRef, 0, controller));
-        this.playlists = playlists
-            .map(album => ({type: "playlist" as RefType, ref: album, lastModified: null} as ExpandedRef))
-            .map(expandedRef => new RefSearchResult(expandedRef, 0, controller));
-        this.availableRefTypes = new Set();
+        this.tracks = filterRefsToResult(allRefs, "track", controller);
+        this.albums = filterRefsToResult(allRefs, "album", controller);
+        this.artists = filterRefsToResult(allRefs, "artist", controller);
+        this.radios = filterRefsToResult(allRefs, "radio", controller);
+        this.genres = allRefs
+            .filter(ref => ref.refType == "genre")
+            .map(expandedRef => {
+                return new GenreSearchResult(expandedRef, 0, controller);
+            });
+        this.playlists = filterRefsToResult(allRefs, "playlist", controller);
 
+        this.availableRefTypes = new Set();
         this.getAvailableRefTypes(this.tracks).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.albums).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.artists).forEach(type => this.availableRefTypes.add(type));
-        if(this.genres.length)
-            this.availableRefTypes.add("genre");
         this.getAvailableRefTypes(this.radios).forEach(type => this.availableRefTypes.add(type));
+        this.getAvailableRefTypes(this.genres).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.playlists).forEach(type => this.availableRefTypes.add(type));
     }
 

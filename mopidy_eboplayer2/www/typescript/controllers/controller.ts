@@ -514,13 +514,13 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async getExpandedModel(ref: ExpandedRef) {
-        switch (ref.type) {
+        switch (ref.refType) {
             case "track":
-                return this.getExpandedTrackModel(ref.ref.uri as TrackUri); //todo: make expandedRef a discriminated union on type, to avoid this cast.
+                return this.getExpandedTrackModel(ref.uri as TrackUri); //todo: make expandedRef a discriminated union on type, to avoid this cast.
             case "album":
-                return this.getExpandedAlbumModel(ref.ref.uri as AlbumUri);
+                return this.getExpandedAlbumModel(ref.uri as AlbumUri);
             case "radio":
-                return this.getExpandedTrackModel(ref.ref.uri as StreamUri);
+                return this.getExpandedTrackModel(ref.uri as StreamUri);
             case "playlist":
                 return null; //todo?
             case "artist":
@@ -528,7 +528,7 @@ export class Controller extends Commands implements DataRequester{
             case "genre":
                 return null;//todo?
             default:
-                unreachable(ref.type);
+                unreachable(ref.refType);
         }
     }
 
@@ -614,21 +614,9 @@ export class Controller extends Commands implements DataRequester{
     }
 
     async fetchAllRefs(controller: Controller) {
-        let roots = await this.mopidyProxy.fetchRootDirs();
-        let subDir1 = await this.mopidyProxy.browse<AllUris>(roots[1].uri);
-        let allTracks = await this.mopidyProxy.browse<TrackUri>(LIBRARY_PROTOCOL+"directory?type=track");
-        let allAlbums = await this.mopidyProxy.browse<AlbumUri>(LIBRARY_PROTOCOL+"directory?type=album");
-        let allArtists = await this.mopidyProxy.browse<ArtistUri>(LIBRARY_PROTOCOL+"directory?type=artist");
-        let allGenres = await this.getGenreDefsCached();
-        let playLists = await this.mopidyProxy.fetchPlayLists();
-        let radioStreamsPlayList = playLists.find(playlist => playlist.name == "[Radio Streams]");
-        let playlists = playLists.filter(playlist => playlist.name != "[Radio Streams]");
-        let radioStreams: models.Ref<RadioUri>[] = [];
-        if(radioStreamsPlayList) {
-            radioStreams = await this.mopidyProxy.fetchPlaylistItems(radioStreamsPlayList.uri) as models.Ref<RadioUri>[];
-        }
+        let allRefs = await this.webProxy.fetchAllRefs();
 
-        return createAllRefs(controller, roots, subDir1, allTracks, allAlbums, allArtists, allGenres, radioStreams, playlists);
+        return createAllRefs(controller, allRefs);
     }
 
     async filterBrowseResults() {
@@ -711,7 +699,7 @@ export class Controller extends Commands implements DataRequester{
 
     async addCurrentSearchResultsToPlayer() {
         let results = this.model.getCurrentSearchResults();
-        await this.player.add(results.refs.map(r => r.item.ref.uri));
+        await this.player.add(results.refs.map(r => r.item.uri as AllUris));
     }
 
     async createPlaylist(name: string) {
