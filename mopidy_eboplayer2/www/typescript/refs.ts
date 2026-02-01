@@ -3,6 +3,7 @@ import models from "../js/mopidy";
 import {AllUris, BrowseFilter} from "./modelTypes";
 import {Controller} from "./controllers/controller";
 import Ref = models.Ref;
+import {getDefaultImageUrl, unreachable} from "./global";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
 export interface ExpandedRef {
@@ -37,10 +38,10 @@ abstract class SearchResultParent {
 export class RefSearchResult extends SearchResultParent {
     controller: Controller;
     constructor(item: ExpandedRef, weight: number, controller: Controller, defaultImageUrl?: string) {
-        super("ref", item, weight, defaultImageUrl);
+        super("ref", item, weight, getDefaultImageUrl(item.refType, defaultImageUrl));
         this.controller = controller;
     }
-    getExpandedModel =  () => this.controller.getExpandedModel(this.item);
+
 }
 
 export class GenreSearchResult  extends SearchResultParent {

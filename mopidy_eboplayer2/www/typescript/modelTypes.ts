@@ -6,6 +6,7 @@ import Artist = models.Artist;
 import {Model, ViewModel} from "./model";
 import {ExpandedRef} from "./refs";
 import {Controller} from "./controllers/controller";
+import {getDefaultImageUrl} from "./global";
 
 declare const __brand: unique symbol;
 
@@ -190,7 +191,9 @@ export class ExpandedAlbumModel {
     }
 
     get bigImageUrl(): string {
-        return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage; //todo: remove hard coded base url.
+        if(this.album.ref.idMaxImage)
+            return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage; //todo: remove hard coded base url.
+        return getDefaultImageUrl(this.album.ref.refType);
     }
 
     async getTrackModels() {

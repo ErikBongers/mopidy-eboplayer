@@ -54,6 +54,10 @@ export class EboListItemComp extends EboComponent {
                         margin-right: 0;
                         width: 5rem;
                         height: 5rem;
+                        &.svgImage {
+                            padding: .8rem;
+                            box-sizing: border-box;                     
+                        }
                     }
                     font-size: .5rem;
                     #text {
@@ -113,7 +117,7 @@ export class EboListItemComp extends EboComponent {
         this.setImage("img", this.img);
         let img = shadow.getElementById("img") as HTMLImageElement;
         if(this.image_class)
-            img.classList.add(this.image_class);
+            img.classList.add(...this.image_class.split(" "));
         this.setTextFromAttribute("text");
     }
 

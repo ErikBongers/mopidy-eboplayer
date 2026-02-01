@@ -1,5 +1,6 @@
 import models from "../js/mopidy";
 import {FileTrackModel, StreamTrackModel} from "./modelTypes";
+import {RefType} from "./refs";
 
 // Stretch a value, e.g., between (0, 100), to a new range e.g., (-5, 100)
 function stretchLeft(x: number, min: number, max: number) {
@@ -58,4 +59,20 @@ export function arrayToggle<T>(arr: Array<T>, item: T) {
         return arr.filter(i => i !== item);
     else
         return [...arr, item];
+}
+
+export function getDefaultImageUrl(refType: RefType, defaultImageUrl?: string): string {
+    if (defaultImageUrl)
+        return defaultImageUrl;
+
+    switch (refType) {
+        case "album": return "images/icons/Album.svg";
+        case "artist": return "images/icons/Artist.svg";
+        case "playlist": return "images/icons/Playlist.svg";
+        case "track": return "images/icons/Album.svg";
+        case "radio": return "images/icons/Radio.svg";
+        case "genre": return "images/icons/Genre.svg";
+        default:
+            unreachable(refType);
+    }
 }

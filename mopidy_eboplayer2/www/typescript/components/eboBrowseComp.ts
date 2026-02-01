@@ -282,7 +282,7 @@ export class EboBrowseComp extends EboComponent {
             let imageUrl = result.getImageUrl();
             let imageClass = "";
             if(imageUrl.endsWith(".svg"))
-                imageClass = "whiteIcon";
+                imageClass = "whiteIcon svgImage";
             html += `
                     <ebo-list-item
                         data-uri="${result.item.uri}"

@@ -378,6 +378,58 @@ var Mopidy = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/global.ts
+function stretchLeft(x, min, max) {
+	return x * (max + min) / max - min;
+}
+function quadratic100(x) {
+	x = stretchLeft(x, -5, 100);
+	return x * x / 100;
+}
+function inverseQuadratic100(y) {
+	let x = Math.floor(Math.sqrt(y * 100));
+	return stretchLeft(x, 5, 100);
+}
+function getHostAndPort() {
+	let hostDefs = getHostAndPortDefs();
+	return hostDefs.altHost ?? hostDefs.host;
+}
+function getHostAndPortDefs() {
+	let altHostName = document.body.dataset.hostname ?? null;
+	if (altHostName?.startsWith("{{")) altHostName = null;
+	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
+	return {
+		host: document.location.host,
+		altHost: altHostName
+	};
+}
+function isStream(track) {
+	return !track.last_modified;
+}
+function console_yellow(msg) {
+	console.log(`%c${msg}`, "background-color: yellow");
+}
+function unreachable(x) {
+	throw new Error("Didn't expect to get here");
+}
+function arrayToggle(arr, item) {
+	if (arr.includes(item)) return arr.filter((i) => i !== item);
+	else return [...arr, item];
+}
+function getDefaultImageUrl(refType, defaultImageUrl) {
+	if (defaultImageUrl) return defaultImageUrl;
+	switch (refType) {
+		case "album": return "images/icons/Album.svg";
+		case "artist": return "images/icons/Artist.svg";
+		case "playlist": return "images/icons/Playlist.svg";
+		case "track": return "images/icons/Album.svg";
+		case "radio": return "images/icons/Radio.svg";
+		case "genre": return "images/icons/Genre.svg";
+		default: unreachable(refType);
+	}
+}
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/refs.ts
 var SearchResultParent = class {
 	type;
@@ -398,10 +450,9 @@ var SearchResultParent = class {
 var RefSearchResult = class extends SearchResultParent {
 	controller;
 	constructor(item, weight, controller, defaultImageUrl) {
-		super("ref", item, weight, defaultImageUrl);
+		super("ref", item, weight, getDefaultImageUrl(item.refType, defaultImageUrl));
 		this.controller = controller;
 	}
-	getExpandedModel = () => this.controller.getExpandedModel(this.item);
 };
 var GenreSearchResult = class extends SearchResultParent {
 	controller;
@@ -734,7 +785,8 @@ var ExpandedAlbumModel = class {
 		this.meta = meta;
 	}
 	get bigImageUrl() {
-		return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage;
+		if (this.album.ref.idMaxImage) return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage;
+		return getDefaultImageUrl(this.album.ref.refType);
 	}
 	async getTrackModels() {
 		return await Promise.all(this.album.tracks.map((trackUri) => this.controller.lookupTrackCached(trackUri)));
@@ -1485,46 +1537,6 @@ var LocalStorageProxy = class {
 		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
 	}
 };
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/global.ts
-function stretchLeft(x, min, max) {
-	return x * (max + min) / max - min;
-}
-function quadratic100(x) {
-	x = stretchLeft(x, -5, 100);
-	return x * x / 100;
-}
-function inverseQuadratic100(y) {
-	let x = Math.floor(Math.sqrt(y * 100));
-	return stretchLeft(x, 5, 100);
-}
-function getHostAndPort() {
-	let hostDefs = getHostAndPortDefs();
-	return hostDefs.altHost ?? hostDefs.host;
-}
-function getHostAndPortDefs() {
-	let altHostName = document.body.dataset.hostname ?? null;
-	if (altHostName?.startsWith("{{")) altHostName = null;
-	if (!altHostName) altHostName = localStorage.getItem("eboplayer.hostName");
-	return {
-		host: document.location.host,
-		altHost: altHostName
-	};
-}
-function isStream(track) {
-	return !track.last_modified;
-}
-function console_yellow(msg) {
-	console.log(`%c${msg}`, "background-color: yellow");
-}
-function unreachable(x) {
-	throw new Error("Didn't expect to get here");
-}
-function arrayToggle(arr, item) {
-	if (arr.includes(item)) return arr.filter((i) => i !== item);
-	else return [...arr, item];
-}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
@@ -3714,7 +3726,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 			let refType = result.item.refType;
 			let imageUrl = result.getImageUrl();
 			let imageClass = "";
-			if (imageUrl.endsWith(".svg")) imageClass = "whiteIcon";
+			if (imageUrl.endsWith(".svg")) imageClass = "whiteIcon svgImage";
 			html += `
                     <ebo-list-item
                         data-uri="${result.item.uri}"
@@ -5174,6 +5186,10 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
                         margin-right: 0;
                         width: 5rem;
                         height: 5rem;
+                        &.svgImage {
+                            padding: .8rem;
+                            box-sizing: border-box;                     
+                        }
                     }
                     font-size: .5rem;
                     #text {
@@ -5227,7 +5243,7 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 		wrapper.classList.add(this.display);
 		this.setImage("img", this.img);
 		let img = shadow.getElementById("img");
-		if (this.image_class) img.classList.add(this.image_class);
+		if (this.image_class) img.classList.add(...this.image_class.split(" "));
 		this.setTextFromAttribute("text");
 	}
 	setImage(id, uri) {
