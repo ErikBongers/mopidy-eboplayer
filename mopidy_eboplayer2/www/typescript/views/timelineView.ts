@@ -51,7 +51,6 @@ export class TimelineView extends View {
 
         let uris = trackList.map(tl => tl.track.uri) as TrackUri[];
         uris = [...new Set(uris)];
-        await this.lookupAllTracksAndUpdateRows(uris);
 
         await this.setCurrentTrack();
 
@@ -143,40 +142,13 @@ export class TimelineView extends View {
 
     }
 
-    async lookupAllTracksAndUpdateRows(uris: TrackUri[]) {
-        await this.state.getController().lookupAllTracks(uris);
-        for (const uri of uris) {
-            const track = await this.state.getController().lookupTrackCached(uri);
-            if(!track) continue;
-            let trs = document.querySelectorAll(`tr[data-uri="${uri}"]`) as NodeListOf<HTMLTableRowElement>;
-            trs.forEach(tr => this.updateTrackLineFromLookup(tr, track));
-        }
-    }
-
-    private updateTrackLineFromLookup(tr: HTMLTableRowElement, track: (FileTrackModel | StreamTrackModel)) {
-        let artist =  "⚬⚬⚬";
-        let album =  "⚬⚬⚬";
-        let title: string;
-        switch (track.type) {
-            case "file":
-                title = track.title;
-                if (track.track.artists)
-                    artist = track.track.artists[0].name;
-                if (track.track.album)
-                    album = track.track.album.name;
-                break;
-            case "stream":
-                title = track.name;
-                break;
-        }
-        this.setTrackLineContent(tr, title, artist, album);
-    }
-
     private setTrackLineContent(tr: HTMLTableRowElement, title: string, artist: string = "⚬⚬⚬", album: string = "⚬⚬⚬") {
+        let artistStr = artist??"⚬⚬⚬";
+        let albumStr = album??"⚬⚬⚬";
         tr.innerHTML = `
     <td>
         <h1>${title}</h1>
-        <small>${artist} • ${album}</small>
+        <small>${artistStr} • ${albumStr}</small>
     </td>
     <td>
         <button><i class="fa fa fa-ellipsis-v"></i></button>

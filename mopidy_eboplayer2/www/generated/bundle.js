@@ -2562,7 +2562,6 @@ var TimelineView = class extends View {
 		for (let track of trackList) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, body, [], track.tlid);
 		let uris = trackList.map((tl) => tl.track.uri);
 		uris = [...new Set(uris)];
-		await this.lookupAllTracksAndUpdateRows(uris);
 		await this.setCurrentTrack();
 		body.querySelectorAll("tr").forEach((tr) => {
 			tr.addEventListener("dblclick", (ev) => {
@@ -2654,7 +2653,7 @@ var TimelineView = class extends View {
 		tr.innerHTML = `
     <td>
         <h1>${title}</h1>
-        <small>${artist} • ${album}</small>
+        <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
     </td>
     <td>
         <button><i class="fa fa fa-ellipsis-v"></i></button>
