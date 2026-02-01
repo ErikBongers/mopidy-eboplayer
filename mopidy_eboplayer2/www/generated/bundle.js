@@ -727,31 +727,34 @@ var ExpandedStreamModel = class {
 };
 var ExpandedAlbumModel = class {
 	album;
-	tracks;
 	meta;
-	mostRecentTrackModifiedDate;
-	_genres;
-	constructor(model, album, tracks, meta, mostRecentTrackModifiedDate) {
+	controller;
+	constructor(album, controller, meta) {
 		this.album = album;
-		this.tracks = tracks;
+		this.controller = controller;
 		this.meta = meta;
-		this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
-		this._genres = [...new Set(this.tracks.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map((genre) => model.getGenreDefs()?.get(genre)).filter((genre) => genre != void 0);
 	}
 	get bigImageUrl() {
 		return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage;
 	}
-	get genres() {
-		return this._genres;
+	async getTrackModels() {
+		return await Promise.all(this.album.tracks.map((trackUri) => this.controller.lookupTrackCached(trackUri)));
 	}
-	get artists() {
+	async getGenres() {
+		let trackModels = await this.getTrackModels();
+		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.getGenreDefsCached()).get(genre)).filter((genre) => genre != void 0);
+		return Promise.all(genreDefPromises);
+	}
+	async getArtists() {
+		let trackModels = await this.getTrackModels();
 		let artistMap = /* @__PURE__ */ new Map();
-		this.tracks.map((track) => track.track.artists ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
+		trackModels.map((track) => track.track.artists ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
 		return [...artistMap.values()];
 	}
-	get composers() {
+	async getComposers() {
+		let trackModels = await this.getTrackModels();
 		let artistMap = /* @__PURE__ */ new Map();
-		this.tracks.map((track) => track.track.composers ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
+		trackModels.map((track) => track.track.composers ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
 		return [...artistMap.values()];
 	}
 };
@@ -2014,9 +2017,7 @@ var Controller = class Controller extends Commands {
 	async getExpandedAlbumModel(albumUri) {
 		let album = (await this.lookupAlbumsCached([albumUri]))[0];
 		let meta = await this.getMetaDataCached(albumUri) ?? null;
-		let tracks = await Promise.all(album.tracks.map((trackUri) => this.lookupTrackCached(trackUri)));
-		let mostRecentTrackModifiedDate = tracks.filter((t) => t.track.last_modified).map((t) => t.track.last_modified).sort()[0] ?? null;
-		return new ExpandedAlbumModel(this.model, album, tracks, meta, mostRecentTrackModifiedDate);
+		return new ExpandedAlbumModel(album, this, meta);
 	}
 	async getMetaDatasCached(albumUris) {
 		let foundMetas = [];
@@ -2625,30 +2626,6 @@ var TimelineView = class extends View {
 </tr>
             `);
 	}
-	async lookupAllTracksAndUpdateRows(uris) {
-		await this.state.getController().lookupAllTracks(uris);
-		for (const uri of uris) {
-			const track = await this.state.getController().lookupTrackCached(uri);
-			if (!track) continue;
-			document.querySelectorAll(`tr[data-uri="${uri}"]`).forEach((tr) => this.updateTrackLineFromLookup(tr, track));
-		}
-	}
-	updateTrackLineFromLookup(tr, track) {
-		let artist = "⚬⚬⚬";
-		let album = "⚬⚬⚬";
-		let title;
-		switch (track.type) {
-			case "file":
-				title = track.title;
-				if (track.track.artists) artist = track.track.artists[0].name;
-				if (track.track.album) album = track.track.album.name;
-				break;
-			case "stream":
-				title = track.name;
-				break;
-		}
-		this.setTrackLineContent(tr, title, artist, album);
-	}
 	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
 		tr.innerHTML = `
     <td>
@@ -3081,10 +3058,10 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		this.requestUpdate();
 	}
-	render(shadow) {
+	async render(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
-		if (this.albumInfo) this.albumInfo.tracks.forEach((track) => {
+		if (this.albumInfo) (await this.albumInfo.getTrackModels()).forEach((track) => {
 			let tr = tbody.appendChild(document.createElement("tr"));
 			let tdData = tr.appendChild(document.createElement("td"));
 			tr.dataset.uri = track.track.uri;
@@ -4688,7 +4665,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
 		});
 	}
-	update(shadow) {
+	async update(shadow) {
 		if (this.albumInfo) {
 			let albumName = shadow.getElementById("albumName");
 			albumName.innerHTML = this.albumInfo.album?.albumInfo?.name ?? "--no name--";
@@ -4697,9 +4674,9 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			body.innerHTML = "";
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
-			this.addMetaDataRow(body, "Artists:", this.albumInfo.artists.map((artist) => artist.name).join(", "));
-			this.addMetaDataRow(body, "Composers:", this.albumInfo.composers.map((artist) => artist.name).join(","));
-			let genreDefs = this.albumInfo.genres;
+			this.addMetaDataRow(body, "Artists:", (await this.albumInfo.getArtists()).map((artist) => artist.name).join(", "));
+			this.addMetaDataRow(body, "Composers:", (await this.albumInfo.getComposers()).map((artist) => artist.name).join(","));
+			let genreDefs = await this.albumInfo.getGenres();
 			let genresHtml = "";
 			genreDefs.forEach((def) => {
 				let defHtml = "";

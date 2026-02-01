@@ -83,7 +83,7 @@ export class EboAlbumDetails extends EboComponent {
         })
     }
 
-    override update(shadow: ShadowRoot) {
+    override async update(shadow: ShadowRoot) {
         if(this.albumInfo) {
             let albumName = shadow.getElementById("albumName") as HTMLElement;
             albumName.innerHTML = this.albumInfo.album?.albumInfo?.name?? "--no name--";
@@ -94,9 +94,9 @@ export class EboAlbumDetails extends EboComponent {
             let body = table.tBodies[0];
             body.innerHTML = "";
             this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
-            this.addMetaDataRow(body, "Artists:", this.albumInfo.artists.map(artist => artist.name).join(", "));
-            this.addMetaDataRow(body, "Composers:", this.albumInfo.composers.map(artist => artist.name).join(","))
-            let genreDefs = this.albumInfo.genres;
+            this.addMetaDataRow(body, "Artists:", (await this.albumInfo.getArtists()).map(artist => artist.name).join(", "));
+            this.addMetaDataRow(body, "Composers:", (await this.albumInfo.getComposers()).map(artist => artist.name).join(","))
+            let genreDefs = await this.albumInfo.getGenres();
             let genresHtml = "";
             genreDefs.forEach(def => {
                 let defHtml = "";

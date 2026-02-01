@@ -544,14 +544,8 @@ export class Controller extends Commands implements DataRequester{
     async getExpandedAlbumModel(albumUri: AlbumUri): Promise<ExpandedAlbumModel> {
         let album =  (await this.lookupAlbumsCached([albumUri]))[0];
         let meta = await this.getMetaDataCached(albumUri) ?? null;
-        let tracks = await Promise.all(album.tracks.map(trackUri => this.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
-        let mostRecentTrackModifiedDate = tracks
-            .filter(t => t.track.last_modified)
-            .map(t => t.track.last_modified)
-            .sort()[0]
-            ?? null;
 
-        return new ExpandedAlbumModel(this.model, album, tracks, meta, mostRecentTrackModifiedDate);
+        return new ExpandedAlbumModel(album, this, meta);
     }
 
     async getMetaDatasCached(albumUris: AlbumUri[]) {

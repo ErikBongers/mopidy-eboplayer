@@ -5,6 +5,7 @@ import Image = models.Image;
 import Artist = models.Artist;
 import {Model, ViewModel} from "./model";
 import {ExpandedRef} from "./refs";
+import {Controller} from "./controllers/controller";
 
 declare const __brand: unique symbol;
 
@@ -179,43 +180,47 @@ export interface CachedAlbumMetaData {
 
 export class ExpandedAlbumModel {
     album: AlbumModel;
-    tracks: FileTrackModel[];
     meta: AlbumMetaData | null;
-    mostRecentTrackModifiedDate: number | null;
-    private readonly _genres: GenreDef[];
+    controller: Controller;
 
-    constructor(model: ViewModel, album: AlbumModel, tracks: FileTrackModel[], meta: AlbumMetaData | null, mostRecentTrackModifiedDate: number | null) {
+    constructor(album: AlbumModel, controller: Controller, meta: AlbumMetaData | null) {
         this.album = album;
-        this.tracks = tracks;
+        this.controller = controller;
         this.meta = meta;
-        this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
-        this._genres = [...new Set(this.tracks
-            .filter(track => track.track.genre != undefined)
-            .map(track => track.track.genre as string))]
-            .map(genre => model.getGenreDefs()?.get(genre))
-            .filter(genre => genre != undefined);
     }
 
     get bigImageUrl(): string {
         return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage; //todo: remove hard coded base url.
     }
 
-    get genres(): GenreDef[] {
-        return this._genres;
+    async getTrackModels() {
+        return await Promise.all(this.album.tracks.map(trackUri => this.controller.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
     }
 
-    get artists()  { //todo: build in constructor? Or lazily here?
+    async getGenres(): Promise<GenreDef[]> {
+        let trackModels = await this.getTrackModels();
+        let genreDefPromises = [...new Set(trackModels
+            .filter(track => track.track.genre != undefined)
+            .map(track => track.track.genre as string))]
+            .map(async genre => (await this.controller.getGenreDefsCached()).get(genre))
+            .filter(genre => genre != undefined) as Promise<GenreDef>[];
+        return Promise.all(genreDefPromises);
+    }
+
+    async getArtists()  {
+        let trackModels = await this.getTrackModels();
         let artistMap: Map<string, Artist> = new Map();
-        this.tracks
+        trackModels
             .map(track => track.track.artists?? [])
             .flat()
             .forEach(artist => artistMap.set(artist.name, artist));
         return [...artistMap.values()]
     }
 
-    get composers() {
+    async getComposers() {
+        let trackModels = await this.getTrackModels();
         let artistMap: Map<string, Artist> = new Map();
-        this.tracks
+        trackModels
             .map(track => track.track.composers?? [])
             .flat()
             .forEach(artist => artistMap.set(artist.name, artist));

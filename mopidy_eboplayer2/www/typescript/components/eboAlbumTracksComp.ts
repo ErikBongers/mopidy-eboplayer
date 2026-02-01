@@ -92,11 +92,11 @@ export class EboAlbumTracksComp extends EboComponent {
         this.requestUpdate();
         }
 
-    override render(shadow:ShadowRoot) {
+    override async render(shadow:ShadowRoot) {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.albumInfo) {
-            this.albumInfo.tracks.forEach(track => {
+            (await this.albumInfo.getTrackModels()).forEach(track => {
                 let tr = tbody.appendChild(document.createElement("tr"));
                 let tdData = tr.appendChild(document.createElement("td"));
                 tr.dataset.uri = track.track.uri;
