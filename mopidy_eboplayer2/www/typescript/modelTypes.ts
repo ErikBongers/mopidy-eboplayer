@@ -164,7 +164,7 @@ export class ExpandedStreamModel {
     }
 
     get bigImageUrl() {
-        return "http://" + getBaseUrl() + "/eboback/image/" + (this.stream.ref?.idMaxImage?? "-- no expanded ref or image --");
+        return getBaseUrl() + "/eboback/image/" + (this.stream.ref?.idMaxImage?? "-- no expanded ref or image --");
     }
 }
 
