@@ -394,6 +394,9 @@ function getHostAndPort() {
 	let hostDefs = getHostAndPortDefs();
 	return hostDefs.altHost ?? hostDefs.host;
 }
+function getBaseUrl() {
+	return `http://${getHostAndPort()}`;
+}
 function getHostAndPortDefs() {
 	let altHostName = document.body.dataset.hostname ?? null;
 	if (altHostName?.startsWith("{{")) altHostName = null;
@@ -443,7 +446,7 @@ var SearchResultParent = class {
 		this.defaultImageUrl = defaultImageUrl;
 	}
 	getImageUrl() {
-		if (this.item.idMaxImage) return "http://192.168.1.111:6680/eboback/image/" + this.item.idMaxImage;
+		if (this.item.idMaxImage) return getBaseUrl() + "/eboback/image/" + this.item.idMaxImage;
 		return this.defaultImageUrl ?? "--no default image url--";
 	}
 };
@@ -761,7 +764,7 @@ var ExpandedFileTrackModel = class {
 		this.album = album;
 	}
 	get bigImageUrl() {
-		return "http://192.168.1.111:6680/eboback/image/" + this.track.ref.idMaxImage;
+		return getBaseUrl() + "/eboback/image/" + this.track.ref.idMaxImage;
 	}
 };
 var ExpandedStreamModel = class {
@@ -772,7 +775,7 @@ var ExpandedStreamModel = class {
 		this.historyLines = historyLinew;
 	}
 	get bigImageUrl() {
-		return "http://192.168.1.111:6680/eboback/image/" + (this.stream.ref?.idMaxImage ?? "-- no expanded ref or image --");
+		return "http://" + getBaseUrl() + "/eboback/image/" + (this.stream.ref?.idMaxImage ?? "-- no expanded ref or image --");
 	}
 };
 var ExpandedAlbumModel = class {
@@ -785,7 +788,7 @@ var ExpandedAlbumModel = class {
 		this.meta = meta;
 	}
 	get bigImageUrl() {
-		if (this.album.ref.idMaxImage) return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage;
+		if (this.album.ref.idMaxImage) return getBaseUrl() + "/eboback/image/" + this.album.ref.idMaxImage;
 		return getDefaultImageUrl(this.album.ref.refType);
 	}
 	async getTrackModels() {
@@ -5456,12 +5459,7 @@ var AlbumView = class extends ComponentView {
 	async onPlayTrackClicked(uri) {
 		await this.state.getPlayer().clearAndPlay([uri]);
 	}
-	async onAddTrackClicked(uri) {
-		let trackModel = await this.state.getController().getExpandedTrackModel(uri);
-		if (isInstanceOfExpandedTrackModel(trackModel)) {
-			if (trackModel.album?.albumInfo) await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri);
-		}
-	}
+	async onAddTrackClicked(uri) {}
 	async getSelectedUriForAlbum() {
 		document.getElementById("bigAlbumView");
 		let trackUris = this.component.selected_track_uris;

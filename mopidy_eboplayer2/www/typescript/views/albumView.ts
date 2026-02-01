@@ -1,5 +1,5 @@
 import {ComponentView} from "./view";
-import {EboPlayerDataType, ExpandedAlbumModel, isInstanceOfExpandedTrackModel, PlaylistUri, TrackUri} from "../modelTypes";
+import {EboPlayerDataType, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {arrayToggle, console_yellow} from "../global";
@@ -87,13 +87,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     private async onAddTrackClicked(uri: TrackUri) {
-        let trackModel = await this.state.getController().getExpandedTrackModel(uri);
-        if(isInstanceOfExpandedTrackModel(trackModel)) {
-            if(trackModel.album?.albumInfo) {
-                await fetch("http://192.168.1.111:6680/eboback/data/path?uri=" + trackModel.album.albumInfo.uri); //todo: get rid of this?
-            }
-            //todo: else?
-        }
     }
 
     private async getSelectedUriForAlbum() {

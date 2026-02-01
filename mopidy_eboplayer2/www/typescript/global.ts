@@ -1,5 +1,4 @@
 import models from "../js/mopidy";
-import {FileTrackModel, StreamTrackModel} from "./modelTypes";
 import {RefType} from "./refs";
 
 // Stretch a value, e.g., between (0, 100), to a new range e.g., (-5, 100)
@@ -25,6 +24,10 @@ export function cubic100(x: number) {
 export function getHostAndPort() {
     let hostDefs = getHostAndPortDefs();
     return hostDefs.altHost ?? hostDefs.host;
+}
+
+export function getBaseUrl() {
+    return `http://${getHostAndPort()}`;
 }
 
 export function getHostAndPortDefs() {

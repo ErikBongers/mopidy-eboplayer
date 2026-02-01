@@ -1,9 +1,8 @@
 import models from "../js/mopidy";
-
 import {AllUris, BrowseFilter} from "./modelTypes";
 import {Controller} from "./controllers/controller";
+import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
-import {getDefaultImageUrl, unreachable} from "./global";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
 export interface ExpandedRef {
@@ -29,7 +28,7 @@ abstract class SearchResultParent {
 
     getImageUrl(): string {
         if (this.item.idMaxImage) {
-            return "http://192.168.1.111:6680/eboback/image/" + this.item.idMaxImage; //todo: remove hard coded base url.}
+            return getBaseUrl()+"/eboback/image/" + this.item.idMaxImage;
         }
         return this.defaultImageUrl ?? "--no default image url--";
     }

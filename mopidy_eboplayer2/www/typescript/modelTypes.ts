@@ -1,12 +1,11 @@
 import models, {Branded} from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
+import {ExpandedRef} from "./refs";
+import {Controller} from "./controllers/controller";
+import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
 import Image = models.Image;
 import Artist = models.Artist;
-import {Model, ViewModel} from "./model";
-import {ExpandedRef} from "./refs";
-import {Controller} from "./controllers/controller";
-import {getDefaultImageUrl} from "./global";
 
 declare const __brand: unique symbol;
 
@@ -151,7 +150,7 @@ export class ExpandedFileTrackModel {
     }
 
     get bigImageUrl() {
-        return "http://192.168.1.111:6680/eboback/image/" + (this.track.ref.idMaxImage); //todo: remove hard coded base url.
+        return getBaseUrl() +  "/eboback/image/" + (this.track.ref.idMaxImage);
     }
 }
 
@@ -165,7 +164,7 @@ export class ExpandedStreamModel {
     }
 
     get bigImageUrl() {
-        return "http://192.168.1.111:6680/eboback/image/" + (this.stream.ref?.idMaxImage?? "-- no expanded ref or image --"); //todo: remove hard coded base url.
+        return "http://" + getBaseUrl() + "/eboback/image/" + (this.stream.ref?.idMaxImage?? "-- no expanded ref or image --");
     }
 }
 
@@ -192,7 +191,7 @@ export class ExpandedAlbumModel {
 
     get bigImageUrl(): string {
         if(this.album.ref.idMaxImage)
-            return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage; //todo: remove hard coded base url.
+            return getBaseUrl() + "/eboback/image/" + this.album.ref.idMaxImage;
         return getDefaultImageUrl(this.album.ref.refType);
     }
 
