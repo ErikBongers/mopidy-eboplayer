@@ -1,22 +1,21 @@
-import {Model, ViewModel} from "../model";
+import {Model} from "../model";
 import {Commands} from "../commands";
 import models, {core, Mopidy} from "../../js/mopidy";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {console_yellow, getHostAndPort, getHostAndPortDefs, transformTrackDataToModel, unreachable} from "../global";
-import {AllRefs, createAllRefs, ExpandedRef, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ArtistUri, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PartialAlbumModel, PlaylistUri, PlayState, RadioUri, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackNone, TrackUri, Views} from "../modelTypes";
+import {getHostAndPort, getHostAndPortDefs, isStream, unreachable} from "../global";
+import {createAllRefs, ExpandedRef, SomeRefs} from "../refs";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
+import {View} from "../views/view";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
 import Album = models.Album;
-import {State} from "../playerState";
-import {View} from "../views/view";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -425,12 +424,14 @@ export class Controller extends Commands implements DataRequester{
 
     private async fetchAlbums(albumUris: AlbumUri[]): Promise<AlbumModel[]> {
         let dict = await this.mopidyProxy.lookup(albumUris);
-        let albumModelsPending = Object.keys(dict).map(async albumUri => {
+        let allRefs = await this.getAllRefsMapCached();
+        let albumModelsPending = Object.keys(dict).map(async (albumUri: AlbumUri) => {
             let trackList = dict[albumUri] as models.Track[];
-            let albumModel: PartialAlbumModel = {
+            let albumModel: AlbumModel = {
                 type: "album",
                 albumInfo: trackList[0].album?? null,
                 tracks: trackList.map(track => track.uri as TrackUri),
+                ref: allRefs.get(albumUri) as ExpandedRef //removing undefined type. Let it crash.
             }
             return albumModel;
         });
@@ -452,23 +453,12 @@ export class Controller extends Commands implements DataRequester{
 
     async lookupAllTracks(uris: AllUris[]) {
         let results = await this.mopidyProxy.lookup(uris);
-        let partialModels = Object.keys(results).map(trackUri => {
+        let modelsPromises = Object.keys(results).map(trackUri => {
             let track = results[trackUri][0];
-            return transformTrackDataToModel(track)
+            return this.transformTrackDataToModel(track)
         });
-        let fileModels = partialModels.filter(m => m.type == "file");
-        let partialStreamModels = partialModels.filter(m => m.type == "stream");
-        let streamUris = partialStreamModels.map(stream => stream.track.uri) as TrackUri[];
-        if(streamUris.length > 0) {
-            let images = await this.fetchLargestImagesOrDefault(streamUris);
-            this.model.addImagesToCache(images);
-        }
-        let streamModels = partialStreamModels
-            .map(m => {
-                return {...m, imageUrl:this.model.getImageFromCache(m.track.uri as TrackUri)} as StreamTrackModel;
-            });
-        this.model.addItemsToLibraryCache(fileModels);
-        this.model.addItemsToLibraryCache(streamModels);
+        let models = await Promise.all(modelsPromises);
+        this.model.addItemsToLibraryCache(models);
     }
 
     async lookupImageCached(uri: AllUris) {
@@ -488,19 +478,7 @@ export class Controller extends Commands implements DataRequester{
     private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
         let dict = await this.mopidyProxy.lookup(uri);
         let trackList = dict[uri] as models.Track[];
-        let newListPromises = trackList.map(async track => {
-            let model = transformTrackDataToModel(track);
-            if(model.type == "stream") {
-                let images = await this.mopidyProxy.fetchImages([track.uri]);
-                let imageUrl = "";
-                if(images[track.uri].length > 0)
-                    imageUrl = this.baseUrl + images[track.uri][0].uri;
-                else
-                    imageUrl = Controller.DEFAULT_IMG_URL;
-                return {...model, imageUrl} as StreamTrackModel;
-            }
-            return model;
-        });
+        let newListPromises = trackList.map(async track => this.transformTrackDataToModel(track));
         return await Promise.all(newListPromises);
     }
 
@@ -549,11 +527,7 @@ export class Controller extends Commands implements DataRequester{
                 return expandedLineGroup;
             });
             // noinspection UnnecessaryLocalVariableJS
-            let streamModel: ExpandedStreamModel = {
-                stream: track,
-                historyLines: expandedStreamLines,
-            };
-            return streamModel;
+            return new ExpandedStreamModel(track, expandedStreamLines);
         }
         if(track) {
             let uri = track?.track?.album?.uri;
@@ -562,7 +536,7 @@ export class Controller extends Commands implements DataRequester{
                 let albums = await this.lookupAlbumsCached([uri]);
                 album = albums[0];
             }
-            return {track, album};
+            return new ExpandedFileTrackModel(track, album);
         }
         throw new Error("trackUri not found in library");
     }
@@ -613,10 +587,10 @@ export class Controller extends Commands implements DataRequester{
         this.model.setSelectedTrack(uri);
     }
 
-    async fetchAllRefs(controller: Controller) {
+    async fetchAllRefs() {
         let allRefs = await this.webProxy.fetchAllRefs();
 
-        return createAllRefs(controller, allRefs);
+        return createAllRefs(this, allRefs);
     }
 
     async filterBrowseResults() {
@@ -665,12 +639,22 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    private async setAllRefsAsCurrent() {
-        if (!this.model.getAllRefs()) {
-            let allRefs = await this.fetchAllRefs(this);
+    private async getAllRefsCached() {
+        let allRefs = this.model.getAllRefs();
+        if(!allRefs) {
+            allRefs = await this.fetchAllRefs();
             this.model.setAllRefs(allRefs);
         }
-        this.model.setCurrentRefs(this.model.getAllRefs()?? null);
+        return allRefs;
+    }
+
+    private async getAllRefsMapCached() {
+        await this.getAllRefsCached();
+        return this.model.getAllRefsMap() as Map<AllUris, ExpandedRef>; //removing NULL from type - assuming a map has been loaded. todo: make a type of this map as we are repeating the type details here.
+    }
+
+    private async setAllRefsAsCurrent() {
+        this.model.setCurrentRefs(await this.getAllRefsCached());
     }
 
     async fetchStreamLines(streamUri: string) {
@@ -734,5 +718,32 @@ export class Controller extends Commands implements DataRequester{
 
     async startScan() {
         await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
+    }
+
+    async transformTrackDataToModel(track: (models.Track)): Promise<FileTrackModel | StreamTrackModel> {
+        let allRefsMap = await this.getAllRefsMapCached();
+        if (isStream(track)) {
+            return {
+                type: "stream",
+                track,
+                name: track.name?? "--no name--",
+                ref: allRefsMap.get(track.uri) as ExpandedRef
+            } satisfies StreamTrackModel;
+        }
+        //for now, assume it's a file track
+        let model: FileTrackModel = {
+            type: "file",
+            composer: "",
+            track,
+            title: track.name?? "--no name--",
+            performer: "",
+            songlenght: 0,
+            ref: allRefsMap.get(track.uri) as ExpandedRef
+        };
+        if (!track.name || track.name === '') { //todo: still needed?
+            let parts = track.uri.split('/');
+            model.title = decodeURI(parts[parts.length - 1])
+        }
+        return model;
     }
 }

@@ -205,7 +205,7 @@ export class MainView extends View {
                     let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                     let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
                     albumComp.albumInfo = null;
-                    albumComp.setAttribute("img", streamModel.stream.imageUrl);
+                    albumComp.setAttribute("img", streamModel.bigImageUrl);
                     albumComp.setAttribute("name", streamModel.stream.name);
                     let bigTrackComp = document.getElementById("currentTrackBigView") as EboBigTrackComp;
                     bigTrackComp.streamInfo = streamModel;

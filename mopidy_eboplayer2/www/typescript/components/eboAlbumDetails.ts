@@ -88,7 +88,7 @@ export class EboAlbumDetails extends EboComponent {
             let albumName = shadow.getElementById("albumName") as HTMLElement;
             albumName.innerHTML = this.albumInfo.album?.albumInfo?.name?? "--no name--";
             let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
-            imgTag.src = this.albumInfo.album.imageUrl;
+            imgTag.src = this.albumInfo.bigImageUrl;
 
             let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;
             let body = table.tBodies[0];

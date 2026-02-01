@@ -75,13 +75,13 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
                 name = this.track.stream.name;
                 position = "100";
                 button = "false";
-                imageUrl = this.track.stream.imageUrl;
+                imageUrl = this.track.bigImageUrl;
             } else {
                 name = this.track.track.title;
                 info = this.track.album?.albumInfo?.name?? "--no name--";
                 position = "60"; //todo: just a test
                 button = "true";
-                imageUrl = this.track.album?.imageUrl?? "";
+                imageUrl = this.track.bigImageUrl;
                 let artists = this.track.track.track.artists.map(a => a.name).join(", ");
                 let composers = this.track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
                 if (artists)

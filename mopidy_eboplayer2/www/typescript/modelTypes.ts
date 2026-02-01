@@ -4,6 +4,7 @@ import Ref = models.Ref;
 import Image = models.Image;
 import Artist = models.Artist;
 import {Model, ViewModel} from "./model";
+import {ExpandedRef} from "./refs";
 
 declare const __brand: unique symbol;
 
@@ -108,33 +109,28 @@ export class BrowseFilter implements BrowseFilterFlags{
     }
 }
 
-export interface PartialAlbumModel {
+export interface AlbumModel {
     type: "album";
     tracks: TrackUri[];
     albumInfo: models.Album | null;
-}
-
-export interface AlbumModel extends PartialAlbumModel {
-    imageUrl: string;
+    ref: ExpandedRef
 }
 
 export interface FileTrackModel {
     type: "file";
     track: models.Track;
-    title: string,
-    composer?: string,
-    performer: string,
-    songlenght: number,
+    title: string;
+    composer?: string;
+    performer: string;
+    songlenght: number;
+    ref: ExpandedRef;
 }
 
-export interface PartialStreamTrackModel {
+export interface StreamTrackModel {
     type: "stream";
     track: models.Track;
-    name: string,
-}
-
-export interface StreamTrackModel extends PartialStreamTrackModel {
-    imageUrl: string,
+    name: string;
+    ref: ExpandedRef;
 }
 
 export interface NoneTrackModel {
@@ -143,9 +139,32 @@ export interface NoneTrackModel {
 
 export const TrackNone = {type: "none"} as NoneTrackModel;
 
-export interface ExpandedFileTrackModel {
-    track: FileTrackModel,
-    album: AlbumModel | null,
+export class ExpandedFileTrackModel {
+    track: FileTrackModel;
+    album: AlbumModel | null;
+
+    constructor(track: FileTrackModel, album: AlbumModel | null) {
+        this.track = track;
+        this.album = album;
+    }
+
+    get bigImageUrl() {
+        return "http://192.168.1.111:6680/eboback/image/" + (this.track.ref.idMaxImage); //todo: remove hard coded base url.
+    }
+}
+
+export class ExpandedStreamModel {
+    stream: StreamTrackModel;
+    historyLines: ExpandedHistoryLineGroup[];
+
+    constructor(stream: StreamTrackModel, historyLinew: ExpandedHistoryLineGroup[]) {
+        this.stream = stream;
+        this.historyLines = historyLinew;
+    }
+
+    get bigImageUrl() {
+        return "http://192.168.1.111:6680/eboback/image/" + (this.stream.ref?.idMaxImage?? "-- no expanded ref or image --"); //todo: remove hard coded base url.
+    }
 }
 
 export interface AlbumMetaData {
@@ -177,6 +196,10 @@ export class ExpandedAlbumModel {
             .filter(genre => genre != undefined);
     }
 
+    get bigImageUrl(): string {
+        return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage; //todo: remove hard coded base url.
+    }
+
     get genres(): GenreDef[] {
         return this._genres;
     }
@@ -203,10 +226,6 @@ export class ExpandedAlbumModel {
 export interface ExpandedHistoryLineGroup {
     remembered: boolean,
     lines: string[]
-}
-export interface ExpandedStreamModel {
-    stream: StreamTrackModel,
-    historyLines: ExpandedHistoryLineGroup[]
 }
 
 export function isInstanceOfExpandedStreamModel(model: ExpandedAlbumModel | ExpandedStreamModel | ExpandedFileTrackModel | null): model is ExpandedStreamModel {

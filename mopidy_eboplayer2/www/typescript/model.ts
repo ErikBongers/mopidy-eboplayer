@@ -1,5 +1,5 @@
 import models from "../js/mopidy";
-import {EmptySearchResults, Refs, SearchResults} from "./refs";
+import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
 import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
@@ -66,13 +66,14 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private genreDefs: Map<string, GenreDef> = new Map();
     private currentProgramTitle: string = "";
 
-    private allRefs: Refs | null = null;
+    private allRefs: AllRefs | null = null;
     private currentRefs: Refs | null = null;
     private view: Views = Views.NowPlaying;
     private albumToView: AlbumToView | null = null;
     // private albumCache: Set<LibraryItem> = new Map();
     private remembers: string[] | null = null;
     private scanStatus: string = "";
+    private allRefsMap: Map<AllUris, ExpandedRef> | null = null;
 
     constructor() {
         super();
@@ -126,8 +127,12 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
     }
 
-    setAllRefs(refs: Refs) {
+    setAllRefs(refs: AllRefs) {
         this.allRefs = refs;
+        this.allRefsMap = new Map<AllUris, ExpandedRef>(
+            refs.allRefs
+                .map(res => [res.uri as AllUris, res])
+        );
     }
 
     getCurrentSearchResults(): SearchResults {
@@ -135,6 +140,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
 
     getAllRefs = () => this.allRefs;
+    getAllRefsMap = () => this.allRefsMap;
 
     async filterCurrentRefs(){
         if(!this.currentRefs)

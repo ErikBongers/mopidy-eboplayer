@@ -285,11 +285,11 @@ export class EboBrowseComp extends EboComponent {
                 let model = await result.getExpandedModel();
                 if (model) {
                     if(isInstanceOfExpandedTrackModel(model))
-                        result.imageUrl = model.album?.imageUrl??"";
+                        result.imageUrl = model.bigImageUrl; //todo: no need to check sub-type, as the bigImageUrl is always the same.
                     else if(isInstanceOfExpandedStreamModel(model))
-                        result.imageUrl = model.stream.imageUrl;
+                        result.imageUrl = model.bigImageUrl;
                     else //album track model
-                       result.imageUrl = model.album.imageUrl;
+                       result.imageUrl = model.bigImageUrl;
                 }
             }
             // else: GenreSearchResult already has a default imageUrl

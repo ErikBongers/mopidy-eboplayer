@@ -97,14 +97,14 @@ export class PlayerBarView extends View {
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.stream.imageUrl);
+                comp.setAttribute("image_url", trackModel.bigImageUrl);
                 comp.setAttribute("stop_or_pause", "stop");
             } else if (isInstanceOfExpandedTrackModel(trackModel)) {
                 comp.setAttribute("text", trackModel.track.track.name?? "--no name--");
                 comp.setAttribute("allow_play", "true");
                 comp.setAttribute("allow_prev", "false");
                 comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.album?.imageUrl?? Controller.DEFAULT_IMG_URL);
+                comp.setAttribute("image_url", trackModel.bigImageUrl);
                 comp.setAttribute("stop_or_pause", "pause");
             }
         }

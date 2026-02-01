@@ -544,6 +544,7 @@ function filterRefsToResult(refs, refType, controller) {
 	});
 }
 var AllRefs = class extends Refs {
+	allRefs;
 	tracks;
 	albums;
 	artists;
@@ -553,6 +554,7 @@ var AllRefs = class extends Refs {
 	availableRefTypes;
 	constructor(controller, allRefs) {
 		super();
+		this.allRefs = allRefs;
 		this.tracks = filterRefsToResult(allRefs, "track", controller);
 		this.albums = filterRefsToResult(allRefs, "album", controller);
 		this.artists = filterRefsToResult(allRefs, "artist", controller);
@@ -701,6 +703,28 @@ var BrowseFilter = class {
 	}
 };
 const TrackNone = { type: "none" };
+var ExpandedFileTrackModel = class {
+	track;
+	album;
+	constructor(track, album) {
+		this.track = track;
+		this.album = album;
+	}
+	get bigImageUrl() {
+		return "http://192.168.1.111:6680/eboback/image/" + this.track.ref.idMaxImage;
+	}
+};
+var ExpandedStreamModel = class {
+	stream;
+	historyLines;
+	constructor(stream, historyLinew) {
+		this.stream = stream;
+		this.historyLines = historyLinew;
+	}
+	get bigImageUrl() {
+		return "http://192.168.1.111:6680/eboback/image/" + (this.stream.ref?.idMaxImage ?? "-- no expanded ref or image --");
+	}
+};
 var ExpandedAlbumModel = class {
 	album;
 	tracks;
@@ -713,6 +737,9 @@ var ExpandedAlbumModel = class {
 		this.meta = meta;
 		this.mostRecentTrackModifiedDate = mostRecentTrackModifiedDate;
 		this._genres = [...new Set(this.tracks.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map((genre) => model.getGenreDefs()?.get(genre)).filter((genre) => genre != void 0);
+	}
+	get bigImageUrl() {
+		return "http://192.168.1.111:6680/eboback/image/" + this.album.ref.idMaxImage;
 	}
 	get genres() {
 		return this._genres;
@@ -830,6 +857,7 @@ var Model = class extends EboEventTargetClass {
 	albumToView = null;
 	remembers = null;
 	scanStatus = "";
+	allRefsMap = null;
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -872,11 +900,13 @@ var Model = class extends EboEventTargetClass {
 	}
 	setAllRefs(refs) {
 		this.allRefs = refs;
+		this.allRefsMap = new Map(refs.allRefs.map((res) => [res.uri, res]));
 	}
 	getCurrentSearchResults() {
 		return this.currentRefs?.getSearchResults() ?? EmptySearchResults;
 	}
 	getAllRefs = () => this.allRefs;
+	getAllRefsMap = () => this.allRefsMap;
 	async filterCurrentRefs() {
 		if (!this.currentRefs) return;
 		this.currentRefs.browseFilter = this.currentBrowseFilter;
@@ -1483,26 +1513,6 @@ function getHostAndPortDefs() {
 function isStream(track) {
 	return !track.last_modified;
 }
-function transformTrackDataToModel(track) {
-	if (isStream(track)) return {
-		type: "stream",
-		track,
-		name: track.name ?? "--no name--"
-	};
-	let model = {
-		type: "file",
-		composer: "",
-		track,
-		title: track.name ?? "--no name--",
-		performer: "",
-		songlenght: 0
-	};
-	if (!track.name || track.name === "") {
-		let parts = track.uri.split("/");
-		model.title = decodeURI(parts[parts.length - 1]);
-	}
-	return model;
-}
 function console_yellow(msg) {
 	console.log(`%c${msg}`, "background-color: yellow");
 }
@@ -1911,12 +1921,14 @@ var Controller = class Controller extends Commands {
 	}
 	async fetchAlbums(albumUris) {
 		let dict = await this.mopidyProxy.lookup(albumUris);
+		let allRefs = await this.getAllRefsMapCached();
 		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
 			let trackList = dict[albumUri];
 			return {
 				type: "album",
 				albumInfo: trackList[0].album ?? null,
-				tracks: trackList.map((track) => track.uri)
+				tracks: trackList.map((track) => track.uri),
+				ref: allRefs.get(albumUri)
 			};
 		});
 		let partialAlbumModels = await Promise.all(albumModelsPending);
@@ -1935,25 +1947,12 @@ var Controller = class Controller extends Commands {
 	}
 	async lookupAllTracks(uris) {
 		let results = await this.mopidyProxy.lookup(uris);
-		let partialModels = Object.keys(results).map((trackUri) => {
+		let modelsPromises = Object.keys(results).map((trackUri) => {
 			let track = results[trackUri][0];
-			return transformTrackDataToModel(track);
+			return this.transformTrackDataToModel(track);
 		});
-		let fileModels = partialModels.filter((m) => m.type == "file");
-		let partialStreamModels = partialModels.filter((m) => m.type == "stream");
-		let streamUris = partialStreamModels.map((stream) => stream.track.uri);
-		if (streamUris.length > 0) {
-			let images = await this.fetchLargestImagesOrDefault(streamUris);
-			this.model.addImagesToCache(images);
-		}
-		let streamModels = partialStreamModels.map((m) => {
-			return {
-				...m,
-				imageUrl: this.model.getImageFromCache(m.track.uri)
-			};
-		});
-		this.model.addItemsToLibraryCache(fileModels);
-		this.model.addItemsToLibraryCache(streamModels);
+		let models$1 = await Promise.all(modelsPromises);
+		this.model.addItemsToLibraryCache(models$1);
 	}
 	async lookupImageCached(uri) {
 		let imgUrl = this.model.getImageFromCache(uri);
@@ -1968,20 +1967,7 @@ var Controller = class Controller extends Commands {
 		return img.uri;
 	}
 	async fetchAndConvertTracks(uri) {
-		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => {
-			let model = transformTrackDataToModel(track);
-			if (model.type == "stream") {
-				let images = await this.mopidyProxy.fetchImages([track.uri]);
-				let imageUrl = "";
-				if (images[track.uri].length > 0) imageUrl = this.baseUrl + images[track.uri][0].uri;
-				else imageUrl = Controller.DEFAULT_IMG_URL;
-				return {
-					...model,
-					imageUrl
-				};
-			}
-			return model;
-		});
+		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
 		return await Promise.all(newListPromises);
 	}
 	async lookupRemembersCached() {
@@ -2015,19 +2001,13 @@ var Controller = class Controller extends Commands {
 					remembered: remembers.includes(lineStr)
 				};
 			});
-			return {
-				stream: track,
-				historyLines: expandedStreamLines
-			};
+			return new ExpandedStreamModel(track, expandedStreamLines);
 		}
 		if (track) {
 			let uri = track?.track?.album?.uri;
 			let album = null;
 			if (uri) album = (await this.lookupAlbumsCached([uri]))[0];
-			return {
-				track,
-				album
-			};
+			return new ExpandedFileTrackModel(track, album);
 		}
 		throw new Error("trackUri not found in library");
 	}
@@ -2063,9 +2043,9 @@ var Controller = class Controller extends Commands {
 	setSelectedTrack(uri) {
 		this.model.setSelectedTrack(uri);
 	}
-	async fetchAllRefs(controller) {
+	async fetchAllRefs() {
 		let allRefs = await this.webProxy.fetchAllRefs();
-		return createAllRefs(controller, allRefs);
+		return createAllRefs(this, allRefs);
 	}
 	async filterBrowseResults() {
 		await this.model.filterCurrentRefs();
@@ -2101,12 +2081,20 @@ var Controller = class Controller extends Commands {
 			return;
 		}
 	}
-	async setAllRefsAsCurrent() {
-		if (!this.model.getAllRefs()) {
-			let allRefs = await this.fetchAllRefs(this);
+	async getAllRefsCached() {
+		let allRefs = this.model.getAllRefs();
+		if (!allRefs) {
+			allRefs = await this.fetchAllRefs();
 			this.model.setAllRefs(allRefs);
 		}
-		this.model.setCurrentRefs(this.model.getAllRefs() ?? null);
+		return allRefs;
+	}
+	async getAllRefsMapCached() {
+		await this.getAllRefsCached();
+		return this.model.getAllRefsMap();
+	}
+	async setAllRefsAsCurrent() {
+		this.model.setCurrentRefs(await this.getAllRefsCached());
 	}
 	async fetchStreamLines(streamUri) {
 		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
@@ -2155,6 +2143,29 @@ var Controller = class Controller extends Commands {
 	}
 	async startScan() {
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
+	}
+	async transformTrackDataToModel(track) {
+		let allRefsMap = await this.getAllRefsMapCached();
+		if (isStream(track)) return {
+			type: "stream",
+			track,
+			name: track.name ?? "--no name--",
+			ref: allRefsMap.get(track.uri)
+		};
+		let model = {
+			type: "file",
+			composer: "",
+			track,
+			title: track.name ?? "--no name--",
+			performer: "",
+			songlenght: 0,
+			ref: allRefsMap.get(track.uri)
+		};
+		if (!track.name || track.name === "") {
+			let parts = track.uri.split("/");
+			model.title = decodeURI(parts[parts.length - 1]);
+		}
+		return model;
 	}
 };
 
@@ -2240,14 +2251,14 @@ var PlayerBarView = class extends View {
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.stream.imageUrl);
+				comp.setAttribute("image_url", trackModel.bigImageUrl);
 				comp.setAttribute("stop_or_pause", "stop");
 			} else if (isInstanceOfExpandedTrackModel(trackModel)) {
 				comp.setAttribute("text", trackModel.track.track.name ?? "--no name--");
 				comp.setAttribute("allow_play", "true");
 				comp.setAttribute("allow_prev", "false");
 				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.album?.imageUrl ?? Controller.DEFAULT_IMG_URL);
+				comp.setAttribute("image_url", trackModel.bigImageUrl);
 				comp.setAttribute("stop_or_pause", "pause");
 			}
 		}
@@ -2963,13 +2974,13 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 			name = this.track.stream.name;
 			position = "100";
 			button = "false";
-			imageUrl = this.track.stream.imageUrl;
+			imageUrl = this.track.bigImageUrl;
 		} else {
 			name = this.track.track.title;
 			info = this.track.album?.albumInfo?.name ?? "--no name--";
 			position = "60";
 			button = "true";
-			imageUrl = this.track.album?.imageUrl ?? "";
+			imageUrl = this.track.bigImageUrl;
 			let artists = this.track.track.track.artists.map((a) => a.name).join(", ");
 			let composers = this.track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
 			if (artists) info += "<br>" + artists;
@@ -3465,7 +3476,7 @@ var MainView = class extends View {
 				let albumComp = document.getElementById("bigAlbumView");
 				let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri);
 				albumComp.albumInfo = null;
-				albumComp.setAttribute("img", streamModel.stream.imageUrl);
+				albumComp.setAttribute("img", streamModel.bigImageUrl);
 				albumComp.setAttribute("name", streamModel.stream.name);
 				let bigTrackComp = document.getElementById("currentTrackBigView");
 				bigTrackComp.streamInfo = streamModel;
@@ -3729,9 +3740,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		for (let result of this.results.refs) {
 			if (result instanceof RefSearchResult) {
 				let model = await result.getExpandedModel();
-				if (model) if (isInstanceOfExpandedTrackModel(model)) result.imageUrl = model.album?.imageUrl ?? "";
-				else if (isInstanceOfExpandedStreamModel(model)) result.imageUrl = model.stream.imageUrl;
-				else result.imageUrl = model.album.imageUrl;
+				if (model) if (isInstanceOfExpandedTrackModel(model)) result.imageUrl = model.bigImageUrl;
+				else if (isInstanceOfExpandedStreamModel(model)) result.imageUrl = model.bigImageUrl;
+				else result.imageUrl = model.bigImageUrl;
 			}
 			if (result.imageUrl) this.currentResultHasImages = true;
 		}
@@ -4683,7 +4694,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let albumName = shadow.getElementById("albumName");
 			albumName.innerHTML = this.albumInfo.album?.albumInfo?.name ?? "--no name--";
 			let imgTag = shadow.getElementById("bigImage");
-			imgTag.src = this.albumInfo.album.imageUrl;
+			imgTag.src = this.albumInfo.bigImageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			body.innerHTML = "";
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
@@ -5446,7 +5457,7 @@ var AlbumView = class extends ComponentView {
 		document.getElementById("bigAlbumView");
 		this.component.albumInfo = albumModel;
 		this.component.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
-		this.component.setAttribute("img", albumModel.album.imageUrl);
+		this.component.setAttribute("img", albumModel.bigImageUrl);
 		if (albumModel.album.albumInfo) {
 			this.component.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
 			this.component.dataset.albumUri = albumModel.album.albumInfo.uri;

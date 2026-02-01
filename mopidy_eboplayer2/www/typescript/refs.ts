@@ -63,7 +63,7 @@ export interface SearchResults {
 export const EmptySearchResults: SearchResults = {refs: [], availableRefTypes: new Set()};
 
 export abstract class Refs {
-    searchResults: SearchResults;
+    searchResults: SearchResults; //todo: make prvate as this is only filled on filter()
 
     get browseFilter(): BrowseFilter {
         return this._browseFilter;
@@ -231,6 +231,7 @@ function filterRefsToResult(refs: ExpandedRef[], refType: RefType, controller: C
 }
 
 export class AllRefs extends Refs {
+    allRefs: ExpandedRef[];
     tracks: SearchResult[];
     albums: SearchResult[];
     artists: SearchResult[];
@@ -241,6 +242,7 @@ export class AllRefs extends Refs {
 
     constructor(controller: Controller, allRefs: ExpandedRef[]) {
         super();
+        this.allRefs = allRefs;
         this.tracks = filterRefsToResult(allRefs, "track", controller);
         this.albums = filterRefsToResult(allRefs, "album", controller);
         this.artists = filterRefsToResult(allRefs, "artist", controller);

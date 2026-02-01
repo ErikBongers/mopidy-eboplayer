@@ -1,3 +1,9 @@
+* remove hard coded base url. "http://192.168.1.111:6680/eboback/image/"
+
+* Plain refs do not contain the ExpandedRef info.
+  create an expandedRefs map.
+
+
 * get_all_refs query created.
   > Use it to pre-fill AllRefs object.
   > but...everything will break.

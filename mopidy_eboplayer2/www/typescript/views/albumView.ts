@@ -60,7 +60,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         this.component.albumInfo = albumModel;
         this.component.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
-        this.component.setAttribute("img", albumModel.album.imageUrl);
+        this.component.setAttribute("img", albumModel.bigImageUrl);
         if(albumModel.album.albumInfo) {
             this.component.setAttribute("name", albumModel.meta?.albumTitle ?? albumModel.album.albumInfo.name);
             this.component.dataset.albumUri = albumModel.album.albumInfo.uri;
