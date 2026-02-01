@@ -63,9 +63,9 @@ button {
     border-width: 1px;
     border-radius: 05rem;
     padding: .2rem 1rem;
-    margin-left: .2em;
-    margin-right: .2em;
-    margin-top: .2em;
+    margin-inline-start: .2em;
+    margin-inline-end: .2em;
+    margin-block-start: .2em;
     & i.fa {
         position: relative;
         top: .1rem;

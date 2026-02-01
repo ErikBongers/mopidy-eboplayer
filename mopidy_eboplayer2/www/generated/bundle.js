@@ -3177,6 +3177,9 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     background-color: var(--playing-background);
                     border: none;
                 }
+                button.iconButton {
+                    padding-inline: .5rem;
+                }
                 img {
                     height: 1.2rem;
                 }
@@ -3195,8 +3198,8 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
     `;
 	static htmlText = `
         <div id="buttons">
-            <button id="btnPlay" class="roundBorder playButton"><i class="fa fa-play"></i></button>
-            <button id="btnAdd" class="roundBorder playButton"><i class="fa fa-plus"></i></button>
+            <button id="btnPlay" class="roundBorder playButton iconButton"><i class="fa fa-play"></i></button>
+            <button id="btnAdd" class="roundBorder playButton iconButton"><i class="fa fa-plus"></i></button>
             <button id="btnReplace" class="roundBorder playButton">Replace</button>
             <button id="btnEdit" class="roundBorder"><i class="fa fa-pencil"></i></button>
             <button id="btnSave" class="roundBorder">
