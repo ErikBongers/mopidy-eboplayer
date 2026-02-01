@@ -383,23 +383,22 @@ var SearchResultParent = class {
 	type;
 	item;
 	weight;
-	imageUrl;
 	defaultImageUrl;
-	constructor(type, item, weight, imageUrl, defaultImageUrl) {
+	constructor(type, item, weight, defaultImageUrl) {
 		this.type = type;
 		this.item = item;
 		this.weight = weight;
-		this.imageUrl = imageUrl;
 		this.defaultImageUrl = defaultImageUrl;
 	}
 	getImageUrl() {
-		return this.imageUrl ?? this.defaultImageUrl ?? "";
+		if (this.item.idMaxImage) return "http://192.168.1.111:6680/eboback/image/" + this.item.idMaxImage;
+		return this.defaultImageUrl ?? "--no default image url--";
 	}
 };
 var RefSearchResult = class extends SearchResultParent {
 	controller;
-	constructor(item, weight, controller, imageUrl, defaultImageUrl) {
-		super("ref", item, weight, imageUrl, defaultImageUrl);
+	constructor(item, weight, controller, defaultImageUrl) {
+		super("ref", item, weight, defaultImageUrl);
 		this.controller = controller;
 	}
 	getExpandedModel = () => this.controller.getExpandedModel(this.item);
@@ -407,7 +406,7 @@ var RefSearchResult = class extends SearchResultParent {
 var GenreSearchResult = class extends SearchResultParent {
 	controller;
 	constructor(item, weight, controller, imageUrl) {
-		super("genreDef", item, weight, imageUrl, "images/icons/Genre.svg");
+		super("genreDef", item, weight, "images/icons/Genre.svg");
 		this.controller = controller;
 	}
 	getExpandedModel() {
@@ -3649,7 +3648,6 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		browseFilterComp.browseFilter = this._browseFilter;
 		browseFilterComp.availableRefTypes = this.results.availableRefTypes;
 		let activeDisplayMode = this.display_mode;
-		if (!this.currentResultHasImages) activeDisplayMode = "line";
 		shadow.querySelectorAll("ebo-list-item").forEach((line) => line.setAttribute("display", activeDisplayMode));
 		this.classList.remove("icon", "line");
 		this.classList.add(activeDisplayMode);
@@ -3712,21 +3710,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		if (this.results.refs.length == 0) return;
 		tableWrapper.innerHTML = "";
 		let html = "";
-		this.currentResultHasImages = false;
-		for (let result of this.results.refs) {
-			if (result instanceof RefSearchResult) {
-				let model = await result.getExpandedModel();
-				if (model) if (isInstanceOfExpandedTrackModel(model)) result.imageUrl = model.bigImageUrl;
-				else if (isInstanceOfExpandedStreamModel(model)) result.imageUrl = model.bigImageUrl;
-				else result.imageUrl = model.bigImageUrl;
-			}
-			if (result.imageUrl) this.currentResultHasImages = true;
-		}
 		for (let result of this.results.refs) {
 			let refType = result.item.refType;
 			let imageUrl = result.getImageUrl();
 			let imageClass = "";
-			if (this.currentResultHasImages && imageUrl.endsWith(".svg")) imageClass = "whiteIcon";
+			if (imageUrl.endsWith(".svg")) imageClass = "whiteIcon";
 			html += `
                     <ebo-list-item
                         data-uri="${result.item.uri}"

@@ -18,25 +18,26 @@ abstract class SearchResultParent {
     protected type: "ref" | "genreDef";
     item: ExpandedRef;
     weight: number;
-    imageUrl?: string;
     protected defaultImageUrl?: string;
-    protected constructor(type: "ref" | "genreDef", item: ExpandedRef, weight: number, imageUrl?: string, defaultImageUrl?: string) {
+    protected constructor(type: "ref" | "genreDef", item: ExpandedRef, weight: number, defaultImageUrl?: string) {
         this.type = type;
         this.item = item;
         this.weight = weight;
-        this.imageUrl = imageUrl;
         this.defaultImageUrl = defaultImageUrl;
     }
 
     getImageUrl(): string {
-        return this.imageUrl ?? this.defaultImageUrl ?? "";
+        if (this.item.idMaxImage) {
+            return "http://192.168.1.111:6680/eboback/image/" + this.item.idMaxImage; //todo: remove hard coded base url.}
+        }
+        return this.defaultImageUrl ?? "--no default image url--";
     }
 }
 
 export class RefSearchResult extends SearchResultParent {
     controller: Controller;
-    constructor(item: ExpandedRef, weight: number, controller: Controller, imageUrl?: string, defaultImageUrl?: string) {
-        super("ref", item, weight, imageUrl, defaultImageUrl);
+    constructor(item: ExpandedRef, weight: number, controller: Controller, defaultImageUrl?: string) {
+        super("ref", item, weight, defaultImageUrl);
         this.controller = controller;
     }
     getExpandedModel =  () => this.controller.getExpandedModel(this.item);
@@ -45,7 +46,7 @@ export class RefSearchResult extends SearchResultParent {
 export class GenreSearchResult  extends SearchResultParent {
     controller: Controller;
     constructor(item: ExpandedRef, weight: number, controller: Controller, imageUrl?: string) {
-        super("genreDef", item, weight, imageUrl, "images/icons/Genre.svg");
+        super("genreDef", item, weight, "images/icons/Genre.svg");
         this.controller = controller;
     }
     getExpandedModel() {

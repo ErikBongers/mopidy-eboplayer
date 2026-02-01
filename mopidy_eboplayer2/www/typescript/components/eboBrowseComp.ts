@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel} from "../modelTypes";
-import {EmptySearchResults, GenreSearchResult, RefSearchResult, SearchResult, SearchResults} from "../refs";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef} from "../modelTypes";
+import {EmptySearchResults, GenreSearchResult, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {unreachable} from "../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
@@ -205,8 +205,6 @@ export class EboBrowseComp extends EboComponent {
         browseFilterComp.browseFilter = this._browseFilter;
         browseFilterComp.availableRefTypes = this.results.availableRefTypes;
         let activeDisplayMode: DisplayMode = this.display_mode;
-        if(!this.currentResultHasImages)
-            activeDisplayMode = "line";
 
         let lines = shadow.querySelectorAll("ebo-list-item");
         lines.forEach(line => line.setAttribute("display", activeDisplayMode));
@@ -279,29 +277,11 @@ export class EboBrowseComp extends EboComponent {
         tableWrapper.innerHTML = "";
 
         let html = "";
-        this.currentResultHasImages = false;
-        for(let result of this.results.refs) {
-            if(result instanceof RefSearchResult) {
-                let model = await result.getExpandedModel();
-                if (model) {
-                    if(isInstanceOfExpandedTrackModel(model))
-                        result.imageUrl = model.bigImageUrl; //todo: no need to check sub-type, as the bigImageUrl is always the same.
-                    else if(isInstanceOfExpandedStreamModel(model))
-                        result.imageUrl = model.bigImageUrl;
-                    else //album track model
-                       result.imageUrl = model.bigImageUrl;
-                }
-            }
-            // else: GenreSearchResult already has a default imageUrl
-            if(result.imageUrl) {
-                this.currentResultHasImages = true;
-            }
-        }
         for(let result of this.results.refs) {
             let refType = result.item.refType;
             let imageUrl = result.getImageUrl();
             let imageClass = "";
-            if(this.currentResultHasImages && imageUrl.endsWith(".svg"))
+            if(imageUrl.endsWith(".svg"))
                 imageClass = "whiteIcon";
             html += `
                     <ebo-list-item
