@@ -1,32 +1,31 @@
-* Plain refs do not contain the ExpandedRef info.
-  create an expandedRefs map.
+* Drop uri from images table.
+* Create a track_images table.
+* When scanning, if track:
+  - has an album: add images to album_images (if not yet present)
+  - has no album: add images to track_images (if not yet present)
+* Alter view all_refs
+* Alter view album_images_min_max
 
+Images
+-------
+- Embedded images belong to tracks.
+  > store the with track uri.
+- Folder images belong to ...
+  > whatever's in the folder, being
+   - tracks
+     > the albums that the track belongs to.
+       > note: MULTIPLE albums could be in the same folder and share a track.
 
-* get_all_refs query created.
-  > Use it to pre-fill AllRefs object.
-  > but...everything will break.
-    > Examine the data chain up to the html.
-      - html expects a SearchResult.
-      - AllRefs takes plain Refs and...
-        - converts it to an ExpandedRef:
-          - ref
-          - type
-          - null as last_modified -> but we already have that!!!
-        - convers ExpandedRef to a SearchResult with an expand() function.
-        - browseComp uses expand() data to...
-          - get imageURLs
-            > no need for expanded data
-          - genre alias
-            >
-
-* Add imageUrl to album/track data.
-  > use a short integer as key - no MD5 nonsense
-  > this implies that a re-scan will result in new ids!
-    > who cares...just reload the full page.
-      > no cache!!!
-       >>> https://stackoverflow.com/a/5721805/1311434
-
-* Browse comp: use getImageUrl() instead of calculating it with expanded() data.
+* re-scan one album
+  - get all the tracks for the album
+  - get the folders
+    > get_albums_path()
+  - scan the folders for new data.
+    > storage.get_image_files_from_folder()
+    > _get_or_create_image_file()
+    > inser_image or something?
+      > should return the images.id
+    > update the min max for this album.
 
 * Search: only show first...dunno...results.
   > 30?
