@@ -97,4 +97,12 @@ export class WebProxy {
         let res = await fetch(url);
         return await res.json() as ExpandedRef[];
     }
+
+    async updateAlbumImages(albumUri: string) {
+        let url = this.ebobackUrl(`update_album_images`);
+        url.searchParams.set("album_uri", albumUri);
+        let res = await fetch(url);
+        await res.text(); //todo: needed?
+        return null;
+    }
 }

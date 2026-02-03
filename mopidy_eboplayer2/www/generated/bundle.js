@@ -1619,6 +1619,12 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_all_refs`);
 		return await (await fetch(url)).json();
 	}
+	async updateAlbumImages(albumUri) {
+		let url = this.ebobackUrl(`update_album_images`);
+		url.searchParams.set("album_uri", albumUri);
+		await (await fetch(url)).text();
+		return null;
+	}
 };
 
 //#endregion
@@ -4657,6 +4663,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                 <table>
                     <tbody></tbody>                
                 </table>
+                <button id="btnUpdateAlbumData" class="roundBorder">Update album data</button>
             </div>        
         </div>
         `;
@@ -4669,6 +4676,9 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 	render(shadow) {
 		shadow.getElementById("bigImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
+		});
+		shadow.getElementById("btnUpdateAlbumData")?.addEventListener("click", () => {
+			this.dispatchEboEvent("updateAlbumData.eboplayer", { "uri": this._albumInfo?.album?.ref.uri ?? "--nu album uri--" });
 		});
 	}
 	async update(shadow) {
@@ -5437,6 +5447,9 @@ var AlbumView = class extends ComponentView {
 		});
 		this.component.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
 			await this.onReplaceItemListClick(ev.detail);
+		});
+		this.component.addEboEventListener("updateAlbumData.eboplayer", async (ev) => {
+			await this.state.getController().webProxy.updateAlbumImages(ev.detail.uri);
 		});
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {

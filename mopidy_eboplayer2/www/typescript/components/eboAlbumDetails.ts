@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {MouseTimer} from "../MouseTimer";
-import {ExpandedAlbumModel} from "../modelTypes";
+import {AlbumUri, ExpandedAlbumModel} from "../modelTypes";
 
 export class EboAlbumDetails extends EboComponent {
     get albumInfo(): ExpandedAlbumModel | null {
@@ -54,6 +54,7 @@ export class EboAlbumDetails extends EboComponent {
                 <table>
                     <tbody></tbody>                
                 </table>
+                <button id="btnUpdateAlbumData" class="roundBorder">Update album data</button>
             </div>        
         </div>
         `;
@@ -80,7 +81,11 @@ export class EboAlbumDetails extends EboComponent {
         let imageTag = shadow.getElementById("bigImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {
             this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
-        })
+        });
+        let btnUpdateAlbumData = shadow.getElementById("btnUpdateAlbumData");
+        btnUpdateAlbumData?.addEventListener("click", () => {
+            this.dispatchEboEvent("updateAlbumData.eboplayer", {"uri": (this._albumInfo?.album?.ref.uri??"--nu album uri--") as AlbumUri});
+        });
     }
 
     override async update(shadow: ShadowRoot) {

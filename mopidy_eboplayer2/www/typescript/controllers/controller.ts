@@ -4,9 +4,9 @@ import models, {core, Mopidy} from "../../js/mopidy";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort, getHostAndPortDefs, isStream, unreachable} from "../global";
+import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
 import {createAllRefs, ExpandedRef, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, ImageUri, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -15,7 +15,6 @@ import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
-import Album = models.Album;
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -242,25 +241,6 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    private async fetchLargestImagesOrDefault(uris: AllUris[]) {
-        function getImageUrl(uri: AllUris, baseUrl: string) {
-            let arr = images[uri];
-            arr.sort((imgA, imgB) => (imgA.width * imgA.height) - (imgB.width * imgB.height));
-            if (arr.length == 0)
-                return Controller.DEFAULT_IMG_URL;
-            let imageUrl = arr.pop()?.uri;
-            if ((imageUrl?? "") == "")
-                imageUrl = Controller.DEFAULT_IMG_URL;
-            return baseUrl + imageUrl as ImageUri;
-        }
-        let images = await this.mopidyProxy.fetchImages(uris);
-        let mappedImage: [ImageUri, string][] = uris.map(uri => {
-            let imageUrl = getImageUrl(uri, this.baseUrl);
-            return [uri as ImageUri, imageUrl];
-        });
-        return new Map(mappedImage);
-    }
-
     async setAndSaveBrowseFilter(filter: BrowseFilter) {
         this.localStorageProxy.saveCurrentBrowseFilter(filter);
         this.model.setCurrentBrowseFilter(filter);
@@ -366,29 +346,6 @@ export class Controller extends Commands implements DataRequester{
         }
     }
 
-    async lookupTracksCached(trackUris: (TrackUri | StreamUri)[]) {
-        let foundItems: (FileTrackModel | StreamTrackModel)[] = [];
-        let notFoundItems: (TrackUri | StreamUri)[] = [];
-        for(let trackUri of trackUris) {
-            let item = this.model.getFromLibraryCache(trackUri);
-            if(item)
-                foundItems.push(item as FileTrackModel | StreamTrackModel);
-            else
-                notFoundItems.push(trackUri);
-        }
-        if(notFoundItems.length > 0) {
-            await this.lookupAllTracks(notFoundItems);
-            for(let trackUri of notFoundItems) {
-                let item = this.model.getFromLibraryCache(trackUri);
-                if(item)
-                    foundItems.push(item as FileTrackModel | StreamTrackModel);
-                else
-                    console.error("trackUri not found in library: " + trackUri);
-            }
-        }
-        return foundItems;
-    }
-
     async lookupTrackCached(trackUri: TrackUri | StreamUri | null) {
         if(!trackUri)
             return null;
@@ -435,44 +392,10 @@ export class Controller extends Commands implements DataRequester{
             }
             return albumModel;
         });
-        let partialAlbumModels = await Promise.all(albumModelsPending);
+        let albumModels = await Promise.all(albumModelsPending);
 
-        let albumInfos = partialAlbumModels
-            .filter(album => album.albumInfo != null)
-            .map(album => album.albumInfo as Album);
-        let images = await this.fetchLargestImagesOrDefault(albumInfos.map(album => album.uri));
-        this.model.addImagesToCache(images);
-        let albumModels = partialAlbumModels.map(m => {
-            if(m.albumInfo)
-                return {...m, imageUrl:this.model.getImageFromCache(m.albumInfo.uri)} as AlbumModel;
-            return m as AlbumModel; //without images
-        });
         this.model.addItemsToLibraryCache(albumModels);
         return albumModels;
-    }
-
-    async lookupAllTracks(uris: AllUris[]) {
-        let results = await this.mopidyProxy.lookup(uris);
-        let modelsPromises = Object.keys(results).map(trackUri => {
-            let track = results[trackUri][0];
-            return this.transformTrackDataToModel(track)
-        });
-        let models = await Promise.all(modelsPromises);
-        this.model.addItemsToLibraryCache(models);
-    }
-
-    async lookupImageCached(uri: AllUris) {
-        let imgUrl = this.model.getImageFromCache(uri);
-        if(imgUrl)
-            return imgUrl;
-        let images = await this.mopidyProxy.fetchImages([uri]);
-        if(images[uri].length == 0) {
-            this.model.addImageToCache(uri, Controller.DEFAULT_IMG_URL);
-            return Controller.DEFAULT_IMG_URL;
-        }
-        let img = images[uri][0];
-        this.model.addImageToCache(uri, img.uri);
-        return img.uri;
     }
 
     private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
@@ -490,26 +413,6 @@ export class Controller extends Commands implements DataRequester{
         this.model.setRemembers(remembers);
         return remembers;
     }
-
-    async getExpandedModel(ref: ExpandedRef) {
-        switch (ref.refType) {
-            case "track":
-                return this.getExpandedTrackModel(ref.uri as TrackUri); //todo: make expandedRef a discriminated union on type, to avoid this cast.
-            case "album":
-                return this.getExpandedAlbumModel(ref.uri as AlbumUri);
-            case "radio":
-                return this.getExpandedTrackModel(ref.uri as StreamUri);
-            case "playlist":
-                return null; //todo?
-            case "artist":
-                return null;//todo?
-            case "genre":
-                return null;//todo?
-            default:
-                unreachable(ref.refType);
-        }
-    }
-
 
     async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)
@@ -546,26 +449,6 @@ export class Controller extends Commands implements DataRequester{
         let meta = await this.getMetaDataCached(albumUri) ?? null;
 
         return new ExpandedAlbumModel(album, this, meta);
-    }
-
-    async getMetaDatasCached(albumUris: AlbumUri[]) {
-        let foundMetas = [];
-        let notFoundMetas: AlbumUri[] = [];
-        for(let albumUri of albumUris) {
-            let cachedMeta = this.model.getFromMetaCache(albumUri);
-            if(cachedMeta)
-                foundMetas.push(cachedMeta.meta);
-            else
-                notFoundMetas.push(albumUri);
-        }
-        let metas = await this.webProxy.fetchMetaDatas(notFoundMetas);
-        for(let albumUri of notFoundMetas) {
-            let meta = metas[albumUri];
-            if(meta)
-                this.model.addToMetaCache(albumUri, meta);
-            else
-                this.model.addToMetaCache(albumUri, null);
-        }
     }
 
     async getMetaDataCached(albumUri: string) {

@@ -8,6 +8,7 @@ export interface EboEventHandlersEventMap {
     "scanStatusChanged.eboplayer"               : StringArgs,
     "whatsNewRequested.eboplayer"               : VoidArgs,
     "scanRequested.eboplayer"                   : VoidArgs,
+    "updateAlbumData.eboplayer"                 : UriArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,
