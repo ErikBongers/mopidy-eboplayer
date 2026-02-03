@@ -1630,7 +1630,7 @@ var WebProxy = class {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/controllers/controller.ts
 const LIBRARY_PROTOCOL = "eboback:";
-var Controller = class Controller extends Commands {
+var Controller = class extends Commands {
 	model;
 	mopidyProxy;
 	webProxy;
@@ -1796,22 +1796,6 @@ var Controller = class Controller extends Commands {
 			this.model.setActiveStreamLinesHistory(lines);
 		} else this.model.setActiveStreamLinesHistory(NoStreamTitles);
 	}
-	async fetchLargestImagesOrDefault(uris) {
-		function getImageUrl(uri, baseUrl) {
-			let arr = images[uri];
-			arr.sort((imgA, imgB) => imgA.width * imgA.height - imgB.width * imgB.height);
-			if (arr.length == 0) return Controller.DEFAULT_IMG_URL;
-			let imageUrl = arr.pop()?.uri;
-			if ((imageUrl ?? "") == "") imageUrl = Controller.DEFAULT_IMG_URL;
-			return baseUrl + imageUrl;
-		}
-		let images = await this.mopidyProxy.fetchImages(uris);
-		let mappedImage = uris.map((uri) => {
-			let imageUrl = getImageUrl(uri, this.baseUrl);
-			return [uri, imageUrl];
-		});
-		return new Map(mappedImage);
-	}
 	async setAndSaveBrowseFilter(filter) {
 		this.localStorageProxy.saveCurrentBrowseFilter(filter);
 		this.model.setCurrentBrowseFilter(filter);
@@ -1901,24 +1885,6 @@ var Controller = class Controller extends Commands {
 			await this.filterBrowseResults();
 		}
 	}
-	async lookupTracksCached(trackUris) {
-		let foundItems = [];
-		let notFoundItems = [];
-		for (let trackUri of trackUris) {
-			let item = this.model.getFromLibraryCache(trackUri);
-			if (item) foundItems.push(item);
-			else notFoundItems.push(trackUri);
-		}
-		if (notFoundItems.length > 0) {
-			await this.lookupAllTracks(notFoundItems);
-			for (let trackUri of notFoundItems) {
-				let item = this.model.getFromLibraryCache(trackUri);
-				if (item) foundItems.push(item);
-				else console.error("trackUri not found in library: " + trackUri);
-			}
-		}
-		return foundItems;
-	}
 	async lookupTrackCached(trackUri) {
 		if (!trackUri) return null;
 		let item = this.model.getFromLibraryCache(trackUri);
@@ -1954,40 +1920,9 @@ var Controller = class Controller extends Commands {
 				ref: allRefs.get(albumUri)
 			};
 		});
-		let partialAlbumModels = await Promise.all(albumModelsPending);
-		let albumInfos = partialAlbumModels.filter((album) => album.albumInfo != null).map((album) => album.albumInfo);
-		let images = await this.fetchLargestImagesOrDefault(albumInfos.map((album) => album.uri));
-		this.model.addImagesToCache(images);
-		let albumModels = partialAlbumModels.map((m) => {
-			if (m.albumInfo) return {
-				...m,
-				imageUrl: this.model.getImageFromCache(m.albumInfo.uri)
-			};
-			return m;
-		});
+		let albumModels = await Promise.all(albumModelsPending);
 		this.model.addItemsToLibraryCache(albumModels);
 		return albumModels;
-	}
-	async lookupAllTracks(uris) {
-		let results = await this.mopidyProxy.lookup(uris);
-		let modelsPromises = Object.keys(results).map((trackUri) => {
-			let track = results[trackUri][0];
-			return this.transformTrackDataToModel(track);
-		});
-		let models$1 = await Promise.all(modelsPromises);
-		this.model.addItemsToLibraryCache(models$1);
-	}
-	async lookupImageCached(uri) {
-		let imgUrl = this.model.getImageFromCache(uri);
-		if (imgUrl) return imgUrl;
-		let images = await this.mopidyProxy.fetchImages([uri]);
-		if (images[uri].length == 0) {
-			this.model.addImageToCache(uri, Controller.DEFAULT_IMG_URL);
-			return Controller.DEFAULT_IMG_URL;
-		}
-		let img = images[uri][0];
-		this.model.addImageToCache(uri, img.uri);
-		return img.uri;
 	}
 	async fetchAndConvertTracks(uri) {
 		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
@@ -1999,17 +1934,6 @@ var Controller = class Controller extends Commands {
 		remembers = await this.webProxy.fetchRemembers();
 		this.model.setRemembers(remembers);
 		return remembers;
-	}
-	async getExpandedModel(ref) {
-		switch (ref.refType) {
-			case "track": return this.getExpandedTrackModel(ref.uri);
-			case "album": return this.getExpandedAlbumModel(ref.uri);
-			case "radio": return this.getExpandedTrackModel(ref.uri);
-			case "playlist": return null;
-			case "artist": return null;
-			case "genre": return null;
-			default: unreachable(ref.refType);
-		}
 	}
 	async getExpandedTrackModel(trackUri) {
 		if (!trackUri) return null;
@@ -2038,21 +1962,6 @@ var Controller = class Controller extends Commands {
 		let album = (await this.lookupAlbumsCached([albumUri]))[0];
 		let meta = await this.getMetaDataCached(albumUri) ?? null;
 		return new ExpandedAlbumModel(album, this, meta);
-	}
-	async getMetaDatasCached(albumUris) {
-		let foundMetas = [];
-		let notFoundMetas = [];
-		for (let albumUri of albumUris) {
-			let cachedMeta = this.model.getFromMetaCache(albumUri);
-			if (cachedMeta) foundMetas.push(cachedMeta.meta);
-			else notFoundMetas.push(albumUri);
-		}
-		let metas = await this.webProxy.fetchMetaDatas(notFoundMetas);
-		for (let albumUri of notFoundMetas) {
-			let meta = metas[albumUri];
-			if (meta) this.model.addToMetaCache(albumUri, meta);
-			else this.model.addToMetaCache(albumUri, null);
-		}
 	}
 	async getMetaDataCached(albumUri) {
 		let cachedMeta = this.model.getFromMetaCache(albumUri);
@@ -4664,6 +4573,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                     <tbody></tbody>                
                 </table>
                 <button id="btnUpdateAlbumData" class="roundBorder">Update album data</button>
+                <button id="btnSearchImage" class="roundBorder">Search image</button>
             </div>        
         </div>
         `;
@@ -4679,6 +4589,11 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 		});
 		shadow.getElementById("btnUpdateAlbumData")?.addEventListener("click", () => {
 			this.dispatchEboEvent("updateAlbumData.eboplayer", { "uri": this._albumInfo?.album?.ref.uri ?? "--nu album uri--" });
+		});
+		shadow.getElementById("btnSearchImage")?.addEventListener("click", () => {
+			let albumName = this.albumInfo?.album?.albumInfo?.name;
+			if (!albumName) return;
+			window.open("https://www.google.com/search?tbm=isch&q=" + albumName.replaceAll(" ", "+"), "_blank")?.focus();
 		});
 	}
 	async update(shadow) {

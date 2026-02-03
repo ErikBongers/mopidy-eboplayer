@@ -55,6 +55,7 @@ export class EboAlbumDetails extends EboComponent {
                     <tbody></tbody>                
                 </table>
                 <button id="btnUpdateAlbumData" class="roundBorder">Update album data</button>
+                <button id="btnSearchImage" class="roundBorder">Search image</button>
             </div>        
         </div>
         `;
@@ -85,6 +86,14 @@ export class EboAlbumDetails extends EboComponent {
         let btnUpdateAlbumData = shadow.getElementById("btnUpdateAlbumData");
         btnUpdateAlbumData?.addEventListener("click", () => {
             this.dispatchEboEvent("updateAlbumData.eboplayer", {"uri": (this._albumInfo?.album?.ref.uri??"--nu album uri--") as AlbumUri});
+        });
+        let btnSearchImage = shadow.getElementById("btnSearchImage");
+        btnSearchImage?.addEventListener("click", () => {
+            let albumName = this.albumInfo?.album?.albumInfo?.name;
+            if(!albumName)
+                return;
+
+            window.open("https://www.google.com/search?tbm=isch&q="+albumName.replaceAll(" ", "+"), '_blank')?.focus();
         });
     }
 
