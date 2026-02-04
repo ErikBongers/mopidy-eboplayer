@@ -1,5 +1,5 @@
 import {ComponentView} from "./view";
-import {EboPlayerDataType, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
+import {AlbumUri, EboPlayerDataType, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {arrayToggle, console_yellow} from "../global";
@@ -54,7 +54,10 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
             await this.onReplaceItemListClick(ev.detail);
         });
         this.component.addEboEventListener("updateAlbumData.eboplayer", async (ev) => {
-            await this.state.getController().webProxy.updateAlbumImages(ev.detail.uri);
+            await this.state.getController().webProxy.updateAlbumImages(ev.detail.uri as AlbumUri);
+        });
+        this.component.addEboEventListener("uploadAlbumImageClicked.eboplayer", async (ev) => {
+            await this.state.getController().webProxy.uploadAlbumImages(ev.detail.albumUri, ev.detail.imageUrl);
         });
 
     }

@@ -1,25 +1,4 @@
-* update_album_images
-  > test with a new album images!
-* re-scan one album
-  - get all the tracks for the album
-  - get the folders
-    > get_albums_path()
-  - scan the folders for new data.
-    > storage.get_image_files_from_folder()
-    > _get_or_create_image_file()
-    > inser_image or something?
-      > should return the images.id
-    > update the min max for this album.
-
-Images
--------
-- Embedded images belong to tracks.
-  > store the with track uri.
-- Folder images belong to ...
-  > whatever's in the folder, being
-   - tracks
-     > the albums that the track belongs to.
-       > note: MULTIPLE albums could be in the same folder and share a track.
+* Upload image to server.
 
 * Search: only show first...dunno...results.
   > 30?

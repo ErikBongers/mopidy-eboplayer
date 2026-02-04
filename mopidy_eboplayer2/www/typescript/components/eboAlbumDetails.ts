@@ -56,6 +56,8 @@ export class EboAlbumDetails extends EboComponent {
                 </table>
                 <button id="btnUpdateAlbumData" class="roundBorder">Update album data</button>
                 <button id="btnSearchImage" class="roundBorder">Search image</button>
+                <input id="imageUrl" type="text">
+                <button id="btnUploadImage" class="roundBorder">Upload image</button>
             </div>        
         </div>
         `;
@@ -94,6 +96,10 @@ export class EboAlbumDetails extends EboComponent {
                 return;
 
             window.open("https://www.google.com/search?tbm=isch&q="+albumName.replaceAll(" ", "+"), '_blank')?.focus();
+        });
+        let btnUploadImage = shadow.getElementById("btnUploadImage");
+        btnUploadImage?.addEventListener("click", () => {
+            this.dispatchEboEvent("uploadAlbumImageClicked.eboplayer", {"albumUri": this.albumInfo?.album.ref.uri as AlbumUri, "imageUrl": (shadow.getElementById("imageUrl") as HTMLInputElement).value.trim()})
         });
     }
 

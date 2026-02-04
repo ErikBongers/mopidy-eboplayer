@@ -1,4 +1,4 @@
-import {AllUris, TrackUri} from "./modelTypes";
+import {AlbumUri, AllUris, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
 
@@ -8,6 +8,7 @@ export interface EboEventHandlersEventMap {
     "scanStatusChanged.eboplayer"               : StringArgs,
     "whatsNewRequested.eboplayer"               : VoidArgs,
     "scanRequested.eboplayer"                   : VoidArgs,
+    "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
     "updateAlbumData.eboplayer"                 : UriArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
@@ -88,6 +89,11 @@ export interface StreamLinesArgs extends EboEventArgs {
 
 export interface UriArgs extends EboEventArgs {
     uri: AllUris
+}
+
+export interface AlbumImageUrlArgs extends EboEventArgs {
+    albumUri: AlbumUri;
+    imageUrl: string;
 }
 
 export interface PressedArgs extends EboEventArgs {
