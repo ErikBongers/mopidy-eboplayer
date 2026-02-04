@@ -62,14 +62,17 @@ button {
     border-style: solid;
     border-width: 1px;
     border-radius: 05rem;
-    padding: .2rem 1rem;
-    margin-inline-start: .2em;
-    margin-inline-end: .2em;
+    padding-block: .2rem;
+    padding-inline: .7rem;
+    margin-inline: .2em;
     margin-block-start: .2em;
     & i.fa {
         position: relative;
         top: .1rem;
     }
+}
+.iconButton {
+    padding-inline: .5rem;
 }
 
 .flexColumn {
@@ -79,6 +82,10 @@ button {
 .flexRow {
     display: flex;
     flex-direction: row;
+}
+
+.flexGrow {
+    flex-grow: 1;
 }
 
 .italic {

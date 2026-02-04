@@ -55,9 +55,6 @@ export class EboListButtonBar extends EboComponent {
                     background-color: var(--playing-background);
                     border: none;
                 }
-                button.iconButton {
-                    padding-inline: .5rem;
-                }
                 img {
                     height: 1.2rem;
                 }

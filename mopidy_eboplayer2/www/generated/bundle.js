@@ -3099,9 +3099,6 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
                     background-color: var(--playing-background);
                     border: none;
                 }
-                button.iconButton {
-                    padding-inline: .5rem;
-                }
                 img {
                     height: 1.2rem;
                 }
@@ -4579,10 +4576,24 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                 <table>
                     <tbody></tbody>                
                 </table>
-                <button id="btnUpdateAlbumData" class="roundBorder">Update album data</button>
-                <button id="btnSearchImage" class="roundBorder">Search image</button>
-                <input id="imageUrl" type="text">
-                <button id="btnUploadImage" class="roundBorder">Upload image</button>
+                <div style="border-block-start: solid 1px rgba(255,255,255,.5); margin-block-start:.5rem; padding-block-start: .5rem;">
+                    <div class="flexRow">
+                        <button id="btnUpdateAlbumData" class="roundBorder iconButton"><i class="fa fa-refresh"></i></button>
+                        <button id="btnSearchImage" 
+                            class="roundBorder" 
+                            style="padding-inline-start: .7rem;">
+                            <img src="/images/icons/Google_Favicon_2025.svg" 
+                                alt="Search" 
+                                style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
+                            Image
+                        </button>
+                    </div>
+                    <label style="display: block; margin-block-start: .3rem; margin-block-end: .1rem;">Upload an album image:</label>
+                    <div class="flexRow">
+                        <input id="imageUrl" type="text" class="flexGrow">
+                        <button id="btnUploadImage" style="margin-inline-start: .3rem;"><i class="fa fa-upload"></i></button>
+                    </div>
+                </div>            
             </div>        
         </div>
         `;
@@ -4618,18 +4629,20 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let imgTag = shadow.getElementById("bigImage");
 			imgTag.src = this.albumInfo.bigImageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
+			let artists = await this.albumInfo.getArtists();
+			let composers = await this.albumInfo.getComposers();
+			let genreDefs = await this.albumInfo.getGenres();
 			body.innerHTML = "";
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
-			this.addMetaDataRow(body, "Artists:", (await this.albumInfo.getArtists()).map((artist) => artist.name).join(", "));
-			this.addMetaDataRow(body, "Composers:", (await this.albumInfo.getComposers()).map((artist) => artist.name).join(","));
-			let genreDefs = await this.albumInfo.getGenres();
+			this.addMetaDataRow(body, "Artists:", artists.map((artist) => artist.name).join(", "));
+			this.addMetaDataRow(body, "Composers:", composers.map((artist) => artist.name).join(","));
 			let genresHtml = "";
 			genreDefs.forEach((def) => {
 				let defHtml = "";
 				if (def.replacement) defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
 				genresHtml += defHtml;
 			});
-			this.addMetaDataRow(body, "Genres", genresHtml);
+			this.addMetaDataRow(body, "Genre", genresHtml);
 			this.addMetaDataRow(body, "Playlists", "todo...");
 		}
 	}

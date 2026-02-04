@@ -1,3 +1,8 @@
+* Set Genre
+  > Standard genres: from wiki
+    > store internally.
+    > overrule: create a prefilled genres.eboplayer file in root.
+
 * Search: only show first...dunno...results.
   > 30?
     > 20 on phone, 30 or more on desktop.
