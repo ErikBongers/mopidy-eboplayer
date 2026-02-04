@@ -98,8 +98,8 @@ export class WebProxy {
         return await res.json() as ExpandedRef[];
     }
 
-    async updateAlbumImages(albumUri: AlbumUri) {
-        let url = this.ebobackUrl(`update_album_images`);
+    async updateAlbumData(albumUri: AlbumUri) {
+        let url = this.ebobackUrl(`update_album_data`);
         url.searchParams.set("album_uri", albumUri);
         let res = await fetch(url);
         await res.text(); //todo: needed?

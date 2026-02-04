@@ -1619,8 +1619,8 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_all_refs`);
 		return await (await fetch(url)).json();
 	}
-	async updateAlbumImages(albumUri) {
-		let url = this.ebobackUrl(`update_album_images`);
+	async updateAlbumData(albumUri) {
+		let url = this.ebobackUrl(`update_album_data`);
 		url.searchParams.set("album_uri", albumUri);
 		await (await fetch(url)).text();
 		return null;
@@ -5379,7 +5379,7 @@ var AlbumView = class extends ComponentView {
 			await this.onReplaceItemListClick(ev.detail);
 		});
 		this.component.addEboEventListener("updateAlbumData.eboplayer", async (ev) => {
-			await this.state.getController().webProxy.updateAlbumImages(ev.detail.uri);
+			await this.state.getController().webProxy.updateAlbumData(ev.detail.uri);
 		});
 		this.component.addEboEventListener("uploadAlbumImageClicked.eboplayer", async (ev) => {
 			await this.state.getController().webProxy.uploadAlbumImages(ev.detail.albumUri, ev.detail.imageUrl);
