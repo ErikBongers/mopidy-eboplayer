@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {console_yellow} from "../global";
+import {console_yellow, searchImageOnGoogle, searchOnGoogle} from "../global";
 import {EboButton} from "./eboButton";
 
 export class EboRememberedComp extends EboComponent {
@@ -18,6 +18,13 @@ export class EboRememberedComp extends EboComponent {
     static htmlText = `
         <div id="wrapper" class="flexColumn selectable">
             <p>Remembered</p>
+            <table id="rememberedTable">
+                <colgroup>
+                    <col span="1" style="width: auto;">
+                    <col span="1" style="width: 1em;">
+                </colgroup>
+                <tbody></tbody>
+            </table>       
         </div>        
         `;
 
@@ -50,19 +57,34 @@ export class EboRememberedComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        let wrapper = shadow.getElementById("wrapper") as HTMLElement;
-        wrapper.innerHTML = "";
-        let table = document.createElement("table");
-        table.id = "rememberedTable";
-        let tbody = document.createElement("tbody");
-        table.appendChild(tbody);
+        let tbody = shadow.querySelector("tbody") as HTMLTableSectionElement;
+        tbody.innerHTML = "";
         for(let i=0; i<this.rememberedList.length; i++) {
             let tr = document.createElement("tr");
             tbody.appendChild(tr);
             let td = document.createElement("td");
             tr.appendChild(td);
             td.innerText = this.rememberedList[i];
+            let td2 = document.createElement("td");
+            tr.appendChild(td2);
+            td2.innerHTML = `
+                <ebo-menu-button>
+                    <div class="flexColumn">
+                        <button id="deleteRememberedBtn" class="roundBorder">Delete</button>
+                        <button id="deleteAllRememberedBtn" class="roundBorder">Delete all</button>
+                        <button id="googleRememberedBtn" class="roundBorder">Google</button>
+                    </div>
+                </ebo-menu-button>`;
+            td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {
+                console_yellow("deleteRememberedBtn");
+            });
+            td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {
+                console_yellow("deleteAllRememberedBtn");
+            });
+            td2.querySelector("#googleRememberedBtn")?.addEventListener("click", (ev) => {
+                searchOnGoogle(td.innerText);
+            });
+
         }
-        wrapper.appendChild(table);
     }
 }

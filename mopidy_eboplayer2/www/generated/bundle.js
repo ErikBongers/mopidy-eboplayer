@@ -431,6 +431,17 @@ function getDefaultImageUrl(refType, defaultImageUrl) {
 		default: unreachable(refType);
 	}
 }
+function escapeGoogleSearchString(albumName) {
+	return albumName.replaceAll("+", "%2B").replaceAll("\n", "+").replaceAll(" ", "+").replaceAll("'", "%27").replaceAll("&", "%26").replaceAll("(", "%28").replaceAll(")", "%29").replaceAll(":", "%3A").replaceAll("!", "%21").replaceAll("?", "%3F").replaceAll("|", "%7C").replaceAll("=", "%3D");
+}
+function searchOnGoogle(albumName) {
+	let escaped = escapeGoogleSearchString(albumName);
+	window.open("https://www.google.com/search?q=" + escaped, "_blank")?.focus();
+}
+function searchImageOnGoogle(albumName) {
+	let escaped = escapeGoogleSearchString(albumName);
+	window.open("https://www.google.com/search?tbm=isch&q=" + escaped, "_blank")?.focus();
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/refs.ts
@@ -4646,7 +4657,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 		shadow.getElementById("btnSearchImage")?.addEventListener("click", () => {
 			let albumName = this.albumInfo?.album?.albumInfo?.name;
 			if (!albumName) return;
-			window.open("https://www.google.com/search?tbm=isch&q=" + albumName.replaceAll(" ", "+"), "_blank")?.focus();
+			searchImageOnGoogle(albumName);
 		});
 		shadow.getElementById("btnUploadImage")?.addEventListener("click", () => {
 			this.dispatchEboEvent("uploadAlbumImageClicked.eboplayer", {
@@ -5532,6 +5543,13 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 	static htmlText = `
         <div id="wrapper" class="flexColumn selectable">
             <p>Remembered</p>
+            <table id="rememberedTable">
+                <colgroup>
+                    <col span="1" style="width: auto;">
+                    <col span="1" style="width: 1em;">
+                </colgroup>
+                <tbody></tbody>
+            </table>       
         </div>        
         `;
 	get rememberedList() {
@@ -5556,20 +5574,34 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 	}
 	render(shadow) {}
 	update(shadow) {
-		let wrapper = shadow.getElementById("wrapper");
-		wrapper.innerHTML = "";
-		let table = document.createElement("table");
-		table.id = "rememberedTable";
-		let tbody = document.createElement("tbody");
-		table.appendChild(tbody);
+		let tbody = shadow.querySelector("tbody");
+		tbody.innerHTML = "";
 		for (let i = 0; i < this.rememberedList.length; i++) {
 			let tr = document.createElement("tr");
 			tbody.appendChild(tr);
 			let td = document.createElement("td");
 			tr.appendChild(td);
 			td.innerText = this.rememberedList[i];
+			let td2 = document.createElement("td");
+			tr.appendChild(td2);
+			td2.innerHTML = `
+                <ebo-menu-button>
+                    <div class="flexColumn">
+                        <button id="deleteRememberedBtn" class="roundBorder">Delete</button>
+                        <button id="deleteAllRememberedBtn" class="roundBorder">Delete all</button>
+                        <button id="googleRememberedBtn" class="roundBorder">Google</button>
+                    </div>
+                </ebo-menu-button>`;
+			td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {
+				console_yellow("deleteRememberedBtn");
+			});
+			td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {
+				console_yellow("deleteAllRememberedBtn");
+			});
+			td2.querySelector("#googleRememberedBtn")?.addEventListener("click", (ev) => {
+				searchOnGoogle(td.innerText);
+			});
 		}
-		wrapper.appendChild(table);
 	}
 };
 

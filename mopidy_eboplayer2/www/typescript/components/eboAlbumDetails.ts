@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {MouseTimer} from "../MouseTimer";
 import {AlbumUri, ExpandedAlbumModel} from "../modelTypes";
+import {searchImageOnGoogle} from "../global";
 
 export class EboAlbumDetails extends EboComponent {
     get albumInfo(): ExpandedAlbumModel | null {
@@ -109,7 +109,7 @@ export class EboAlbumDetails extends EboComponent {
             if(!albumName)
                 return;
 
-            window.open("https://www.google.com/search?tbm=isch&q="+albumName.replaceAll(" ", "+"), '_blank')?.focus();
+            searchImageOnGoogle(albumName);
         });
         let btnUploadImage = shadow.getElementById("btnUploadImage");
         btnUploadImage?.addEventListener("click", () => {

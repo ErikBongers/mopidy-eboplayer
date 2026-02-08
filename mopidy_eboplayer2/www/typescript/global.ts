@@ -79,3 +79,30 @@ export function getDefaultImageUrl(refType: RefType, defaultImageUrl?: string): 
             unreachable(refType);
     }
 }
+
+function escapeGoogleSearchString(albumName: string) {
+    let escaped = albumName
+        .replaceAll("+", "%2B")
+        .replaceAll("\n", "+")
+        .replaceAll(" ", "+")
+        .replaceAll("'", "%27")
+        .replaceAll("&", "%26")
+        .replaceAll("(", "%28")
+        .replaceAll(")", "%29")
+        .replaceAll(":", "%3A")
+        .replaceAll("!", "%21")
+        .replaceAll("?", "%3F")
+        .replaceAll("|", "%7C")
+        .replaceAll("=", "%3D");
+    return escaped;
+}
+
+export function searchOnGoogle(albumName: string) {
+    let escaped = escapeGoogleSearchString(albumName);
+    window.open("https://www.google.com/search?q=" + escaped, '_blank')?.focus();
+}
+
+export function searchImageOnGoogle(albumName: string) {
+    let escaped = escapeGoogleSearchString(albumName);
+    window.open("https://www.google.com/search?tbm=isch&q=" + escaped, '_blank')?.focus();
+}
