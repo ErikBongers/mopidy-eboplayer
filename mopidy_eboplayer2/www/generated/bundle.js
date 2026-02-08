@@ -850,6 +850,7 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["Album"] = "#Album";
 	Views$1["Settings"] = "#Settings";
 	Views$1["WhatsNew"] = "#WhatsNew";
+	Views$1["Remembered"] = "#Remembered";
 	return Views$1;
 }({});
 let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
@@ -3310,7 +3311,20 @@ var MainView = class extends View {
 		let view = this.state.getModel().getView();
 		await this.showView(view);
 	}
+	hashToViewId(hash) {
+		switch (hash) {
+			case Views.NowPlaying: return "currentTrackBigView";
+			case Views.Browse: return "browseView";
+			case Views.WhatsNew: return "browseView";
+			case Views.Remembered: return "rememberedView";
+			case Views.Album: return "bigAlbumView";
+			case Views.Settings: return "settingsView";
+			default: return unreachable(hash);
+		}
+	}
 	async showView(view) {
+		document.querySelectorAll(".fullView").forEach((v) => v.classList.remove("shownView"));
+		document.getElementById(this.hashToViewId(view)).classList.add("shownView");
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let layout = document.getElementById("layout");
 		let prevViewClass = [...layout.classList].filter((c) => [
@@ -3318,27 +3332,26 @@ var MainView = class extends View {
 			"bigAlbum",
 			"bigTrack"
 		].includes(c))[0];
-		layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
 		let resultsDisplayMode = "line";
+		layout.classList.remove("showFullView");
 		switch (view) {
 			case Views.WhatsNew:
 				await this.state.getController().setWhatsNewFilter();
 				resultsDisplayMode = "icon";
+				layout.classList.add("showFullView");
 			case Views.Browse:
-				layout.classList.add("browse");
 				location.hash = view;
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
 				this.browseView.updateCompFromState(resultsDisplayMode);
+				layout.classList.add("showFullView");
 				break;
 			case Views.NowPlaying:
-				layout.classList.add("bigTrack");
 				location.hash = "";
 				browseBtn.dataset.goto = Views.Browse;
 				browseBtn.title = "Search";
 				break;
 			case Views.Album:
-				layout.classList.add("bigAlbum");
 				location.hash = Views.Album;
 				if (prevViewClass == "browse") {
 					browseBtn.dataset.goto = Views.Browse;
@@ -3349,12 +3362,19 @@ var MainView = class extends View {
 				}
 				let albumComp = document.getElementById("bigAlbumView");
 				albumComp.btn_states = this.getListButtonStates(view);
+				layout.classList.add("showFullView");
 				break;
 			case Views.Settings:
-				layout.classList.add("settings");
 				location.hash = Views.Settings;
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
+				layout.classList.add("showFullView");
+				break;
+			case Views.Remembered:
+				location.hash = Views.Remembered;
+				browseBtn.dataset.goto = Views.NowPlaying;
+				browseBtn.title = "Now playing";
+				layout.classList.add("showFullView");
 				break;
 			default: return unreachable(view);
 		}

@@ -9,7 +9,7 @@ import {EboSettingsComp} from "../components/eboSettingsComp";
 import {BrowseView} from "./browseView";
 import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
-import { State } from "../playerState";
+import {State} from "../playerState";
 
 export class MainView extends View {
     private browseView: BrowseView;
@@ -113,32 +113,54 @@ export class MainView extends View {
         await this.showView(view);
     }
 
+    private hashToViewId(hash: Views): string {
+        switch (hash) {
+            case Views.NowPlaying:
+                return "currentTrackBigView";
+            case Views.Browse:
+                return "browseView";
+            case Views.WhatsNew:
+                return "browseView"; //note this one!
+            case Views.Remembered:
+                return "rememberedView";
+            case Views.Album:
+                return "bigAlbumView";
+            case Views.Settings:
+                return "settingsView";
+            default:
+                return unreachable(hash);
+        }
+    }
+
     private async showView(view: Views) {
+        let fullViews = document.querySelectorAll(".fullView");
+        fullViews.forEach(v => v.classList.remove("shownView"));
+        let currentView = document.getElementById(this.hashToViewId(view)) as HTMLElement;
+        currentView.classList.add("shownView");
         let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
         let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
-        layout.classList.remove("browse", "bigAlbum", "bigTrack", "settings");
         let resultsDisplayMode: DisplayMode = "line"; //todo: get from model.
+        layout.classList.remove("showFullView");
         switch (view) {
             case Views.WhatsNew:
                 await this.state.getController().setWhatsNewFilter();
                 resultsDisplayMode = "icon";
+                layout.classList.add("showFullView");
                 //fall through
             case Views.Browse:
-                layout.classList.add("browse");
                 location.hash = view;
                 browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
                 this.browseView.updateCompFromState(resultsDisplayMode);
+                layout.classList.add("showFullView");
                 break;
             case Views.NowPlaying:
-                layout.classList.add("bigTrack");
                 location.hash = ""; //default = now playing
                 browseBtn.dataset.goto = Views.Browse;
                 browseBtn.title = "Search";
                 break;
             case Views.Album:
-                layout.classList.add("bigAlbum");
                 location.hash = Views.Album;
                 if(prevViewClass == "browse") { //Provide some navigation back.
                     browseBtn.dataset.goto = Views.Browse;
@@ -149,12 +171,19 @@ export class MainView extends View {
                 }
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.btn_states = this.getListButtonStates(view);
+                layout.classList.add("showFullView");
                 break;
             case Views.Settings:
-                layout.classList.add("settings");
                 location.hash = Views.Settings;
                 browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
+                layout.classList.add("showFullView");
+                break;
+            case Views.Remembered:
+                location.hash = Views.Remembered;
+                browseBtn.dataset.goto = Views.NowPlaying;
+                browseBtn.title = "Now playing";
+                layout.classList.add("showFullView");
                 break;
             default:
                 return unreachable(view);

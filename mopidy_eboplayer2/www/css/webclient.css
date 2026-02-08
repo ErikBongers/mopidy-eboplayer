@@ -46,53 +46,19 @@ button, input {
     margin-bottom: 1em;
 }
 
+.fullView {
+    width: 100%;
+}
+
 #topContent {
     flex: 1;
     display: flex;
     overflow: hidden;
-    .browse &{
-         ebo-big-track-view {
-             display: none;
-         }
-        ebo-big-album-view {
-            display: none;
-        }
-        ebo-settings-view {
-            display: none;
-        }
+    & > .fullView {
+        display: none;
     }
-    .bigTrack &{
-        ebo-browse-view {
-            display: none;
-        }
-        ebo-big-album-view {
-            display: none;
-        }
-        ebo-settings-view {
-            display: none;
-        }
-    }
-    .bigAlbum &{
-        ebo-browse-view {
-            display: none;
-        }
-        ebo-big-track-view {
-            display: none;
-        }
-        ebo-settings-view {
-            display: none;
-        }
-    }
-    .settings &{
-        ebo-browse-view {
-            display: none;
-        }
-        ebo-big-track-view {
-            display: none;
-        }
-        ebo-big-album-view {
-            display: none;
-        }
+    & > .fullView.shownView {
+        display: flex;
     }
 }
 
@@ -101,8 +67,7 @@ button, input {
     flex-flow: column;
     height: 100%;
 
-    &.browse,
-    &.bigAlbum
+    &.showFullView
     {
         #stickyTop {
             height: 100vh;
