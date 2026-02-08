@@ -1,4 +1,4 @@
-import {AlbumMetaData, AlbumUri, AllUris, GenreDef, HistoryLineDef, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
+import {AlbumMetaData, AlbumUri, AllUris, GenreDef, HistoryLineDef, RememberDef, RememberId, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
 import {ExpandedRef} from "../refs";
 
 export type AlbumMetaDict = {[uri: AlbumUri]: AlbumMetaData};
@@ -80,10 +80,16 @@ export class WebProxy {
         return await res.json();
     }
 
+    async deleteRemember(id: RememberId) {
+        let url = this.ebobackUrl(`delete_remember`);
+        let res = await fetch(url, {method: 'POST', body: id});
+        return await res.json();
+    }
+
     async fetchRemembers() {
         let url = this.ebobackUrl(`get_remembers`);
         let res = await fetch(url);
-        return await res.json() as string[];
+        return await res.json() as RememberDef[];
     }
 
     async fetchHistory() {

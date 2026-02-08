@@ -1622,6 +1622,13 @@ var WebProxy = class {
 			body: text
 		})).json();
 	}
+	async deleteRemember(id) {
+		let url = this.ebobackUrl(`delete_remember`);
+		return await (await fetch(url, {
+			method: "POST",
+			body: id
+		})).json();
+	}
 	async fetchRemembers() {
 		let url = this.ebobackUrl(`get_remembers`);
 		return await (await fetch(url)).json();
@@ -1962,12 +1969,12 @@ var Controller = class extends Commands {
 		let track = await this.lookupTrackCached(trackUri);
 		if (track?.type == "stream") {
 			let streamLines = await this.fetchStreamLines(trackUri);
-			let remembers = await this.lookupRemembersCached();
+			let rememberStrings = (await this.lookupRemembersCached()).map((r) => r.text);
 			let expandedStreamLines = streamLines.map((lines) => {
 				let lineStr = lines.join("\n");
 				return {
 					lines,
-					remembered: remembers.includes(lineStr)
+					remembered: rememberStrings.includes(lineStr)
 				};
 			});
 			return new ExpandedStreamModel(track, expandedStreamLines);
@@ -2092,6 +2099,7 @@ var Controller = class extends Commands {
 	}
 	async remember(s) {
 		await this.webProxy.remember(s);
+		this.model.setRemembers(null);
 	}
 	async startScan() {
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
@@ -2124,6 +2132,10 @@ var Controller = class extends Commands {
 		let remembers = await this.webProxy.fetchRemembers();
 		this.model.setRemembers(remembers);
 		return this.model.getRemembers();
+	}
+	async deleteRemember(id) {
+		await this.webProxy.deleteRemember(id);
+		this.model.setRemembers(null);
 	}
 };
 
@@ -5576,12 +5588,13 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 	update(shadow) {
 		let tbody = shadow.querySelector("tbody");
 		tbody.innerHTML = "";
-		for (let i = 0; i < this.rememberedList.length; i++) {
+		for (let remembered of this.rememberedList) {
 			let tr = document.createElement("tr");
 			tbody.appendChild(tr);
 			let td = document.createElement("td");
 			tr.appendChild(td);
-			td.innerText = this.rememberedList[i];
+			td.innerText = remembered.text;
+			td.dataset.id = remembered.id;
 			let td2 = document.createElement("td");
 			tr.appendChild(td2);
 			td2.innerHTML = `
@@ -5593,7 +5606,7 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
                     </div>
                 </ebo-menu-button>`;
 			td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {
-				console_yellow("deleteRememberedBtn");
+				this.dispatchEboEvent("deleteRemember.eboplayer", { "id": remembered.id });
 			});
 			td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {
 				console_yellow("deleteAllRememberedBtn");
@@ -5614,6 +5627,9 @@ var RememberedView = class extends ComponentView {
 	bind() {
 		this.state.getModel().addEboEventListener("remembersChanged.eboplayer", async () => {
 			this.component.rememberedList = await this.state.getController().getRemembersCached();
+		});
+		this.component.addEboEventListener("deleteRemember.eboplayer", async (ev) => {
+			await this.state.getController().deleteRemember(ev.detail.id);
 		});
 	}
 	getRequiredDataTypes() {

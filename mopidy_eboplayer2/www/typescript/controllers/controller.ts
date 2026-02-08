@@ -6,7 +6,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
 import {createAllRefs, ExpandedRef, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberDef, RememberId, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -420,11 +420,12 @@ export class Controller extends Commands implements DataRequester{
         if(track?.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
             let remembers = await this.lookupRemembersCached(); //todo: put this in a pre-fetch
+            let rememberStrings = remembers.map(r => r.text);
             let expandedStreamLines = streamLines.map(lines => {
                 let lineStr = lines.join("\n");
                 let expandedLineGroup: ExpandedHistoryLineGroup = {
                     lines,
-                    remembered: remembers.includes(lineStr)
+                    remembered: rememberStrings.includes(lineStr)
                 };
                 return expandedLineGroup;
             });
@@ -590,6 +591,7 @@ export class Controller extends Commands implements DataRequester{
 
     async remember(s: string) {
         let _status = await this.webProxy.remember(s);
+        this.model.setRemembers(null);
     }
 
     async startScan() {
@@ -625,9 +627,14 @@ export class Controller extends Commands implements DataRequester{
 
     async getRemembersCached() {
         if(this.model.getRemembers())
-            return this.model.getRemembers() as string[];
+            return this.model.getRemembers() as RememberDef[];
         let remembers = await this.webProxy.fetchRemembers();
         this.model.setRemembers(remembers);
-        return this.model.getRemembers() as string[]; //todo: this triggers the rememberedChanged event, which may already be a reason for this chached function call. Maybe this is ok...
+        return this.model.getRemembers() as RememberDef[]; //todo: this triggers the rememberedChanged event, which may already be a reason for this chached function call. Maybe this is ok...
+    }
+
+    async deleteRemember(id: RememberId) {
+        await this.webProxy.deleteRemember(id);
+        this.model.setRemembers(null);
     }
 }

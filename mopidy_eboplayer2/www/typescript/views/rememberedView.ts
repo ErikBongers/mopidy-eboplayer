@@ -12,6 +12,9 @@ export class RememberedView extends ComponentView<EboRememberedComp>{
         this.state.getModel().addEboEventListener("remembersChanged.eboplayer", async () => {
             this.component.rememberedList = await this.state.getController().getRemembersCached();
         });
+        this.component.addEboEventListener("deleteRemember.eboplayer", async (ev) => {
+            await this.state.getController().deleteRemember(ev.detail.id);
+        });
 
     }
 

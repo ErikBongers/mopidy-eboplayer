@@ -1,4 +1,4 @@
-import {AlbumUri, AllUris, TrackUri} from "./modelTypes";
+import {AlbumUri, AllUris, RememberId, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
 
@@ -13,6 +13,7 @@ export interface EboEventHandlersEventMap {
     "rememberedRequested.eboplayer"             : VoidArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
+    "deleteRemember.eboplayer"                  : RemeberIdArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
     "displayModeChanged.eboplayer"              : DisplayModeArgs,
@@ -86,6 +87,10 @@ export type VoidArgs = {
 
 export interface StreamLinesArgs extends EboEventArgs {
     lines: string[]
+}
+
+export interface RemeberIdArgs extends EboEventArgs {
+    id: RememberId
 }
 
 export interface UriArgs extends EboEventArgs {

@@ -9,6 +9,13 @@ import Artist = models.Artist;
 
 declare const __brand: unique symbol;
 
+export type RememberId = Branded<string, "RememberId">;
+
+export interface RememberDef {
+    id: RememberId,
+    text: string,
+}
+
 export type AlbumUri = Branded<string, "AlbumUri">;
 export type TrackUri = Branded<string, "TrackUri">;
 export type RadioUri = Branded<string, "RadioUri">;

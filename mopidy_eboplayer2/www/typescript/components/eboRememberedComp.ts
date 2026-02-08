@@ -1,6 +1,8 @@
 import {EboComponent} from "./EboComponent";
 import {console_yellow, searchImageOnGoogle, searchOnGoogle} from "../global";
 import {EboButton} from "./eboButton";
+import {RemeberIdArgs} from "../events";
+import {RememberDef} from "../modelTypes";
 
 export class EboRememberedComp extends EboComponent {
     static override readonly tagName=  "ebo-remembered-view";
@@ -28,15 +30,15 @@ export class EboRememberedComp extends EboComponent {
         </div>        
         `;
 
-    get rememberedList(): string[] {
+    get rememberedList(): RememberDef[] {
         return this._rememberedList;
     }
 
-    set rememberedList(value: string[]) {
+    set rememberedList(value: RememberDef[]) {
         this._rememberedList = value;
         this.update(this.shadow);
     }
-    private _rememberedList: string [];
+    private _rememberedList: RememberDef[];
 
     constructor() {
         super(EboRememberedComp.styleText, EboRememberedComp.htmlText);
@@ -59,12 +61,13 @@ export class EboRememberedComp extends EboComponent {
     override update(shadow:ShadowRoot) {
         let tbody = shadow.querySelector("tbody") as HTMLTableSectionElement;
         tbody.innerHTML = "";
-        for(let i=0; i<this.rememberedList.length; i++) {
+        for (let remembered of this.rememberedList) {
             let tr = document.createElement("tr");
             tbody.appendChild(tr);
             let td = document.createElement("td");
             tr.appendChild(td);
-            td.innerText = this.rememberedList[i];
+            td.innerText = remembered.text;
+            td.dataset.id = remembered.id;
             let td2 = document.createElement("td");
             tr.appendChild(td2);
             td2.innerHTML = `
@@ -76,7 +79,7 @@ export class EboRememberedComp extends EboComponent {
                     </div>
                 </ebo-menu-button>`;
             td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {
-                console_yellow("deleteRememberedBtn");
+                this.dispatchEboEvent("deleteRemember.eboplayer", {"id": remembered.id})
             });
             td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {
                 console_yellow("deleteAllRememberedBtn");
@@ -84,7 +87,6 @@ export class EboRememberedComp extends EboComponent {
             td2.querySelector("#googleRememberedBtn")?.addEventListener("click", (ev) => {
                 searchOnGoogle(td.innerText);
             });
-
         }
     }
 }
