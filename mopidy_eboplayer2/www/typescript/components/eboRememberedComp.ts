@@ -16,7 +16,7 @@ export class EboRememberedComp extends EboComponent {
 
     // noinspection HtmlUnknownTarget
     static htmlText = `
-        <div id="wrapper" class="flexColumn">
+        <div id="wrapper" class="flexColumn selectable">
             <p>Remembered</p>
         </div>        
         `;
@@ -51,6 +51,7 @@ export class EboRememberedComp extends EboComponent {
 
     override update(shadow:ShadowRoot) {
         let wrapper = shadow.getElementById("wrapper") as HTMLElement;
+        wrapper.innerHTML = "";
         let table = document.createElement("table");
         table.id = "rememberedTable";
         let tbody = document.createElement("tbody");

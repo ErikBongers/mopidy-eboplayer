@@ -5530,7 +5530,7 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
         </style>
         `;
 	static htmlText = `
-        <div id="wrapper" class="flexColumn">
+        <div id="wrapper" class="flexColumn selectable">
             <p>Remembered</p>
         </div>        
         `;
@@ -5557,6 +5557,7 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 	render(shadow) {}
 	update(shadow) {
 		let wrapper = shadow.getElementById("wrapper");
+		wrapper.innerHTML = "";
 		let table = document.createElement("table");
 		table.id = "rememberedTable";
 		let tbody = document.createElement("tbody");
