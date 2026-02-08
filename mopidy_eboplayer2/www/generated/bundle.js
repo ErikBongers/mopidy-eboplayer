@@ -2842,6 +2842,9 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
 			this.onProgramTitleChanged();
 		});
+		document.getElementById(this.componentId).addEboEventListener("rememberedRequested.eboplayer", () => {
+			console_yellow("todo: show remembers");
+		});
 	}
 	async onCurrentOrSelectedChanged() {
 		let currentTrackUri = this.state.getModel().getCurrentTrack();
@@ -4716,6 +4719,9 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
                         <tbody>
                         </tbody>                
                     </table>
+                    <div id="tableFooter">
+                        <button class="roundBorder">Remembered items</button>                                            
+                    </div>
                 </div>          
             </div>
             <dialog popover id="albumTrackPopup">
@@ -4723,6 +4729,11 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
         `;
 	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
 		this.requestUpdate();
+	}
+	async render(shadow) {
+		shadow.getElementById("tableFooter").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
+		});
 	}
 	update(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];

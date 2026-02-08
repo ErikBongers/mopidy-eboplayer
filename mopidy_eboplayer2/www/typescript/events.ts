@@ -10,6 +10,7 @@ export interface EboEventHandlersEventMap {
     "scanRequested.eboplayer"                   : VoidArgs,
     "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
     "updateAlbumData.eboplayer"                 : UriArgs,
+    "rememberedRequested.eboplayer"             : VoidArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,

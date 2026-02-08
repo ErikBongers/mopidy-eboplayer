@@ -2,6 +2,7 @@ import {ComponentViewAdapter} from "./componentViewAdapter";
 import {EboPlayerDataType, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
 import EboBigTrackComp from "../components/eboBigTrackComp";
 import { State } from "../playerState";
+import {console_yellow} from "../global";
 
 export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
     private streamLines: string;
@@ -26,6 +27,10 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         });
         this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
+        });
+        let comp = document.getElementById(this.componentId) as EboBigTrackComp;
+        comp.addEboEventListener("rememberedRequested.eboplayer", () => {
+            console_yellow("todo: show remembers");
         });
     }
 

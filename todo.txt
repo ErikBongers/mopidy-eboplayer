@@ -1,3 +1,10 @@
+* Add a Remembered view
+  > under a Radio's streamlines: button "Show all remembered"
+    > view where?
+      > full screen view, so it's clear this is not just for the current track.
+
+* Add repeat.
+
 * Set Genre
   > Standard genres: from wiki
     > store internally.
@@ -7,18 +14,6 @@
   > 30?
     > 20 on phone, 30 or more on desktop.
   > only expand those results!!!
-
-* Search/browse works on ALL data.
-  > move it to server?
-  > pre-fetch a very limited search results dataset?
-  > what is needed?
-    - all refs with
-      - uri
-      - name
-      - date
-
-* Add a Remembered view
-  > accessible via big stream, but also via...settings, browse??
 
 * Add google search on as much as possible
 * See if we can get rid of bigTrackView

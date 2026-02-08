@@ -67,6 +67,9 @@ export class EboRadioDetailsComp extends EboComponent {
                         <tbody>
                         </tbody>                
                     </table>
+                    <div id="tableFooter">
+                        <button class="roundBorder">Remembered items</button>                                            
+                    </div>
                 </div>          
             </div>
             <dialog popover id="albumTrackPopup">
@@ -77,6 +80,13 @@ export class EboRadioDetailsComp extends EboComponent {
     attributeReallyChangedCallback(_name: string, _oldValue: string, _newValue: string) {
         this.requestUpdate();
         }
+
+    override async render(shadow:ShadowRoot) {
+        let tableFooter = shadow.getElementById("tableFooter") as HTMLDivElement;
+        tableFooter.addEventListener("click", (ev) => {
+            this.dispatchEboEvent("rememberedRequested.eboplayer", {});
+        })
+    }
 
     override update(shadow:ShadowRoot) {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
