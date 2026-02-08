@@ -1680,9 +1680,9 @@ var Controller = class extends Commands {
 		await this.fetchRefsForCurrentBreadCrumbs();
 		await this.filterBrowseResults();
 		await this.getGenreDefsCached();
+		await this.getRemembersCached();
 	}
 	initialize(views) {
-		views.forEach((v) => v.bindRecursive());
 		this.mopidy.on("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
 			await this.getRequiredData(views);
@@ -2104,6 +2104,12 @@ var Controller = class extends Commands {
 			model.title = decodeURI(parts[parts.length - 1]);
 		}
 		return model;
+	}
+	async getRemembersCached() {
+		if (this.model.getRemembers()) return this.model.getRemembers();
+		let remembers = await this.webProxy.fetchRemembers();
+		this.model.setRemembers(remembers);
+		return this.model.getRemembers();
 	}
 };
 
@@ -5504,6 +5510,77 @@ var State = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboRememberedComp.ts
+var EboRememberedComp = class EboRememberedComp extends EboComponent {
+	static tagName = "ebo-remembered-view";
+	static observedAttributes = [""];
+	static styleText = `
+        <style>
+        #rememberedTable tr {
+            background-color: #ffffff25;
+        }
+        </style>
+        `;
+	static htmlText = `
+        <div id="wrapper" class="flexColumn">
+            <p>Remembered</p>
+        </div>        
+        `;
+	get rememberedList() {
+		return this._rememberedList;
+	}
+	set rememberedList(value) {
+		this._rememberedList = value;
+		this.update(this.shadow);
+	}
+	_rememberedList;
+	constructor() {
+		super(EboRememberedComp.styleText, EboRememberedComp.htmlText);
+		this._rememberedList = [];
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		switch (name) {
+			case "nada":
+				this.updateBoolProperty(name, newValue);
+				break;
+		}
+		this.requestUpdate();
+	}
+	render(shadow) {}
+	update(shadow) {
+		let wrapper = shadow.getElementById("wrapper");
+		let table = document.createElement("table");
+		table.id = "rememberedTable";
+		let tbody = document.createElement("tbody");
+		table.appendChild(tbody);
+		for (let i = 0; i < this.rememberedList.length; i++) {
+			let tr = document.createElement("tr");
+			tbody.appendChild(tr);
+			let td = document.createElement("td");
+			tr.appendChild(td);
+			td.innerText = this.rememberedList[i];
+		}
+		wrapper.appendChild(table);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/rememberedView.ts
+var RememberedView = class extends ComponentView {
+	constructor(state, component) {
+		super(state, component);
+	}
+	bind() {
+		this.state.getModel().addEboEventListener("remembersChanged.eboplayer", async () => {
+			this.component.rememberedList = await this.state.getController().getRemembersCached();
+		});
+	}
+	getRequiredDataTypes() {
+		return [];
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5529,6 +5606,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboBrowseFilterComp);
 		EboComponent.define(EboSettingsComp);
 		EboComponent.define(EboListItemComp);
+		EboComponent.define(EboRememberedComp);
 		setupStuff();
 	});
 });
@@ -5552,13 +5630,17 @@ function setupStuff() {
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, "currentTrackBigView");
 	let buttonBarView = new PlayerBarView(state, "buttonBar", mainView);
 	let historyView = new TimelineView(state);
-	controller.initialize([
+	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));
+	let views = [
 		mainView,
 		headerView,
 		currentTrackView,
 		buttonBarView,
-		historyView
-	]);
+		historyView,
+		rememberedView
+	];
+	views.forEach((v) => v.bindRecursive());
+	controller.initialize(views);
 	if (location.hash == Views.Album) controller.setView(Views.NowPlaying);
 	else controller.setView(location.hash != "" ? location.hash : Views.NowPlaying);
 	mopidy.connect();

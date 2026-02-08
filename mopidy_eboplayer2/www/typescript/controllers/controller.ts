@@ -71,11 +71,10 @@ export class Controller extends Commands implements DataRequester{
         await this.fetchRefsForCurrentBreadCrumbs();
         await this.filterBrowseResults();
         await this.getGenreDefsCached();
+        await this.getRemembersCached();
     }
 
     initialize (views: View[]) {
-        views.forEach(v => v.bindRecursive());
-
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await this.getRequiredData(views);
@@ -622,5 +621,13 @@ export class Controller extends Commands implements DataRequester{
             model.title = decodeURI(parts[parts.length - 1])
         }
         return model;
+    }
+
+    async getRemembersCached() {
+        if(this.model.getRemembers())
+            return this.model.getRemembers() as string[];
+        let remembers = await this.webProxy.fetchRemembers();
+        this.model.setRemembers(remembers);
+        return this.model.getRemembers() as string[]; //todo: this triggers the rememberedChanged event, which may already be a reason for this chached function call. Maybe this is ok...
     }
 }

@@ -31,6 +31,8 @@ import {EboListItemComp} from "./components/eboListItemComp";
 import {BrowseView} from "./views/browseView";
 import {AlbumView} from "./views/albumView";
 import {State} from "./playerState";
+import {EboRememberedComp} from "./components/eboRememberedComp";
+import {RememberedView} from "./views/rememberedView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -65,6 +67,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboBrowseFilterComp);
             EboComponent.define(EboSettingsComp);
             EboComponent.define(EboListItemComp);
+            EboComponent.define(EboRememberedComp);
 
             setupStuff();
         });
@@ -103,8 +106,11 @@ function setupStuff() {
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state,"currentTrackBigView");
     let buttonBarView = new PlayerBarView(state, "buttonBar", mainView);
     let historyView = new TimelineView(state);
+    let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);
 
-    controller.initialize([mainView, headerView, currentTrackView, buttonBarView, historyView]);
+    let views = [mainView, headerView, currentTrackView, buttonBarView, historyView, rememberedView];
+    views.forEach(v => v.bindRecursive());
+    controller.initialize(views);
 
     if(location.hash == Views.Album)
         controller.setView(Views.NowPlaying);
