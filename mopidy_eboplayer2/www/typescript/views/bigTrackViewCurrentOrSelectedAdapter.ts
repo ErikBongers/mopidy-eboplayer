@@ -28,10 +28,6 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
         });
-        let comp = document.getElementById(this.componentId) as EboBigTrackComp;
-        comp.addEboEventListener("rememberedRequested.eboplayer", () => {
-            console_yellow("todo: show remembers");
-        });
     }
 
     private async onCurrentOrSelectedChanged() {

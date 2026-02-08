@@ -37,6 +37,7 @@ export class EboSettingsComp extends EboComponent {
     // noinspection HtmlUnknownTarget
     static htmlText = `
         <div id="wrapper" class="flexColumn">
+            <ebo-button id="rememberedBtn" class="roundBorder">Remembered info.</ebo-button>
             <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
@@ -65,6 +66,10 @@ export class EboSettingsComp extends EboComponent {
         let whatsNewBtn = shadow.getElementById("whatsNewBtn") as EboButton;
         whatsNewBtn.addEventListener("click", async (ev) => {
             this.dispatchEboEvent("whatsNewRequested.eboplayer", {});
+        });
+        let rememberedBtn = shadow.getElementById("rememberedBtn") as EboButton;
+        rememberedBtn.addEventListener("click", async (ev) => {
+            this.dispatchEboEvent("rememberedRequested.eboplayer", {});
         });
     }
 

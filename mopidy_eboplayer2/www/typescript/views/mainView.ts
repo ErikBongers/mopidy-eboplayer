@@ -10,6 +10,7 @@ import {BrowseView} from "./browseView";
 import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
 import {State} from "../playerState";
+import {addEboEventListener} from "../events";
 
 export class MainView extends View {
     private browseView: BrowseView;
@@ -69,6 +70,12 @@ export class MainView extends View {
             window.location.hash = "#WhatsNew";
             window.location.reload();
         });
+
+        let layout = document.getElementById("layout") as HTMLElement;
+        addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
+            this.state.getController().setView(Views.Remembered);
+        });
+
 
     }
 

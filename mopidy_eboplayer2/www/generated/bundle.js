@@ -879,6 +879,9 @@ var EboEventTargetClass = class extends EventTarget {
 		super.addEventListener(type, listener, options);
 	}
 };
+function addEboEventListener(target, type, listener, options) {
+	target.addEventListener(type, listener, options);
+}
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/model.ts
@@ -2849,9 +2852,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
 			this.onProgramTitleChanged();
 		});
-		document.getElementById(this.componentId).addEboEventListener("rememberedRequested.eboplayer", () => {
-			console_yellow("todo: show remembers");
-		});
 	}
 	async onCurrentOrSelectedChanged() {
 		let currentTrackUri = this.state.getModel().getCurrentTrack();
@@ -3279,6 +3279,10 @@ var MainView = class extends View {
 		settingsComp.addEboEventListener("whatsNewRequested.eboplayer", () => {
 			window.location.hash = "#WhatsNew";
 			window.location.reload();
+		});
+		let layout = document.getElementById("layout");
+		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
+			this.state.getController().setView(Views.Remembered);
 		});
 	}
 	getListButtonStates(currentView) {
@@ -5094,6 +5098,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
         `;
 	static htmlText = `
         <div id="wrapper" class="flexColumn">
+            <ebo-button id="rememberedBtn" class="roundBorder">Remembered info.</ebo-button>
             <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
@@ -5116,6 +5121,9 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		});
 		shadow.getElementById("whatsNewBtn").addEventListener("click", async (ev) => {
 			this.dispatchEboEvent("whatsNewRequested.eboplayer", {});
+		});
+		shadow.getElementById("rememberedBtn").addEventListener("click", async (ev) => {
+			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
 		});
 	}
 	update(shadow) {
