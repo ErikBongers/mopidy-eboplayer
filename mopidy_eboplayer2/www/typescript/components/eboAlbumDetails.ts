@@ -60,7 +60,7 @@ export class EboAlbumDetails extends EboComponent {
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
-                            <img src="/images/icons/Google_Favicon_2025.svg" 
+                            <img src="images/icons/Google_Favicon_2025.svg" 
                                 alt="Search" 
                                 style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
                             Image

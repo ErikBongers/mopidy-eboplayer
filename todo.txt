@@ -1,3 +1,8 @@
+* Album details: artist is from selected/current track, not the viewed album.
+* go from album to artist.
+  > replace the current breadcrumb/browse filter.
+  > the artist's uri is available. Use that for search? Or plain text?
+
 * get rid of requiredData.
   > remove views from controller.init.
 
