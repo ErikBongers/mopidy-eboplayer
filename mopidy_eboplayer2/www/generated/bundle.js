@@ -2137,6 +2137,11 @@ var Controller = class extends Commands {
 		await this.webProxy.deleteRemember(id);
 		this.model.setRemembers(null);
 	}
+	async browseToArtist(args) {
+		await this.clearBreadCrumbs();
+		await this.diveIntoBrowseResult(args.name, args.uri, args.type, false);
+		this.setView(Views.Browse);
+	}
 };
 
 //#endregion
@@ -4690,7 +4695,11 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let genreDefs = await this.albumInfo.getGenres();
 			body.innerHTML = "";
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
-			this.addMetaDataRow(body, "Artists:", artists.map((artist) => artist.name).join(", "));
+			this.addMetaDataRow(body, "Artists:", artists.map((artist) => {
+				return ` 
+                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+                `;
+			}).join(" "));
 			this.addMetaDataRow(body, "Composers:", composers.map((artist) => artist.name).join(","));
 			let genresHtml = "";
 			genreDefs.forEach((def) => {
@@ -4700,6 +4709,15 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			});
 			this.addMetaDataRow(body, "Genre", genresHtml);
 			this.addMetaDataRow(body, "Playlists", "todo...");
+			body.querySelectorAll(".linkButton").forEach((link) => {
+				link.addEventListener("click", (ev) => {
+					this.dispatchEboEvent("browseToArtist.eboplayer", {
+						"name": ev.target.textContent,
+						"type": "artist",
+						"uri": link.dataset.uri
+					});
+				});
+			});
 		}
 	}
 	addMetaDataRow(body, colText1, colText2) {
@@ -5464,6 +5482,9 @@ var AlbumView = class extends ComponentView {
 		});
 		this.component.addEboEventListener("uploadAlbumImageClicked.eboplayer", async (ev) => {
 			await this.state.getController().webProxy.uploadAlbumImages(ev.detail.albumUri, ev.detail.imageUrl);
+		});
+		this.component.addEboEventListener("browseToArtist.eboplayer", async (ev) => {
+			await this.state.getController().browseToArtist(ev.detail);
 		});
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {

@@ -11,6 +11,7 @@ import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {View} from "../views/view";
+import {RefArgs} from "../events";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
@@ -636,5 +637,11 @@ export class Controller extends Commands implements DataRequester{
     async deleteRemember(id: RememberId) {
         await this.webProxy.deleteRemember(id);
         this.model.setRemembers(null);
+    }
+
+    async browseToArtist(args: RefArgs) {
+        await this.clearBreadCrumbs();
+        await this.diveIntoBrowseResult(args.name, args.uri, args.type, false);
+        this.setView(Views.Browse);
     }
 }

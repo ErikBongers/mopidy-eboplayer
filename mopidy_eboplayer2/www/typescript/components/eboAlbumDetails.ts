@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumUri, ExpandedAlbumModel} from "../modelTypes";
-import {searchImageOnGoogle} from "../global";
+import {AlbumUri, ArtistUri, ExpandedAlbumModel} from "../modelTypes";
+import {console_yellow, searchImageOnGoogle} from "../global";
 
 export class EboAlbumDetails extends EboComponent {
     get albumInfo(): ExpandedAlbumModel | null {
@@ -132,7 +132,11 @@ export class EboAlbumDetails extends EboComponent {
             //do the `await`s first before clearing and filling, to avoid data races! (double lines)
             body.innerHTML = "";
             this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
-            this.addMetaDataRow(body, "Artists:", artists.map(artist => artist.name).join(", "));
+            this.addMetaDataRow(body, "Artists:", artists.map(artist => {
+                return ` 
+                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+                `
+            }).join(" "));
             this.addMetaDataRow(body, "Composers:", composers.map(artist => artist.name).join(","));
             let genresHtml = "";
             genreDefs.forEach(def => {
@@ -143,6 +147,11 @@ export class EboAlbumDetails extends EboComponent {
             });
             this.addMetaDataRow(body, "Genre", genresHtml);
             this.addMetaDataRow(body, "Playlists", "todo...");
+            body.querySelectorAll(".linkButton").forEach((link: HTMLElement) => {
+                link.addEventListener("click", (ev) => {
+                    this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
+                })
+            })
         }
     }
 

@@ -107,3 +107,19 @@ input {
 .hidden {
     display: none;
 }
+
+.linkButton {
+    background: none!important;
+    border: none;
+    padding: 0!important;
+    /*optional*/
+    font-family: arial, sans-serif;
+    /*input has OS specific font-family*/
+    color: #4db2e4ff;
+    text-decoration: underline;
+    text-decoration-color: #4db2e488;
+    cursor: pointer;
+    &:hover {
+        text-decoration-color: #4db2e4ff;
+    }
+}

@@ -1,6 +1,7 @@
 import {AlbumUri, AllUris, RememberId, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
+import {RefType} from "./refs";
 
 export interface EboEventHandlersEventMap {
     "remembersChanged.eboplayer"                : VoidArgs,
@@ -10,6 +11,7 @@ export interface EboEventHandlersEventMap {
     "scanRequested.eboplayer"                   : VoidArgs,
     "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
     "updateAlbumData.eboplayer"                 : UriArgs,
+    "browseToArtist.eboplayer"                  : RefArgs,
     "rememberedRequested.eboplayer"             : VoidArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
@@ -95,6 +97,12 @@ export interface RemeberIdArgs extends EboEventArgs {
 
 export interface UriArgs extends EboEventArgs {
     uri: AllUris
+}
+
+export interface RefArgs extends EboEventArgs {
+    name: string; //todo: use pre-existing type instead of these 3 fields?
+    type: RefType;
+    uri: AllUris;
 }
 
 export interface AlbumImageUrlArgs extends EboEventArgs {
