@@ -803,7 +803,12 @@ var ExpandedAlbumModel = class {
 		return getDefaultImageUrl(this.album.ref.refType);
 	}
 	async getTrackModels() {
-		return await Promise.all(this.album.tracks.map((trackUri) => this.controller.lookupTrackCached(trackUri)));
+		let trackModels = [];
+		for (let trackUri of this.album.tracks) {
+			let model = await this.controller.lookupTrackCached(trackUri);
+			if (model) trackModels.push(model);
+		}
+		return trackModels;
 	}
 	async getGenres() {
 		let trackModels = await this.getTrackModels();
@@ -821,6 +826,20 @@ var ExpandedAlbumModel = class {
 		let artistMap = /* @__PURE__ */ new Map();
 		trackModels.map((track) => track.track.composers ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
 		return [...artistMap.values()];
+	}
+	async getAllDetails() {
+		let all = await Promise.all([
+			this.getTrackModels(),
+			this.getArtists(),
+			this.getComposers(),
+			this.getGenres()
+		]);
+		return {
+			tracks: all[0],
+			artists: all[1],
+			composers: all[2],
+			genreDefs: all[3]
+		};
 	}
 };
 function isInstanceOfExpandedStreamModel(model) {
@@ -4690,12 +4709,12 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let imgTag = shadow.getElementById("bigImage");
 			imgTag.src = this.albumInfo.bigImageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
-			let artists = await this.albumInfo.getArtists();
-			let composers = await this.albumInfo.getComposers();
-			let genreDefs = await this.albumInfo.getGenres();
+			let { artists, composers, genreDefs } = await this.albumInfo.getAllDetails();
+			console_yellow(`Artists: ${artists.map((artist) => artist.name).join(",")}`);
 			body.innerHTML = "";
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
 			this.addMetaDataRow(body, "Artists:", artists.map((artist) => {
+				console_yellow(`Adding button for artist: ${artist.name}`);
 				return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `;

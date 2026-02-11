@@ -203,7 +203,13 @@ export class ExpandedAlbumModel {
     }
 
     async getTrackModels() {
-        return await Promise.all(this.album.tracks.map(trackUri => this.controller.lookupTrackCached(trackUri) as Promise<FileTrackModel>));
+        let trackModels: FileTrackModel[] = [];
+        for(let trackUri of this.album.tracks) {
+            let model = await this.controller.lookupTrackCached(trackUri);
+            if(model)
+                trackModels.push(model as FileTrackModel);
+        }
+        return trackModels;
     }
 
     async getGenres(): Promise<GenreDef[]> {
@@ -234,6 +240,12 @@ export class ExpandedAlbumModel {
             .flat()
             .forEach(artist => artistMap.set(artist.name, artist));
         return [...artistMap.values()]
+    }
+
+    /// using this function forces all data to be collected in one 'transaction', avoiding a race condition in between async calls.
+    async getAllDetails() {
+        let all = await Promise.all([this.getTrackModels(), this.getArtists(), this.getComposers(), this.getGenres()]);
+        return {tracks: all[0], artists: all[1], composers: all[2], genreDefs: all[3]};
     }
 }
 
