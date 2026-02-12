@@ -1,27 +1,15 @@
 import {Model} from "../model";
 import {Commands} from "../commands";
 import models, {core, Mopidy} from "../../js/mopidy";
-import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
-import {createAllRefs, ExpandedRef, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberDef, RememberId, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
-import {JsonRpcController} from "../jsonRpcController";
+import {createAllRefs, ExpandedRef} from "../refs";
+import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreDef, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
-import {View} from "../views/view";
-import {RefArgs} from "../events";
-import TlTrack = models.TlTrack;
 import Ref = models.Ref;
-import Playlist = models.Playlist;
-import PlaybackState = core.PlaybackState;
 
-export const LIBRARY_PROTOCOL = "eboback:";
-
-//The controller updates the model and has functions called by the views.
-//The controller does not update the views directly.
-//The controller should not listen to model events, to avoid circular updates (dead loops).
 export class CacheHandler extends Commands{
     protected model: Model;
     public mopidyProxy: MopidyProxy;
@@ -62,7 +50,7 @@ export class CacheHandler extends Commands{
         return await Promise.all(newListPromises);
     }
 
-    async transformTrackDataToModel(track: (models.Track)): Promise<FileTrackModel | StreamTrackModel> {
+    private async transformTrackDataToModel(track: models.Track): Promise<FileTrackModel | StreamTrackModel> {
         let allRefsMap = await this.getAllRefsMapCached();
         if (isStream(track)) {
             return {
@@ -129,11 +117,6 @@ export class CacheHandler extends Commands{
         return albumModels;
     }
 
-    async fetchAllAlbums() {
-        let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
-        return await this.lookupAlbumsCached(albumRefs.map(ref => ref.uri));
-    }
-
     async lookupRemembersCached() {
         let remembers = this.model.getRemembers();
         if (remembers)
@@ -152,16 +135,11 @@ export class CacheHandler extends Commands{
         return meta;
     }
 
-    async fetchAllRefs() {
-        let allRefs = await this.webProxy.fetchAllRefs();
-
-        return createAllRefs(this, allRefs);
-    }
-
     async getAllRefsCached() {
         let allRefs = this.model.getAllRefs();
         if(!allRefs) {
-            allRefs = await this.fetchAllRefs();
+            let allExpandedRefs = await this.webProxy.fetchAllRefs();
+            allRefs = await createAllRefs(this, allExpandedRefs);
             this.model.setAllRefs(allRefs);
         }
         return allRefs;

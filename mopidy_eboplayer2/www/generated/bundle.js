@@ -1677,7 +1677,7 @@ var WebProxy = class {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/controllers/controller.ts
-const LIBRARY_PROTOCOL$1 = "eboback:";
+const LIBRARY_PROTOCOL = "eboback:";
 var Controller = class extends Commands {
 	model;
 	mopidyProxy;
@@ -1711,7 +1711,7 @@ var Controller = class extends Commands {
 		});
 		this.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
 		for (const dataType of requiredData) await this.fetchRequiredData(dataType);
-		await this.cache.fetchAllAlbums();
+		await this.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
 		this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
 		await this.fetchRefsForCurrentBreadCrumbs();
@@ -1809,6 +1809,10 @@ var Controller = class extends Commands {
 				this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 				break;
 		}
+	}
+	async fetchAllAlbums() {
+		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
+		return await this.cache.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
 	}
 	async onPlaybackStateChanged(data) {
 		this.model.setPlayState(data.new_state);
@@ -1987,7 +1991,7 @@ var Controller = class extends Commands {
 				let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
 				playlistItems.forEach((ref) => {
 					if (!ref.name || ref.name == "") {
-						ref.name = ref.uri.replace(LIBRARY_PROTOCOL$1 + "track:", "").replaceAll("%20", " ");
+						ref.name = ref.uri.replace(LIBRARY_PROTOCOL + "track:", "").replaceAll("%20", " ");
 						ref.name = ref.name.split(".").slice(0, -1).join(".");
 					}
 				});
@@ -5565,7 +5569,6 @@ var RememberedView = class extends ComponentView {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/controllers/cacheHandler.ts
-const LIBRARY_PROTOCOL = "eboback:";
 var CacheHandler = class extends Commands {
 	model;
 	mopidyProxy;
@@ -5650,10 +5653,6 @@ var CacheHandler = class extends Commands {
 		this.model.addItemsToLibraryCache(albumModels);
 		return albumModels;
 	}
-	async fetchAllAlbums() {
-		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
-		return await this.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
-	}
 	async lookupRemembersCached() {
 		let remembers = this.model.getRemembers();
 		if (remembers) return remembers;
@@ -5668,14 +5667,11 @@ var CacheHandler = class extends Commands {
 		this.model.addToMetaCache(albumUri, meta);
 		return meta;
 	}
-	async fetchAllRefs() {
-		let allRefs = await this.webProxy.fetchAllRefs();
-		return createAllRefs(this, allRefs);
-	}
 	async getAllRefsCached() {
 		let allRefs = this.model.getAllRefs();
 		if (!allRefs) {
-			allRefs = await this.fetchAllRefs();
+			let allExpandedRefs = await this.webProxy.fetchAllRefs();
+			allRefs = await createAllRefs(this, allExpandedRefs);
 			this.model.setAllRefs(allRefs);
 		}
 		return allRefs;

@@ -4,19 +4,19 @@ import models, {core, Mopidy} from "../../js/mopidy";
 import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
-import {createAllRefs, ExpandedRef, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberDef, RememberId, StreamTitles, StreamTrackModel, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
+import {getHostAndPort} from "../global";
+import {createAllRefs, SomeRefs} from "../refs";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {View} from "../views/view";
 import {RefArgs} from "../events";
+import {CacheHandler} from "./cacheHandler";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
-import {CacheHandler} from "./cacheHandler";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -63,7 +63,7 @@ export class Controller extends Commands implements DataRequester{
             await this.fetchRequiredData(dataType);
         }
 
-        await this.cache.fetchAllAlbums();
+        await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
         this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
         await this.fetchRefsForCurrentBreadCrumbs();
@@ -158,6 +158,7 @@ export class Controller extends Commands implements DataRequester{
         this.eboWsFrontCtrl.on("event:programTitleChanged", (data: {program_title: string}) => {
             this.model.setCurrentProgramTitle(data.program_title);
         });
+        //todo: the controller should not listen to the model to avoid circular references!
         this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
             await this.updateStreamLines();
         });
@@ -194,6 +195,11 @@ export class Controller extends Commands implements DataRequester{
                 this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
                 break;
         }
+    }
+
+    async fetchAllAlbums() {
+        let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
+        return await this.cache.lookupAlbumsCached(albumRefs.map(ref => ref.uri));
     }
 
     private async onPlaybackStateChanged(data: { new_state: PlaybackState; }) {
