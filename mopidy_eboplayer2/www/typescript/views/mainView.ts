@@ -228,7 +228,7 @@ export class MainView extends View {
 
     private async onSelectedTrackChanged() {
         let uri = this.state.getModel().getSelectedTrack();
-        this.state.getController().lookupTrackCached(uri)
+        this.state.getController().cache.lookupTrackCached(uri)
             .then(async track => {
                 if(track?.type == "file") {
                     if(track.track.album) {

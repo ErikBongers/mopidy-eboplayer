@@ -462,20 +462,20 @@ var SearchResultParent = class {
 	}
 };
 var RefSearchResult = class extends SearchResultParent {
-	controller;
-	constructor(item, weight, controller, defaultImageUrl) {
+	cache;
+	constructor(item, weight, cache, defaultImageUrl) {
 		super("ref", item, weight, getDefaultImageUrl(item.refType, defaultImageUrl));
-		this.controller = controller;
+		this.cache = cache;
 	}
 };
 var GenreSearchResult = class extends SearchResultParent {
-	controller;
-	constructor(item, weight, controller, imageUrl) {
+	cache;
+	constructor(item, weight, cache, imageUrl) {
 		super("genreDef", item, weight, "images/icons/Genre.svg");
-		this.controller = controller;
+		this.cache = cache;
 	}
 	getExpandedModel() {
-		return this.controller.getGenreDefCached(this.item.name ?? "???");
+		return this.cache.getGenreDefCached(this.item.name ?? "???");
 	}
 };
 const EmptySearchResults = {
@@ -551,7 +551,7 @@ var Refs = class {
 		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
 		return ref.type;
 	}
-	static transformRefsToSearchResults(controller, refs) {
+	static transformRefsToSearchResults(cache, refs) {
 		return refs.map((ref) => {
 			let refType = SomeRefs.toRefType(ref);
 			if (refType == "genre") {
@@ -563,7 +563,7 @@ var Refs = class {
 					idMaxImage: null,
 					idMinImage: null
 				};
-				return new GenreSearchResult(expandedRef$1, -1, controller);
+				return new GenreSearchResult(expandedRef$1, -1, cache);
 			}
 			let expandedRef = {
 				refType,
@@ -573,7 +573,7 @@ var Refs = class {
 				idMaxImage: null,
 				idMinImage: null
 			};
-			return new RefSearchResult(expandedRef, -1, controller);
+			return new RefSearchResult(expandedRef, -1, cache);
 		});
 	}
 	static async reduceResults(results) {
@@ -599,12 +599,12 @@ var Refs = class {
 		return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
 	}
 };
-async function createAllRefs(controller, allRefs) {
-	return new AllRefs(controller, allRefs);
+async function createAllRefs(cache, allRefs) {
+	return new AllRefs(cache, allRefs);
 }
-function filterRefsToResult(refs, refType, controller) {
+function filterRefsToResult(refs, refType, cache) {
 	return refs.filter((ref) => ref.refType == refType).map((expandedRef) => {
-		return new RefSearchResult(expandedRef, 0, controller);
+		return new RefSearchResult(expandedRef, 0, cache);
 	});
 }
 var AllRefs = class extends Refs {
@@ -616,17 +616,17 @@ var AllRefs = class extends Refs {
 	radios;
 	playlists;
 	availableRefTypes;
-	constructor(controller, allRefs) {
+	constructor(cache, allRefs) {
 		super();
 		this.allRefs = allRefs;
-		this.tracks = filterRefsToResult(allRefs, "track", controller);
-		this.albums = filterRefsToResult(allRefs, "album", controller);
-		this.artists = filterRefsToResult(allRefs, "artist", controller);
-		this.radios = filterRefsToResult(allRefs, "radio", controller);
+		this.tracks = filterRefsToResult(allRefs, "track", cache);
+		this.albums = filterRefsToResult(allRefs, "album", cache);
+		this.artists = filterRefsToResult(allRefs, "artist", cache);
+		this.radios = filterRefsToResult(allRefs, "radio", cache);
 		this.genres = allRefs.filter((ref) => ref.refType == "genre").map((expandedRef) => {
-			return new GenreSearchResult(expandedRef, 0, controller);
+			return new GenreSearchResult(expandedRef, 0, cache);
 		});
-		this.playlists = filterRefsToResult(allRefs, "playlist", controller);
+		this.playlists = filterRefsToResult(allRefs, "playlist", cache);
 		this.availableRefTypes = /* @__PURE__ */ new Set();
 		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
@@ -655,9 +655,9 @@ var AllRefs = class extends Refs {
 var SomeRefs = class extends Refs {
 	allresults;
 	availableRefTypes;
-	constructor(controller, refs) {
+	constructor(cache, refs) {
 		super();
-		this.allresults = Refs.transformRefsToSearchResults(controller, refs);
+		this.allresults = Refs.transformRefsToSearchResults(cache, refs);
 		this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
 	}
 	async filter() {
@@ -805,14 +805,14 @@ var ExpandedAlbumModel = class {
 	async getTrackModels() {
 		let trackModels = [];
 		for (let trackUri of this.album.tracks) {
-			let model = await this.controller.lookupTrackCached(trackUri);
+			let model = await this.controller.cache.lookupTrackCached(trackUri);
 			if (model) trackModels.push(model);
 		}
 		return trackModels;
 	}
 	async getGenres() {
 		let trackModels = await this.getTrackModels();
-		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.getGenreDefsCached()).get(genre)).filter((genre) => genre != void 0);
+		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.cache.getGenreDefsCached()).get(genre)).filter((genre) => genre != void 0);
 		return Promise.all(genreDefPromises);
 	}
 	async getArtists() {
@@ -1677,7 +1677,7 @@ var WebProxy = class {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/controllers/controller.ts
-const LIBRARY_PROTOCOL = "eboback:";
+const LIBRARY_PROTOCOL$1 = "eboback:";
 var Controller = class extends Commands {
 	model;
 	mopidyProxy;
@@ -1685,11 +1685,11 @@ var Controller = class extends Commands {
 	localStorageProxy;
 	eboWsFrontCtrl;
 	eboWsBackCtrl;
-	baseUrl;
-	static DEFAULT_IMG_URL = "images/default_cover.png";
 	player;
-	constructor(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopdyProxy, player) {
+	cache;
+	constructor(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopdyProxy, player, cache) {
 		super(mopidy);
+		this.cache = cache;
 		this.model = model;
 		this.player = player;
 		this.mopidyProxy = mopdyProxy;
@@ -1697,9 +1697,6 @@ var Controller = class extends Commands {
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWsFrontCtrl = eboWsFrontCtrl;
 		this.eboWsBackCtrl = eboWsBackCtrl;
-		let portDefs = getHostAndPortDefs();
-		this.baseUrl = "";
-		if (portDefs.altHost && portDefs.altHost != portDefs.host) this.baseUrl = "http://" + portDefs.altHost;
 	}
 	getRequiredDataTypes() {
 		return [EboPlayerDataType.CurrentTrack];
@@ -1714,13 +1711,13 @@ var Controller = class extends Commands {
 		});
 		this.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
 		for (const dataType of requiredData) await this.fetchRequiredData(dataType);
-		await this.fetchAllAlbums();
+		await this.cache.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
 		this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
 		await this.fetchRefsForCurrentBreadCrumbs();
 		await this.filterBrowseResults();
-		await this.getGenreDefsCached();
-		await this.getRemembersCached();
+		await this.cache.getGenreDefsCached();
+		await this.cache.getRemembersCached();
 	}
 	initialize(views) {
 		this.mopidy.on("state:online", async () => {
@@ -1822,7 +1819,7 @@ var Controller = class extends Commands {
 			this.model.setCurrentTrack(TrackNone);
 			return;
 		}
-		let trackModel = await this.lookupTrackCached(data.track.uri);
+		let trackModel = await this.cache.lookupTrackCached(data.track.uri);
 		this.model.setCurrentTrack(trackModel);
 		if (!this.model.selectedTrack) {
 			let uri = trackModel?.track?.uri;
@@ -1839,7 +1836,7 @@ var Controller = class extends Commands {
 			this.model.setActiveStreamLinesHistory(NoStreamTitles);
 			return;
 		}
-		if ((await this.lookupTrackCached(this.model.currentTrack))?.type == "stream") {
+		if ((await this.cache.lookupTrackCached(this.model.currentTrack))?.type == "stream") {
 			let lines = await this.webProxy.fetchActiveStreamLines(this.model.currentTrack);
 			this.model.setActiveStreamLinesHistory(lines);
 		} else this.model.setActiveStreamLinesHistory(NoStreamTitles);
@@ -1933,62 +1930,12 @@ var Controller = class extends Commands {
 			await this.filterBrowseResults();
 		}
 	}
-	async lookupTrackCached(trackUri) {
-		if (!trackUri) return null;
-		let item = this.model.getFromLibraryCache(trackUri);
-		if (item) return item;
-		let libraryList = await this.fetchAndConvertTracks(trackUri);
-		this.model.addItemsToLibraryCache(libraryList);
-		return this.model.getFromLibraryCache(trackUri);
-	}
-	async lookupAlbumsCached(albumUris) {
-		let albums = [];
-		let albumUrisToFetch = [];
-		for (let albumUri of albumUris) {
-			let album = this.model.getFromLibraryCache(albumUri);
-			if (album) albums.push(album);
-			else albumUrisToFetch.push(albumUri);
-		}
-		if (albumUrisToFetch.length > 0) {
-			let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
-			this.model.addItemsToLibraryCache(fetchedAlbums);
-			albums = albums.concat(fetchedAlbums);
-		}
-		return albums;
-	}
-	async fetchAlbums(albumUris) {
-		let dict = await this.mopidyProxy.lookup(albumUris);
-		let allRefs = await this.getAllRefsMapCached();
-		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
-			let trackList = dict[albumUri];
-			return {
-				type: "album",
-				albumInfo: trackList[0].album ?? null,
-				tracks: trackList.map((track) => track.uri),
-				ref: allRefs.get(albumUri)
-			};
-		});
-		let albumModels = await Promise.all(albumModelsPending);
-		this.model.addItemsToLibraryCache(albumModels);
-		return albumModels;
-	}
-	async fetchAndConvertTracks(uri) {
-		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
-		return await Promise.all(newListPromises);
-	}
-	async lookupRemembersCached() {
-		let remembers = this.model.getRemembers();
-		if (remembers) return remembers;
-		remembers = await this.webProxy.fetchRemembers();
-		this.model.setRemembers(remembers);
-		return remembers;
-	}
 	async getExpandedTrackModel(trackUri) {
 		if (!trackUri) return null;
-		let track = await this.lookupTrackCached(trackUri);
+		let track = await this.cache.lookupTrackCached(trackUri);
 		if (track?.type == "stream") {
 			let streamLines = await this.fetchStreamLines(trackUri);
-			let rememberStrings = (await this.lookupRemembersCached()).map((r) => r.text);
+			let rememberStrings = (await this.cache.lookupRemembersCached()).map((r) => r.text);
 			let expandedStreamLines = streamLines.map((lines) => {
 				let lineStr = lines.join("\n");
 				return {
@@ -2001,29 +1948,22 @@ var Controller = class extends Commands {
 		if (track) {
 			let uri = track?.track?.album?.uri;
 			let album = null;
-			if (uri) album = (await this.lookupAlbumsCached([uri]))[0];
+			if (uri) album = (await this.cache.lookupAlbumsCached([uri]))[0];
 			return new ExpandedFileTrackModel(track, album);
 		}
 		throw new Error("trackUri not found in library");
 	}
 	async getExpandedAlbumModel(albumUri) {
-		let album = (await this.lookupAlbumsCached([albumUri]))[0];
-		let meta = await this.getMetaDataCached(albumUri) ?? null;
+		let album = (await this.cache.lookupAlbumsCached([albumUri]))[0];
+		let meta = await this.cache.getMetaDataCached(albumUri) ?? null;
 		return new ExpandedAlbumModel(album, this, meta);
-	}
-	async getMetaDataCached(albumUri) {
-		let cachedMeta = this.model.getFromMetaCache(albumUri);
-		if (cachedMeta) return cachedMeta.meta;
-		let meta = await this.webProxy.fetchMetaData(albumUri);
-		this.model.addToMetaCache(albumUri, meta);
-		return meta;
 	}
 	setSelectedTrack(uri) {
 		this.model.setSelectedTrack(uri);
 	}
 	async fetchAllRefs() {
 		let allRefs = await this.webProxy.fetchAllRefs();
-		return createAllRefs(this, allRefs);
+		return createAllRefs(this.cache, allRefs);
 	}
 	async filterBrowseResults() {
 		await this.model.filterCurrentRefs();
@@ -2047,32 +1987,20 @@ var Controller = class extends Commands {
 				let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
 				playlistItems.forEach((ref) => {
 					if (!ref.name || ref.name == "") {
-						ref.name = ref.uri.replace(LIBRARY_PROTOCOL + "track:", "").replaceAll("%20", " ");
+						ref.name = ref.uri.replace(LIBRARY_PROTOCOL$1 + "track:", "").replaceAll("%20", " ");
 						ref.name = ref.name.split(".").slice(0, -1).join(".");
 					}
 				});
-				this.model.setCurrentRefs(new SomeRefs(this, playlistItems));
+				this.model.setCurrentRefs(new SomeRefs(this.cache, playlistItems));
 				return;
 			}
 			let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
-			this.model.setCurrentRefs(new SomeRefs(this, refs));
+			this.model.setCurrentRefs(new SomeRefs(this.cache, refs));
 			return;
 		}
 	}
-	async getAllRefsCached() {
-		let allRefs = this.model.getAllRefs();
-		if (!allRefs) {
-			allRefs = await this.fetchAllRefs();
-			this.model.setAllRefs(allRefs);
-		}
-		return allRefs;
-	}
-	async getAllRefsMapCached() {
-		await this.getAllRefsCached();
-		return this.model.getAllRefsMap();
-	}
 	async setAllRefsAsCurrent() {
-		this.model.setCurrentRefs(await this.getAllRefsCached());
+		this.model.setCurrentRefs(await this.cache.getAllRefsCached());
 	}
 	async fetchStreamLines(streamUri) {
 		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
@@ -2089,10 +2017,6 @@ var Controller = class extends Commands {
 	setView(view) {
 		this.model.setView(view);
 	}
-	async fetchAllAlbums() {
-		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
-		return await this.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
-	}
 	async addCurrentSearchResultsToPlayer() {
 		let results = this.model.getCurrentSearchResults();
 		await this.player.add(results.refs.map((r) => r.item.uri));
@@ -2102,15 +2026,6 @@ var Controller = class extends Commands {
 	}
 	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
 		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
-	}
-	async getGenreDefsCached() {
-		if (this.model.getGenreDefs().size > 0) return this.model.getGenreDefs();
-		let genreDefs = await this.webProxy.fetchGenreDefs();
-		this.model.setGenreDefs(genreDefs);
-		return this.model.getGenreDefs();
-	}
-	async getGenreDefCached(name) {
-		return (await this.getGenreDefsCached()).get(name) ?? null;
 	}
 	showAlbum(albumUri, selectedTrackUri) {
 		this.model.setAlbumToView(albumUri, selectedTrackUri);
@@ -2122,35 +2037,6 @@ var Controller = class extends Commands {
 	}
 	async startScan() {
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
-	}
-	async transformTrackDataToModel(track) {
-		let allRefsMap = await this.getAllRefsMapCached();
-		if (isStream(track)) return {
-			type: "stream",
-			track,
-			name: track.name ?? "--no name--",
-			ref: allRefsMap.get(track.uri)
-		};
-		let model = {
-			type: "file",
-			composer: "",
-			track,
-			title: track.name ?? "--no name--",
-			performer: "",
-			songlenght: 0,
-			ref: allRefsMap.get(track.uri)
-		};
-		if (!track.name || track.name === "") {
-			let parts = track.uri.split("/");
-			model.title = decodeURI(parts[parts.length - 1]);
-		}
-		return model;
-	}
-	async getRemembersCached() {
-		if (this.model.getRemembers()) return this.model.getRemembers();
-		let remembers = await this.webProxy.fetchRemembers();
-		this.model.setRemembers(remembers);
-		return this.model.getRemembers();
 	}
 	async deleteRemember(id) {
 		await this.webProxy.deleteRemember(id);
@@ -2587,9 +2473,9 @@ var TimelineView = class extends View {
 	}
 	async setCurrentTrack() {
 		let timelineTable = document.getElementById("timelineTable");
-		let focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getCurrentTrack());
+		let focusTrack = await this.state.getController().cache.lookupTrackCached(this.state.getModel().getCurrentTrack());
 		if (!focusTrack) {
-			focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getSelectedTrack());
+			focusTrack = await this.state.getController().cache.lookupTrackCached(this.state.getModel().getSelectedTrack());
 			if (!focusTrack) return;
 		}
 		let currentUri = focusTrack.track.uri;
@@ -3458,7 +3344,7 @@ var MainView = class extends View {
 	}
 	async onSelectedTrackChanged() {
 		let uri = this.state.getModel().getSelectedTrack();
-		this.state.getController().lookupTrackCached(uri).then(async (track) => {
+		this.state.getController().cache.lookupTrackCached(uri).then(async (track) => {
 			if (track?.type == "file") {
 				if (track.track.album) {
 					let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
@@ -5449,7 +5335,7 @@ var BrowseView = class extends ComponentView {
 		await this.state.getController().resetToBreadCrumb(breadcrumbId);
 	}
 	async onGenreDefsChanged() {
-		this.component.genreDefs = await this.state.getController().getGenreDefsCached();
+		this.component.genreDefs = await this.state.getController().cache.getGenreDefsCached();
 	}
 };
 
@@ -5666,7 +5552,7 @@ var RememberedView = class extends ComponentView {
 	}
 	bind() {
 		this.state.getModel().addEboEventListener("remembersChanged.eboplayer", async () => {
-			this.component.rememberedList = await this.state.getController().getRemembersCached();
+			this.component.rememberedList = await this.state.getController().cache.getRemembersCached();
 		});
 		this.component.addEboEventListener("deleteRemember.eboplayer", async (ev) => {
 			await this.state.getController().deleteRemember(ev.detail.id);
@@ -5674,6 +5560,144 @@ var RememberedView = class extends ComponentView {
 	}
 	getRequiredDataTypes() {
 		return [];
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/controllers/cacheHandler.ts
+const LIBRARY_PROTOCOL = "eboback:";
+var CacheHandler = class extends Commands {
+	model;
+	mopidyProxy;
+	webProxy;
+	localStorageProxy;
+	baseUrl;
+	player;
+	constructor(model, mopidy, mopdyProxy, player) {
+		super(mopidy);
+		this.model = model;
+		this.player = player;
+		this.mopidyProxy = mopdyProxy;
+		this.webProxy = new WebProxy(getHostAndPort());
+		this.localStorageProxy = new LocalStorageProxy(model);
+		let portDefs = getHostAndPortDefs();
+		this.baseUrl = "";
+		if (portDefs.altHost && portDefs.altHost != portDefs.host) this.baseUrl = "http://" + portDefs.altHost;
+	}
+	async lookupTrackCached(trackUri) {
+		if (!trackUri) return null;
+		let item = this.model.getFromLibraryCache(trackUri);
+		if (item) return item;
+		let libraryList = await this.fetchAndConvertTracks(trackUri);
+		this.model.addItemsToLibraryCache(libraryList);
+		return this.model.getFromLibraryCache(trackUri);
+	}
+	async fetchAndConvertTracks(uri) {
+		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
+		return await Promise.all(newListPromises);
+	}
+	async transformTrackDataToModel(track) {
+		let allRefsMap = await this.getAllRefsMapCached();
+		if (isStream(track)) return {
+			type: "stream",
+			track,
+			name: track.name ?? "--no name--",
+			ref: allRefsMap.get(track.uri)
+		};
+		let model = {
+			type: "file",
+			composer: "",
+			track,
+			title: track.name ?? "--no name--",
+			performer: "",
+			songlenght: 0,
+			ref: allRefsMap.get(track.uri)
+		};
+		if (!track.name || track.name === "") {
+			let parts = track.uri.split("/");
+			model.title = decodeURI(parts[parts.length - 1]);
+		}
+		return model;
+	}
+	async lookupAlbumsCached(albumUris) {
+		let albums = [];
+		let albumUrisToFetch = [];
+		for (let albumUri of albumUris) {
+			let album = this.model.getFromLibraryCache(albumUri);
+			if (album) albums.push(album);
+			else albumUrisToFetch.push(albumUri);
+		}
+		if (albumUrisToFetch.length > 0) {
+			let fetchedAlbums = await this.fetchAlbums(albumUrisToFetch);
+			this.model.addItemsToLibraryCache(fetchedAlbums);
+			albums = albums.concat(fetchedAlbums);
+		}
+		return albums;
+	}
+	async fetchAlbums(albumUris) {
+		let dict = await this.mopidyProxy.lookup(albumUris);
+		let allRefs = await this.getAllRefsMapCached();
+		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
+			let trackList = dict[albumUri];
+			return {
+				type: "album",
+				albumInfo: trackList[0].album ?? null,
+				tracks: trackList.map((track) => track.uri),
+				ref: allRefs.get(albumUri)
+			};
+		});
+		let albumModels = await Promise.all(albumModelsPending);
+		this.model.addItemsToLibraryCache(albumModels);
+		return albumModels;
+	}
+	async fetchAllAlbums() {
+		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
+		return await this.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
+	}
+	async lookupRemembersCached() {
+		let remembers = this.model.getRemembers();
+		if (remembers) return remembers;
+		remembers = await this.webProxy.fetchRemembers();
+		this.model.setRemembers(remembers);
+		return remembers;
+	}
+	async getMetaDataCached(albumUri) {
+		let cachedMeta = this.model.getFromMetaCache(albumUri);
+		if (cachedMeta) return cachedMeta.meta;
+		let meta = await this.webProxy.fetchMetaData(albumUri);
+		this.model.addToMetaCache(albumUri, meta);
+		return meta;
+	}
+	async fetchAllRefs() {
+		let allRefs = await this.webProxy.fetchAllRefs();
+		return createAllRefs(this, allRefs);
+	}
+	async getAllRefsCached() {
+		let allRefs = this.model.getAllRefs();
+		if (!allRefs) {
+			allRefs = await this.fetchAllRefs();
+			this.model.setAllRefs(allRefs);
+		}
+		return allRefs;
+	}
+	async getAllRefsMapCached() {
+		await this.getAllRefsCached();
+		return this.model.getAllRefsMap();
+	}
+	async getGenreDefsCached() {
+		if (this.model.getGenreDefs().size > 0) return this.model.getGenreDefs();
+		let genreDefs = await this.webProxy.fetchGenreDefs();
+		this.model.setGenreDefs(genreDefs);
+		return this.model.getGenreDefs();
+	}
+	async getGenreDefCached(name) {
+		return (await this.getGenreDefsCached()).get(name) ?? null;
+	}
+	async getRemembersCached() {
+		if (this.model.getRemembers()) return this.model.getRemembers();
+		let remembers = await this.webProxy.fetchRemembers();
+		this.model.setRemembers(remembers);
+		return this.model.getRemembers();
 	}
 };
 
@@ -5718,7 +5742,8 @@ function setupStuff() {
 	let model = new Model();
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);
-	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
+	let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
+	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
 	let state = new State(mopidy, model, controller, player);
 	let browseView = new BrowseView(state, document.getElementById("browseView"));
 	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));

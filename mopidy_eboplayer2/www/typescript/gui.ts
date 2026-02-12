@@ -33,6 +33,7 @@ import {AlbumView} from "./views/albumView";
 import {State} from "./playerState";
 import {EboRememberedComp} from "./components/eboRememberedComp";
 import {RememberedView} from "./views/rememberedView";
+import {CacheHandler} from "./controllers/cacheHandler";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -94,8 +95,9 @@ function setupStuff() {
 
     let model = new Model();
     let mopidyProxy = new MopidyProxy(new Commands(mopidy));
-    let player = new PlayController(model, mopidyProxy)
-    let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player);
+    let player = new PlayController(model, mopidyProxy);
+    let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
+    let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
 
     let state = new State(mopidy, model, controller, player);
 

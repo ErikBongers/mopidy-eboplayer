@@ -205,7 +205,7 @@ export class ExpandedAlbumModel {
     async getTrackModels() {
         let trackModels: FileTrackModel[] = [];
         for(let trackUri of this.album.tracks) {
-            let model = await this.controller.lookupTrackCached(trackUri);
+            let model = await this.controller.cache.lookupTrackCached(trackUri);
             if(model)
                 trackModels.push(model as FileTrackModel);
         }
@@ -217,7 +217,7 @@ export class ExpandedAlbumModel {
         let genreDefPromises = [...new Set(trackModels
             .filter(track => track.track.genre != undefined)
             .map(track => track.track.genre as string))]
-            .map(async genre => (await this.controller.getGenreDefsCached()).get(genre))
+            .map(async genre => (await this.controller.cache.getGenreDefsCached()).get(genre))
             .filter(genre => genre != undefined) as Promise<GenreDef>[];
         return Promise.all(genreDefPromises);
     }

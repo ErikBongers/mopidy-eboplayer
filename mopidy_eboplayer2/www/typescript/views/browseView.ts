@@ -160,7 +160,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private async onGenreDefsChanged() {
-        this.component.genreDefs = await this.state.getController().getGenreDefsCached();
+        this.component.genreDefs = await this.state.getController().cache.getGenreDefsCached();
     }
 
 }

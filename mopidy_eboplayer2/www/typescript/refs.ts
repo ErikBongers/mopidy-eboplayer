@@ -3,6 +3,7 @@ import {AllUris, BrowseFilter} from "./modelTypes";
 import {Controller} from "./controllers/controller";
 import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
+import {CacheHandler} from "./controllers/cacheHandler";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
 export interface ExpandedRef {
@@ -35,22 +36,22 @@ abstract class SearchResultParent {
 }
 
 export class RefSearchResult extends SearchResultParent {
-    controller: Controller;
-    constructor(item: ExpandedRef, weight: number, controller: Controller, defaultImageUrl?: string) {
+    cache: CacheHandler;
+    constructor(item: ExpandedRef, weight: number, cache: CacheHandler, defaultImageUrl?: string) {
         super("ref", item, weight, getDefaultImageUrl(item.refType, defaultImageUrl));
-        this.controller = controller;
+        this.cache = cache;
     }
 
 }
 
 export class GenreSearchResult  extends SearchResultParent {
-    controller: Controller;
-    constructor(item: ExpandedRef, weight: number, controller: Controller, imageUrl?: string) {
+    cache: CacheHandler;
+    constructor(item: ExpandedRef, weight: number, cache: CacheHandler, imageUrl?: string) {
         super("genreDef", item, weight, "images/icons/Genre.svg");
-        this.controller = controller;
+        this.cache = cache;
     }
     getExpandedModel() {
-        return this.controller.getGenreDefCached(this.item.name ?? "???");
+        return this.cache.getGenreDefCached(this.item.name ?? "???");
     }
 }
 
@@ -175,15 +176,15 @@ export abstract class Refs {
         return ref.type as RefType; //WARNING: this really is an unknown type!
     }
 
-    static transformRefsToSearchResults(controller: Controller, refs: Ref<AllUris>[]): SearchResult[] {
+    static transformRefsToSearchResults(cache: CacheHandler, refs: Ref<AllUris>[]): SearchResult[] {
         let results = refs.map(ref => {
             let refType = SomeRefs.toRefType(ref);
             if(refType == "genre") {
                 let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? '???', uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
-                return new GenreSearchResult(expandedRef,-1, controller);
+                return new GenreSearchResult(expandedRef,-1, cache);
             }
             let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? "???", uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
-            return new RefSearchResult(expandedRef,-1, controller);
+            return new RefSearchResult(expandedRef,-1, cache);
         });
         // make genreDefs distinct and keep removed defs separate.
         return results;
@@ -219,15 +220,15 @@ export abstract class Refs {
     }
 }
 
-export async function createAllRefs(controller: Controller, allRefs: ExpandedRef[]) {
-    return new AllRefs(controller, allRefs);
+export async function createAllRefs(cache: CacheHandler, allRefs: ExpandedRef[]) {
+    return new AllRefs(cache, allRefs);
 }
 
-function filterRefsToResult(refs: ExpandedRef[], refType: RefType, controller: Controller) {
+function filterRefsToResult(refs: ExpandedRef[], refType: RefType, cache: CacheHandler) {
     return refs
         .filter(ref => ref.refType == refType)
         .map(expandedRef => {
-            return new RefSearchResult(expandedRef, 0, controller);
+            return new RefSearchResult(expandedRef, 0, cache);
         });
 }
 
@@ -241,19 +242,19 @@ export class AllRefs extends Refs {
     playlists: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor(controller: Controller, allRefs: ExpandedRef[]) {
+    constructor(cache: CacheHandler, allRefs: ExpandedRef[]) {
         super();
         this.allRefs = allRefs;
-        this.tracks = filterRefsToResult(allRefs, "track", controller);
-        this.albums = filterRefsToResult(allRefs, "album", controller);
-        this.artists = filterRefsToResult(allRefs, "artist", controller);
-        this.radios = filterRefsToResult(allRefs, "radio", controller);
+        this.tracks = filterRefsToResult(allRefs, "track", cache);
+        this.albums = filterRefsToResult(allRefs, "album", cache);
+        this.artists = filterRefsToResult(allRefs, "artist", cache);
+        this.radios = filterRefsToResult(allRefs, "radio", cache);
         this.genres = allRefs
             .filter(ref => ref.refType == "genre")
             .map(expandedRef => {
-                return new GenreSearchResult(expandedRef, 0, controller);
+                return new GenreSearchResult(expandedRef, 0, cache);
             });
-        this.playlists = filterRefsToResult(allRefs, "playlist", controller);
+        this.playlists = filterRefsToResult(allRefs, "playlist", cache);
 
         this.availableRefTypes = new Set();
         this.getAvailableRefTypes(this.tracks).forEach(type => this.availableRefTypes.add(type));
@@ -293,9 +294,9 @@ export class SomeRefs extends Refs {
     allresults: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor(controller: Controller,  refs: Ref<AllUris>[]) {
+    constructor(cache: CacheHandler,  refs: Ref<AllUris>[]) {
         super();
-        this.allresults = Refs.transformRefsToSearchResults(controller, refs);
+        this.allresults = Refs.transformRefsToSearchResults(cache, refs);
         this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
     }
 

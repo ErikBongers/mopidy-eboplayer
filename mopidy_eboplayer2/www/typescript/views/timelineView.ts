@@ -101,9 +101,9 @@ export class TimelineView extends View {
 
     private async setCurrentTrack() {
         let timelineTable = document.getElementById("timelineTable") as HTMLTableElement;
-        let focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getCurrentTrack());
+        let focusTrack = await this.state.getController().cache.lookupTrackCached(this.state.getModel().getCurrentTrack());
         if(!focusTrack) {
-            focusTrack = await this.state.getController().lookupTrackCached(this.state.getModel().getSelectedTrack());
+            focusTrack = await this.state.getController().cache.lookupTrackCached(this.state.getModel().getSelectedTrack());
             if(!focusTrack)
                 return;
         }
