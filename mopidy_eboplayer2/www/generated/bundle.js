@@ -2050,6 +2050,9 @@ var PlayerBarView = class extends View {
 			let value = ev.detail.volume;
 			await this.state.getController().mopidyProxy.sendVolume(value);
 		});
+		comp.addEboEventListener("optionSelected.eboplayer", async (ev) => {
+			this.changeRepeat(ev.detail.selected);
+		});
 		this.state.getModel().addEboEventListener("viewChanged.eboplayer", () => {
 			this.showHideInfo();
 		});
@@ -2119,6 +2122,7 @@ var PlayerBarView = class extends View {
 		let lines = this.state.getModel().getActiveStreamLines();
 		document.getElementById(this.componentId).setAttribute("text", lines.active_titles.join("\n"));
 	}
+	changeRepeat(selected) {}
 };
 
 //#endregion
@@ -4073,7 +4077,8 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
                     <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
                         <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
-                        <ebo-option value="repeat"><i class="fa fa-repeat"></i></ebo-option>
+                        <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
+                        <ebo-option value="repeatOne" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
                     </ebo-dropdown>
                 </div>
             </div>
@@ -5635,9 +5640,6 @@ var EboOption = class EboOption extends EboComponent {
 	selected = false;
 	static styleText = `
         <style>
-            #wrapper {
-                /*width: 2rem;*/
-            }
       </style>
     `;
 	static htmlText = `
@@ -5664,7 +5666,6 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 	static observedAttributes = [];
 	static styleText = `
         <style>
-
             .menuButton {
                 padding: 0;
                 border-radius: 100vw;
@@ -5675,13 +5676,15 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
             
             .popupMenu {
                 border: none;
+                border-radius: .3rem;
                 position-anchor: --popup-button;
                 inset: auto;
                 top: anchor(bottom);
                 left: anchor(left);
                 margin: 0;
+                padding: .5rem;
                 opacity: 0;
-                background-color: var(--body-background); /* todo: customizable*/
+                background-color: #444;
                 
                 &:popover-open {
                     opacity: 1;
@@ -5699,8 +5702,8 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
       </style>
     `;
 	static htmlText = `
-        <button class="menuButton" popovertarget="menu">
-            ...
+        <button id="menuButton" class="menuButton" popovertarget="menu">
+           ??
         </button>
         <div popover id="menu" class="popupMenu">
             <slot></slot>
@@ -5718,6 +5721,26 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 	}
 	closeMenu() {
 		this.getShadow().getElementById("menu").hidePopover();
+	}
+	render(shadow) {
+		this.querySelectorAll("ebo-option").forEach((option) => option.addEventListener("click", (ev) => {
+			this.closeMenu();
+			this.querySelectorAll("ebo-option").forEach((option$1) => option$1.removeAttribute("selected"));
+			ev.currentTarget.setAttribute("selected", "true");
+			let value = ev.currentTarget.getAttribute("value");
+			this.requestUpdate();
+			this.dispatchEboEvent("optionSelected.eboplayer", { selected: value });
+		}));
+		this.requestUpdate();
+	}
+	update(shadow) {
+		let button = shadow.getElementById("menuButton");
+		let selectedItem = this.querySelector("ebo-option[selected]");
+		if (!selectedItem) selectedItem = this.querySelector("ebo-option");
+		if (!selectedItem) return;
+		let clone = selectedItem.cloneNode(true);
+		button.innerText = "";
+		button.appendChild(clone);
 	}
 };
 

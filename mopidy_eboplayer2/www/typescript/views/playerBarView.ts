@@ -3,6 +3,7 @@ import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} 
 import {MainView} from "./mainView";
 import {EboPlayerBar} from "../components/eboPlayerBar";
 import {State} from "../playerState";
+import {console_yellow} from "../global";
 
 export class PlayerBarView extends View {
     private componentId: string;
@@ -48,6 +49,10 @@ export class PlayerBarView extends View {
             let value = ev.detail.volume;
             await this.state.getController().mopidyProxy.sendVolume(value);
         });
+        comp.addEboEventListener("optionSelected.eboplayer", async (ev) => {
+            this.changeRepeat(ev.detail.selected);
+        });
+
         this.state.getModel().addEboEventListener("viewChanged.eboplayer", () => {
             this.showHideInfo();
         });
@@ -132,5 +137,9 @@ export class PlayerBarView extends View {
         let lines = this.state.getModel().getActiveStreamLines();
         let comp = document.getElementById(this.componentId) as EboPlayerBar;
         comp.setAttribute("text", lines.active_titles.join("\n"));
+    }
+
+    private changeRepeat(selected: string | null) {
+
     }
 }

@@ -1,3 +1,15 @@
+* Play modes
+  - repeat: on/off
+  - random: on/off
+  - single: on/off
+    > can be repeated!
+  > menu:
+   - dots for normal play
+   - repeat
+   - one
+   - repeat one
+
+
 * Add repeat.
   > create drop down button.
      > clicking on the button shows a menu.

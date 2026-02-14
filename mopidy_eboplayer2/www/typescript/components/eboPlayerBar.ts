@@ -101,7 +101,8 @@ export class EboPlayerBar extends EboComponent {
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
                     <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
                         <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
-                        <ebo-option value="repeat"><i class="fa fa-repeat"></i></ebo-option>
+                        <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
+                        <ebo-option value="repeatOne" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
                     </ebo-dropdown>
                 </div>
             </div>

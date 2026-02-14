@@ -10,9 +10,6 @@ export class EboOption extends EboComponent {
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
         <style>
-            #wrapper {
-                /*width: 2rem;*/
-            }
       </style>
     `;
 

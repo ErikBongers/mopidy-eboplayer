@@ -123,3 +123,9 @@ input {
         text-decoration-color: #4db2e4ff;
     }
 }
+
+.dropDownImage {
+    width: 0.9rem;
+    height: 0.9rem;
+    margin-right: 0;
+}

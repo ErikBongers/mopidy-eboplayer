@@ -12,6 +12,7 @@ export interface EboEventHandlersEventMap {
     "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
     "updateAlbumData.eboplayer"                 : UriArgs,
     "browseToArtist.eboplayer"                  : RefArgs,
+    "optionSelected.eboplayer"                  : OptionArgs,
     "rememberedRequested.eboplayer"             : VoidArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
@@ -93,6 +94,10 @@ export interface StreamLinesArgs extends EboEventArgs {
 
 export interface RemeberIdArgs extends EboEventArgs {
     id: RememberId
+}
+
+export interface OptionArgs extends EboEventArgs {
+    selected: string | null
 }
 
 export interface UriArgs extends EboEventArgs {
