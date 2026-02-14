@@ -12,11 +12,11 @@ import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
 import {EboBrowseComp} from "./components/eboBrowseComp";
 import {EboButton} from "./components/eboButton";
-import {console_yellow, getHostAndPort} from "./global";
+import {getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/eboBigAlbumComp";
-import {EboPlayerBar} from "./components/eboButtonBarComp";
-import {StreamTitles, Views} from "./modelTypes";
+import {EboPlayerBar} from "./components/eboPlayerBar";
+import {Views} from "./modelTypes";
 import {EboMenuButton} from "./components/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
 import {PlayController} from "./controllers/playController";
@@ -34,6 +34,8 @@ import {State} from "./playerState";
 import {EboRememberedComp} from "./components/eboRememberedComp";
 import {RememberedView} from "./views/rememberedView";
 import {CacheHandler} from "./controllers/cacheHandler";
+import {EboOption} from "./components/eboOption";
+import {EboIconDropdown} from "./components/eboIconDropdown";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -69,6 +71,8 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboSettingsComp);
             EboComponent.define(EboListItemComp);
             EboComponent.define(EboRememberedComp);
+            EboComponent.define(EboOption);
+            EboComponent.define(EboIconDropdown);
 
             setupStuff();
         });

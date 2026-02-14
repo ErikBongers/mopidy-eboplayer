@@ -3966,7 +3966,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboButtonBarComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/eboPlayerBar.ts
 var EboPlayerBar = class EboPlayerBar extends EboComponent {
 	static tagName = "ebo-player-bar";
 	static observedAttributes = [
@@ -4071,7 +4071,10 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
-                    <button id="btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+                    <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
+                        <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
+                        <ebo-option value="repeat"><i class="fa fa-repeat"></i></ebo-option>
+                    </ebo-dropdown>
                 </div>
             </div>
         </div>
@@ -4191,7 +4194,7 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
                 bottom: anchor(top);
                 right: anchor(right);
                 opacity: 0;
-                margin-left: 0.25rem;
+                margin-inline-start: 0.25rem;
                 background-color: var(--body-background);
                 
                 &:popover-open {
@@ -5624,6 +5627,101 @@ var CacheHandler = class extends Commands {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboOption.ts
+var EboOption = class EboOption extends EboComponent {
+	static tagName = "ebo-option";
+	static observedAttributes = ["value", "selected"];
+	value;
+	selected = false;
+	static styleText = `
+        <style>
+            #wrapper {
+                /*width: 2rem;*/
+            }
+      </style>
+    `;
+	static htmlText = `
+            <div id="wrapper">
+                <slot></slot>
+            </div>       
+        `;
+	constructor() {
+		super(EboOption.styleText, EboOption.htmlText);
+	}
+	onConnected() {
+		super.onConnected();
+		this.requestRender();
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboIconDropdown.ts
+var EboIconDropdown = class EboIconDropdown extends EboComponent {
+	static tagName = "ebo-dropdown";
+	static observedAttributes = [];
+	static styleText = `
+        <style>
+
+            .menuButton {
+                padding: 0;
+                border-radius: 100vw;
+                aspect-ratio: 1;
+                
+                anchor-name: --popup-button;
+            }
+            
+            .popupMenu {
+                border: none;
+                position-anchor: --popup-button;
+                inset: auto;
+                top: anchor(bottom);
+                left: anchor(left);
+                margin: 0;
+                opacity: 0;
+                background-color: var(--body-background); /* todo: customizable*/
+                
+                &:popover-open {
+                    opacity: 1;
+                }
+            }
+            
+            .trackButton {
+                border-color: gray;
+                text-align: left;
+                & i {
+                    position: relative;
+                    top: 2px;
+                }
+            }
+      </style>
+    `;
+	static htmlText = `
+        <button class="menuButton" popovertarget="menu">
+            ...
+        </button>
+        <div popover id="menu" class="popupMenu">
+            <slot></slot>
+        </div>
+        `;
+	constructor() {
+		super(EboIconDropdown.styleText, EboIconDropdown.htmlText);
+	}
+	onConnected() {
+		super.onConnected();
+		this.requestRender();
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestRender();
+	}
+	closeMenu() {
+		this.getShadow().getElementById("menu").hidePopover();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5650,6 +5748,8 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboSettingsComp);
 		EboComponent.define(EboListItemComp);
 		EboComponent.define(EboRememberedComp);
+		EboComponent.define(EboOption);
+		EboComponent.define(EboIconDropdown);
 		setupStuff();
 	});
 });

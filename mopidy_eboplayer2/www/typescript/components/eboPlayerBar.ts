@@ -99,7 +99,10 @@ export class EboPlayerBar extends EboComponent {
                     <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
-                    <button id="btnMore" style="margin-left: 1em;" title="Next"><i class="fa fa-ellipsis-h"></i></button>
+                    <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
+                        <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
+                        <ebo-option value="repeat"><i class="fa fa-repeat"></i></ebo-option>
+                    </ebo-dropdown>
                 </div>
             </div>
         </div>

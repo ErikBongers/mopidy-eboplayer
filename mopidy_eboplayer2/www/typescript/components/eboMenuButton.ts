@@ -25,7 +25,7 @@ export class EboMenuButton extends EboComponent {
                 bottom: anchor(top);
                 right: anchor(right);
                 opacity: 0;
-                margin-left: 0.25rem;
+                margin-inline-start: 0.25rem;
                 background-color: var(--body-background);
                 
                 &:popover-open {

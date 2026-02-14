@@ -1,8 +1,7 @@
 import {View} from "./view";
-import {EboPlayerDataType, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} from "../modelTypes";
+import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} from "../modelTypes";
 import {MainView} from "./mainView";
-import {EboPlayerBar} from "../components/eboButtonBarComp";
-import {Controller} from "../controllers/controller";
+import {EboPlayerBar} from "../components/eboPlayerBar";
 import {State} from "../playerState";
 
 export class PlayerBarView extends View {
