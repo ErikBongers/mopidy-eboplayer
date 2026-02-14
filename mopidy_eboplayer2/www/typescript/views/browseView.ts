@@ -128,10 +128,6 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
     }
 
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.TrackList];
-    }
-
     private async onPlayItemListClick(detail: GuiSourceArgs) {
         await this.state.getPlayer().clear();
         await this.state.getController().addCurrentSearchResultsToPlayer();

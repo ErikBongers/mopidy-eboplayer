@@ -197,10 +197,6 @@ export class MainView extends View {
         }
     }
 
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.TrackList];
-    }
-
     private async onBigTrackAlbumImgClick() {
         let selectedTrack = this.state.getModel().getSelectedTrack();
         if (!selectedTrack) return;

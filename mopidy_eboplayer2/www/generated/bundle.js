@@ -883,13 +883,6 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["Remembered"] = "#Remembered";
 	return Views$1;
 }({});
-let EboPlayerDataType = /* @__PURE__ */ function(EboPlayerDataType$1) {
-	EboPlayerDataType$1[EboPlayerDataType$1["Volume"] = 0] = "Volume";
-	EboPlayerDataType$1[EboPlayerDataType$1["CurrentTrack"] = 1] = "CurrentTrack";
-	EboPlayerDataType$1[EboPlayerDataType$1["PlayState"] = 2] = "PlayState";
-	EboPlayerDataType$1[EboPlayerDataType$1["TrackList"] = 3] = "TrackList";
-	return EboPlayerDataType$1;
-}({});
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/events.ts
@@ -1165,27 +1158,18 @@ var Model = class extends EboEventTargetClass {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/dataRequester.ts
-var NestedDataRequester = class {
+//#region mopidy_eboplayer2/www/typescript/views/view.ts
+var View = class {
+	state;
 	_children = [];
-	getRequiredDataTypesRecursive() {
-		return [...this.getRequiredDataTypes(), ...this._children.map((child) => child.getRequiredDataTypesRecursive()).flat()];
+	constructor(state) {
+		this.state = state;
 	}
 	addChildren(...children) {
 		this._children.push(...children);
 	}
 	get children() {
 		return this._children;
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer2/www/typescript/views/view.ts
-var View = class extends NestedDataRequester {
-	state;
-	constructor(state) {
-		super();
-		this.state = state;
 	}
 	bindRecursive() {
 		this.children.forEach((child) => child.bindRecursive());
@@ -1223,9 +1207,6 @@ var HeaderView = class extends View {
 				headerSpan.classList.remove("warning", "error");
 				break;
 		}
-	}
-	getRequiredDataTypes() {
-		return [];
 	}
 };
 
@@ -1698,19 +1679,11 @@ var Controller = class extends Commands {
 		this.eboWsFrontCtrl = eboWsFrontCtrl;
 		this.eboWsBackCtrl = eboWsBackCtrl;
 	}
-	getRequiredDataTypes() {
-		return [EboPlayerDataType.CurrentTrack];
-	}
-	getRequiredDataTypesRecursive() {
-		return this.getRequiredDataTypes();
-	}
-	async getRequiredData(views) {
-		let requiredData = /* @__PURE__ */ new Set();
-		views.forEach((v) => {
-			v.getRequiredDataTypesRecursive().forEach((dataType) => requiredData.add(dataType));
-		});
-		this.getRequiredDataTypesRecursive().forEach(((dataType) => requiredData.add(dataType)));
-		for (const dataType of requiredData) await this.fetchRequiredData(dataType);
+	async getInitialData(views) {
+		this.model.setVolume(await this.mopidyProxy.fetchVolume());
+		await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTlTrack());
+		this.model.setPlayState(await this.mopidyProxy.fetchPlayState());
+		this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 		await this.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
 		this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
@@ -1722,7 +1695,7 @@ var Controller = class extends Commands {
 	initialize(views) {
 		this.mopidy.on("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
-			await this.getRequiredData(views);
+			await this.getInitialData(views);
 			this.model.setHistory(await this.webProxy.fetchHistory());
 		});
 		this.mopidy.on("state:offline", () => {
@@ -1790,25 +1763,6 @@ var Controller = class extends Commands {
 			this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
 			this.model.dispatchEboEvent("scanFinished.eboplayer", {});
 		});
-	}
-	async fetchRequiredData(dataType) {
-		switch (dataType) {
-			case EboPlayerDataType.Volume:
-				let volume = await this.mopidyProxy.fetchVolume();
-				this.model.setVolume(volume);
-				break;
-			case EboPlayerDataType.CurrentTrack:
-				let track = await this.mopidyProxy.fetchCurrentTlTrack();
-				await this.setCurrentTrackAndFetchDetails(track);
-				break;
-			case EboPlayerDataType.PlayState:
-				let state = await this.mopidyProxy.fetchPlayState();
-				this.model.setPlayState(state);
-				break;
-			case EboPlayerDataType.TrackList:
-				this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
-				break;
-		}
 	}
 	async fetchAllAlbums() {
 		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
@@ -2156,9 +2110,6 @@ var PlayerBarView = class extends View {
 		if (selectedTrack && currentTrack != selectedTrack) show_info = true;
 		if (currentView != Views.NowPlaying) show_info = true;
 		document.getElementById(this.componentId).setAttribute("show_info", show_info.toString());
-	}
-	getRequiredDataTypes() {
-		return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];
 	}
 	onButtonBarImgClicked() {
 		this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
@@ -2520,9 +2471,6 @@ var TimelineView = class extends View {
     </td>
             `;
 	}
-	getRequiredDataTypes() {
-		return [EboPlayerDataType.TrackList];
-	}
 	onCurrentTrackChanged() {
 		this.setCurrentTrack();
 	}
@@ -2760,9 +2708,6 @@ var ComponentViewAdapter = class extends View {
 		this.componentId = id;
 	}
 	bind() {}
-	getRequiredDataTypes() {
-		return [];
-	}
 };
 
 //#endregion
@@ -2794,13 +2739,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		let currentTrackUri = this.state.getModel().getCurrentTrack();
 		let selectedTrackUri = this.state.getModel().getSelectedTrack();
 		await this.setUri(selectedTrackUri ?? currentTrackUri);
-	}
-	getRequiredDataTypes() {
-		return [
-			EboPlayerDataType.CurrentTrack,
-			EboPlayerDataType.TrackList,
-			...super.getRequiredDataTypes()
-		];
 	}
 	onStreamLinesChanged() {
 		let selectedTrackUri = this.state.getModel().getSelectedTrack();
@@ -3325,9 +3263,6 @@ var MainView = class extends View {
 				break;
 			default: return unreachable(view);
 		}
-	}
-	getRequiredDataTypes() {
-		return [EboPlayerDataType.TrackList];
 	}
 	async onBigTrackAlbumImgClick() {
 		let selectedTrack = this.state.getModel().getSelectedTrack();
@@ -5314,9 +5249,6 @@ var BrowseView = class extends ComponentView {
 	onModelBrowseFilterChanged() {
 		this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
 	}
-	getRequiredDataTypes() {
-		return [EboPlayerDataType.TrackList];
-	}
 	async onPlayItemListClick(detail) {
 		await this.state.getPlayer().clear();
 		await this.state.getController().addCurrentSearchResultsToPlayer();
@@ -5346,9 +5278,6 @@ var BrowseView = class extends ComponentView {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/albumView.ts
 var AlbumView = class extends ComponentView {
-	getRequiredDataTypes() {
-		throw new Error("Method not implemented.");
-	}
 	onDialogOkClickedCallback = () => true;
 	dialog;
 	constructor(state, dialog, component) {
@@ -5561,9 +5490,6 @@ var RememberedView = class extends ComponentView {
 		this.component.addEboEventListener("deleteRemember.eboplayer", async (ev) => {
 			await this.state.getController().deleteRemember(ev.detail.id);
 		});
-	}
-	getRequiredDataTypes() {
-		return [];
 	}
 };
 

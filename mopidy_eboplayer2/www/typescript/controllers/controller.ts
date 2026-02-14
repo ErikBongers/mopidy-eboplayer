@@ -1,12 +1,11 @@
 import {Model} from "../model";
 import {Commands} from "../commands";
 import models, {core, Mopidy} from "../../js/mopidy";
-import {DataRequester} from "../views/dataRequester";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
 import {createAllRefs, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, EboPlayerDataType, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -23,7 +22,7 @@ export const LIBRARY_PROTOCOL = "eboback:";
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
 //The controller should not listen to model events, to avoid circular updates (dead loops).
-export class Controller extends Commands implements DataRequester{
+export class Controller extends Commands {
     protected model: Model;
     public mopidyProxy: MopidyProxy;
     public webProxy: WebProxy;
@@ -45,24 +44,11 @@ export class Controller extends Commands implements DataRequester{
         this.eboWsBackCtrl = eboWsBackCtrl;
     }
 
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.CurrentTrack];
-    }
-    getRequiredDataTypesRecursive(): EboPlayerDataType[] {
-        return this.getRequiredDataTypes();
-    }
-
-    async getRequiredData(views: View[])  {
-        let requiredData = new Set<EboPlayerDataType>();
-        views.forEach(v => {
-            v.getRequiredDataTypesRecursive().forEach((dataType: EboPlayerDataType) => requiredData.add(dataType));
-        });
-        this.getRequiredDataTypesRecursive().forEach((dataType => requiredData.add(dataType)));
-
-        for (const dataType of requiredData) {
-            await this.fetchRequiredData(dataType);
-        }
-
+    async getInitialData(views: View[])  {
+        this.model.setVolume(await this.mopidyProxy.fetchVolume());
+        await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTlTrack());
+        this.model.setPlayState((await this.mopidyProxy.fetchPlayState()) as PlayState);
+        this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
         await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
         this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
@@ -75,7 +61,7 @@ export class Controller extends Commands implements DataRequester{
     initialize (views: View[]) {
         this.mopidy.on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
-            await this.getRequiredData(views);
+            await this.getInitialData(views);
             this.model.setHistory(await this.webProxy.fetchHistory());
         });
 
@@ -175,26 +161,6 @@ export class Controller extends Commands implements DataRequester{
             this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
             this.model.dispatchEboEvent("scanFinished.eboplayer", {});
         });
-    }
-
-    async fetchRequiredData(dataType: EboPlayerDataType) {
-        switch (dataType) {
-            case EboPlayerDataType.Volume:
-                let volume = await this.mopidyProxy.fetchVolume();
-                this.model.setVolume(volume);
-                break;
-            case  EboPlayerDataType.CurrentTrack:
-                let track = await this.mopidyProxy.fetchCurrentTlTrack();
-                await this.setCurrentTrackAndFetchDetails(track);
-                break;
-            case  EboPlayerDataType.PlayState:
-                let state = await this.mopidyProxy.fetchPlayState();
-                this.model.setPlayState(state as PlayState);
-                break;
-            case  EboPlayerDataType.TrackList:
-                this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
-                break;
-        }
     }
 
     async fetchAllAlbums() {

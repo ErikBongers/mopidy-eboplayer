@@ -9,9 +9,6 @@ import {AlbumToView} from "../model";
 import {State} from "../playerState";
 
 export class AlbumView extends ComponentView<EboBigAlbumComp> {
-    override getRequiredDataTypes(): EboPlayerDataType[] {
-        throw new Error("Method not implemented.");
-    }
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
     private dialog: EboDialog;
 

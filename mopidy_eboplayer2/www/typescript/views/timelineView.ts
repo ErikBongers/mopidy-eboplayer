@@ -156,10 +156,6 @@ export class TimelineView extends View {
             `;
     }
 
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.TrackList];
-    }
-
     private onCurrentTrackChanged() {
         this.setCurrentTrack();
     }

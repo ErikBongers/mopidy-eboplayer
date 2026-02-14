@@ -21,8 +21,4 @@ export class HeaderView extends View {
                 break;
         }
     }
-
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [];
-    }
 }

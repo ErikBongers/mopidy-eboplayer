@@ -124,10 +124,6 @@ export class PlayerBarView extends View {
         comp.setAttribute("show_info", show_info.toString());
     }
 
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.PlayState, EboPlayerDataType.Volume];
-    }
-
     private onButtonBarImgClicked() {
         this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
         this.state.getController().setView(Views.NowPlaying);

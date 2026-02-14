@@ -12,9 +12,4 @@ export class ComponentViewAdapter extends View {
 
     bind(): void {
     }
-
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [];
-    }
-
 }

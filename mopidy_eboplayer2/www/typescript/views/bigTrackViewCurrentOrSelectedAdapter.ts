@@ -36,10 +36,6 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         await this.setUri(selectedTrackUri ?? currentTrackUri);
     }
 
-    override getRequiredDataTypes(): EboPlayerDataType[] {
-        return [EboPlayerDataType.CurrentTrack, EboPlayerDataType.TrackList, ...super.getRequiredDataTypes()];
-    }
-
     protected onStreamLinesChanged() {
         let selectedTrackUri = this.state.getModel().getSelectedTrack();
         let currentTrackUri = this.state.getModel().getCurrentTrack();

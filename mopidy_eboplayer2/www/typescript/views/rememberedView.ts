@@ -17,8 +17,4 @@ export class RememberedView extends ComponentView<EboRememberedComp>{
         });
 
     }
-
-    getRequiredDataTypes(): EboPlayerDataType[] {
-        return [];
-    }
 }
