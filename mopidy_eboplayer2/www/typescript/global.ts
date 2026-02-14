@@ -50,7 +50,7 @@ export function console_yellow(msg: string) {
 }
 
 export function unreachable(x: never): never {
-    throw new Error("Didn't expect to get here");
+    throw new Error("This error will never be thrown. It is used for type safety.");
 }
 
 // Source - https://stackoverflow.com/a/51389944
