@@ -1,6 +1,6 @@
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {AllUris, MopidyHistoryLine, HistoryRef, ImageLookup, PlaylistUri} from "../modelTypes";
+import {AllUris, MopidyHistoryLine, HistoryRef, ImageLookup, PlaylistUri, PlaybackFlags} from "../modelTypes";
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
@@ -95,22 +95,6 @@ export class MopidyProxy {
         return dedupLines;
     }
 
-    async fetchPlaybackOptions() {
-        let promises = [
-            await this.commands.core.tracklist.getRepeat() as Promise<boolean>,
-            await this.commands.core.tracklist.getRandom() as Promise<boolean>,
-            await this.commands.core.tracklist.getConsume() as Promise<boolean>,
-            await this.commands.core.tracklist.getSingle() as Promise<boolean>,
-        ];
-        let results = await Promise.all(promises);
-        return {
-                repeat: results[0],
-                random: results[1],
-                consume: results[2],
-                single: results[3],
-            };
-    }
-
     async fetchCurrentTrack() {
         return await this.commands.core.playback.getCurrentTlTrack() as TlTrack | null;
     }
@@ -145,5 +129,21 @@ export class MopidyProxy {
 
     savePlaylist(playlist: Playlist) {
         return this.commands.core.playlists.save(playlist);
+    }
+
+    setRepeat(repeat: boolean) {
+        return this.commands.core.tracklist.setRepeat(repeat);
+    }
+
+    setSingle(single: boolean) {
+        return this.commands.core.tracklist.setSingle(single);
+    }
+
+    async getPlaybackFlags(): Promise<PlaybackFlags> {
+        let repeat = await this.commands.core.tracklist.getRepeat();
+        let single = await this.commands.core.tracklist.getSingle();
+        let random = await this.commands.core.tracklist.getRandom();
+        let consume = await this.commands.core.tracklist.getConsume();
+        return {repeat, single, random, consume};
     }
 }

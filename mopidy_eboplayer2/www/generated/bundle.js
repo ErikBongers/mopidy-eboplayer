@@ -413,7 +413,7 @@ function console_yellow(msg) {
 	console.log(`%c${msg}`, "background-color: yellow");
 }
 function unreachable(x) {
-	throw new Error("Didn't expect to get here");
+	throw new Error("This error will never be thrown. It is used for type safety.");
 }
 function arrayToggle(arr, item) {
 	if (arr.includes(item)) return arr.filter((i) => i !== item);
@@ -918,7 +918,7 @@ var Model = class extends EboEventTargetClass {
 		type: MessageType.None,
 		message: ""
 	};
-	playbackModesState = {
+	playbackMode = {
 		repeat: false,
 		random: false,
 		consume: false,
@@ -1077,10 +1077,11 @@ var Model = class extends EboEventTargetClass {
 			message
 		});
 	}
-	setPlaybackState(state) {
-		this.playbackModesState = { ...state };
-		this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
+	setPlaybackMode(state) {
+		this.playbackMode = { ...state };
+		this.dispatchEboEvent("playbackModeChanged.eboplayer", {});
 	}
+	getPlaybackMode = () => this.playbackMode;
 	getVolume = () => this.volume;
 	getPlayState() {
 		return this.playState;
@@ -1683,6 +1684,7 @@ var Controller = class extends Commands {
 		this.model.setVolume(await this.mopidyProxy.fetchVolume());
 		await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTlTrack());
 		this.model.setPlayState(await this.mopidyProxy.fetchPlayState());
+		this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
 		this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 		await this.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
@@ -1702,7 +1704,7 @@ var Controller = class extends Commands {
 			this.model.setConnectionState(ConnectionState.Offline);
 		});
 		this.mopidy.on("event:optionsChanged", async () => {
-			this.model.setPlaybackState(await this.mopidyProxy.fetchPlaybackOptions());
+			this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
 		});
 		this.mopidy.on("event:trackPlaybackStarted", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
@@ -2005,6 +2007,12 @@ var Controller = class extends Commands {
 		await this.diveIntoBrowseResult(args.name, args.uri, args.type, false);
 		this.setView(Views.Browse);
 	}
+	async setRepeat(repeat) {
+		await this.mopidyProxy.setRepeat(repeat);
+	}
+	async setSingle(single) {
+		await this.mopidyProxy.setSingle(single);
+	}
 };
 
 //#endregion
@@ -2029,6 +2037,9 @@ var PlayerBarView = class extends View {
 		});
 		this.state.getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", () => {
 			this.onActiveStreamLinesChanged();
+		});
+		this.state.getModel().addEboEventListener("playbackModeChanged.eboplayer", () => {
+			this.onPlaybackModeChanged();
 		});
 		let comp = document.getElementById(this.componentId);
 		comp.addEboEventListener("playPressed.eboplayer", async () => {
@@ -2122,7 +2133,36 @@ var PlayerBarView = class extends View {
 		let lines = this.state.getModel().getActiveStreamLines();
 		document.getElementById(this.componentId).setAttribute("text", lines.active_titles.join("\n"));
 	}
-	changeRepeat(selected) {}
+	async changeRepeat(selected) {
+		switch (selected) {
+			case "repeat":
+				await this.state.getController().setRepeat(true);
+				await this.state.getController().setSingle(false);
+				break;
+			case "single":
+				await this.state.getController().setRepeat(false);
+				await this.state.getController().setSingle(true);
+				break;
+			case "repeatSingle":
+				await this.state.getController().setRepeat(true);
+				await this.state.getController().setSingle(true);
+				break;
+			case null:
+			case "justPlay":
+				await this.state.getController().setRepeat(false);
+				await this.state.getController().setSingle(false);
+				break;
+			default: unreachable(selected);
+		}
+	}
+	onPlaybackModeChanged() {
+		let comp = document.getElementById(this.componentId);
+		let modes = this.state.getModel().getPlaybackMode();
+		let option = "justPlay";
+		if (modes.repeat) if (modes.single) option = "repeatSingle";
+		else option = "repeat";
+		comp.playMode = option;
+	}
 };
 
 //#endregion
@@ -3972,6 +4012,13 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/eboPlayerBar.ts
 var EboPlayerBar = class EboPlayerBar extends EboComponent {
+	get playMode() {
+		return this._playMode;
+	}
+	set playMode(value) {
+		this._playMode = value;
+		this.requestUpdate();
+	}
 	static tagName = "ebo-player-bar";
 	static observedAttributes = [
 		"play_state",
@@ -3994,6 +4041,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 	text = "";
 	image_url = "";
 	stop_or_pause;
+	_playMode = "justPlay";
 	static styleText = `
         <style>
             img {
@@ -4078,7 +4126,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
                         <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
                         <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
-                        <ebo-option value="repeatOne" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
+                        <ebo-option value="repeatSingle" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
                     </ebo-dropdown>
                 </div>
             </div>
@@ -4152,6 +4200,15 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 		shadow.getElementById("btnNext").style.opacity = this.allow_next ? "1" : "0.5";
 		shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";
 		shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
+		switch (this.playMode) {
+			case "repeat":
+			case "repeatSingle":
+			case "justPlay":
+			case "single":
+				shadow.getElementById("btnRepeat")?.setAttribute("value", this.playMode);
+				break;
+			default: unreachable(this.playMode);
+		}
 		let titleEl = shadow.getElementById("text");
 		let img = shadow.querySelector("img");
 		titleEl.style.display = this.show_info ? "" : "none";
@@ -4334,21 +4391,6 @@ var MopidyProxy = class {
 			return true;
 		});
 	}
-	async fetchPlaybackOptions() {
-		let promises = [
-			await this.commands.core.tracklist.getRepeat(),
-			await this.commands.core.tracklist.getRandom(),
-			await this.commands.core.tracklist.getConsume(),
-			await this.commands.core.tracklist.getSingle()
-		];
-		let results = await Promise.all(promises);
-		return {
-			repeat: results[0],
-			random: results[1],
-			consume: results[2],
-			single: results[3]
-		};
-	}
 	async fetchCurrentTrack() {
 		return await this.commands.core.playback.getCurrentTlTrack();
 	}
@@ -4375,6 +4417,24 @@ var MopidyProxy = class {
 	}
 	savePlaylist(playlist) {
 		return this.commands.core.playlists.save(playlist);
+	}
+	setRepeat(repeat) {
+		return this.commands.core.tracklist.setRepeat(repeat);
+	}
+	setSingle(single) {
+		return this.commands.core.tracklist.setSingle(single);
+	}
+	async getPlaybackFlags() {
+		let repeat = await this.commands.core.tracklist.getRepeat();
+		let single = await this.commands.core.tracklist.getSingle();
+		let random = await this.commands.core.tracklist.getRandom();
+		let consume = await this.commands.core.tracklist.getConsume();
+		return {
+			repeat,
+			single,
+			random,
+			consume
+		};
 	}
 };
 
@@ -5663,7 +5723,8 @@ var EboOption = class EboOption extends EboComponent {
 //#region mopidy_eboplayer2/www/typescript/components/eboIconDropdown.ts
 var EboIconDropdown = class EboIconDropdown extends EboComponent {
 	static tagName = "ebo-dropdown";
-	static observedAttributes = [];
+	static observedAttributes = ["value"];
+	value = "justPlay";
 	static styleText = `
         <style>
             .menuButton {
@@ -5717,7 +5778,12 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 		this.requestRender();
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestRender();
+		switch (name) {
+			case "value":
+				this[name] = newValue;
+				break;
+		}
+		this.requestUpdate();
 	}
 	closeMenu() {
 		this.getShadow().getElementById("menu").hidePopover();
@@ -5734,6 +5800,9 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 		this.requestUpdate();
 	}
 	update(shadow) {
+		this.querySelectorAll("ebo-option").forEach((option) => {
+			option.toggleAttribute("selected", option.getAttribute("value") === this.value);
+		});
 		let button = shadow.getElementById("menuButton");
 		let selectedItem = this.querySelector("ebo-option[selected]");
 		if (!selectedItem) selectedItem = this.querySelector("ebo-option");

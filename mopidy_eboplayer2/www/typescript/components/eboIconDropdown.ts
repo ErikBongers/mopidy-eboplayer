@@ -1,9 +1,11 @@
 import {EboComponent} from "./EboComponent";
+import {PlaybackUserOptions} from "../modelTypes";
 
 export class EboIconDropdown extends EboComponent {
     static override readonly tagName=  "ebo-dropdown";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes: string[] = [];
+    static observedAttributes: string[] = ["value"];
+    private value: PlaybackUserOptions = "justPlay";
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -64,7 +66,12 @@ export class EboIconDropdown extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestRender();
+        switch (name) {
+            case "value":
+                this[name] = newValue as PlaybackUserOptions;
+                break;
+        }
+        this.requestUpdate();
         }
 
     closeMenu() {
@@ -80,12 +87,18 @@ export class EboIconDropdown extends EboComponent {
             (ev.currentTarget as HTMLElement).setAttribute("selected", "true");
             let value = (ev.currentTarget as HTMLElement).getAttribute("value");
             this.requestUpdate();
-            this.dispatchEboEvent("optionSelected.eboplayer", { selected: value});
+            this.dispatchEboEvent("optionSelected.eboplayer", { selected: value as PlaybackUserOptions});
         }));
         this.requestUpdate();
     }
 
     override update(shadow:ShadowRoot) {
+        //set selected item based on value attribute.
+        let options = this.querySelectorAll("ebo-option");
+        options.forEach(option => {
+            option.toggleAttribute("selected", option.getAttribute("value") === this.value);
+        });
+
         //get selected item and duplicate it in the button.
         let button = shadow.getElementById("menuButton") as HTMLButtonElement;
         let selectedItem = this.querySelector("ebo-option[selected]") as HTMLElement;

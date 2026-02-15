@@ -278,7 +278,7 @@ export interface Message {
     message: string
 }
 
-export interface PlaybackModesState {
+export interface PlaybackFlags {
     repeat: boolean,
     random: boolean,
     consume: boolean,
@@ -370,3 +370,5 @@ export enum EboPlayerDataType {//todo: move to types.
     PlayState,
     TrackList,
 }
+
+export type PlaybackUserOptions = "justPlay" | "repeat" | "repeatSingle" | "single";

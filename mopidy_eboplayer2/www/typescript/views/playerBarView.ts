@@ -1,11 +1,11 @@
 import {View} from "./view";
-import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, Views} from "../modelTypes";
+import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaybackUserOptions, Views} from "../modelTypes";
 import {MainView} from "./mainView";
 import {EboPlayerBar} from "../components/eboPlayerBar";
 import {State} from "../playerState";
-import {console_yellow} from "../global";
+import {console_yellow, unreachable} from "../global";
 
-export class PlayerBarView extends View {
+export class PlayerBarView extends View { //todo: use ComponentView
     private componentId: string;
     private parent: MainView;
 
@@ -27,6 +27,9 @@ export class PlayerBarView extends View {
         });
         this.state.getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", () => {
             this.onActiveStreamLinesChanged();
+        });
+        this.state.getModel().addEboEventListener("playbackModeChanged.eboplayer", () => {
+            this.onPlaybackModeChanged();
         });
 
         let comp = document.getElementById(this.componentId) as EboPlayerBar;
@@ -139,7 +142,40 @@ export class PlayerBarView extends View {
         comp.setAttribute("text", lines.active_titles.join("\n"));
     }
 
-    private changeRepeat(selected: string | null) {
+    private async changeRepeat(selected: PlaybackUserOptions | null) {
+        switch(selected) {
+            case "repeat":
+                await this.state.getController().setRepeat(true);
+                await this.state.getController().setSingle(false);
+                break;
+            case "single":
+                await this.state.getController().setRepeat(false);
+                await this.state.getController().setSingle(true);
+                break;
+            case "repeatSingle":
+                await this.state.getController().setRepeat(true);
+                await this.state.getController().setSingle(true);
+                break;
+            case null:
+            case "justPlay":
+                await this.state.getController().setRepeat(false);
+                await this.state.getController().setSingle(false);
+                break;
+            default:
+                unreachable(selected);
+        }
+    }
 
+    private onPlaybackModeChanged() {
+        let comp = document.getElementById(this.componentId) as EboPlayerBar;
+        let modes = this.state.getModel().getPlaybackMode();
+        let option: PlaybackUserOptions = "justPlay";
+        if(modes.repeat) {
+            if(modes.single)
+                option = "repeatSingle";
+            else
+                option = "repeat";
+        }
+        comp.playMode = option;
     }
 }

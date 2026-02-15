@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackModesState, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -24,6 +24,7 @@ export interface ViewModel extends EboEventTargetClass {
     getAlbumToView(): AlbumToView | null;
     getGenreDefs(): Map<string, GenreDef> | null;
     getCurrentProgramTitle(): string;
+    getPlaybackMode(): PlaybackFlags;
 }
 
 export interface AlbumToView {
@@ -47,7 +48,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
         message: ""
     };
 
-    playbackModesState: PlaybackModesState = {
+    private playbackMode: PlaybackFlags = {
         repeat: false,
         random: false,
         consume: false,
@@ -241,10 +242,11 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.setMessage( { type: MessageType.Error, message});
     }
 
-    setPlaybackState(state: PlaybackModesState) {
-        this.playbackModesState = {...state};
-        this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
+    setPlaybackMode(state: PlaybackFlags) {
+        this.playbackMode = {...state};
+        this.dispatchEboEvent("playbackModeChanged.eboplayer", {});
     }
+    getPlaybackMode = () => this.playbackMode;
 
     getVolume = () => this.volume;
 

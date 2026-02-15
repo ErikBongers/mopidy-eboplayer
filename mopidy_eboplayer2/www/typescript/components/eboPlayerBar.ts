@@ -1,7 +1,16 @@
 import {EboComponent} from "./EboComponent";
-import {inverseQuadratic100, quadratic100} from "../global";
+import {inverseQuadratic100, quadratic100, unreachable} from "../global";
+import {PlaybackUserOptions} from "../modelTypes";
 
 export class EboPlayerBar extends EboComponent {
+    get playMode(): PlaybackUserOptions {
+        return this._playMode;
+    }
+
+    set playMode(value: PlaybackUserOptions) {
+        this._playMode = value;
+        this.requestUpdate();
+    }
     static override readonly tagName=  "ebo-player-bar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text", "stop_or_pause"];
@@ -15,6 +24,7 @@ export class EboPlayerBar extends EboComponent {
     private text: string = "";
     private image_url: string = "";
     private stop_or_pause: string;
+    private _playMode: PlaybackUserOptions = "justPlay";
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -100,9 +110,9 @@ export class EboPlayerBar extends EboComponent {
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
                     <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
-                        <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
-                        <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
-                        <ebo-option value="repeatOne" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
+                        <ebo-option value="${"justPlay" satisfies PlaybackUserOptions}"><i class="fa fa-ellipsis-h"></i></ebo-option>
+                        <ebo-option value="${"repeat" satisfies PlaybackUserOptions}"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
+                        <ebo-option value="${"repeatSingle" satisfies PlaybackUserOptions}" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
                     </ebo-dropdown>
                 </div>
             </div>
@@ -179,6 +189,17 @@ export class EboPlayerBar extends EboComponent {
         shadow.getElementById("btnPrev").style.opacity = this.allow_prev ? "1" : "0.5";
         // @ts-ignore
         shadow.getElementById("btnPlay").style.opacity = this.allow_play ? "1" : "0.5";
+
+        switch (this.playMode) {
+            case "repeat":
+            case "repeatSingle":
+            case "justPlay":
+            case "single":
+                shadow.getElementById("btnRepeat")?.setAttribute("value", this.playMode);
+                break;
+            default:
+                unreachable(this.playMode);
+        }
 
         let titleEl = shadow.getElementById("text") as HTMLElement;
         let img = shadow.querySelector("img") as HTMLImageElement;

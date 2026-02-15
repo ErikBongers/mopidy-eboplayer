@@ -1,64 +1,65 @@
-import {AlbumUri, AllUris, RememberId, TrackUri} from "./modelTypes";
+import {AlbumUri, AllUris, PlaybackUserOptions, RememberId, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
 import {RefType} from "./refs";
 
 export interface EboEventHandlersEventMap {
-    "remembersChanged.eboplayer"                : VoidArgs,
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
-    "scanStatusChanged.eboplayer"               : StringArgs,
-    "whatsNewRequested.eboplayer"               : VoidArgs,
-    "scanRequested.eboplayer"                   : VoidArgs,
-    "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
-    "updateAlbumData.eboplayer"                 : UriArgs,
-    "browseToArtist.eboplayer"                  : RefArgs,
-    "optionSelected.eboplayer"                  : OptionArgs,
-    "rememberedRequested.eboplayer"             : VoidArgs,
-    "scanFinished.eboplayer"                    : VoidArgs,
-    "rememberStreamLines.eboplayer"             : StreamLinesArgs,
-    "deleteRemember.eboplayer"                  : RemeberIdArgs,
-    "programTitleChanged.eboplayer"             : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
-    "displayModeChanged.eboplayer"              : DisplayModeArgs,
-    "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "addTrackClicked.eboplayer"                 : TrackUriArgs,
     "albumToViewChanged.eboplayer"              : VoidArgs,
-    "breadCrumbClick.eboplayer"                 : BreadcrumbArgs,
-    "breadCrumbsChanged.eboplayer"              : VoidArgs,
-    "modelBrowseFilterChanged.eboplayer"        : VoidArgs,
-    "guiBrowseFilterChanged.eboplayer"          : VoidArgs,
-    "browseResultClick.eboplayer"               : BrowseResultClickArgs,
-    "browseResultDblClick.eboplayer"            : UriArgs,
-    "buttonBarAlbumImgClicked.eboplayer"        : VoidArgs,
-    "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
     "bigTrackAlbumImgClicked.eboplayer"         : VoidArgs,
     "bigTrackAlbumSmallImgClicked.eboplayer"    : VoidArgs,
+    "breadCrumbClick.eboplayer"                 : BreadcrumbArgs,
+    "breadCrumbsChanged.eboplayer"              : VoidArgs,
+    "browseResultClick.eboplayer"               : BrowseResultClickArgs,
+    "browseResultDblClick.eboplayer"            : UriArgs,
+    "browseToArtist.eboplayer"                  : RefArgs,
+    "buttonBarAlbumImgClicked.eboplayer"        : VoidArgs,
     "changingVolume.eboplayer"                  : VolumeEventArgs,
     "connectionChanged.eboplayer"               : VoidArgs, //todo: never received?
     "currentImageSet.eboplayer"                 : VoidArgs, //todo: never received?
     "currentRefsLoaded.eboplayer"               : VoidArgs,
     "currentTrackChanged.eboplayer"             : VoidArgs,
+    "deleteRemember.eboplayer"                  : RemeberIdArgs,
+    "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
+    "dialogOkClicked.eboplayer"                 : DialogArgs,
+    "displayModeChanged.eboplayer"              : DisplayModeArgs,
+    "editClicked.eboplayer"                     : GuiSourceArgs,
+    "genreDefsChanged.eboplayer"                : VoidArgs,
+    "guiBrowseFilterChanged.eboplayer"          : VoidArgs,
     "historyChanged.eboplayer"                  : VoidArgs,
     "longPress.eboplayer"                       : VoidArgs,
     "messageChanged.eboplayer"                  : VoidArgs,
+    "modelBrowseFilterChanged.eboplayer"        : VoidArgs,
+    "newPlaylistClicked.eboplayer"              : GuiSourceArgs,
+    "optionSelected.eboplayer"                  : OptionArgs,
     "pausePressed.eboplayer"                    : VoidArgs,
     "playItemListClicked.eboplayer"             : GuiSourceArgs,
     "playPressed.eboplayer"                     : VoidArgs,
-    "playbackStateChanged.eboplayer"            : VoidArgs,
     "playTrackClicked.eboplayer"                : TrackUriArgs,
+    "playbackModeChanged.eboplayer"             : VoidArgs,
+    "playbackStateChanged.eboplayer"            : VoidArgs,
+    "pressedChange.eboplayer"                   : PressedArgs,
+    "programTitleChanged.eboplayer"             : VoidArgs,
     "refsFiltered.eboplayer"                    : VoidArgs,
+    "rememberStreamLines.eboplayer"             : StreamLinesArgs,
+    "rememberedRequested.eboplayer"             : VoidArgs,
+    "remembersChanged.eboplayer"                : VoidArgs,
+    "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
+    "saveClicked.eboplayer"                     : SaveUriArgs,
+    "scanFinished.eboplayer"                    : VoidArgs,
+    "scanRequested.eboplayer"                   : VoidArgs,
+    "scanStatusChanged.eboplayer"               : StringArgs,
     "selectedTrackChanged.eboplayer"            : VoidArgs,
     "stopPressed.eboplayer"                     : VoidArgs,
+    "trackClicked.eboplayer"                    : UriArgs,
     "trackListChanged.eboplayer"                : VoidArgs,
+    "updateAlbumData.eboplayer"                 : UriArgs,
+    "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
     "viewChanged.eboplayer"                     : VoidArgs,
     "volumeChanged.eboplayer"                   : VoidArgs,
-    "editClicked.eboplayer"                     : GuiSourceArgs,
-    "saveClicked.eboplayer"                     : SaveUriArgs,
-    "newPlaylistClicked.eboplayer"              : GuiSourceArgs,
-    "dialogOkClicked.eboplayer"                 : DialogArgs,
-    "genreDefsChanged.eboplayer"                : VoidArgs,
-    "trackClicked.eboplayer"                    : UriArgs,
-    "pressedChange.eboplayer"                   : PressedArgs,
+    "whatsNewRequested.eboplayer"               : VoidArgs,
 }
 
 export default interface EboEventTarget {
@@ -97,7 +98,7 @@ export interface RemeberIdArgs extends EboEventArgs {
 }
 
 export interface OptionArgs extends EboEventArgs {
-    selected: string | null
+    selected: PlaybackUserOptions | null
 }
 
 export interface UriArgs extends EboEventArgs {

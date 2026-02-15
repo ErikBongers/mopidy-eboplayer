@@ -48,6 +48,7 @@ export class Controller extends Commands {
         this.model.setVolume(await this.mopidyProxy.fetchVolume());
         await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTlTrack());
         this.model.setPlayState((await this.mopidyProxy.fetchPlayState()) as PlayState);
+        this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
         this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
         await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
@@ -70,7 +71,7 @@ export class Controller extends Commands {
         });
 
         this.mopidy.on('event:optionsChanged', async () =>{
-            this.model.setPlaybackState(await this.mopidyProxy.fetchPlaybackOptions());
+            this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
         });
 
         this.mopidy.on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: try to link `name` argument to `data` type automatically.
@@ -468,5 +469,13 @@ export class Controller extends Commands {
         await this.clearBreadCrumbs();
         await this.diveIntoBrowseResult(args.name, args.uri, args.type, false);
         this.setView(Views.Browse);
+    }
+
+    async setRepeat(repeat: boolean) {
+        await this.mopidyProxy.setRepeat(repeat);
+    }
+
+    async setSingle(single: boolean) {
+        await this.mopidyProxy.setSingle(single);
     }
 }
