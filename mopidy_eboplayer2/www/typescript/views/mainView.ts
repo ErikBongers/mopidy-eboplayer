@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {EboPlayerDataType, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, TrackUri, Views} from "../modelTypes";
+import {ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {unreachable} from "../global";

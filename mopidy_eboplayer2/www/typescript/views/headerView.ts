@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {EboPlayerDataType, MessageType} from "../modelTypes";
+import {MessageType} from "../modelTypes";
 
 export class HeaderView extends View {
     bind() {

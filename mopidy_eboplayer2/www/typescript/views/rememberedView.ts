@@ -1,5 +1,4 @@
 import {ComponentView} from "./view";
-import {EboPlayerDataType} from "../modelTypes";
 import {EboRememberedComp} from "../components/eboRememberedComp";
 import {State} from "../playerState";
 

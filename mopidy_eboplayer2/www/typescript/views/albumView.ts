@@ -1,5 +1,5 @@
 import {ComponentView} from "./view";
-import {AlbumUri, ArtistUri, EboPlayerDataType, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
+import {AlbumUri, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {arrayToggle, console_yellow} from "../global";

@@ -1,5 +1,5 @@
 import {ComponentView} from "./view";
-import {AllUris, EboPlayerDataType} from "../modelTypes";
+import {AllUris} from "../modelTypes";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";

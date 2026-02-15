@@ -1,6 +1,6 @@
 import {View} from "./view";
 import {TlId} from "../../js/mopidy";
-import {EboPlayerDataType, FileTrackModel, HistoryLineDef, StreamTrackModel, TrackModel, TrackUri} from "../modelTypes";
+import {HistoryLineDef, TrackUri} from "../modelTypes";
 import {State} from "../playerState";
 
 export class TimelineView extends View {

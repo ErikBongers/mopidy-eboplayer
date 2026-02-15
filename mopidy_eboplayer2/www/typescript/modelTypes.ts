@@ -364,11 +364,4 @@ export interface HistoryLineDef {
     artist: string;
 }
 
-export enum EboPlayerDataType {//todo: move to types.
-    Volume,
-    CurrentTrack,
-    PlayState,
-    TrackList,
-}
-
 export type PlaybackUserOptions = "justPlay" | "repeat" | "repeatSingle" | "single";

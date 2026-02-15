@@ -1,5 +1,4 @@
 import {View} from "./view";
-import {EboPlayerDataType} from "../modelTypes";
 import {State} from "../playerState";
 
 export class ComponentViewAdapter extends View {
