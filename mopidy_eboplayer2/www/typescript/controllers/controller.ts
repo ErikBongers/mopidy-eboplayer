@@ -318,7 +318,7 @@ export class Controller extends Commands {
         let track = await this.cache.lookupTrackCached(trackUri);
         if(track?.type == "stream") {
             let streamLines = await this.fetchStreamLines(trackUri);
-            let remembers = await this.cache.lookupRemembersCached(); //todo: put this in a pre-fetch
+            let remembers = await this.cache.lookupRemembersCached();
             let rememberStrings = remembers.map(r => r.text);
             let expandedStreamLines = streamLines.map(lines => {
                 let lineStr = lines.join("\n");
