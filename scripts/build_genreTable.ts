@@ -34,10 +34,15 @@ function main() {
     let lines = text.split("\n").map(line => line.replace("\r", ""));
 
     let writer = new Writer(fs.createWriteStream(outputFileName));
+
+    writer.write(`insert into genre_defs (name, child, sequence, level) values`, 0);
+
     let parentStack: LineDef[] = [];
     let indent: number = 0;
-    let level = 0;
+    let level = -1;
     let prevLine: LineDef | null = null;
+    let sequence = 0;
+    let comma = "";
     lines
         .filter(line => line.trim().length > 0)
         .forEach(line => {
@@ -60,23 +65,37 @@ function main() {
             if(parentStack.length)
                 parent = parentStack[parentStack.length - 1];
             if(parent)
-                writer.writeLine(`${level}:${parsedLine.indent}: "${parent.name}" > "${parsedLine.name}"`, 0);
+                writeInsert(writer, parent.name, parsedLine.name, sequence, level, comma);
+                // writer.writeLine(`-- insert into genre_defs (name, child, sequence) values('${parent.name}', '${parsedLine.name}', ${sequence});`, 0);
             else
-                writer.writeLine(`${level}:${parsedLine.indent}: "${parsedLine.name}" > null`, 0);
+                writeInsert(writer, parsedLine.name, null, sequence, level, comma);
+                // writer.writeLine(`insert into genre_defs (name, child, sequence) values('${parsedLine.name}', null, ${sequence});`, 0);
 
             prevLine = parsedLine;
+            sequence++;
+            comma = ",";
         });
+    writer.writeLine(";", 0);
+}
+
+function writeInsert(writer: Writer, name: string, child: string | null, sequence: number, level: number, comma: string) {
+    name = name.replace(/'/g, "''");
+    if(child) {
+        child = child?.replace(/'/g, "''");
+        writer.write(`${comma}\n('${name}', '${child}', ${sequence}, ${level})`, 0);
+    } else
+        writer.write(`${comma}\n('${name}', null, ${sequence}, ${level})`, 0);
 }
 
 function parseLine(line: string): LineDef {
     if(line.startsWith("# "))
-        return {indent: 1, name: line.substring(2)};
+        return {indent: 1, name: line.substring(2).trim()};
     if(line.startsWith("## "))
-        return {indent: 2, name: line.substring(3)};
+        return {indent: 2, name: line.substring(3).trim()};
     if(line.startsWith("### "))
-        return {indent: 3, name: line.substring(4)};
+        return {indent: 3, name: line.substring(4).trim()};
     if(line.startsWith("#### "))
-        return {indent: 4, name: line.substring(5)};
+        return {indent: 4, name: line.substring(5).trim()};
     let leadingSpaces = line.search(/\S/);
-    return {indent: leadingSpaces+100, name: line.substring(leadingSpaces)};
+    return {indent: leadingSpaces+100, name: line.substring(leadingSpaces).trim()};
 }

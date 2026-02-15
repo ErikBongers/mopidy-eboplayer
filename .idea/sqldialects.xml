@@ -3,6 +3,7 @@
   <component name="SqlDialectMappings">
     <file url="file://$PROJECT_DIR$/configFiles/history.sql" dialect="SQLite" />
     <file url="file://$PROJECT_DIR$/groupingTestCase.sql" dialect="SQLite" />
+    <file url="file://$PROJECT_DIR$/scripts/genres.sql" dialect="SQLite" />
     <file url="PROJECT" dialect="SQLite" />
   </component>
 </project>
