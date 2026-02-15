@@ -160,6 +160,11 @@ export namespace core {
         | "event:playlistsLoaded"
         ;
 
+    export type FilterField = 'tlid' | "uri";
+    export type FilterCriteria = {
+        [key in FilterField]?: string[];
+    }
+
 }
 
 export class Mopidy {
