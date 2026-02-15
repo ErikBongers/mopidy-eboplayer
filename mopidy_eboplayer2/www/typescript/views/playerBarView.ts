@@ -1,18 +1,13 @@
-import {View} from "./view";
+import {ComponentView} from "./view";
 import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaybackUserOptions, Views} from "../modelTypes";
-import {MainView} from "./mainView";
 import {EboPlayerBar} from "../components/eboPlayerBar";
 import {State} from "../playerState";
-import {console_yellow, unreachable} from "../global";
+import {unreachable} from "../global";
 
-export class PlayerBarView extends View { //todo: use ComponentView
-    private componentId: string;
-    private parent: MainView;
+export class PlayerBarView extends ComponentView<EboPlayerBar> {
 
-    constructor(state: State, containerId: string, parent: MainView) {
-        super(state);
-        this.parent = parent;
-        this.componentId = containerId;
+    constructor(state: State, component: EboPlayerBar) {
+        super(state, component);
     }
 
     bind() {
@@ -32,28 +27,27 @@ export class PlayerBarView extends View { //todo: use ComponentView
             this.onPlaybackModeChanged();
         });
 
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
-        comp.addEboEventListener("playPressed.eboplayer", async () => {
+        this.component.addEboEventListener("playPressed.eboplayer", async () => {
             await this.state.getController().mopidyProxy.sendPlay();
         });
-        comp.addEboEventListener("stopPressed.eboplayer", async () => {
+        this.component.addEboEventListener("stopPressed.eboplayer", async () => {
             await this.state.getController().mopidyProxy.sendStop();
         });
-        comp.addEboEventListener("pausePressed.eboplayer", async () => {
+        this.component.addEboEventListener("pausePressed.eboplayer", async () => {
             await this.state.getController().mopidyProxy.sendPause();
         });
-        comp.addEboEventListener("buttonBarAlbumImgClicked.eboplayer", () => {
+        this.component.addEboEventListener("buttonBarAlbumImgClicked.eboplayer", () => {
             this.onButtonBarImgClicked();
         });
         this.state.getModel().addEboEventListener("volumeChanged.eboplayer", () => {
             this.onVolumeChanged();
         });
-        comp.addEboEventListener("changingVolume.eboplayer", async (ev) => {
+        this.component.addEboEventListener("changingVolume.eboplayer", async (ev) => {
             let value = ev.detail.volume;
             await this.state.getController().mopidyProxy.sendVolume(value);
         });
-        comp.addEboEventListener("optionSelected.eboplayer", async (ev) => {
-            this.changeRepeat(ev.detail.selected);
+        this.component.addEboEventListener("optionSelected.eboplayer", async (ev) => {
+            await this.changeRepeat(ev.detail.selected);
         });
 
         this.state.getModel().addEboEventListener("viewChanged.eboplayer", () => {
@@ -63,15 +57,13 @@ export class PlayerBarView extends View { //todo: use ComponentView
 
     private onVolumeChanged() {
         let volume = this.state.getModel().getVolume();
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
-        comp.setAttribute("volume", volume.toString());
+        this.component.setAttribute("volume", volume.toString());
 
     }
 
     private async onPlaybackStateChanged() {
         let playState = this.state.getModel().getPlayState();
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
-        comp.setAttribute("play_state", playState);
+        this.component.setAttribute("play_state", playState);
         await this.updateComponent();
     }
 
@@ -85,14 +77,13 @@ export class PlayerBarView extends View { //todo: use ComponentView
 
     private async updateComponent() {
         let track = this.state.getModel().getCurrentTrack();
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         if (!track) {
-            comp.setAttribute("text", "");
-            comp.setAttribute("allow_play", "false");
-            comp.setAttribute("allow_prev", "false");
-            comp.setAttribute("allow_next", "false");
-            comp.setAttribute("image_url", "");
-            comp.setAttribute("stop_or_pause", "stop");
+            this.component.setAttribute("text", "");
+            this.component.setAttribute("allow_play", "false");
+            this.component.setAttribute("allow_prev", "false");
+            this.component.setAttribute("allow_next", "false");
+            this.component.setAttribute("image_url", "");
+            this.component.setAttribute("stop_or_pause", "stop");
         } else {
             let trackModel = await this.state.getController().getExpandedTrackModel(track);
             if (isInstanceOfExpandedStreamModel(trackModel)) {
@@ -100,19 +91,19 @@ export class PlayerBarView extends View { //todo: use ComponentView
                 let activeStreamLines = this.state.getModel().getActiveStreamLines();
                 if (activeStreamLines)
                     active_titles = activeStreamLines.active_titles.join("\n");
-                comp.setAttribute("text", active_titles);
-                comp.setAttribute("allow_play", "true");
-                comp.setAttribute("allow_prev", "false");
-                comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.bigImageUrl);
-                comp.setAttribute("stop_or_pause", "stop");
+                this.component.setAttribute("text", active_titles);
+                this.component.setAttribute("allow_play", "true");
+                this.component.setAttribute("allow_prev", "false");
+                this.component.setAttribute("allow_next", "false");
+                this.component.setAttribute("image_url", trackModel.bigImageUrl);
+                this.component.setAttribute("stop_or_pause", "stop");
             } else if (isInstanceOfExpandedTrackModel(trackModel)) {
-                comp.setAttribute("text", trackModel.track.track.name?? "--no name--");
-                comp.setAttribute("allow_play", "true");
-                comp.setAttribute("allow_prev", "false");
-                comp.setAttribute("allow_next", "false");
-                comp.setAttribute("image_url", trackModel.bigImageUrl);
-                comp.setAttribute("stop_or_pause", "pause");
+                this.component.setAttribute("text", trackModel.track.track.name?? "--no name--");
+                this.component.setAttribute("allow_play", "true");
+                this.component.setAttribute("allow_prev", "false");
+                this.component.setAttribute("allow_next", "false");
+                this.component.setAttribute("image_url", trackModel.bigImageUrl);
+                this.component.setAttribute("stop_or_pause", "pause");
             }
         }
         this.showHideInfo();
@@ -127,8 +118,7 @@ export class PlayerBarView extends View { //todo: use ComponentView
             show_info = true;
         if(currentView != Views.NowPlaying)
             show_info = true;
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
-        comp.setAttribute("show_info", show_info.toString());
+        this.component.setAttribute("show_info", show_info.toString());
     }
 
     private onButtonBarImgClicked() {
@@ -138,8 +128,7 @@ export class PlayerBarView extends View { //todo: use ComponentView
 
     private onActiveStreamLinesChanged() {
         let lines = this.state.getModel().getActiveStreamLines();
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
-        comp.setAttribute("text", lines.active_titles.join("\n"));
+        this.component.setAttribute("text", lines.active_titles.join("\n"));
     }
 
     private async changeRepeat(selected: PlaybackUserOptions | null) {
@@ -167,7 +156,6 @@ export class PlayerBarView extends View { //todo: use ComponentView
     }
 
     private onPlaybackModeChanged() {
-        let comp = document.getElementById(this.componentId) as EboPlayerBar;
         let modes = this.state.getModel().getPlaybackMode();
         let option: PlaybackUserOptions = "justPlay";
         if(modes.repeat) {
@@ -176,6 +164,6 @@ export class PlayerBarView extends View { //todo: use ComponentView
             else
                 option = "repeat";
         }
-        comp.playMode = option;
+        this.component.playMode = option;
     }
 }

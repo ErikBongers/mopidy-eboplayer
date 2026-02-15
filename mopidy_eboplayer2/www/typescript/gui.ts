@@ -110,7 +110,7 @@ function setupStuff() {
     let mainView = new MainView(state, browseView, albumView);
     let headerView = new HeaderView(state);
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state,"currentTrackBigView");
-    let buttonBarView = new PlayerBarView(state, "buttonBar", mainView);
+    let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);
     let historyView = new TimelineView(state);
     let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);
 

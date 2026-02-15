@@ -40,7 +40,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.component.addEboEventListener("trackClicked.eboplayer", (ev) => {
             this.component.selected_track_uris = arrayToggle<TrackUri>(this.component.selected_track_uris, ev.detail.uri as TrackUri);
         });
-        //todo: perhaps create an albumView ?
         this.component.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
