@@ -145,10 +145,6 @@ export class Controller extends Commands {
         this.eboWsFrontCtrl.on("event:programTitleChanged", (data: {program_title: string}) => {
             this.model.setCurrentProgramTitle(data.program_title);
         });
-        //todo: the controller should not listen to the model to avoid circular references!
-        this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
-            await this.updateStreamLines();
-        });
         this.eboWsBackCtrl.on((data: any) => {
             console.log(data);
         });
