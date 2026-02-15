@@ -73,12 +73,10 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     private async onPlayItemListClick(_detail: GuiSourceArgs) {
-        //todo: assuming this event is received from an album component!
         await this.state.getPlayer().clearAndPlay(await this.getSelectedUriForAlbum());
     }
 
     private async onAddItemListClick(_detail: GuiSourceArgs) {
-        //todo: assuming this event is received from an album component!
         await this.state.getPlayer().add(await this.getSelectedUriForAlbum());
     }
 
