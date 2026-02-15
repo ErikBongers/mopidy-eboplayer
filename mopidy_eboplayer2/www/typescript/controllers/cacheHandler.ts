@@ -70,7 +70,8 @@ export class CacheHandler extends Commands{
             songlenght: 0,
             ref: allRefsMap.get(track.uri) as ExpandedRef
         };
-        if (!track.name || track.name === '') { //todo: still needed?
+        //just in case...
+        if (!track.name || track.name === '') {
             let parts = track.uri.split('/');
             model.title = decodeURI(parts[parts.length - 1])
         }
@@ -147,7 +148,7 @@ export class CacheHandler extends Commands{
 
     async getAllRefsMapCached() {
         await this.getAllRefsCached();
-        return this.model.getAllRefsMap() as Map<AllUris, ExpandedRef>; //removing NULL from type - assuming a map has been loaded. todo: make a type of this map as we are repeating the type details here.
+        return this.model.getAllRefsMap() as Map<AllUris, ExpandedRef>; //removing NULL from type - assuming a map has been loaded.
     }
 
     async getGenreDefsCached() {
