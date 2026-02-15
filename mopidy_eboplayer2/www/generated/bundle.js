@@ -1091,7 +1091,6 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
 	}
 	setActiveStreamLinesHistory(streamTitles) {
-		if (!streamTitles) return;
 		this.activeStreamLines = streamTitles;
 		this.dispatchEboEvent("activeStreamLinesChanged.eboplayer", {});
 	}

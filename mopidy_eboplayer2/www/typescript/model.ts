@@ -260,8 +260,6 @@ export class Model extends EboEventTargetClass implements ViewModel {
     }
 
     setActiveStreamLinesHistory(streamTitles: StreamTitles) {
-        if(!streamTitles) //todo: why can this be empty (at PC startup?)
-            return;
         this.activeStreamLines = streamTitles;
         this.dispatchEboEvent("activeStreamLinesChanged.eboplayer", {});
     }
