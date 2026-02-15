@@ -65,7 +65,7 @@ export interface SearchResults {
 export const EmptySearchResults: SearchResults = {refs: [], availableRefTypes: new Set()};
 
 export abstract class Refs {
-    searchResults: SearchResults; //todo: make prvate as this is only filled on filter()
+    protected searchResults: SearchResults;
 
     get browseFilter(): BrowseFilter {
         return this._browseFilter;

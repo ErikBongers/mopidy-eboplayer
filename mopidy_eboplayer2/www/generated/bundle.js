@@ -2017,13 +2017,9 @@ var Controller = class extends Commands {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/playerBarView.ts
-var PlayerBarView = class extends View {
-	componentId;
-	parent;
-	constructor(state, containerId, parent) {
-		super(state);
-		this.parent = parent;
-		this.componentId = containerId;
+var PlayerBarView = class extends ComponentView {
+	constructor(state, component) {
+		super(state, component);
 	}
 	bind() {
 		this.state.getModel().addEboEventListener("playbackStateChanged.eboplayer", async () => {
@@ -2041,28 +2037,27 @@ var PlayerBarView = class extends View {
 		this.state.getModel().addEboEventListener("playbackModeChanged.eboplayer", () => {
 			this.onPlaybackModeChanged();
 		});
-		let comp = document.getElementById(this.componentId);
-		comp.addEboEventListener("playPressed.eboplayer", async () => {
+		this.component.addEboEventListener("playPressed.eboplayer", async () => {
 			await this.state.getController().mopidyProxy.sendPlay();
 		});
-		comp.addEboEventListener("stopPressed.eboplayer", async () => {
+		this.component.addEboEventListener("stopPressed.eboplayer", async () => {
 			await this.state.getController().mopidyProxy.sendStop();
 		});
-		comp.addEboEventListener("pausePressed.eboplayer", async () => {
+		this.component.addEboEventListener("pausePressed.eboplayer", async () => {
 			await this.state.getController().mopidyProxy.sendPause();
 		});
-		comp.addEboEventListener("buttonBarAlbumImgClicked.eboplayer", () => {
+		this.component.addEboEventListener("buttonBarAlbumImgClicked.eboplayer", () => {
 			this.onButtonBarImgClicked();
 		});
 		this.state.getModel().addEboEventListener("volumeChanged.eboplayer", () => {
 			this.onVolumeChanged();
 		});
-		comp.addEboEventListener("changingVolume.eboplayer", async (ev) => {
+		this.component.addEboEventListener("changingVolume.eboplayer", async (ev) => {
 			let value = ev.detail.volume;
 			await this.state.getController().mopidyProxy.sendVolume(value);
 		});
-		comp.addEboEventListener("optionSelected.eboplayer", async (ev) => {
-			this.changeRepeat(ev.detail.selected);
+		this.component.addEboEventListener("optionSelected.eboplayer", async (ev) => {
+			await this.changeRepeat(ev.detail.selected);
 		});
 		this.state.getModel().addEboEventListener("viewChanged.eboplayer", () => {
 			this.showHideInfo();
@@ -2070,11 +2065,11 @@ var PlayerBarView = class extends View {
 	}
 	onVolumeChanged() {
 		let volume = this.state.getModel().getVolume();
-		document.getElementById(this.componentId).setAttribute("volume", volume.toString());
+		this.component.setAttribute("volume", volume.toString());
 	}
 	async onPlaybackStateChanged() {
 		let playState = this.state.getModel().getPlayState();
-		document.getElementById(this.componentId).setAttribute("play_state", playState);
+		this.component.setAttribute("play_state", playState);
 		await this.updateComponent();
 	}
 	async onCurrentTrackChanged() {
@@ -2085,33 +2080,32 @@ var PlayerBarView = class extends View {
 	}
 	async updateComponent() {
 		let track = this.state.getModel().getCurrentTrack();
-		let comp = document.getElementById(this.componentId);
 		if (!track) {
-			comp.setAttribute("text", "");
-			comp.setAttribute("allow_play", "false");
-			comp.setAttribute("allow_prev", "false");
-			comp.setAttribute("allow_next", "false");
-			comp.setAttribute("image_url", "");
-			comp.setAttribute("stop_or_pause", "stop");
+			this.component.setAttribute("text", "");
+			this.component.setAttribute("allow_play", "false");
+			this.component.setAttribute("allow_prev", "false");
+			this.component.setAttribute("allow_next", "false");
+			this.component.setAttribute("image_url", "");
+			this.component.setAttribute("stop_or_pause", "stop");
 		} else {
 			let trackModel = await this.state.getController().getExpandedTrackModel(track);
 			if (isInstanceOfExpandedStreamModel(trackModel)) {
 				let active_titles = "";
 				let activeStreamLines = this.state.getModel().getActiveStreamLines();
 				if (activeStreamLines) active_titles = activeStreamLines.active_titles.join("\n");
-				comp.setAttribute("text", active_titles);
-				comp.setAttribute("allow_play", "true");
-				comp.setAttribute("allow_prev", "false");
-				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.bigImageUrl);
-				comp.setAttribute("stop_or_pause", "stop");
+				this.component.setAttribute("text", active_titles);
+				this.component.setAttribute("allow_play", "true");
+				this.component.setAttribute("allow_prev", "false");
+				this.component.setAttribute("allow_next", "false");
+				this.component.setAttribute("image_url", trackModel.bigImageUrl);
+				this.component.setAttribute("stop_or_pause", "stop");
 			} else if (isInstanceOfExpandedTrackModel(trackModel)) {
-				comp.setAttribute("text", trackModel.track.track.name ?? "--no name--");
-				comp.setAttribute("allow_play", "true");
-				comp.setAttribute("allow_prev", "false");
-				comp.setAttribute("allow_next", "false");
-				comp.setAttribute("image_url", trackModel.bigImageUrl);
-				comp.setAttribute("stop_or_pause", "pause");
+				this.component.setAttribute("text", trackModel.track.track.name ?? "--no name--");
+				this.component.setAttribute("allow_play", "true");
+				this.component.setAttribute("allow_prev", "false");
+				this.component.setAttribute("allow_next", "false");
+				this.component.setAttribute("image_url", trackModel.bigImageUrl);
+				this.component.setAttribute("stop_or_pause", "pause");
 			}
 		}
 		this.showHideInfo();
@@ -2123,7 +2117,7 @@ var PlayerBarView = class extends View {
 		let show_info = false;
 		if (selectedTrack && currentTrack != selectedTrack) show_info = true;
 		if (currentView != Views.NowPlaying) show_info = true;
-		document.getElementById(this.componentId).setAttribute("show_info", show_info.toString());
+		this.component.setAttribute("show_info", show_info.toString());
 	}
 	onButtonBarImgClicked() {
 		this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
@@ -2131,7 +2125,7 @@ var PlayerBarView = class extends View {
 	}
 	onActiveStreamLinesChanged() {
 		let lines = this.state.getModel().getActiveStreamLines();
-		document.getElementById(this.componentId).setAttribute("text", lines.active_titles.join("\n"));
+		this.component.setAttribute("text", lines.active_titles.join("\n"));
 	}
 	async changeRepeat(selected) {
 		switch (selected) {
@@ -2156,12 +2150,11 @@ var PlayerBarView = class extends View {
 		}
 	}
 	onPlaybackModeChanged() {
-		let comp = document.getElementById(this.componentId);
 		let modes = this.state.getModel().getPlaybackMode();
 		let option = "justPlay";
 		if (modes.repeat) if (modes.single) option = "repeatSingle";
 		else option = "repeat";
-		comp.playMode = option;
+		this.component.playMode = option;
 	}
 };
 
@@ -5864,7 +5857,7 @@ function setupStuff() {
 	let mainView = new MainView(state, browseView, albumView);
 	let headerView = new HeaderView(state);
 	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, "currentTrackBigView");
-	let buttonBarView = new PlayerBarView(state, "buttonBar", mainView);
+	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
 	let historyView = new TimelineView(state);
 	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));
 	let views = [
