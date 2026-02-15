@@ -1,10 +1,10 @@
-* ViewModel: turn it into a CachedViewModel that never returns null values
-  > ...but knows what data has been loaded or not (via flags?)
-
 * Set Genre
   > Standard genres: from wiki
     > store internally.
     > overrule: create a prefilled genres.eboplayer file in root.
+
+* ViewModel: turn it into a CachedViewModel that never returns null values
+  > ...but knows what data has been loaded or not (via flags?)
 
 * Expand for other backends like youtube and spotify.
 
