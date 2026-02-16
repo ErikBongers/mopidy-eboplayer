@@ -33,6 +33,39 @@ export class EboGenresComp extends EboComponent {
                 overflow-y: auto;
                 flex-grow: 1;
             }
+            h1, h2, h3, h4, h5, h6 {
+                margin: 0;
+                padding: 0;
+                font-size: 1rem;
+                font-weight: normal;
+                text-align: left;
+            }
+            h1 {
+                font-size: 1.2rem;
+                font-weight: bold;
+                margin-inline-start: 1rem;
+            }
+            h2 {
+                font-size: 1.1rem;
+                font-weight: bold;
+                margin-inline-start: 2rem;
+            }
+            h3 {
+                font-size: 1rem;
+                margin-inline-start: 3rem;
+            }
+            h4 {
+                font-size: .9rem;
+                margin-inline-start: 4rem;
+            }
+            h5 {
+                font-size: .8rem;
+                margin-inline-start: 5rem;
+            }
+            h6 {
+                font-size: .7rem;
+                margin-inline-start: 6rem;
+            }
         </style>
         `;
 
@@ -67,9 +100,12 @@ export class EboGenresComp extends EboComponent {
     private renderGenreDef(container: HTMLElement, genreDef: GenreDef) {
         let lineDiv = document.createElement("div");
         container.appendChild(lineDiv);
+        let name = genreDef.name;
         if(genreDef.child)
-            lineDiv.textContent = genreDef.child;
-        else
-            lineDiv.textContent = genreDef.name;
+            name = genreDef.child;
+        let h = "h"+(genreDef.level+1);
+        let lineElement = document.createElement(h) as HTMLHeadingElement;
+        lineDiv.appendChild(lineElement);
+        lineElement.textContent = name;
     }
 }
