@@ -24,8 +24,8 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.on("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
-        this.state.getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
-            await this.onGenreDefsChanged();
+        this.state.getModel().addEboEventListener("genreReplacementsChanged.eboplayer", async () => {
+            await this.onGenreReplacementChanged();
         });
         this.state.getModel().addEboEventListener("refsFiltered.eboplayer", () => {
             this.onRefsFiltered();
@@ -155,8 +155,8 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         await this.state.getController().resetToBreadCrumb(breadcrumbId);
     }
 
-    private async onGenreDefsChanged() {
-        this.component.genreDefs = await this.state.getController().cache.getGenreDefsCached();
+    private async onGenreReplacementChanged() {
+        this.component.genreReplacements = await this.state.getController().cache.getGenreReplacementsCached();
     }
 
 }

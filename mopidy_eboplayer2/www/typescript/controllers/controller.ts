@@ -55,7 +55,7 @@ export class Controller extends Commands {
         this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
         await this.fetchRefsForCurrentBreadCrumbs();
         await this.filterBrowseResults();
-        await this.cache.getGenreDefsCached();
+        await this.cache.getGenreReplacementsCached();
         await this.cache.getRemembersCached();
     }
 

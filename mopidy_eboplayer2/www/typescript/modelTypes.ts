@@ -212,13 +212,13 @@ export class ExpandedAlbumModel {
         return trackModels;
     }
 
-    async getGenres(): Promise<GenreDef[]> {
+    async getGenreReplacements(): Promise<GenreReplacement[]> {
         let trackModels = await this.getTrackModels();
         let genreDefPromises = [...new Set(trackModels
             .filter(track => track.track.genre != undefined)
             .map(track => track.track.genre as string))]
-            .map(async genre => (await this.controller.cache.getGenreDefsCached()).get(genre))
-            .filter(genre => genre != undefined) as Promise<GenreDef>[];
+            .map(async genre => (await this.controller.cache.getGenreReplacementsCached()).get(genre))
+            .filter(genre => genre != undefined) as Promise<GenreReplacement>[];
         return Promise.all(genreDefPromises);
     }
 
@@ -244,7 +244,7 @@ export class ExpandedAlbumModel {
 
     /// using this function forces all data to be collected in one 'transaction', avoiding a race condition in between async calls.
     async getAllDetails() {
-        let all = await Promise.all([this.getTrackModels(), this.getArtists(), this.getComposers(), this.getGenres()]);
+        let all = await Promise.all([this.getTrackModels(), this.getArtists(), this.getComposers(), this.getGenreReplacements()]);
         return {tracks: all[0], artists: all[1], composers: all[2], genreDefs: all[3]};
     }
 }
@@ -349,9 +349,16 @@ export enum Views {
     Remembered = "#Remembered",
 }
 
-export interface GenreDef {
+export interface GenreReplacement {
     ref: Ref<GenreUri>;
     replacement: string | null;
+}
+
+export interface GenreDef {
+    name: string,
+    child: string,
+    sequence: number,
+    level: number,
 }
 
 export interface HistoryLineDef {

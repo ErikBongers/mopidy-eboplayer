@@ -471,11 +471,11 @@ var RefSearchResult = class extends SearchResultParent {
 var GenreSearchResult = class extends SearchResultParent {
 	cache;
 	constructor(item, weight, cache, imageUrl) {
-		super("genreDef", item, weight, "images/icons/Genre.svg");
+		super("genreReplacement", item, weight, "images/icons/Genre.svg");
 		this.cache = cache;
 	}
 	getExpandedModel() {
-		return this.cache.getGenreDefCached(this.item.name ?? "???");
+		return this.cache.getGenreReplacementCached(this.item.name ?? "???");
 	}
 };
 const EmptySearchResults = {
@@ -582,9 +582,9 @@ var Refs = class {
 		let onlyWithoutReplacementResults = (await Promise.all(onlyGenreDefResults.map(async (r) => {
 			return {
 				result: r,
-				genreDef: await r.getExpandedModel()
+				genreReplacement: await r.getExpandedModel()
 			};
-		}))).filter((r) => r.genreDef != null && r.genreDef.replacement == null).map((r) => r.result);
+		}))).filter((r) => r.genreReplacement != null && r.genreReplacement.replacement == null).map((r) => r.result);
 		let onlyWithoutReplacementResultsMap = /* @__PURE__ */ new Map();
 		onlyWithoutReplacementResults.forEach((result) => {
 			onlyWithoutReplacementResultsMap.set(result.item.name ?? "???", result);
@@ -810,9 +810,9 @@ var ExpandedAlbumModel = class {
 		}
 		return trackModels;
 	}
-	async getGenres() {
+	async getGenreReplacements() {
 		let trackModels = await this.getTrackModels();
-		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.cache.getGenreDefsCached()).get(genre)).filter((genre) => genre != void 0);
+		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.cache.getGenreReplacementsCached()).get(genre)).filter((genre) => genre != void 0);
 		return Promise.all(genreDefPromises);
 	}
 	async getArtists() {
@@ -832,7 +832,7 @@ var ExpandedAlbumModel = class {
 			this.getTrackModels(),
 			this.getArtists(),
 			this.getComposers(),
-			this.getGenres()
+			this.getGenreReplacements()
 		]);
 		return {
 			tracks: all[0],
@@ -933,7 +933,7 @@ var Model = class extends EboEventTargetClass {
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-	genreDefs = /* @__PURE__ */ new Map();
+	genreReplacements = /* @__PURE__ */ new Map();
 	currentProgramTitle = "";
 	allRefs = null;
 	currentRefs = null;
@@ -954,12 +954,12 @@ var Model = class extends EboEventTargetClass {
 		this.currentProgramTitle = title;
 		this.dispatchEboEvent("programTitleChanged.eboplayer", {});
 	}
-	setGenreDefs(defs) {
-		this.genreDefs = /* @__PURE__ */ new Map();
-		for (let def of defs) this.genreDefs.set(def.ref.name ?? "???", def);
-		this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
+	setGenreReplacements(defs) {
+		this.genreReplacements = /* @__PURE__ */ new Map();
+		for (let def of defs) this.genreReplacements.set(def.ref.name ?? "???", def);
+		this.dispatchEboEvent("genreReplacementsChanged.eboplayer", {});
 	}
-	getGenreDefs = () => this.genreDefs;
+	getGenreReplacements = () => this.genreReplacements;
 	pushBreadCrumb(crumb) {
 		this.filterBreadCrumbStack.push(crumb);
 		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
@@ -1611,8 +1611,8 @@ var WebProxy = class {
 			body: data
 		})).json();
 	}
-	async fetchGenreDefs() {
-		let url = this.ebobackUrl(`get_genres`);
+	async fetchGenreReplacements() {
+		let url = this.ebobackUrl(`get_genre_replacements`);
 		return await (await fetch(url)).json();
 	}
 	async remember(text) {
@@ -1690,7 +1690,7 @@ var Controller = class extends Commands {
 		this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
 		await this.fetchRefsForCurrentBreadCrumbs();
 		await this.filterBrowseResults();
-		await this.cache.getGenreDefsCached();
+		await this.cache.getGenreReplacementsCached();
 		await this.cache.getRemembersCached();
 	}
 	initialize(views) {
@@ -1747,9 +1747,6 @@ var Controller = class extends Commands {
 		});
 		this.eboWsFrontCtrl.on("event:programTitleChanged", (data) => {
 			this.model.setCurrentProgramTitle(data.program_title);
-		});
-		this.model.addEboEventListener("playbackStateChanged.eboplayer", async () => {
-			await this.updateStreamLines();
 		});
 		this.eboWsBackCtrl.on((data) => {
 			console.log(data);
@@ -3356,11 +3353,11 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	static tagName = "ebo-browse-view";
 	static observedAttributes = ["display_mode"];
 	currentResultHasImages = false;
-	get genreDefs() {
-		return this._genreDefs;
+	get genreReplacements() {
+		return this._genreReplacements;
 	}
-	set genreDefs(value) {
-		this._genreDefs = value;
+	set genreReplacements(value) {
+		this._genreReplacements = value;
 	}
 	get action_btn_states() {
 		return this._action_btn_states;
@@ -3398,7 +3395,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	display_mode = "line";
 	_browseFilter;
-	_genreDefs;
+	_genreReplacements;
 	static styleText = `
         <style>
             :host { 
@@ -3615,9 +3612,9 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	getGenreAlias(result) {
 		if (!(result instanceof GenreSearchResult)) return "";
-		let genreDef = this.genreDefs?.get(result.item.name);
-		if (!genreDef) return "";
-		if (genreDef.replacement != null) return ` (${genreDef.replacement})`;
+		let genreReplacement = this.genreReplacements?.get(result.item.name);
+		if (!genreReplacement) return "";
+		if (genreReplacement.replacement != null) return ` (${genreReplacement.replacement})`;
 		return "";
 	}
 	onRowClicked(ev) {
@@ -5223,8 +5220,8 @@ var BrowseView = class extends ComponentView {
 		this.on("browseResultDblClick.eboplayer", async (ev) => {
 			await this.onBrowseResultDblClick(ev.detail.uri);
 		});
-		this.state.getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
-			await this.onGenreDefsChanged();
+		this.state.getModel().addEboEventListener("genreReplacementsChanged.eboplayer", async () => {
+			await this.onGenreReplacementChanged();
 		});
 		this.state.getModel().addEboEventListener("refsFiltered.eboplayer", () => {
 			this.onRefsFiltered();
@@ -5330,8 +5327,8 @@ var BrowseView = class extends ComponentView {
 	async onBreadcrumbClick(breadcrumbId) {
 		await this.state.getController().resetToBreadCrumb(breadcrumbId);
 	}
-	async onGenreDefsChanged() {
-		this.component.genreDefs = await this.state.getController().cache.getGenreDefsCached();
+	async onGenreReplacementChanged() {
+		this.component.genreReplacements = await this.state.getController().cache.getGenreReplacementsCached();
 	}
 };
 
@@ -5666,14 +5663,14 @@ var CacheHandler = class extends Commands {
 		await this.getAllRefsCached();
 		return this.model.getAllRefsMap();
 	}
-	async getGenreDefsCached() {
-		if (this.model.getGenreDefs().size > 0) return this.model.getGenreDefs();
-		let genreDefs = await this.webProxy.fetchGenreDefs();
-		this.model.setGenreDefs(genreDefs);
-		return this.model.getGenreDefs();
+	async getGenreReplacementsCached() {
+		if (this.model.getGenreReplacements().size > 0) return this.model.getGenreReplacements();
+		let genreDefs = await this.webProxy.fetchGenreReplacements();
+		this.model.setGenreReplacements(genreDefs);
+		return this.model.getGenreReplacements();
 	}
-	async getGenreDefCached(name) {
-		return (await this.getGenreDefsCached()).get(name) ?? null;
+	async getGenreReplacementCached(name) {
+		return (await this.getGenreReplacementsCached()).get(name) ?? null;
 	}
 	async getRemembersCached() {
 		if (this.model.getRemembers()) return this.model.getRemembers();

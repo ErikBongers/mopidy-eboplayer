@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreDef} from "../modelTypes";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreReplacement} from "../modelTypes";
 import {EmptySearchResults, GenreSearchResult, SearchResult, SearchResults} from "../refs";
 import {GuiSource} from "../events";
 import {unreachable} from "../global";
@@ -13,12 +13,12 @@ export class EboBrowseComp extends EboComponent {
     static observedAttributes: string[] = ["display_mode"];
     currentResultHasImages: boolean = false;
 
-    get genreDefs(){
-        return this._genreDefs;
+    get genreReplacements(){
+        return this._genreReplacements;
     }
 
-    set genreDefs(value: Map<string, GenreDef>) {
-        this._genreDefs = value;
+    set genreReplacements(value: Map<string, GenreReplacement>) {
+        this._genreReplacements = value;
     }
     get action_btn_states(): ListButtonStates {
         return this._action_btn_states;
@@ -68,7 +68,7 @@ export class EboBrowseComp extends EboComponent {
     private display_mode: DisplayMode = "line";
     private _browseFilter: BrowseFilter;
 
-    private _genreDefs: Map<string, GenreDef>;
+    private _genreReplacements: Map<string, GenreReplacement>;
 
     static styleText= `
         <style>
@@ -305,11 +305,11 @@ export class EboBrowseComp extends EboComponent {
     private getGenreAlias(result: SearchResult) {
         if(!(result instanceof GenreSearchResult))
             return "";
-        let genreDef = this.genreDefs?.get(result.item.name);
-        if(!genreDef)
+        let genreReplacement = this.genreReplacements?.get(result.item.name);
+        if(!genreReplacement)
             return "";
-        if(genreDef.replacement != null)
-            return ` (${genreDef.replacement})`;
+        if(genreReplacement.replacement != null)
+            return ` (${genreReplacement.replacement})`;
         return "";
     }
 

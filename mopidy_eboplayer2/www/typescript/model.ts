@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreReplacement, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -22,7 +22,7 @@ export interface ViewModel extends EboEventTargetClass {
     getBreadCrumbs(): BrowseFilterBreadCrumbStack;
     getView(): Views;
     getAlbumToView(): AlbumToView | null;
-    getGenreDefs(): Map<string, GenreDef> | null;
+    getGenreReplacements(): Map<string, GenreReplacement> | null;
     getCurrentProgramTitle(): string;
     getPlaybackMode(): PlaybackFlags;
 }
@@ -64,7 +64,7 @@ export class Model extends EboEventTargetClass implements ViewModel {
     private currentBrowseFilter= new BrowseFilter();
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
-    private genreDefs: Map<string, GenreDef> = new Map();
+    private genreReplacements: Map<string, GenreReplacement> = new Map();
     private currentProgramTitle: string = "";
 
     private allRefs: AllRefs | null = null;
@@ -92,14 +92,14 @@ export class Model extends EboEventTargetClass implements ViewModel {
         this.dispatchEboEvent("programTitleChanged.eboplayer", {});
     }
 
-    setGenreDefs(defs: GenreDef[]) {
-        this.genreDefs = new Map<string, GenreDef>();
+    setGenreReplacements(defs: GenreReplacement[]) {
+        this.genreReplacements = new Map<string, GenreReplacement>();
         for (let def of defs) {
-            this.genreDefs.set(def.ref.name ?? "???", def);
+            this.genreReplacements.set(def.ref.name ?? "???", def);
         }
-        this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
+        this.dispatchEboEvent("genreReplacementsChanged.eboplayer", {});
     }
-    getGenreDefs = () => this.genreDefs;
+    getGenreReplacements = () => this.genreReplacements;
 
     pushBreadCrumb(crumb: FilterBreadCrumb) {
         this.filterBreadCrumbStack.push(crumb);

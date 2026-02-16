@@ -5,7 +5,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
 import {createAllRefs, ExpandedRef} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreDef, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import Ref = models.Ref;
@@ -151,16 +151,16 @@ export class CacheHandler extends Commands{
         return this.model.getAllRefsMap() as Map<AllUris, ExpandedRef>; //removing NULL from type - assuming a map has been loaded.
     }
 
-    async getGenreDefsCached() {
-        if(this.model.getGenreDefs().size > 0)
-            return this.model.getGenreDefs() as Map<string, GenreDef>;
-        let genreDefs = await this.webProxy.fetchGenreDefs();
-        this.model.setGenreDefs(genreDefs);
-        return this.model.getGenreDefs() as Map<string, GenreDef>;
+    async getGenreReplacementsCached() {
+        if(this.model.getGenreReplacements().size > 0)
+            return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
+        let genreDefs = await this.webProxy.fetchGenreReplacements();
+        this.model.setGenreReplacements(genreDefs);
+        return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
     }
 
-    async getGenreDefCached(name: string) {
-        let defs = await this.getGenreDefsCached();
+    async getGenreReplacementCached(name: string) {
+        let defs = await this.getGenreReplacementsCached();
         return defs.get(name)?? null;
     }
 

@@ -26,7 +26,7 @@ export interface EboEventHandlersEventMap {
     "dialogOkClicked.eboplayer"                 : DialogArgs,
     "displayModeChanged.eboplayer"              : DisplayModeArgs,
     "editClicked.eboplayer"                     : GuiSourceArgs,
-    "genreDefsChanged.eboplayer"                : VoidArgs,
+    "genreReplacementsChanged.eboplayer"        : VoidArgs,
     "guiBrowseFilterChanged.eboplayer"          : VoidArgs,
     "historyChanged.eboplayer"                  : VoidArgs,
     "longPress.eboplayer"                       : VoidArgs,

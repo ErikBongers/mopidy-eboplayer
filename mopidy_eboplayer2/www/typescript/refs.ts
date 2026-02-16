@@ -16,11 +16,11 @@ export interface ExpandedRef {
 }
 
 abstract class SearchResultParent {
-    protected type: "ref" | "genreDef";
+    protected type: "ref" | "genreReplacement";
     item: ExpandedRef;
     weight: number;
     protected defaultImageUrl?: string;
-    protected constructor(type: "ref" | "genreDef", item: ExpandedRef, weight: number, defaultImageUrl?: string) {
+    protected constructor(type: "ref" | "genreReplacement", item: ExpandedRef, weight: number, defaultImageUrl?: string) {
         this.type = type;
         this.item = item;
         this.weight = weight;
@@ -47,11 +47,11 @@ export class RefSearchResult extends SearchResultParent {
 export class GenreSearchResult  extends SearchResultParent {
     cache: CacheHandler;
     constructor(item: ExpandedRef, weight: number, cache: CacheHandler, imageUrl?: string) {
-        super("genreDef", item, weight, "images/icons/Genre.svg");
+        super("genreReplacement", item, weight, "images/icons/Genre.svg");
         this.cache = cache;
     }
     getExpandedModel() {
-        return this.cache.getGenreDefCached(this.item.name ?? "???");
+        return this.cache.getGenreReplacementCached(this.item.name ?? "???");
     }
 }
 
@@ -196,9 +196,9 @@ export abstract class Refs {
 
         let onlyWithoutReplacementResults = (await Promise.all(onlyGenreDefResults
             .map(async r => {
-                return {result: r, genreDef: await r.getExpandedModel()};
+                return {result: r, genreReplacement: await r.getExpandedModel()};
             })))
-            .filter(r => r.genreDef != null && r.genreDef.replacement == null)
+            .filter(r => r.genreReplacement != null && r.genreReplacement.replacement == null)
             .map(r => r.result);
         let onlyWithoutReplacementResultsMap = new Map<string, GenreSearchResult>();
         onlyWithoutReplacementResults.forEach(result => {
