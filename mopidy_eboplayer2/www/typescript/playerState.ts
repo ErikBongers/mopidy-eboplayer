@@ -1,6 +1,5 @@
 import {Mopidy} from "../js/mopidy";
-import {ViewModel} from "./model";
-import {View} from "./views/view";
+import {ReadOnlyModel} from "./model";
 import {Controller} from "./controllers/controller";
 import {DeepReadonly} from "./modelTypes";
 import {PlayController} from "./controllers/playController";
@@ -15,17 +14,17 @@ export class State {
 
     // array of cached playlists (not only user-playlists, also search, artist, album-playlists)
 
-    private readonly model: ViewModel;
+    private readonly model: ReadOnlyModel;
     private readonly controller: Controller;
     private readonly player: PlayController;
 
-    constructor(mopidy: Mopidy, model: ViewModel, controller: Controller, player: PlayController) {
+    constructor(mopidy: Mopidy, model: ReadOnlyModel, controller: Controller, player: PlayController) {
         this.mopidy = mopidy;
         this.model = model;
         this.controller = controller;
         this.player = player;
     }
-    getModel = (): DeepReadonly<ViewModel> => this.model;
+    getModel = (): DeepReadonly<ReadOnlyModel> => this.model;
     getController = () => this.controller;
     getPlayer = () => this.player;
 

@@ -6,26 +6,17 @@ import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
 
 
-export interface ViewModel extends EboEventTargetClass {
-    getConnectionState: () => ConnectionState;
-    getCurrentTrack: () => TrackUri | StreamUri | null;
-    getSelectedTrack: () => TrackUri | StreamUri | null;
-    getCurrentMessage: () => Message;
-    getVolume: () => number;
-    getPlayState: () => PlayState;
-    getActiveStreamLines: () => StreamTitles;
-    getHistory: () => HistoryLineDef[];
-    getCachedInfo(uri: string): (FileTrackModel | StreamTrackModel | AlbumModel | null);
-    getCurrentBrowseFilter: () => BrowseFilter;
-    getCurrentSearchResults(): SearchResults;
-    getTrackList(): TlTrack[];
-    getBreadCrumbs(): BrowseFilterBreadCrumbStack;
-    getView(): Views;
-    getAlbumToView(): AlbumToView | null;
-    getGenreReplacements(): Map<string, GenreReplacement> | null;
-    getCurrentProgramTitle(): string;
-    getPlaybackMode(): PlaybackFlags;
-}
+export type OnlyGetMethods<T> = {
+    [K in keyof T as
+        K extends `get${string}`| `addEboEventListener`
+            ? T[K] extends (...args: any[]) => any
+                ? K
+                : never
+            : never
+    ]: T[K]
+};
+
+export type ReadOnlyModel = OnlyGetMethods<Model>;
 
 export interface AlbumToView {
     albumUri: AlbumUri;
@@ -36,7 +27,7 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
-export class Model extends EboEventTargetClass implements ViewModel {
+export class Model extends EboEventTargetClass implements ReadOnlyModel {
     currentTrack: TrackUri | StreamUri | null = null;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed

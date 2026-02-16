@@ -1615,6 +1615,10 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_genre_replacements`);
 		return await (await fetch(url)).json();
 	}
+	async fetchGenreDefs() {
+		let url = this.ebobackUrl(`get_genre_defs`);
+		return await (await fetch(url)).json();
+	}
 	async remember(text) {
 		let url = this.ebobackUrl(`save_remember`);
 		return await (await fetch(url, {
