@@ -58,6 +58,10 @@ function main() {
                     let newLevel = parentStack.pop();
                     if(!newLevel)
                         break;
+                    if(newLevel.indent < parsedLine.indent) { //oops, we went too far back.
+                        parentStack.push(newLevel);
+                        break;
+                    }
                     indent = newLevel.indent;
                     level--;
                 }
