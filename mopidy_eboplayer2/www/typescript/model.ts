@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreReplacement, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -56,6 +56,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
     private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
     private genreReplacements: Map<string, GenreReplacement> = new Map();
+    private genreDefs: GenreDef[] = [];
     private currentProgramTitle: string = "";
 
     private allRefs: AllRefs | null = null;
@@ -337,5 +338,11 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     setScanStatus(status: string) {
         this.scanStatus = status;
         this.dispatchEboEvent("scanStatusChanged.eboplayer", {text: status});
+    }
+
+    getGenreDefs = () => this.genreDefs;
+    setGenreDefs(genreDefs: GenreDef[]) {
+        this.genreDefs = genreDefs;
+        this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
     }
 }

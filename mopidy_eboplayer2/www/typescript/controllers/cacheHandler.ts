@@ -5,7 +5,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
 import {createAllRefs, ExpandedRef} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import Ref = models.Ref;
@@ -170,5 +170,13 @@ export class CacheHandler extends Commands{
         let remembers = await this.webProxy.fetchRemembers();
         this.model.setRemembers(remembers);
         return this.model.getRemembers() as RememberDef[]; //todo: this triggers the rememberedChanged event, which may already be a reason for this chached function call. Maybe this is ok...
+    }
+
+    async getGenreDefs() {
+        if(this.model.getGenreDefs().length > 0)
+            return this.model.getGenreDefs() as GenreDef[];
+        let genreDefs = await this.webProxy.fetchGenreDefs();
+        this.model.setGenreDefs(genreDefs);
+        return this.model.getGenreDefs() as GenreDef[];
     }
 }

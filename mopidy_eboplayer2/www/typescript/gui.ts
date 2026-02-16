@@ -36,6 +36,7 @@ import {RememberedView} from "./views/rememberedView";
 import {CacheHandler} from "./controllers/cacheHandler";
 import {EboOption} from "./components/eboOption";
 import {EboIconDropdown} from "./components/eboIconDropdown";
+import {EboGenresComp} from "./components/eboGenresComp";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -73,6 +74,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboRememberedComp);
             EboComponent.define(EboOption);
             EboComponent.define(EboIconDropdown);
+            EboComponent.define(EboGenresComp);
 
             setupStuff();
         });
@@ -103,7 +105,7 @@ function setupStuff() {
     let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
     let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
 
-    let state = new State(mopidy, model, controller, player);
+    let state = new State(mopidy, model, controller, player, cacheHandler);
 
     let browseView = new BrowseView(state, document.getElementById("browseView") as EboBrowseComp);
     let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp);

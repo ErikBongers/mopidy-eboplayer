@@ -11,6 +11,7 @@ import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
+import {EboGenresComp} from "../components/eboGenresComp";
 
 export class MainView extends View {
     private browseView: BrowseView;
@@ -134,6 +135,8 @@ export class MainView extends View {
                 return "bigAlbumView";
             case Views.Settings:
                 return "settingsView";
+            case Views.Genres:
+                return "genresView"
             default:
                 return unreachable(hash);
         }
@@ -191,6 +194,13 @@ export class MainView extends View {
                 browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
                 layout.classList.add("showFullView");
+                break;
+            case Views.Genres:
+                location.hash = Views.Genres;
+                browseBtn.dataset.goto = Views.NowPlaying;
+                browseBtn.title = "Now playing";
+                layout.classList.add("showFullView");
+                (currentView as EboGenresComp).genreDefs = await this.state.getCache().getGenreDefs();
                 break;
             default:
                 return unreachable(view);

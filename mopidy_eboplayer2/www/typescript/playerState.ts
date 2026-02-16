@@ -3,6 +3,7 @@ import {ReadOnlyModel} from "./model";
 import {Controller} from "./controllers/controller";
 import {DeepReadonly} from "./modelTypes";
 import {PlayController} from "./controllers/playController";
+import {CacheHandler} from "./controllers/cacheHandler";
 
 export class State {
     mopidy: Mopidy;
@@ -17,15 +18,17 @@ export class State {
     private readonly model: ReadOnlyModel;
     private readonly controller: Controller;
     private readonly player: PlayController;
+    private readonly cache: CacheHandler;
 
-    constructor(mopidy: Mopidy, model: ReadOnlyModel, controller: Controller, player: PlayController) {
+    constructor(mopidy: Mopidy, model: ReadOnlyModel, controller: Controller, player: PlayController, cache: CacheHandler) {
         this.mopidy = mopidy;
         this.model = model;
         this.controller = controller;
         this.player = player;
+        this.cache = cache;
     }
     getModel = (): DeepReadonly<ReadOnlyModel> => this.model;
     getController = () => this.controller;
     getPlayer = () => this.player;
-
+    getCache = () => this.cache;
 }

@@ -347,6 +347,7 @@ export enum Views {
     Settings = "#Settings",
     WhatsNew = "#WhatsNew",
     Remembered = "#Remembered",
+    Genres = "#Genres"
 }
 
 export interface GenreReplacement {

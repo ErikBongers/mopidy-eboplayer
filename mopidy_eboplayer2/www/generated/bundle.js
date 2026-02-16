@@ -881,6 +881,7 @@ let Views = /* @__PURE__ */ function(Views$1) {
 	Views$1["Settings"] = "#Settings";
 	Views$1["WhatsNew"] = "#WhatsNew";
 	Views$1["Remembered"] = "#Remembered";
+	Views$1["Genres"] = "#Genres";
 	return Views$1;
 }({});
 
@@ -934,6 +935,7 @@ var Model = class extends EboEventTargetClass {
 	currentBrowseFilter = new BrowseFilter();
 	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
 	genreReplacements = /* @__PURE__ */ new Map();
+	genreDefs = [];
 	currentProgramTitle = "";
 	allRefs = null;
 	currentRefs = null;
@@ -1154,6 +1156,11 @@ var Model = class extends EboEventTargetClass {
 	setScanStatus(status) {
 		this.scanStatus = status;
 		this.dispatchEboEvent("scanStatusChanged.eboplayer", { text: status });
+	}
+	getGenreDefs = () => this.genreDefs;
+	setGenreDefs(genreDefs) {
+		this.genreDefs = genreDefs;
+		this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
 	}
 };
 
@@ -3241,12 +3248,14 @@ var MainView = class extends View {
 			case Views.Remembered: return "rememberedView";
 			case Views.Album: return "bigAlbumView";
 			case Views.Settings: return "settingsView";
+			case Views.Genres: return "genresView";
 			default: return unreachable(hash);
 		}
 	}
 	async showView(view) {
 		document.querySelectorAll(".fullView").forEach((v) => v.classList.remove("shownView"));
-		document.getElementById(this.hashToViewId(view)).classList.add("shownView");
+		let currentView = document.getElementById(this.hashToViewId(view));
+		currentView.classList.add("shownView");
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let layout = document.getElementById("layout");
 		let prevViewClass = [...layout.classList].filter((c) => [
@@ -3297,6 +3306,13 @@ var MainView = class extends View {
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
 				layout.classList.add("showFullView");
+				break;
+			case Views.Genres:
+				location.hash = Views.Genres;
+				browseBtn.dataset.goto = Views.NowPlaying;
+				browseBtn.title = "Now playing";
+				layout.classList.add("showFullView");
+				currentView.genreDefs = await this.state.getCache().getGenreDefs();
 				break;
 			default: return unreachable(view);
 		}
@@ -5449,15 +5465,18 @@ var State = class {
 	model;
 	controller;
 	player;
-	constructor(mopidy, model, controller, player) {
+	cache;
+	constructor(mopidy, model, controller, player, cache) {
 		this.mopidy = mopidy;
 		this.model = model;
 		this.controller = controller;
 		this.player = player;
+		this.cache = cache;
 	}
 	getModel = () => this.model;
 	getController = () => this.controller;
 	getPlayer = () => this.player;
+	getCache = () => this.cache;
 };
 
 //#endregion
@@ -5682,6 +5701,12 @@ var CacheHandler = class extends Commands {
 		this.model.setRemembers(remembers);
 		return this.model.getRemembers();
 	}
+	async getGenreDefs() {
+		if (this.model.getGenreDefs().length > 0) return this.model.getGenreDefs();
+		let genreDefs = await this.webProxy.fetchGenreDefs();
+		this.model.setGenreDefs(genreDefs);
+		return this.model.getGenreDefs();
+	}
 };
 
 //#endregion
@@ -5807,6 +5832,64 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboGenresComp.ts
+var EboGenresComp = class EboGenresComp extends EboComponent {
+	static tagName = "ebo-genres-view";
+	static observedAttributes = [];
+	_genreDefs = [];
+	get genreDefs() {
+		return this._genreDefs;
+	}
+	set genreDefs(value) {
+		this._genreDefs = value;
+		this.requestUpdate();
+	}
+	static styleText = `
+        <style>
+            :host { 
+                display: flex;
+            } 
+            #wrapper {
+                display: flex;
+                flex-direction: column;
+                width: 100%;
+                height: 100%;
+            }
+            #scrollContainer {
+                overflow-y: auto;
+                flex-grow: 1;
+            }
+        </style>
+        `;
+	static htmlText = `
+        <div id="wrapper" class="flexColumn">
+            <div id="scrollContainer">
+            
+            </div>
+        </div>        
+        `;
+	constructor() {
+		super(EboGenresComp.styleText, EboGenresComp.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {}
+	update(shadow) {
+		let container = shadow.getElementById("scrollContainer");
+		this.genreDefs.forEach((genreDef) => {
+			this.renderGenreDef(container, genreDef);
+		});
+	}
+	renderGenreDef(container, genreDef) {
+		let lineDiv = document.createElement("div");
+		container.appendChild(lineDiv);
+		if (genreDef.child) lineDiv.textContent = genreDef.child;
+		else lineDiv.textContent = genreDef.name;
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -5835,6 +5918,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboRememberedComp);
 		EboComponent.define(EboOption);
 		EboComponent.define(EboIconDropdown);
+		EboComponent.define(EboGenresComp);
 		setupStuff();
 	});
 });
@@ -5851,7 +5935,7 @@ function setupStuff() {
 	let player = new PlayController(model, mopidyProxy);
 	let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
 	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
-	let state = new State(mopidy, model, controller, player);
+	let state = new State(mopidy, model, controller, player, cacheHandler);
 	let browseView = new BrowseView(state, document.getElementById("browseView"));
 	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));
 	let mainView = new MainView(state, browseView, albumView);
