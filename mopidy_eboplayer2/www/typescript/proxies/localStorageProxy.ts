@@ -3,6 +3,7 @@ import {jsonParse} from "../functionsvars";
 import {AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter} from "../modelTypes";
 import models from "../../js/mopidy";
 import Ref = models.Ref;
+import {DisplayMode} from "../components/eboListItemComp";
 
 const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
 const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
@@ -81,5 +82,13 @@ export class LocalStorageProxy {
             return null;
 
         return albumUri as AlbumUri;
+    }
+
+    saveLineOrIconPreference(lineOrIcon: DisplayMode) {
+        localStorage.setItem("lineOrIconPreference", lineOrIcon);
+    }
+
+    getLineOrIconPreference() {
+        return (localStorage.getItem("lineOrIconPreference") ?? "line") as DisplayMode;
     }
 }

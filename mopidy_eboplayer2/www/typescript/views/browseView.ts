@@ -47,7 +47,9 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         });
         this.on("displayModeChanged.eboplayer", async (ev) => {
             this.component.setAttribute("display_mode", ev.detail.mode);
+            this.state.getController().localStorageProxy.saveLineOrIconPreference(ev.detail.mode);
         });
+        this.component.setAttribute("display_mode", this.state.getController().localStorageProxy.getLineOrIconPreference());
     }
 
     private async onGuiBrowseFilterChanged() {

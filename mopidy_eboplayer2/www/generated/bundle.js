@@ -1569,6 +1569,12 @@ var LocalStorageProxy = class {
 		if (albumUri == "") return null;
 		return albumUri;
 	}
+	saveLineOrIconPreference(lineOrIcon) {
+		localStorage.setItem("lineOrIconPreference", lineOrIcon);
+	}
+	getLineOrIconPreference() {
+		return localStorage.getItem("lineOrIconPreference") ?? "line";
+	}
 };
 
 //#endregion
@@ -3284,7 +3290,7 @@ var MainView = class extends View {
 			"bigAlbum",
 			"bigTrack"
 		].includes(c))[0];
-		let resultsDisplayMode = "line";
+		let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
 		layout.classList.remove("showFullView");
 		switch (view) {
 			case Views.WhatsNew:
@@ -5293,7 +5299,9 @@ var BrowseView = class extends ComponentView {
 		});
 		this.on("displayModeChanged.eboplayer", async (ev) => {
 			this.component.setAttribute("display_mode", ev.detail.mode);
+			this.state.getController().localStorageProxy.saveLineOrIconPreference(ev.detail.mode);
 		});
+		this.component.setAttribute("display_mode", this.state.getController().localStorageProxy.getLineOrIconPreference());
 	}
 	async onGuiBrowseFilterChanged() {
 		await this.state.getController().setAndSaveBrowseFilter(this.component.browseFilter);

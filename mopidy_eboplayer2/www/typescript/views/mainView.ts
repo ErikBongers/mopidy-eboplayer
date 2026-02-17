@@ -151,7 +151,7 @@ export class MainView extends View {
         let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
         let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
-        let resultsDisplayMode: DisplayMode = "line"; //todo: get from model.
+        let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
         layout.classList.remove("showFullView");
         switch (view) {
             case Views.WhatsNew:
