@@ -176,18 +176,21 @@ export abstract class Refs {
         return ref.type as RefType; //WARNING: this really is an unknown type!
     }
 
-    static transformRefsToSearchResults(cache: CacheHandler, refs: Ref<AllUris>[]): SearchResult[] {
-        let results = refs.map(ref => {
+    static async transformRefsToSearchResults(cache: CacheHandler, refs: Ref<AllUris>[]): Promise<SearchResult[]> {
+        let refMap = await cache.getAllRefsMapCached();
+        let results = refs.map(async ref => {
             let refType = SomeRefs.toRefType(ref);
             if(refType == "genre") {
                 let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? '???', uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
                 return new GenreSearchResult(expandedRef,-1, cache);
             }
-            let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? "???", uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
+            let expandedRef = refMap.get(ref.uri);
+            if(!expandedRef)
+                expandedRef = {refType: refType, name: ref.name?? "???", uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
             return new RefSearchResult(expandedRef,-1, cache);
         });
         // make genreDefs distinct and keep removed defs separate.
-        return results;
+        return Promise.all(results);
     }
 
     static async reduceResults(results: (GenreSearchResult | RefSearchResult)[]) {
@@ -294,9 +297,9 @@ export class SomeRefs extends Refs {
     allresults: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor(cache: CacheHandler,  refs: Ref<AllUris>[]) {
+    constructor(results: SearchResult[]) {
         super();
-        this.allresults = Refs.transformRefsToSearchResults(cache, refs);
+        this.allresults = results;
         this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
     }
 

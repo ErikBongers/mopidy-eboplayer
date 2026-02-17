@@ -409,9 +409,6 @@ function getHostAndPortDefs() {
 function isStream(track) {
 	return !track.last_modified;
 }
-function console_yellow(msg) {
-	console.log(`%c${msg}`, "background-color: yellow");
-}
 function unreachable(x) {
 	throw new Error("This error will never be thrown. It is used for type safety.");
 }
@@ -551,8 +548,9 @@ var Refs = class {
 		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
 		return ref.type;
 	}
-	static transformRefsToSearchResults(cache, refs) {
-		return refs.map((ref) => {
+	static async transformRefsToSearchResults(cache, refs) {
+		let refMap = await cache.getAllRefsMapCached();
+		let results = refs.map(async (ref) => {
 			let refType = SomeRefs.toRefType(ref);
 			if (refType == "genre") {
 				let expandedRef$1 = {
@@ -565,7 +563,8 @@ var Refs = class {
 				};
 				return new GenreSearchResult(expandedRef$1, -1, cache);
 			}
-			let expandedRef = {
+			let expandedRef = refMap.get(ref.uri);
+			if (!expandedRef) expandedRef = {
 				refType,
 				name: ref.name ?? "???",
 				uri: ref.uri,
@@ -575,6 +574,7 @@ var Refs = class {
 			};
 			return new RefSearchResult(expandedRef, -1, cache);
 		});
+		return Promise.all(results);
 	}
 	static async reduceResults(results) {
 		let resultsWithoutGenreDefs = results.filter((result) => !(result instanceof GenreSearchResult));
@@ -655,9 +655,9 @@ var AllRefs = class extends Refs {
 var SomeRefs = class extends Refs {
 	allresults;
 	availableRefTypes;
-	constructor(cache, refs) {
+	constructor(results) {
 		super();
-		this.allresults = Refs.transformRefsToSearchResults(cache, refs);
+		this.allresults = results;
 		this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
 	}
 	async filter() {
@@ -1553,12 +1553,10 @@ var LocalStorageProxy = class {
 	}
 	saveCurrentBrowseFilter(browseFilter) {
 		let obj = JSON.stringify(browseFilter);
-		console.log(obj);
 		localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
 	}
 	saveBrowseFilterBreadCrumbs(breadCrumbs) {
 		let obj = JSON.stringify(breadCrumbs);
-		console.log(obj);
 		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
 	}
 	saveAlbumBeingEdited(albumUri) {
@@ -1980,11 +1978,13 @@ var Controller = class extends Commands {
 						ref.name = ref.name.split(".").slice(0, -1).join(".");
 					}
 				});
-				this.model.setCurrentRefs(new SomeRefs(this.cache, playlistItems));
+				let results$1 = await Refs.transformRefsToSearchResults(this.cache, playlistItems);
+				this.model.setCurrentRefs(new SomeRefs(results$1));
 				return;
 			}
 			let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
-			this.model.setCurrentRefs(new SomeRefs(this.cache, refs));
+			let results = await Refs.transformRefsToSearchResults(this.cache, refs);
+			this.model.setCurrentRefs(new SomeRefs(results));
 			return;
 		}
 	}
@@ -4643,11 +4643,9 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			imgTag.src = this.albumInfo.bigImageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			let { artists, composers, genreDefs } = await this.albumInfo.getAllDetails();
-			console_yellow(`Artists: ${artists.map((artist) => artist.name).join(",")}`);
 			body.innerHTML = "";
 			this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
 			this.addMetaDataRow(body, "Artists:", artists.map((artist) => {
-				console_yellow(`Adding button for artist: ${artist.name}`);
 				return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `;
@@ -4788,12 +4786,8 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 					td2.querySelector("#rememberTrack")?.addEventListener("click", (ev) => {
 						this.saveRemember(ev.target);
 					});
-					td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {
-						console_yellow("Exclude line clicked");
-					});
-					td2.querySelector("#isProgramTitle")?.addEventListener("click", (ev) => {
-						console_yellow("Line is program title clicked");
-					});
+					td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {});
+					td2.querySelector("#isProgramTitle")?.addEventListener("click", (ev) => {});
 				});
 				if (tr != null) tr.classList.add("lastLine");
 			});
@@ -5400,7 +5394,6 @@ var AlbumView = class extends ComponentView {
 		super(state, component);
 		this.dialog = dialog;
 		this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
-			console_yellow("dialogOkClicked.eboplayer");
 			let innnerDialog = ev.detail.dialog;
 			if (this.onDialogOkClickedCallback(innnerDialog)) innnerDialog.close();
 		});
@@ -5490,7 +5483,6 @@ var AlbumView = class extends ComponentView {
 		this.dialog.setAttribute("ok_text", okButtonText);
 	}
 	async saveAlbumAsPlaylist(name, detail) {
-		console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
 		let playlist = await this.state.getController().createPlaylist(name);
 		await this.state.getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
 		return true;
@@ -5594,9 +5586,7 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 			td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {
 				this.dispatchEboEvent("deleteRemember.eboplayer", { "id": remembered.id });
 			});
-			td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {
-				console_yellow("deleteAllRememberedBtn");
-			});
+			td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {});
 			td2.querySelector("#googleRememberedBtn")?.addEventListener("click", (ev) => {
 				searchOnGoogle(td.innerText);
 			});
@@ -6011,9 +6001,7 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	getActiveAncestors(shadow) {
 		let activeAncestors = [];
 		shadow.querySelectorAll("details").forEach((detail) => detail.open = false);
-		let activeElements = shadow.querySelectorAll(".active");
-		console.log(activeElements);
-		activeElements.forEach((activeElement) => {
+		shadow.querySelectorAll(".active").forEach((activeElement) => {
 			let ancestor;
 			ancestor = activeElement;
 			while (true) {
@@ -6077,9 +6065,7 @@ var GenresView = class extends ComponentView {
 					active: genreReplacements.has(genreDef.child ?? genreDef.name)
 				};
 			});
-			this.component.addEboEventListener("genreSelected.eboplayer", (ev) => {
-				console_yellow(`Selected ${ev.detail.text}`);
-			});
+			this.component.addEboEventListener("genreSelected.eboplayer", (ev) => {});
 		});
 	}
 };

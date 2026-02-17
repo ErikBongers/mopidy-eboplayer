@@ -4,7 +4,7 @@ import models, {core, Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
-import {createAllRefs, SomeRefs} from "../refs";
+import {createAllRefs, Refs, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
@@ -397,12 +397,14 @@ export class Controller extends Commands {
                         ref.name = ref.name.split(".").slice(0, -1).join(".");
                     }
                 });
-                this.model.setCurrentRefs(new SomeRefs(this.cache, playlistItems));
+                let results = await Refs.transformRefsToSearchResults(this.cache, playlistItems);
+                this.model.setCurrentRefs(new SomeRefs(results));
                 return;
             }
 
             let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
-            this.model.setCurrentRefs(new SomeRefs(this.cache, refs));
+            let results = await Refs.transformRefsToSearchResults(this.cache, refs);
+            this.model.setCurrentRefs(new SomeRefs(results));
             return;
         }
     }
