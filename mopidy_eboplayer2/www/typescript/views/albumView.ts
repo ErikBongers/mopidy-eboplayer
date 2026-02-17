@@ -2,8 +2,8 @@ import {ComponentView} from "./view";
 import {AlbumUri, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
-import {arrayToggle, console_yellow} from "../global";
-import {addEboEventListener, GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
+import {arrayToggle} from "../global";
+import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
@@ -17,7 +17,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         super(state, component);
         this.dialog = dialog;
         this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
-            console_yellow("dialogOkClicked.eboplayer");
             let innnerDialog = ev.detail.dialog;
             if(this.onDialogOkClickedCallback(innnerDialog))
                 innnerDialog.close();
@@ -130,7 +129,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
-        console_yellow(`Saving album to playlist ${name} as ${detail.uri}`);
         let playlist = await this.state.getController().createPlaylist(name);
         await this.state.getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
         return true;

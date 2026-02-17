@@ -1,7 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {console_yellow, searchImageOnGoogle, searchOnGoogle} from "../global";
-import {EboButton} from "./eboButton";
-import {RemeberIdArgs} from "../events";
+import {searchOnGoogle} from "../global";
 import {RememberDef} from "../modelTypes";
 
 export class EboRememberedComp extends EboComponent {
@@ -82,7 +80,6 @@ export class EboRememberedComp extends EboComponent {
                 this.dispatchEboEvent("deleteRemember.eboplayer", {"id": remembered.id})
             });
             td2.querySelector("#deleteAllRememberedBtn")?.addEventListener("click", (ev) => {
-                console_yellow("deleteAllRememberedBtn");
             });
             td2.querySelector("#googleRememberedBtn")?.addEventListener("click", (ev) => {
                 searchOnGoogle(td.innerText);

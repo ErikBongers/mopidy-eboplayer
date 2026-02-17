@@ -160,7 +160,6 @@ export class EboGenresComp extends EboComponent {
         let allDetails = shadow.querySelectorAll("details");
         allDetails.forEach(detail => detail.open = false);
         let activeElements = shadow.querySelectorAll(".active") as NodeListOf<HTMLElement>;
-        console.log(activeElements);
         activeElements.forEach(activeElement => {
             let ancestor: HTMLElement | null;
             ancestor = activeElement;

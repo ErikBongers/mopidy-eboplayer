@@ -1,5 +1,4 @@
 import {EboComponent} from "./EboComponent";
-import {console_yellow} from "../global";
 import {EboButton} from "./eboButton";
 
 export class EboSettingsComp extends EboComponent {

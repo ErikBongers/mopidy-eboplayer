@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumUri, ArtistUri, ExpandedAlbumModel} from "../modelTypes";
-import {console_yellow, searchImageOnGoogle} from "../global";
+import {searchImageOnGoogle} from "../global";
 
 export class EboAlbumDetails extends EboComponent {
     get albumInfo(): ExpandedAlbumModel | null {
@@ -128,12 +128,10 @@ export class EboAlbumDetails extends EboComponent {
             let body = table.tBodies[0];
 
             let {artists, composers, genreDefs} = await this.albumInfo.getAllDetails();
-            console_yellow(`Artists: ${artists.map(artist => artist.name).join(",")}`);
             //do the `await`s first before clearing and filling, to avoid data races! (double lines)
             body.innerHTML = "";
             this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
             this.addMetaDataRow(body, "Artists:", artists.map(artist => {
-                console_yellow(`Adding button for artist: ${artist.name}`)
                 return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `

@@ -1,6 +1,4 @@
 import {EboComponent} from "./EboComponent";
-import {MouseTimer} from "../MouseTimer";
-import {console_yellow} from "../global";
 
 export class EboDialog extends EboComponent {
     static override readonly tagName=  "ebo-dialog";

@@ -62,13 +62,11 @@ export class LocalStorageProxy {
 
     saveCurrentBrowseFilter(browseFilter: BrowseFilter) {
         let obj = JSON.stringify(browseFilter);
-        console.log(obj);
         localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
     }
 
     saveBrowseFilterBreadCrumbs(breadCrumbs: BrowseFilterBreadCrumbStack) {
         let obj = JSON.stringify(breadCrumbs);
-        console.log(obj);
         localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
     }
 

@@ -1,7 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {ExpandedAlbumModel, ExpandedStreamModel} from "../modelTypes";
-import {EboMenuButton} from "./eboMenuButton";
-import {console_yellow} from "../global";
+import {ExpandedStreamModel} from "../modelTypes";
 
 export class EboRadioDetailsComp extends EboComponent {
     private _streamInfo: ExpandedStreamModel | null = null;
@@ -115,10 +113,8 @@ export class EboRadioDetailsComp extends EboComponent {
                         this.saveRemember(ev.target as HTMLElement);
                     });
                     td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {
-                        console_yellow("Exclude line clicked");
                     });
                     td2.querySelector("#isProgramTitle")?.addEventListener("click", (ev) => {
-                        console_yellow("Line is program title clicked");
                     });
                 });
                 if(tr != null)
