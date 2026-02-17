@@ -52,33 +52,6 @@ export class EboGenresComp extends EboComponent {
                 cursor: pointer;
                 font-size: .8rem;
             }
-            details summary::marker {
-            }
-            .hideLvl2 {
-                & .lvl2, & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
-                    display: none;
-                }            
-            }
-            .hideLvl3 {
-                & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
-                    display: none;
-                }            
-            }
-            .hideLvl4 {
-                & .lvl4, & .lvl5, & .lvl6 {
-                    display: none;
-                }
-            }
-            .hideLvl5 {
-                & .lvl5, & .lvl6 {
-                    display: none;
-                }
-            }
-            .hideLvl6 {
-                & .lvl6 {
-                    display: none;
-                }
-            }
         </style>
         `;
 
@@ -115,9 +88,7 @@ export class EboGenresComp extends EboComponent {
                 eboButtons.forEach(eboButton => {
                     eboButton.toggleAttribute("pressed", eboButton.dataset.level! <= level.toString());
                 });
-                let container = shadow.getElementById("scrollContainer") as HTMLElement;
-                container.classList.remove(...[...Array(6).keys()].map(x => "hideLvl"+x));
-                container.classList.toggle("hideLvl"+(level+1), true);
+                this.showLevel(level);
             });
         });
     }
@@ -148,8 +119,9 @@ export class EboGenresComp extends EboComponent {
         //start building
         if(hasChildren) {
             let newContainer = document.createElement("details");
-            newContainer.open = true;
+            newContainer.open = false;
             newContainer.classList.add("lvl"+(genreDef.level+1));
+            newContainer.dataset.level = (genreDef.level+1).toString();
             container.appendChild(newContainer);
             let summary = document.createElement("summary");
             summary.textContent = name;
@@ -163,8 +135,16 @@ export class EboGenresComp extends EboComponent {
         //no children, just a line
         let newLine = document.createElement("div");
         newLine.classList.add("lvl"+(genreDef.level+1));
+        newLine.dataset.level = (genreDef.level+1).toString();
         container.appendChild(newLine);
         newLine.textContent = name;
         return index + 1;
+    }
+
+    private showLevel(level: number) {
+        let detailElements = this.shadow.querySelectorAll("details");
+        detailElements.forEach(detailElement => {
+            detailElement.open = parseInt(detailElement.dataset.level!) < level;
+        });
     }
 }

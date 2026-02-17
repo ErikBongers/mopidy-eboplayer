@@ -5878,33 +5878,6 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 cursor: pointer;
                 font-size: .8rem;
             }
-            details summary::marker {
-            }
-            .hideLvl2 {
-                & .lvl2, & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
-                    display: none;
-                }            
-            }
-            .hideLvl3 {
-                & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
-                    display: none;
-                }            
-            }
-            .hideLvl4 {
-                & .lvl4, & .lvl5, & .lvl6 {
-                    display: none;
-                }
-            }
-            .hideLvl5 {
-                & .lvl5, & .lvl6 {
-                    display: none;
-                }
-            }
-            .hideLvl6 {
-                & .lvl6 {
-                    display: none;
-                }
-            }
         </style>
         `;
 	static htmlText = `
@@ -5933,9 +5906,7 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 				shadow.querySelectorAll("ebo-button").forEach((eboButton$1) => {
 					eboButton$1.toggleAttribute("pressed", eboButton$1.dataset.level <= level.toString());
 				});
-				let container = shadow.getElementById("scrollContainer");
-				container.classList.remove(...[...Array(6).keys()].map((x) => "hideLvl" + x));
-				container.classList.toggle("hideLvl" + (level + 1), true);
+				this.showLevel(level);
 			});
 		});
 	}
@@ -5952,8 +5923,9 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		if (genreDef.child) name = genreDef.child;
 		if (hasChildren) {
 			let newContainer = document.createElement("details");
-			newContainer.open = true;
+			newContainer.open = false;
 			newContainer.classList.add("lvl" + (genreDef.level + 1));
+			newContainer.dataset.level = (genreDef.level + 1).toString();
 			container.appendChild(newContainer);
 			let summary = document.createElement("summary");
 			summary.textContent = name;
@@ -5964,9 +5936,15 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		}
 		let newLine = document.createElement("div");
 		newLine.classList.add("lvl" + (genreDef.level + 1));
+		newLine.dataset.level = (genreDef.level + 1).toString();
 		container.appendChild(newLine);
 		newLine.textContent = name;
 		return index + 1;
+	}
+	showLevel(level) {
+		this.shadow.querySelectorAll("details").forEach((detailElement) => {
+			detailElement.open = parseInt(detailElement.dataset.level) < level;
+		});
 	}
 };
 
