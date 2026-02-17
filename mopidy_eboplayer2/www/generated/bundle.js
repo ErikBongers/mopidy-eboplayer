@@ -5865,32 +5865,32 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 font-size: 1rem;
                 font-weight: normal;
                 text-align: left;
+                margin-inline-start: 1rem;
             }
             .lvl1 {
                 font-size: 1.2rem;
                 font-weight: bold;
-                margin-inline-start: 1rem;
             }
             .lvl2 {
                 font-size: 1.1rem;
                 font-weight: bold;
-                margin-inline-start: 2rem;
+                /*margin-inline-start: 2rem;*/
             }
             .lvl3 {
                 font-size: 1rem;
-                margin-inline-start: 3rem;
+                /*margin-inline-start: 3rem;*/
             }
             .lvl4 {
                 font-size: .9rem;
-                margin-inline-start: 4rem;
+                /*margin-inline-start: 4rem;*/
             }
             .lvl5 {
                 font-size: .8rem;
-                margin-inline-start: 5rem;
+                /*margin-inline-start: 5rem;*/
             }
             .lvl6 {
                 font-size: .7rem;
-                margin-inline-start: 6rem;
+                /*margin-inline-start: 6rem;*/
             }
             .hasChildren::before {
                 content: "\\25B6";
@@ -5902,6 +5902,17 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 height: 1rem;
                 cursor: pointer;
                 font-size: .8rem;
+            }
+            details summary::marker {
+                margin-inline-end: 0 !important;
+                margin-right: 0 !important;
+                margin: 0 !important;
+                padding: 0;
+            }
+            .hideLvl4 {
+                & .lvl4, & .lvl5, & .lvl6 {
+                    display: none;
+                }
             }
         </style>
         `;
@@ -5921,20 +5932,32 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	render(shadow) {}
 	update(shadow) {
 		let container = shadow.getElementById("scrollContainer");
-		this.genreDefs.forEach((genreDef, index) => {
-			if (this.genreDefs.length > index + 1) this.renderGenreDef(container, genreDef, this.genreDefs[index + 1]);
-			else this.renderGenreDef(container, genreDef, null);
-		});
+		let nextIndex = this.renderGenreDef(container, 0, -1);
+		while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
 	}
-	renderGenreDef(container, genreDef, nextGenreDef) {
-		let lineDiv = document.createElement("div");
-		container.appendChild(lineDiv);
-		if (nextGenreDef?.name == genreDef.child) lineDiv.classList.add("hasChildren");
+	renderGenreDef(container, index, parentLevel) {
+		let genreDef = this.genreDefs[index];
+		if (genreDef.level < parentLevel + 1) return index;
+		let hasChildren = ((this.genreDefs.length > index + 1 ? this.genreDefs[index + 1] : null)?.level ?? -1) > genreDef.level;
 		let name = genreDef.name;
 		if (genreDef.child) name = genreDef.child;
-		lineDiv.textContent = name;
-		let lvl = "lvl" + (genreDef.level + 1);
-		lineDiv.classList.add(lvl);
+		if (hasChildren) {
+			let newContainer = document.createElement("details");
+			newContainer.open = true;
+			newContainer.classList.add("lvl" + (genreDef.level + 1));
+			container.appendChild(newContainer);
+			let summary = document.createElement("summary");
+			summary.textContent = name;
+			newContainer.appendChild(summary);
+			let nextIndex = this.renderGenreDef(newContainer, index + 1, genreDef.level);
+			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].level == genreDef.level + 1) nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.level);
+			return nextIndex;
+		}
+		let newLine = document.createElement("div");
+		newLine.classList.add("lvl" + (genreDef.level + 1));
+		container.appendChild(newLine);
+		newLine.textContent = name;
+		return index + 1;
 	}
 };
 
