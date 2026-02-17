@@ -6,6 +6,7 @@ import {RefType} from "./refs";
 export interface EboEventHandlersEventMap {
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
+    "genreSelected.eboplayer"                   : StringArgs,
     "addTrackClicked.eboplayer"                 : TrackUriArgs,
     "albumToViewChanged.eboplayer"              : VoidArgs,
     "bigTrackAlbumImgClicked.eboplayer"         : VoidArgs,

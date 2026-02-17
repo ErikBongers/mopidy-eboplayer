@@ -1,6 +1,7 @@
 import {ComponentView} from "./view";
 import {State} from "../playerState";
 import {EboGenresComp, ExpandedGenreDef} from "../components/eboGenresComp";
+import {console_yellow} from "../global";
 
 export class GenresView extends ComponentView<EboGenresComp>{
     constructor(state: State, component: EboGenresComp) {
@@ -13,6 +14,9 @@ export class GenresView extends ComponentView<EboGenresComp>{
             let genreReplacements = await this.state.getCache().getGenreReplacementsCached();
             this.component.genreDefs = genreDefs.map(genreDef => {
                 return {genreDef, active: genreReplacements.has(genreDef.child ?? genreDef.name)};
+            });
+            this.component.addEboEventListener("genreSelected.eboplayer", ev => {
+                console_yellow(`Selected ${ev.detail.text}`);
             });
         });
     }

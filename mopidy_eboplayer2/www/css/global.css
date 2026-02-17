@@ -11,6 +11,8 @@
     font-optical-sizing: auto;
     font-weight: 400;
     color: white;
+    --highlight-color: rgb(253, 213, 110);
+    --half-highlight-color: rgba(from var(--highlight-color) r g b / 0.7);
 }
 
 input[type=text],

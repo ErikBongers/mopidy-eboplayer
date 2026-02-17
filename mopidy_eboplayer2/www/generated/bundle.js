@@ -5860,15 +5860,24 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 flex-grow: 1;
                 & details {
                     color: #aaa;
+                    & > summary.selected {
+                        background-color: var(--selected-background);
+                    }
+                }
+                & div {
+                    color: #aaa;
+                    &.selected {
+                        background-color: var(--selected-background);
+                    }
                 }
                 & summary {
                     color: inherit;
                 }
                 .active > summary {
-                    color: #ffa; /*todo: variable*/
+                    color: var(--highlight-color);
                 }
                 .containsActive > summary {
-                    color: #dada91; /*todo: variable*/
+                    color: var(--half-highlight-color);
                 }
             }
             .lvl1, .lvl2, .lvl3, .lvl4, .lvl5, .lvl6 {
@@ -5900,7 +5909,8 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 <ebo-button data-level="4" toggle><div id="lvl4" class="squircleButton" style="margin-inline-end: .2rem;">4</div></ebo-button>            
                 <ebo-button data-level="5" toggle><div id="lvl5" class="squircleButton" style="margin-inline-end: .2rem;">5</div></ebo-button>            
                 <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>           
-                <ebo-button id="btnShowActive" toggle class="roundBorder" style="padding-block: 0; margin-block-start: 0;"><div style="font-size: .7rem;">Active</div></ebo-button> 
+                <ebo-button id="btnShowActive" toggle class="roundBorder" style="color: var(--highlight-color); padding-block: 0; margin-block-start: 0;"><div style="color: var(--highlight-color); font-size: .7rem;">Active</div></ebo-button> 
+                <ebo-button id="btnSelect" disabled class="roundBorder" style="background-color: var(--selected-background); color: var(--selected-background); padding-block: 0; margin-block-start: 0;"><div style="font-size: .7rem;">Select ></div></ebo-button> 
             </div>
             <div id="scrollContainer"></div>
         </div>        
@@ -5926,6 +5936,10 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 				ancestor.toggleAttribute("open", true);
 			});
 		});
+		shadow.getElementById("btnSelect").addEventListener("click", (ev) => {
+			let selectedLine = shadow.querySelector(".selected");
+			this.dispatchEboEvent("genreSelected.eboplayer", { "text": selectedLine.textContent });
+		});
 	}
 	update(shadow) {
 		let container = shadow.getElementById("scrollContainer");
@@ -5933,6 +5947,16 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
 		this.getActiveAncestors(shadow).forEach((ancestor) => {
 			ancestor.classList.toggle("containsActive", true);
+		});
+		let allLineElements = shadow.querySelectorAll("div[data-level], details[data-level] > summary");
+		allLineElements.forEach((lineElement) => {
+			lineElement.addEventListener("click", (ev) => {
+				allLineElements.forEach((otherLineElement) => {
+					otherLineElement.classList.remove("selected");
+				});
+				ev.currentTarget.classList.add("selected");
+				shadow.getElementById("btnSelect").removeAttribute("disabled");
+			});
 		});
 	}
 	getActiveAncestors(shadow) {
@@ -6003,6 +6027,9 @@ var GenresView = class extends ComponentView {
 					genreDef,
 					active: genreReplacements.has(genreDef.child ?? genreDef.name)
 				};
+			});
+			this.component.addEboEventListener("genreSelected.eboplayer", (ev) => {
+				console_yellow(`Selected ${ev.detail.text}`);
 			});
 		});
 	}
