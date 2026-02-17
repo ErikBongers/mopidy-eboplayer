@@ -1,7 +1,6 @@
 import {BrowseFilterBreadCrumbStack, Model} from "../model";
 import {jsonParse} from "../functionsvars";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb} from "../modelTypes";
-import {BreadCrumb, BreadCrumbStack} from "../breadCrumb";
+import {AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter} from "../modelTypes";
 import models from "../../js/mopidy";
 import Ref = models.Ref;
 
@@ -72,4 +71,15 @@ export class LocalStorageProxy {
         localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
     }
 
+    saveAlbumBeingEdited(albumUri: AlbumUri | null) {
+        localStorage.setItem("albumBeingEdited", albumUri ?? "");
+    }
+
+    getAlbumBeingEdited() {
+        let albumUri = localStorage.getItem("albumBeingEdited") ?? "";
+        if(albumUri == "")
+            return null;
+
+        return albumUri as AlbumUri;
+    }
 }

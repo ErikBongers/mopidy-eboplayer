@@ -1,3 +1,7 @@
+* Create a saved UI state
+  - contains the album that is currently being edited (if applicable)
+  - a back buffer?
+
 * Set/change genre for track/album.
 
 

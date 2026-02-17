@@ -3,7 +3,7 @@ import {AlbumUri, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {arrayToggle, console_yellow} from "../global";
-import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
+import {addEboEventListener, GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
@@ -11,6 +11,7 @@ import {State} from "../playerState";
 export class AlbumView extends ComponentView<EboBigAlbumComp> {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
     private dialog: EboDialog;
+    private albumBeingEdited: AlbumUri | null = null;
 
     constructor(state: State, dialog: EboDialog, component: EboBigAlbumComp) {
         super(state, component);
@@ -137,6 +138,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
 
     private onGenreEditRequested(detail: UriArgs) {
         location.hash = "#Genres";
+        this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri as AlbumUri);
         location.reload();
     }
 }

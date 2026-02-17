@@ -475,4 +475,8 @@ export class Controller extends Commands {
     async setSingle(single: boolean) {
         await this.mopidyProxy.setSingle(single);
     }
+
+    async saveAlbumGenre(albumUri: AlbumUri, genre: string) {
+        await this.webProxy.setAlbumGenre(albumUri, genre);
+    }
 }

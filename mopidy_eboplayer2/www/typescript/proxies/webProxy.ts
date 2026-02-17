@@ -125,4 +125,14 @@ export class WebProxy {
         await res.text(); //todo: needed?
         return null;
     }
+
+    async setAlbumGenre(albumUri: AlbumUri, genre: string) {
+        let url = this.ebobackUrl(`set_album_genre`);
+        url.searchParams.set("album_uri", albumUri);
+        url.searchParams.set("genre", genre);
+        await fetch(url);
+        // await res.text(); //todo: needed?
+        return null;
+
+    }
 }

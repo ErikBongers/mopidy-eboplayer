@@ -1561,6 +1561,14 @@ var LocalStorageProxy = class {
 		console.log(obj);
 		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
 	}
+	saveAlbumBeingEdited(albumUri) {
+		localStorage.setItem("albumBeingEdited", albumUri ?? "");
+	}
+	getAlbumBeingEdited() {
+		let albumUri = localStorage.getItem("albumBeingEdited") ?? "";
+		if (albumUri == "") return null;
+		return albumUri;
+	}
 };
 
 //#endregion
@@ -1663,6 +1671,13 @@ var WebProxy = class {
 		url.searchParams.set("album_uri", albumUri);
 		url.searchParams.set("image_url", imageUrl);
 		await (await fetch(url)).text();
+		return null;
+	}
+	async setAlbumGenre(albumUri, genre) {
+		let url = this.ebobackUrl(`set_album_genre`);
+		url.searchParams.set("album_uri", albumUri);
+		url.searchParams.set("genre", genre);
+		await fetch(url);
 		return null;
 	}
 };
@@ -2020,6 +2035,9 @@ var Controller = class extends Commands {
 	}
 	async setSingle(single) {
 		await this.mopidyProxy.setSingle(single);
+	}
+	async saveAlbumGenre(albumUri, genre) {
+		await this.webProxy.setAlbumGenre(albumUri, genre);
 	}
 };
 
@@ -3204,6 +3222,9 @@ var MainView = class extends View {
 		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
 			this.state.getController().setView(Views.Remembered);
 		});
+		addEboEventListener(layout, "genreSelected.eboplayer", (ev) => {
+			this.onGenreSelected(ev.detail.text);
+		});
 	}
 	getListButtonStates(currentView) {
 		let states = ListButtonState_AllHidden();
@@ -3363,6 +3384,11 @@ var MainView = class extends View {
 	}
 	async onSettingsButtonClick() {
 		await this.showView(Views.Settings);
+	}
+	onGenreSelected(genre) {
+		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
+		if (!albumBeingEdited) return;
+		this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
 	}
 };
 
@@ -5361,6 +5387,7 @@ var BrowseView = class extends ComponentView {
 var AlbumView = class extends ComponentView {
 	onDialogOkClickedCallback = () => true;
 	dialog;
+	albumBeingEdited = null;
 	constructor(state, dialog, component) {
 		super(state, component);
 		this.dialog = dialog;
@@ -5462,6 +5489,7 @@ var AlbumView = class extends ComponentView {
 	}
 	onGenreEditRequested(detail) {
 		location.hash = "#Genres";
+		this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri);
 		location.reload();
 	}
 };

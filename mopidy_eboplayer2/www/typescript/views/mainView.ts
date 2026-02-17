@@ -11,7 +11,6 @@ import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
-import {EboGenresComp} from "../components/eboGenresComp";
 
 export class MainView extends View {
     private browseView: BrowseView;
@@ -77,7 +76,9 @@ export class MainView extends View {
             this.state.getController().setView(Views.Remembered);
         });
 
-
+        addEboEventListener(layout, "genreSelected.eboplayer", ev => {
+            this.onGenreSelected(ev.detail.text);
+        });
     }
 
     private getListButtonStates(currentView: Views) {
@@ -268,5 +269,12 @@ export class MainView extends View {
 
     private async onSettingsButtonClick() {
         await this.showView(Views.Settings);
+    }
+
+    private onGenreSelected(genre: string) {
+        let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
+        if(!albumBeingEdited)
+            return;
+        this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
     }
 }
