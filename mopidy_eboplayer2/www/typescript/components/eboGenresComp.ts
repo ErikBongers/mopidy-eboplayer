@@ -41,31 +41,6 @@ export class EboGenresComp extends EboComponent {
                 text-align: left;
                 margin-inline-start: 1rem;
             }
-            .lvl1 {
-                font-size: 1.2rem;
-                font-weight: bold;
-            }
-            .lvl2 {
-                font-size: 1.1rem;
-                font-weight: bold;
-                /*margin-inline-start: 2rem;*/
-            }
-            .lvl3 {
-                font-size: 1rem;
-                /*margin-inline-start: 3rem;*/
-            }
-            .lvl4 {
-                font-size: .9rem;
-                /*margin-inline-start: 4rem;*/
-            }
-            .lvl5 {
-                font-size: .8rem;
-                /*margin-inline-start: 5rem;*/
-            }
-            .lvl6 {
-                font-size: .7rem;
-                /*margin-inline-start: 6rem;*/
-            }
             .hasChildren::before {
                 content: "\\25B6";
                 color: white;
@@ -78,10 +53,6 @@ export class EboGenresComp extends EboComponent {
                 font-size: .8rem;
             }
             details summary::marker {
-                margin-inline-end: 0 !important;
-                margin-right: 0 !important;
-                margin: 0 !important;
-                padding: 0;
             }
             .hideLvl2 {
                 & .lvl2, & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
