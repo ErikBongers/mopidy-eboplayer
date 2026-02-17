@@ -114,9 +114,15 @@ export class EboGenresComp extends EboComponent {
     // noinspection HtmlUnknownTarget
     static htmlText = `
         <div id="wrapper" class="flexColumn">
-            <div id="scrollContainer">
-            
+            <div class="flexRow">
+                <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
+                <ebo-button data-level="2" toggle><div id="lvl2" class="squircleButton" style="margin-inline-end: .2rem;">2</div></ebo-button>            
+                <ebo-button data-level="3" toggle><div id="lvl3" class="squircleButton" style="margin-inline-end: .2rem;">3</div></ebo-button>            
+                <ebo-button data-level="4" toggle><div id="lvl4" class="squircleButton" style="margin-inline-end: .2rem;">4</div></ebo-button>            
+                <ebo-button data-level="5" toggle><div id="lvl5" class="squircleButton" style="margin-inline-end: .2rem;">5</div></ebo-button>            
+                <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>            
             </div>
+            <div id="scrollContainer"></div>
         </div>        
         `;
 
@@ -130,6 +136,19 @@ export class EboGenresComp extends EboComponent {
         }
 
     override render(shadow:ShadowRoot) {
+        let eboButtons = shadow.querySelectorAll("ebo-button") as NodeListOf<EboButton>;
+        eboButtons.forEach(eboButton => {
+            eboButton.addEventListener("click", (ev) => {
+                let level = parseInt(eboButton.dataset.level!);
+                let eboButtons = shadow.querySelectorAll("ebo-button") as NodeListOf<EboButton>;
+                eboButtons.forEach(eboButton => {
+                    eboButton.toggleAttribute("pressed", eboButton.dataset.level! <= level.toString());
+                });
+                let container = shadow.getElementById("scrollContainer") as HTMLElement;
+                container.classList.remove(...[...Array(6).keys()].map(x => "hideLvl"+x));
+                container.classList.toggle("hideLvl"+(level+1), true);
+            });
+        });
     }
 
     override update(shadow:ShadowRoot) {

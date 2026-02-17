@@ -1,7 +1,7 @@
-* Set Genre
-  > Standard genres: from wiki
-    > store internally.
-    > overrule: create a prefilled genres.eboplayer file in root.
+* Genre view
+  - add level buttons
+  - add click handlers.
+    > click also collapses...
 
 * ViewModel: turn it into a CachedViewModel that never returns null values
   > ...but knows what data has been loaded or not (via flags?)

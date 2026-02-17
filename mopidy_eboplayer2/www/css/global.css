@@ -129,3 +129,14 @@ input {
     height: 0.9rem;
     margin-right: 0;
 }
+
+.squircleButton {
+    border-width: 1px;
+    border-style: solid;
+    border-color: white;
+    border-radius: 1rem;
+    corner-shape: squircle;
+    padding: .2rem;
+    font-size: .7rem;
+    width: .7rem;
+}

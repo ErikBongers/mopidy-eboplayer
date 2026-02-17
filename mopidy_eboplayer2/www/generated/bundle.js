@@ -5909,8 +5909,28 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 margin: 0 !important;
                 padding: 0;
             }
+            .hideLvl2 {
+                & .lvl2, & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
+                    display: none;
+                }            
+            }
+            .hideLvl3 {
+                & .lvl3, & .lvl4, & .lvl5, & .lvl6 {
+                    display: none;
+                }            
+            }
             .hideLvl4 {
                 & .lvl4, & .lvl5, & .lvl6 {
+                    display: none;
+                }
+            }
+            .hideLvl5 {
+                & .lvl5, & .lvl6 {
+                    display: none;
+                }
+            }
+            .hideLvl6 {
+                & .lvl6 {
                     display: none;
                 }
             }
@@ -5918,9 +5938,15 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
         `;
 	static htmlText = `
         <div id="wrapper" class="flexColumn">
-            <div id="scrollContainer">
-            
+            <div class="flexRow">
+                <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
+                <ebo-button data-level="2" toggle><div id="lvl2" class="squircleButton" style="margin-inline-end: .2rem;">2</div></ebo-button>            
+                <ebo-button data-level="3" toggle><div id="lvl3" class="squircleButton" style="margin-inline-end: .2rem;">3</div></ebo-button>            
+                <ebo-button data-level="4" toggle><div id="lvl4" class="squircleButton" style="margin-inline-end: .2rem;">4</div></ebo-button>            
+                <ebo-button data-level="5" toggle><div id="lvl5" class="squircleButton" style="margin-inline-end: .2rem;">5</div></ebo-button>            
+                <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>            
             </div>
+            <div id="scrollContainer"></div>
         </div>        
         `;
 	constructor() {
@@ -5929,7 +5955,19 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		this.requestUpdate();
 	}
-	render(shadow) {}
+	render(shadow) {
+		shadow.querySelectorAll("ebo-button").forEach((eboButton) => {
+			eboButton.addEventListener("click", (ev) => {
+				let level = parseInt(eboButton.dataset.level);
+				shadow.querySelectorAll("ebo-button").forEach((eboButton$1) => {
+					eboButton$1.toggleAttribute("pressed", eboButton$1.dataset.level <= level.toString());
+				});
+				let container = shadow.getElementById("scrollContainer");
+				container.classList.remove(...[...Array(6).keys()].map((x) => "hideLvl" + x));
+				container.classList.toggle("hideLvl" + (level + 1), true);
+			});
+		});
+	}
 	update(shadow) {
 		let container = shadow.getElementById("scrollContainer");
 		let nextIndex = this.renderGenreDef(container, 0, -1);
