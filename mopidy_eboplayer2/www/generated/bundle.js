@@ -1703,6 +1703,7 @@ var Controller = class extends Commands {
 		await this.filterBrowseResults();
 		await this.cache.getGenreReplacementsCached();
 		await this.cache.getRemembersCached();
+		await this.cache.getGenreDefs();
 	}
 	initialize(views) {
 		this.mopidy.on("state:online", async () => {
@@ -3254,8 +3255,7 @@ var MainView = class extends View {
 	}
 	async showView(view) {
 		document.querySelectorAll(".fullView").forEach((v) => v.classList.remove("shownView"));
-		let currentView = document.getElementById(this.hashToViewId(view));
-		currentView.classList.add("shownView");
+		document.getElementById(this.hashToViewId(view)).classList.add("shownView");
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let layout = document.getElementById("layout");
 		let prevViewClass = [...layout.classList].filter((c) => [
@@ -3312,7 +3312,6 @@ var MainView = class extends View {
 				browseBtn.dataset.goto = Views.NowPlaying;
 				browseBtn.title = "Now playing";
 				layout.classList.add("showFullView");
-				currentView.genreDefs = await this.state.getCache().getGenreDefs();
 				break;
 			default: return unreachable(view);
 		}
@@ -5878,6 +5877,9 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 cursor: pointer;
                 font-size: .8rem;
             }
+            .active > summary {
+                color: orange;
+            }
         </style>
         `;
 	static htmlText = `
@@ -5913,30 +5915,32 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	update(shadow) {
 		let container = shadow.getElementById("scrollContainer");
 		let nextIndex = this.renderGenreDef(container, 0, -1);
-		while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
+		while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
 	}
 	renderGenreDef(container, index, parentLevel) {
 		let genreDef = this.genreDefs[index];
-		if (genreDef.level < parentLevel + 1) return index;
-		let hasChildren = ((this.genreDefs.length > index + 1 ? this.genreDefs[index + 1] : null)?.level ?? -1) > genreDef.level;
-		let name = genreDef.name;
-		if (genreDef.child) name = genreDef.child;
+		if (genreDef.genreDef.level < parentLevel + 1) return index;
+		let hasChildren = ((this.genreDefs.length > index + 1 ? this.genreDefs[index + 1] : null)?.genreDef.level ?? -1) > genreDef.genreDef.level;
+		let name = genreDef.genreDef.name;
+		if (genreDef.genreDef.child) name = genreDef.genreDef.child;
 		if (hasChildren) {
 			let newContainer = document.createElement("details");
 			newContainer.open = false;
-			newContainer.classList.add("lvl" + (genreDef.level + 1));
-			newContainer.dataset.level = (genreDef.level + 1).toString();
+			newContainer.classList.add("lvl" + (genreDef.genreDef.level + 1));
+			newContainer.classList.toggle("active", genreDef.active);
+			newContainer.dataset.level = (genreDef.genreDef.level + 1).toString();
 			container.appendChild(newContainer);
 			let summary = document.createElement("summary");
 			summary.textContent = name;
 			newContainer.appendChild(summary);
-			let nextIndex = this.renderGenreDef(newContainer, index + 1, genreDef.level);
-			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].level == genreDef.level + 1) nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.level);
+			let nextIndex = this.renderGenreDef(newContainer, index + 1, genreDef.genreDef.level);
+			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == genreDef.genreDef.level + 1) nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.genreDef.level);
 			return nextIndex;
 		}
 		let newLine = document.createElement("div");
-		newLine.classList.add("lvl" + (genreDef.level + 1));
-		newLine.dataset.level = (genreDef.level + 1).toString();
+		newLine.classList.add("lvl" + (genreDef.genreDef.level + 1));
+		newLine.classList.toggle("active", genreDef.active);
+		newLine.dataset.level = (genreDef.genreDef.level + 1).toString();
 		container.appendChild(newLine);
 		newLine.textContent = name;
 		return index + 1;
@@ -5944,6 +5948,26 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	showLevel(level) {
 		this.shadow.querySelectorAll("details").forEach((detailElement) => {
 			detailElement.open = parseInt(detailElement.dataset.level) < level;
+		});
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer2/www/typescript/views/genresView.ts
+var GenresView = class extends ComponentView {
+	constructor(state, component) {
+		super(state, component);
+	}
+	bind() {
+		this.state.getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+			let genreDefs = await this.state.getCache().getGenreDefs();
+			let genreReplacements = await this.state.getCache().getGenreReplacementsCached();
+			this.component.genreDefs = genreDefs.map((genreDef) => {
+				return {
+					genreDef,
+					active: genreReplacements.has(genreDef.child ?? genreDef.name)
+				};
+			});
 		});
 	}
 };
@@ -6003,13 +6027,15 @@ function setupStuff() {
 	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
 	let historyView = new TimelineView(state);
 	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));
+	let genresView = new GenresView(state, document.getElementById("genresView"));
 	let views = [
 		mainView,
 		headerView,
 		currentTrackView,
 		buttonBarView,
 		historyView,
-		rememberedView
+		rememberedView,
+		genresView
 	];
 	views.forEach((v) => v.bindRecursive());
 	controller.initialize(views);

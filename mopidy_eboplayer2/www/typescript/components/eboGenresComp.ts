@@ -1,19 +1,23 @@
 import {EboComponent} from "./EboComponent";
-import {console_yellow} from "../global";
 import {EboButton} from "./eboButton";
 import {GenreDef} from "../modelTypes";
+
+export type ExpandedGenreDef = {
+    genreDef: GenreDef,
+    active: boolean,
+}
 
 export class EboGenresComp extends EboComponent {
     static override readonly tagName=  "ebo-genres-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
 
-    private _genreDefs: GenreDef[] = [];
-    get genreDefs(): GenreDef[] {
+    private _genreDefs: ExpandedGenreDef[] = [];
+    get genreDefs(): ExpandedGenreDef[] {
         return this._genreDefs;
     }
 
-    set genreDefs(value: GenreDef[]) {
+    set genreDefs(value: ExpandedGenreDef[]) {
         this._genreDefs = value;
         this.requestUpdate();
     }
@@ -51,6 +55,9 @@ export class EboGenresComp extends EboComponent {
                 height: 1rem;
                 cursor: pointer;
                 font-size: .8rem;
+            }
+            .active > summary {
+                color: orange;
             }
         </style>
         `;
@@ -96,7 +103,7 @@ export class EboGenresComp extends EboComponent {
     override update(shadow:ShadowRoot) {
         let container = shadow.getElementById("scrollContainer") as HTMLElement;
         let nextIndex = this.renderGenreDef(container, 0, -1);
-        while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].level == 0) {
+        while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) {
             nextIndex = this.renderGenreDef(container, nextIndex, -1);
         }
     }
@@ -105,37 +112,39 @@ export class EboGenresComp extends EboComponent {
         //prepare data
         let genreDef = this.genreDefs[index];
 
-        if(genreDef.level < parentLevel+1) {
+        if(genreDef.genreDef.level < parentLevel+1) {
             return index; //we need to jump a parent up.
         }
 
         let nextGenreDef = this.genreDefs.length > index+1 ? this.genreDefs[index+1]: null;
-        let hasChildren = (nextGenreDef?.level??-1) > genreDef.level;
-        let name = genreDef.name;
-        if(genreDef.child) {
-            name = genreDef.child;
+        let hasChildren = (nextGenreDef?.genreDef.level??-1) > genreDef.genreDef.level;
+        let name = genreDef.genreDef.name;
+        if(genreDef.genreDef.child) {
+            name = genreDef.genreDef.child;
         }
 
         //start building
         if(hasChildren) {
             let newContainer = document.createElement("details");
             newContainer.open = false;
-            newContainer.classList.add("lvl"+(genreDef.level+1));
-            newContainer.dataset.level = (genreDef.level+1).toString();
+            newContainer.classList.add("lvl"+(genreDef.genreDef.level+1));
+            newContainer.classList.toggle("active", genreDef.active);
+            newContainer.dataset.level = (genreDef.genreDef.level+1).toString();
             container.appendChild(newContainer);
             let summary = document.createElement("summary");
             summary.textContent = name;
             newContainer.appendChild(summary);
-            let nextIndex = this.renderGenreDef(newContainer, index+1, genreDef.level);
-            while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].level == genreDef.level+1) {
-                nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.level);
+            let nextIndex = this.renderGenreDef(newContainer, index+1, genreDef.genreDef.level);
+            while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == genreDef.genreDef.level+1) {
+                nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.genreDef.level);
             }
             return nextIndex;
         }
         //no children, just a line
         let newLine = document.createElement("div");
-        newLine.classList.add("lvl"+(genreDef.level+1));
-        newLine.dataset.level = (genreDef.level+1).toString();
+        newLine.classList.add("lvl"+(genreDef.genreDef.level+1));
+        newLine.classList.toggle("active", genreDef.active);
+        newLine.dataset.level = (genreDef.genreDef.level+1).toString();
         container.appendChild(newLine);
         newLine.textContent = name;
         return index + 1;

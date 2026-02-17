@@ -37,6 +37,7 @@ import {CacheHandler} from "./controllers/cacheHandler";
 import {EboOption} from "./components/eboOption";
 import {EboIconDropdown} from "./components/eboIconDropdown";
 import {EboGenresComp} from "./components/eboGenresComp";
+import {GenresView} from "./views/genresView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -115,8 +116,9 @@ function setupStuff() {
     let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);
     let historyView = new TimelineView(state);
     let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);
+    let genresView = new GenresView(state, document.getElementById("genresView") as EboGenresComp);
 
-    let views = [mainView, headerView, currentTrackView, buttonBarView, historyView, rememberedView];
+    let views = [mainView, headerView, currentTrackView, buttonBarView, historyView, rememberedView, genresView];
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
 

@@ -200,7 +200,6 @@ export class MainView extends View {
                 browseBtn.dataset.goto = Views.NowPlaying;
                 browseBtn.title = "Now playing";
                 layout.classList.add("showFullView");
-                (currentView as EboGenresComp).genreDefs = await this.state.getCache().getGenreDefs();
                 break;
             default:
                 return unreachable(view);
