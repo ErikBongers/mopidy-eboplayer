@@ -5847,6 +5847,7 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
         <style>
             :host { 
                 display: flex;
+                color: #666;
             } 
             #wrapper {
                 display: flex;
@@ -5857,6 +5858,18 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
             #scrollContainer {
                 overflow-y: auto;
                 flex-grow: 1;
+                & details {
+                    color: #aaa;
+                }
+                & summary {
+                    color: inherit;
+                }
+                .active > summary {
+                    color: #ffa; /*todo: variable*/
+                }
+                .containsActive > summary {
+                    color: #dada91; /*todo: variable*/
+                }
             }
             .lvl1, .lvl2, .lvl3, .lvl4, .lvl5, .lvl6 {
                 margin: 0;
@@ -5868,7 +5881,6 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
             }
             .hasChildren::before {
                 content: "\\25B6";
-                color: white;
                 position: relative;
                 left: -1rem;
                 float: left;
@@ -5876,9 +5888,6 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 height: 1rem;
                 cursor: pointer;
                 font-size: .8rem;
-            }
-            .active > summary {
-                color: orange;
             }
         </style>
         `;
@@ -5913,19 +5922,8 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 			});
 		});
 		shadow.getElementById("btnShowActive").addEventListener("click", (ev) => {
-			shadow.querySelectorAll("details").forEach((detail) => detail.open = false);
-			let activeElements = shadow.querySelectorAll(".active");
-			console.log(activeElements);
-			activeElements.forEach((activeElement) => {
-				let ancestor;
-				ancestor = activeElement;
-				while (true) {
-					let newAncestor = ancestor.parentElement.closest("details");
-					if (newAncestor == ancestor) break;
-					ancestor = newAncestor;
-					if (!ancestor) break;
-					ancestor.toggleAttribute("open", true);
-				}
+			this.getActiveAncestors(shadow).forEach((ancestor) => {
+				ancestor.toggleAttribute("open", true);
 			});
 		});
 	}
@@ -5933,6 +5931,27 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		let container = shadow.getElementById("scrollContainer");
 		let nextIndex = this.renderGenreDef(container, 0, -1);
 		while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
+		this.getActiveAncestors(shadow).forEach((ancestor) => {
+			ancestor.classList.toggle("containsActive", true);
+		});
+	}
+	getActiveAncestors(shadow) {
+		let activeAncestors = [];
+		shadow.querySelectorAll("details").forEach((detail) => detail.open = false);
+		let activeElements = shadow.querySelectorAll(".active");
+		console.log(activeElements);
+		activeElements.forEach((activeElement) => {
+			let ancestor;
+			ancestor = activeElement;
+			while (true) {
+				let newAncestor = ancestor.parentElement.closest("details");
+				if (newAncestor == ancestor) break;
+				ancestor = newAncestor;
+				if (!ancestor) break;
+				activeAncestors.push(ancestor);
+			}
+		});
+		return activeAncestors;
 	}
 	renderGenreDef(container, index, parentLevel) {
 		let genreDef = this.genreDefs[index];

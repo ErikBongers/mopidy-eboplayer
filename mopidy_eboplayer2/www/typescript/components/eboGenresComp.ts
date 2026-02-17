@@ -26,6 +26,7 @@ export class EboGenresComp extends EboComponent {
         <style>
             :host { 
                 display: flex;
+                color: #666;
             } 
             #wrapper {
                 display: flex;
@@ -36,6 +37,18 @@ export class EboGenresComp extends EboComponent {
             #scrollContainer {
                 overflow-y: auto;
                 flex-grow: 1;
+                & details {
+                    color: #aaa;
+                }
+                & summary {
+                    color: inherit;
+                }
+                .active > summary {
+                    color: #ffa; /*todo: variable*/
+                }
+                .containsActive > summary {
+                    color: #dada91; /*todo: variable*/
+                }
             }
             .lvl1, .lvl2, .lvl3, .lvl4, .lvl5, .lvl6 {
                 margin: 0;
@@ -47,7 +60,6 @@ export class EboGenresComp extends EboComponent {
             }
             .hasChildren::before {
                 content: "\\25B6";
-                color: white;
                 position: relative;
                 left: -1rem;
                 float: left;
@@ -55,9 +67,6 @@ export class EboGenresComp extends EboComponent {
                 height: 1rem;
                 cursor: pointer;
                 font-size: .8rem;
-            }
-            .active > summary {
-                color: orange;
             }
         </style>
         `;
@@ -101,22 +110,8 @@ export class EboGenresComp extends EboComponent {
         });
         let btnShowActive = shadow.getElementById("btnShowActive") as EboButton;
         btnShowActive.addEventListener("click", (ev) => {
-            let allDetails = shadow.querySelectorAll("details");
-            allDetails.forEach(detail => detail.open = false);
-            let activeElements = shadow.querySelectorAll(".active") as NodeListOf<HTMLElement>;
-            console.log(activeElements);
-            activeElements.forEach(activeElement => {
-                let ancestor: HTMLElement | null;
-                ancestor = activeElement;
-                while(true) {
-                    let newAncestor = ancestor.parentElement!.closest("details") as HTMLDetailsElement | null ;
-                    if(newAncestor == ancestor)
-                        break;
-                    ancestor = newAncestor;
-                    if(!ancestor)
-                        break;
-                    ancestor.toggleAttribute("open", true);
-                }
+            this.getActiveAncestors(shadow).forEach(ancestor => {
+                ancestor.toggleAttribute("open", true);
             });
         });
     }
@@ -127,6 +122,31 @@ export class EboGenresComp extends EboComponent {
         while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) {
             nextIndex = this.renderGenreDef(container, nextIndex, -1);
         }
+        this.getActiveAncestors(shadow).forEach(ancestor => {
+            ancestor.classList.toggle("containsActive", true);
+        })
+    }
+
+    private getActiveAncestors(shadow:ShadowRoot) {
+        let activeAncestors: HTMLDetailsElement[] = [];
+        let allDetails = shadow.querySelectorAll("details");
+        allDetails.forEach(detail => detail.open = false);
+        let activeElements = shadow.querySelectorAll(".active") as NodeListOf<HTMLElement>;
+        console.log(activeElements);
+        activeElements.forEach(activeElement => {
+            let ancestor: HTMLElement | null;
+            ancestor = activeElement;
+            while(true) {
+                let newAncestor = ancestor.parentElement!.closest("details") as HTMLDetailsElement | null ;
+                if(newAncestor == ancestor)
+                    break;
+                ancestor = newAncestor;
+                if(!ancestor)
+                    break;
+                activeAncestors.push(ancestor as HTMLDetailsElement);
+            }
+        });
+        return activeAncestors;
     }
 
     private renderGenreDef(container: HTMLElement, index: number, parentLevel: number): number {
