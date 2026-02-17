@@ -144,6 +144,8 @@ export class EboAlbumDetails extends EboComponent {
                 let defHtml = "";
                 if(def.replacement)
                     defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
+                else
+                    defHtml += def.ref.name;
                 genresHtml += defHtml;
             });
             this.addMetaDataRow(body, "Genre", genresHtml);

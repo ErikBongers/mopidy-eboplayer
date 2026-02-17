@@ -4625,6 +4625,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			genreDefs.forEach((def) => {
 				let defHtml = "";
 				if (def.replacement) defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
+				else defHtml += def.ref.name;
 				genresHtml += defHtml;
 			});
 			this.addMetaDataRow(body, "Genre", genresHtml);

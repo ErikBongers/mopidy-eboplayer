@@ -7,6 +7,8 @@
     --playing-background: rgba(184, 134, 11, 0.53);
     --selected-background: rgba(84, 193, 251, 0.39);
     --edit-background: rgba(255, 255, 255, 0.07);
+    --link-color: #badff1;
+    --link-underline-color: #badff144;
     font-family: "Sofia Sans", sans-serif;
     font-optical-sizing: auto;
     font-weight: 400;
@@ -117,9 +119,9 @@ input {
     /*optional*/
     font-family: arial, sans-serif;
     /*input has OS specific font-family*/
-    color: #4db2e4ff;
+    color: var(--link-color);
     text-decoration: underline;
-    text-decoration-color: #4db2e488;
+    text-decoration-color: var(--link-underline-color);
     cursor: pointer;
     &:hover {
         text-decoration-color: #4db2e4ff;
