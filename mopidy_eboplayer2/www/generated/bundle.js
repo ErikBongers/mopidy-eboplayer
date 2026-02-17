@@ -5890,7 +5890,8 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 <ebo-button data-level="3" toggle><div id="lvl3" class="squircleButton" style="margin-inline-end: .2rem;">3</div></ebo-button>            
                 <ebo-button data-level="4" toggle><div id="lvl4" class="squircleButton" style="margin-inline-end: .2rem;">4</div></ebo-button>            
                 <ebo-button data-level="5" toggle><div id="lvl5" class="squircleButton" style="margin-inline-end: .2rem;">5</div></ebo-button>            
-                <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>            
+                <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>           
+                <ebo-button id="btnShowActive" toggle class="roundBorder" style="padding-block: 0; margin-block-start: 0;"><div style="font-size: .7rem;">Active</div></ebo-button> 
             </div>
             <div id="scrollContainer"></div>
         </div>        
@@ -5902,13 +5903,29 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		shadow.querySelectorAll("ebo-button").forEach((eboButton) => {
+		shadow.querySelectorAll(`ebo-button[data-level]`).forEach((eboButton) => {
 			eboButton.addEventListener("click", (ev) => {
 				let level = parseInt(eboButton.dataset.level);
 				shadow.querySelectorAll("ebo-button").forEach((eboButton$1) => {
 					eboButton$1.toggleAttribute("pressed", eboButton$1.dataset.level <= level.toString());
 				});
 				this.showLevel(level);
+			});
+		});
+		shadow.getElementById("btnShowActive").addEventListener("click", (ev) => {
+			shadow.querySelectorAll("details").forEach((detail) => detail.open = false);
+			let activeElements = shadow.querySelectorAll(".active");
+			console.log(activeElements);
+			activeElements.forEach((activeElement) => {
+				let ancestor;
+				ancestor = activeElement;
+				while (true) {
+					let newAncestor = ancestor.parentElement.closest("details");
+					if (newAncestor == ancestor) break;
+					ancestor = newAncestor;
+					if (!ancestor) break;
+					ancestor.toggleAttribute("open", true);
+				}
 			});
 		});
 	}

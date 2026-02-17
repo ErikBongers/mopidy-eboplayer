@@ -1,5 +1,4 @@
 * Genre view
-  - highlight already used genres.
   - add button to show only the used genres.
     > open/close details when they contain a used genre.
   - add click handlers.

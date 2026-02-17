@@ -71,7 +71,8 @@ export class EboGenresComp extends EboComponent {
                 <ebo-button data-level="3" toggle><div id="lvl3" class="squircleButton" style="margin-inline-end: .2rem;">3</div></ebo-button>            
                 <ebo-button data-level="4" toggle><div id="lvl4" class="squircleButton" style="margin-inline-end: .2rem;">4</div></ebo-button>            
                 <ebo-button data-level="5" toggle><div id="lvl5" class="squircleButton" style="margin-inline-end: .2rem;">5</div></ebo-button>            
-                <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>            
+                <ebo-button data-level="6" toggle><div id="lvl6" class="squircleButton" style="margin-inline-end: .2rem;">6</div></ebo-button>           
+                <ebo-button id="btnShowActive" toggle class="roundBorder" style="padding-block: 0; margin-block-start: 0;"><div style="font-size: .7rem;">Active</div></ebo-button> 
             </div>
             <div id="scrollContainer"></div>
         </div>        
@@ -87,8 +88,8 @@ export class EboGenresComp extends EboComponent {
         }
 
     override render(shadow:ShadowRoot) {
-        let eboButtons = shadow.querySelectorAll("ebo-button") as NodeListOf<EboButton>;
-        eboButtons.forEach(eboButton => {
+        let levelButtons = shadow.querySelectorAll(`ebo-button[data-level]`) as NodeListOf<EboButton>;
+        levelButtons.forEach(eboButton => {
             eboButton.addEventListener("click", (ev) => {
                 let level = parseInt(eboButton.dataset.level!);
                 let eboButtons = shadow.querySelectorAll("ebo-button") as NodeListOf<EboButton>;
@@ -96,6 +97,26 @@ export class EboGenresComp extends EboComponent {
                     eboButton.toggleAttribute("pressed", eboButton.dataset.level! <= level.toString());
                 });
                 this.showLevel(level);
+            });
+        });
+        let btnShowActive = shadow.getElementById("btnShowActive") as EboButton;
+        btnShowActive.addEventListener("click", (ev) => {
+            let allDetails = shadow.querySelectorAll("details");
+            allDetails.forEach(detail => detail.open = false);
+            let activeElements = shadow.querySelectorAll(".active") as NodeListOf<HTMLElement>;
+            console.log(activeElements);
+            activeElements.forEach(activeElement => {
+                let ancestor: HTMLElement | null;
+                ancestor = activeElement;
+                while(true) {
+                    let newAncestor = ancestor.parentElement!.closest("details") as HTMLDetailsElement | null ;
+                    if(newAncestor == ancestor)
+                        break;
+                    ancestor = newAncestor;
+                    if(!ancestor)
+                        break;
+                    ancestor.toggleAttribute("open", true);
+                }
             });
         });
     }
