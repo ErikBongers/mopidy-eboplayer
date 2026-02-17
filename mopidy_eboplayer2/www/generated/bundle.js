@@ -4628,6 +4628,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 				else defHtml += def.ref.name;
 				genresHtml += defHtml;
 			});
+			genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
 			this.addMetaDataRow(body, "Genre", genresHtml);
 			this.addMetaDataRow(body, "Playlists", "todo...");
 			body.querySelectorAll(".linkButton").forEach((link) => {
@@ -4638,6 +4639,9 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 						"uri": link.dataset.uri
 					});
 				});
+			});
+			shadow.querySelector("#btnEditGenre").addEventListener("click", (ev) => {
+				this.dispatchEboEvent("albumGenreEditRequested.eboplayer", { "uri": this.albumInfo?.album?.ref.uri });
 			});
 		}
 	}
@@ -5401,6 +5405,9 @@ var AlbumView = class extends ComponentView {
 		this.component.addEboEventListener("browseToArtist.eboplayer", async (ev) => {
 			await this.state.getController().browseToArtist(ev.detail);
 		});
+		this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
+			this.onGenreEditRequested(ev.detail);
+		});
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {
 		document.getElementById("bigAlbumView");
@@ -5452,6 +5459,10 @@ var AlbumView = class extends ComponentView {
 		let playlist = await this.state.getController().createPlaylist(name);
 		await this.state.getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
 		return true;
+	}
+	onGenreEditRequested(detail) {
+		location.hash = "#Genres";
+		location.reload();
 	}
 };
 

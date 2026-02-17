@@ -3,7 +3,7 @@ import {AlbumUri, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {arrayToggle, console_yellow} from "../global";
-import {GuiSourceArgs, SaveUriArgs} from "../events";
+import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
@@ -58,7 +58,9 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.component.addEboEventListener("browseToArtist.eboplayer", async (ev) => {
             await this.state.getController().browseToArtist(ev.detail);
         });
-
+        this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
+            this.onGenreEditRequested(ev.detail);
+        });
     }
 
     setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
@@ -131,5 +133,10 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         let playlist = await this.state.getController().createPlaylist(name);
         await this.state.getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
         return true;
+    }
+
+    private onGenreEditRequested(detail: UriArgs) {
+        location.hash = "#Genres";
+        location.reload();
     }
 }

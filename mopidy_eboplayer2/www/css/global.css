@@ -144,3 +144,8 @@ input {
     font-size: .7rem;
     width: .7rem;
 }
+
+i.miniEdit {
+    font-size: .55rem;
+    margin-inline-start: .6rem;
+}

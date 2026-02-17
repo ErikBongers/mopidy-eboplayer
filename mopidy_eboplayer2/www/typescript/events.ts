@@ -24,6 +24,7 @@ export interface EboEventHandlersEventMap {
     "currentTrackChanged.eboplayer"             : VoidArgs,
     "deleteRemember.eboplayer"                  : RemeberIdArgs,
     "genreDefsChanged.eboplayer"                : VoidArgs,
+    "albumGenreEditRequested.eboplayer"         : UriArgs,
     "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
     "dialogOkClicked.eboplayer"                 : DialogArgs,
     "displayModeChanged.eboplayer"              : DisplayModeArgs,
