@@ -1,12 +1,10 @@
-* Create a saved UI state
-  - contains the album that is currently being edited (if applicable)
-  - a back buffer?
+* Diving updates the UI too much.
+  > how to delay messages?
 
-* Set/change genre for track/album.
-
-
-* ViewModel: turn it into a CachedViewModel that never returns null values
-  > ...but knows what data has been loaded or not (via flags?)
+* When selecting a new genre for album: return to album.
+  > reload album data, only for this album.
+    > replace the cached album
+      > send message that album has been changed.
 
 * Expand for other backends like youtube and spotify.
 
@@ -22,61 +20,10 @@
     - a stream/radio view?
       > perhaps this should stay in Playing Now?
 
-
-* separate CacheHandler from Controller?
-
-* create a big icon list view.
-  > Same behaviour for line and icon view!
-    - single click: goto item.
-  > An item has visuals:
-    - select mark (maybe just hightlight color)
-    - type icon: or subtle different font/color for genre, artist, album?
-      - genre is a tag like thing: show a dim rounded corner rectangle
-      - artist: italic?
-      - album: bold?
-    - album icon
-    - title
-    - subtitle (artist + album)
-
-  > and a button to switch to line view.
-
 * Create a favorites view
   - has title
   - has a loading bar ABOVE it, that is shown when the user starts filltering and all refs are being loaded.
     > the favorites remain visible.
-
-* Add loading bar
-  > Load favorates one by one and stop if all refs are requested.
-    - show "loading" above favorites
-    - mark favorites as not-yet-loaded (or perhaps the individual items)
-      > make sure to continue loading them if favorites are shown again (on clear filter)
-
-* Add button to show favorites at any time.
-
-Rething browsing data
-----------------------
-Perhaps only fetch a list of data that is needed to filter.
-That means only thenames (and uris) of refs, but not any other metadata.
-However for display (of a track) we may need some extra info like artist and album.
-For genres we may want to see if it's an alias or not.
-
-This is still much less data than having all the album's tracks, artists, with uris.
-
-Such a browse list may look like this:
-  - type
-  - name
-  - uri
-  - album (may be empty)
-  - artist (may be empty)
-  - alias or original.
-  - ...
-  > let's call it ExpandedRefs?
-  > fetch all in one go?
-  > create a view for it?
-
-Slow loading
--------------
-Perhaps wrap slow loading data in a discriminated union with states Loading,...
 
 Favorites
 ----------

@@ -93,9 +93,10 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     }
     getGenreReplacements = () => this.genreReplacements;
 
-    pushBreadCrumb(crumb: FilterBreadCrumb) {
+    pushBreadCrumb(crumb: FilterBreadCrumb, dispatch: "dispatch" | "noDispatch" = "dispatch") {
         this.filterBreadCrumbStack.push(crumb);
-        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+        if(dispatch == "dispatch")
+            this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
     }
     popBreadCrumb() {
         let crumb = this.filterBreadCrumbStack.pop();

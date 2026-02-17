@@ -208,10 +208,11 @@ export class Controller extends Commands {
         }
     }
 
-    async setAndSaveBrowseFilter(filter: BrowseFilter) {
+    async setAndSaveBrowseFilter(filter: BrowseFilter, applyFilter: "apply" | "dontApply" = "apply") {
         this.localStorageProxy.saveCurrentBrowseFilter(filter);
         this.model.setCurrentBrowseFilter(filter);
-        await this.filterBrowseResults();
+        if(applyFilter == "apply")
+            await this.filterBrowseResults();
     }
 
     async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
@@ -238,7 +239,7 @@ export class Controller extends Commands {
             let browseFilter = this.model.getCurrentBrowseFilter();
             if(! browseFilter.isEmpty()) {
                 let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-                this.model.pushBreadCrumb(breadCrumb1);
+                this.model.pushBreadCrumb(breadCrumb1, "noDispatch");
             }
         }
         let ref: Ref<AllUris> = {type: type as models.ModelType, name: label, uri};
@@ -266,7 +267,7 @@ export class Controller extends Commands {
                 newBrowseFilter.track = true;
                 break;
         }
-        await this.setAndSaveBrowseFilter(newBrowseFilter);
+        await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 
         await this.fetchRefsForCurrentBreadCrumbs()
         await this.filterBrowseResults();

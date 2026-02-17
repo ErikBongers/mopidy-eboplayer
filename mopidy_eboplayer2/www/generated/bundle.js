@@ -962,9 +962,9 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("genreReplacementsChanged.eboplayer", {});
 	}
 	getGenreReplacements = () => this.genreReplacements;
-	pushBreadCrumb(crumb) {
+	pushBreadCrumb(crumb, dispatch = "dispatch") {
 		this.filterBreadCrumbStack.push(crumb);
-		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+		if (dispatch == "dispatch") this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
 	}
 	popBreadCrumb() {
 		let crumb = this.filterBreadCrumbStack.pop();
@@ -1828,10 +1828,10 @@ var Controller = class extends Commands {
 			this.model.setActiveStreamLinesHistory(lines);
 		} else this.model.setActiveStreamLinesHistory(NoStreamTitles);
 	}
-	async setAndSaveBrowseFilter(filter) {
+	async setAndSaveBrowseFilter(filter, applyFilter = "apply") {
 		this.localStorageProxy.saveCurrentBrowseFilter(filter);
 		this.model.setCurrentBrowseFilter(filter);
-		await this.filterBrowseResults();
+		if (applyFilter == "apply") await this.filterBrowseResults();
 	}
 	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
 		if (type == "radio") return;
@@ -1847,7 +1847,7 @@ var Controller = class extends Commands {
 			let browseFilter = this.model.getCurrentBrowseFilter();
 			if (!browseFilter.isEmpty()) {
 				let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-				this.model.pushBreadCrumb(breadCrumb1);
+				this.model.pushBreadCrumb(breadCrumb1, "noDispatch");
 			}
 		}
 		let breadCrumb2 = new BreadCrumbRef(label, {
@@ -1877,7 +1877,7 @@ var Controller = class extends Commands {
 				newBrowseFilter.track = true;
 				break;
 		}
-		await this.setAndSaveBrowseFilter(newBrowseFilter);
+		await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 		await this.fetchRefsForCurrentBreadCrumbs();
 		await this.filterBrowseResults();
 	}
