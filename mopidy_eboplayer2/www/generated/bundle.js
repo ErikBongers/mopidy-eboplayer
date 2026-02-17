@@ -5913,6 +5913,7 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 & summary {
                     color: inherit;
                 }
+                div.active, 
                 .active > summary {
                     color: var(--highlight-color);
                 }
