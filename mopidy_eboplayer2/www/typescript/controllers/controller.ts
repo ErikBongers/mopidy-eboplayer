@@ -150,7 +150,7 @@ export class Controller extends Commands {
             console.log(data);
         });
         this.eboWsBackCtrl.on("event:scanStarted", (data: any) => {
-            this.model.setScanStatus("Scan started...\n");
+            this.model.setScanStatus(`${data.message}\n`);
         });
         this.eboWsBackCtrl.on("event:scanStatus", (data: any) => {
             this.model.setScanStatus(this.model.getScanStatus() + (data.message as string) + "\n");

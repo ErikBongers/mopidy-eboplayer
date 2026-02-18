@@ -1,11 +1,25 @@
-* Create playlist via mopidy no longer works!!!
-  > Redirect the code to webProxy.
+* For now, allow to add a stream to a playlist (Favorites).
+  > save the URL of the stream
+    > just like with files, this implies that the full definition can be found elsewhere (in the track table)
 
-* Playlists: loading:
-  > Read files from playlist file
-  > Allow loading of one playlist file
 
-* Make playlists worp, in prep of "Favorites"
+* How to add an album to a playlist?
+  > is a URI avoidable?
+    > perhaps the directory of the album?
+      > Yeah...that would already allow for directories containing tracks of multiple albums.
+
+* Create add_to_favorites action
+  > takes a uri
+  > server saves uri to playlist.items
+    > if "Favorites" does not exist yet, the playlist is created.
+    > the item could currently be a file or a stream.
+      > to add: albums,....
+
+* After scan, cache should be completely invalid on webserver(s).
+  > how?
+  > eTag should do it.
+
+* Make playlists work, in prep of "Favorites"
   > create a get_playlist_defs action.
   > add to playlist:
     > don't use mopidy - it has a horrible api. (save FULL playlist only).

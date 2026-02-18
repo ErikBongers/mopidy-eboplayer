@@ -1684,6 +1684,11 @@ var WebProxy = class {
 		await fetch(url);
 		return null;
 	}
+	async createPlaylist(name) {
+		let url = this.ebobackUrl(`create_playlist`);
+		url.searchParams.set("playlist_name", name);
+		return (await (await fetch(url)).json()).playlist_uri;
+	}
 };
 
 //#endregion
@@ -1783,7 +1788,7 @@ var Controller = class extends Commands {
 			console.log(data);
 		});
 		this.eboWsBackCtrl.on("event:scanStarted", (data) => {
-			this.model.setScanStatus("Scan started...\n");
+			this.model.setScanStatus(`${data.message}\n`);
 		});
 		this.eboWsBackCtrl.on("event:scanStatus", (data) => {
 			this.model.setScanStatus(this.model.getScanStatus() + data.message + "\n");
@@ -2011,7 +2016,7 @@ var Controller = class extends Commands {
 		await this.player.add(results.refs.map((r) => r.item.uri));
 	}
 	async createPlaylist(name) {
-		return this.mopidyProxy.createPlaylist(name);
+		return this.webProxy.createPlaylist(name);
 	}
 	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
 		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
@@ -4452,9 +4457,6 @@ var MopidyProxy = class {
 	async fetchPlayState() {
 		return await this.commands.core.playback.getState();
 	}
-	createPlaylist(name) {
-		return this.commands.core.playlists.create(name, "eboback");
-	}
 	savePlaylist(playlist) {
 		return this.commands.core.playlists.save(playlist);
 	}
@@ -5483,8 +5485,8 @@ var AlbumView = class extends ComponentView {
 		this.dialog.setAttribute("ok_text", okButtonText);
 	}
 	async saveAlbumAsPlaylist(name, detail) {
-		let playlist = await this.state.getController().createPlaylist(name);
-		await this.state.getController().addRefToPlaylist(playlist.uri, detail.uri, "album", -1);
+		let playlistUri = await this.state.getController().createPlaylist(name);
+		await this.state.getController().addRefToPlaylist(playlistUri, detail.uri, "album", -1);
 		return true;
 	}
 	onGenreEditRequested(detail) {
