@@ -129,8 +129,8 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     async saveAlbumAsPlaylist(name: string, detail: SaveUriArgs) {
-        let playlist = await this.state.getController().createPlaylist(name);
-        await this.state.getController().addRefToPlaylist(playlist.uri as PlaylistUri, detail.uri, "album", -1);
+        let playlistUri = await this.state.getController().createPlaylist(name);
+        await this.state.getController().addRefToPlaylist(playlistUri as PlaylistUri, detail.uri, "album", -1);
         return true;
     }
 

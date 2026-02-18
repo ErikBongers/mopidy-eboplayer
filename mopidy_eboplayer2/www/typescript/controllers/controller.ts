@@ -439,7 +439,7 @@ export class Controller extends Commands {
     }
 
     async createPlaylist(name: string) {
-        return this.mopidyProxy.createPlaylist(name)
+        return this.webProxy.createPlaylist(name)
     }
 
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {

@@ -123,10 +123,6 @@ export class MopidyProxy {
         return await this.commands.core.playback.getState() as string;
     }
 
-    createPlaylist(name: string) {
-        return this.commands.core.playlists.create(name, "eboback");
-    }
-
     savePlaylist(playlist: Playlist) {
         return this.commands.core.playlists.save(playlist);
     }

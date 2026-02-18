@@ -135,4 +135,12 @@ export class WebProxy {
         return null;
 
     }
+
+    async createPlaylist(name: string) {
+        let url = this.ebobackUrl(`create_playlist`);
+        url.searchParams.set("playlist_name", name);
+        let res = await fetch(url);
+        let result = await res.json();
+        return result.playlist_uri as AllUris;
+    }
 }

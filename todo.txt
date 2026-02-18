@@ -1,3 +1,29 @@
+* Create playlist via mopidy no longer works!!!
+  > Redirect the code to webProxy.
+
+* Playlists: loading:
+  > Read files from playlist file
+  > Allow loading of one playlist file
+
+* Make playlists worp, in prep of "Favorites"
+  > create a get_playlist_defs action.
+  > add to playlist:
+    > don't use mopidy - it has a horrible api. (save FULL playlist only).
+    > basic playlist functions:
+      - create
+        > create playlist file in playlist folder
+        > reload playlist(s?) into db on every playlist action.
+      - add_uri
+      - delete_uri
+      - ...
+
+* Add favorites: I have to click too much to get to Klara.
+  > favorites is just a playlist.
+    > name defined in root.eboplayer.
+    > When flagging an item as a favorite, the playlist may get created if not exists.
+  > button always visible (next to search on the top left?)
+  > favorites is shown in browse.
+
 * Diving updates the UI too much.
   > how to delay messages?
 
