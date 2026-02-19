@@ -173,7 +173,7 @@ export class EboTimeLineDetailsComp extends EboComponent {
 
     override render(shadow:ShadowRoot) {
         this.addShadowEventListener("bigImage","click", (ev) => {
-            this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
+            this.dispatchEboEvent("bigTimelineImageClicked.eboplayer", {});
         });
         let smallImage = shadow.getElementById("smallImage") as HTMLImageElement;
         smallImage.addEventListener("click", (ev) => {

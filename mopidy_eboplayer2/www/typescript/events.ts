@@ -9,7 +9,7 @@ export interface EboEventHandlersEventMap {
     "genreSelected.eboplayer"                   : StringArgs,
     "addTrackClicked.eboplayer"                 : TrackUriArgs,
     "albumToViewChanged.eboplayer"              : VoidArgs,
-    "bigTrackAlbumImgClicked.eboplayer"         : VoidArgs,
+    "bigTimelineImageClicked.eboplayer"         : VoidArgs,
     "bigTrackAlbumSmallImgClicked.eboplayer"    : VoidArgs,
     "breadCrumbClick.eboplayer"                 : BreadcrumbArgs,
     "breadCrumbsChanged.eboplayer"              : VoidArgs,

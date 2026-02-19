@@ -3019,8 +3019,8 @@ var MainView = class extends View {
 			await this.onRadioToViewChanged();
 		});
 		let timelineDetailsView = document.getElementById("timelineDetails");
-		timelineDetailsView.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
-			await this.onBigTrackAlbumImgClick();
+		timelineDetailsView.addEboEventListener("bigTimelineImageClicked.eboplayer", async () => {
+			await this.onBigTimelineImgClick();
 		});
 		timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
 			timelineDetailsView.setAttribute("show_back", "false");
@@ -3186,7 +3186,7 @@ var MainView = class extends View {
 			default: return unreachable(view);
 		}
 	}
-	async onBigTrackAlbumImgClick() {
+	async onBigTimelineImgClick() {
 		let selectedTrack = this.state.getModel().getSelectedTrack();
 		if (!selectedTrack) return;
 		let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
@@ -3195,7 +3195,7 @@ var MainView = class extends View {
 			if (expandedTrackInfo.album?.albumInfo) this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
 			return;
 		}
-		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("timelineDetails").setAttribute("show_back", "true");
+		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) this.state.getController().showRadio(expandedTrackInfo.stream.ref.uri);
 	}
 	async onTrackListChanged() {
 		if (!this.state.getModel().getCurrentTrack()) {
@@ -6446,7 +6446,7 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("bigImage", "click", (ev) => {
-			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
+			this.dispatchEboEvent("bigTimelineImageClicked.eboplayer", {});
 		});
 		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});

@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, TrackUri, Views} from "../modelTypes";
+import {ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, StreamUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {unreachable} from "../global";
@@ -52,8 +52,8 @@ export class MainView extends View {
             await this.onRadioToViewChanged();
         });
         let timelineDetailsView = document.getElementById("timelineDetails") as EboBrowseComp;
-        timelineDetailsView.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
-            await this.onBigTrackAlbumImgClick();
+        timelineDetailsView.addEboEventListener("bigTimelineImageClicked.eboplayer", async () => {
+            await this.onBigTimelineImgClick();
         });
         timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
             timelineDetailsView.setAttribute("show_back", "false");
@@ -241,7 +241,7 @@ export class MainView extends View {
         }
     }
 
-    private async onBigTrackAlbumImgClick() {
+    private async onBigTimelineImgClick() {
         let selectedTrack = this.state.getModel().getSelectedTrack();
         if (!selectedTrack) return;
         let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
@@ -253,8 +253,7 @@ export class MainView extends View {
             return;
         }
         if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
-            let timelineDetailsComponent = document.getElementById("timelineDetails") as EboTimeLineDetailsComp;
-            timelineDetailsComponent.setAttribute("show_back", "true");
+            this.state.getController().showRadio(expandedTrackInfo.stream.ref.uri as StreamUri);
         }
     }
 
