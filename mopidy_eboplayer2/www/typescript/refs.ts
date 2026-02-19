@@ -6,7 +6,7 @@ import Ref = models.Ref;
 import {CacheHandler} from "./controllers/cacheHandler";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
-export interface ExpandedRef {
+export interface ExpandedRef { //todo: make generic over AllUris and subtypes.
     refType: RefType,
     name: string,
     uri: string,
