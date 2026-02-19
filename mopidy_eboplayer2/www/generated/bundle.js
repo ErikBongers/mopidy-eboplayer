@@ -4758,8 +4758,10 @@ function addMetaDataRow(body, colText1, colText2) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboRadioDetailsComp.ts
-var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
+//#region mopidy_eboplayer2/www/typescript/components/eboRadioHistoryComp.ts
+var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
+	static tagName = "ebo-radio-history";
+	static observedAttributes = ["img"];
 	_streamInfo = null;
 	get streamInfo() {
 		return this._streamInfo;
@@ -4768,10 +4770,8 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 		this._streamInfo = value;
 		this.requestUpdate();
 	}
-	static tagName = "ebo-radio-details-view";
-	static observedAttributes = ["img"];
 	constructor() {
-		super(EboRadioDetailsComp.styleText, EboRadioDetailsComp.htmlText);
+		super(EboRadioHistoryComp.styleText, EboRadioHistoryComp.htmlText);
 		this.requestRender();
 	}
 	static styleText = `
@@ -6232,6 +6232,7 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
             }
             #tableWrapper {
                 overflow: hidden;
+                display: flex;
             }
             ebo-radio-details-view {
                 height: 100%;
@@ -6264,7 +6265,7 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
             <div id="bottom">
                 <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 <div id="tableWrapper">
-                    <ebo-radio-details-view img="" ></ebo-radio-details-view>
+                    <ebo-radio-history img="" ></ebo-radio-history>
                 </div>
             </div>
         </div>        
@@ -6297,6 +6298,8 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 	update(shadow) {
 		let radioDetailsComp = shadow.querySelector("ebo-radio-details");
 		radioDetailsComp.streamInfo = this.streamInfo;
+		let radioHistoryComp = shadow.querySelector("ebo-radio-history");
+		radioHistoryComp.streamInfo = this.streamInfo;
 		let img = shadow.getElementById("bigImage");
 		if (this.streamInfo) {
 			img.src = this.streamInfo.bigImageUrl;
@@ -6389,6 +6392,107 @@ var RadioView = class extends ComponentView {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboRadioDetails.ts
+var EboRadioDetails = class EboRadioDetails extends EboComponent {
+	static tagName = "ebo-radio-details";
+	static observedAttributes = [];
+	get streamInfo() {
+		return this._streamInfo;
+	}
+	set streamInfo(value) {
+		this._streamInfo = value;
+		this.requestUpdate();
+	}
+	_streamInfo = null;
+	static styleText = `
+        <style>
+            * {
+                font-size: .8rem;
+            }
+            #header {
+                margin-bottom: .5rem;
+            }
+            #streamName {
+                font-size: 1rem;
+            }
+            img {
+                width: 2.1rem;
+                height: 2.1rem;
+                object-fit: contain;
+                margin-right: .5rem;
+            }
+            label {
+                margin-right: 1rem;
+            }
+            .replaced {
+                opacity: .5;
+                text-decoration: line-through;
+            }
+        </style>
+    `;
+	static htmlText = `
+        <div>
+            <div id="header" class="flexRow">
+                <img id="bigImage" src="" alt="Radio image">
+                <span id="streamName" class="selectable"></span>
+            </div>
+            <div id="tableContainer" class="flexColumn">
+                <table>
+                    <tbody></tbody>                
+                </table>
+                <div style="border-block-start: solid 1px rgba(255,255,255,.5); margin-block-start:.5rem; padding-block-start: .5rem;">
+                    <div class="flexRow">
+                        <button id="btnUpdateStreamData" class="roundBorder iconButton"><i class="fa fa-refresh"></i></button>
+                        <button id="btnSearchImage" 
+                            class="roundBorder" 
+                            style="padding-inline-start: .7rem;">
+                            <img src="images/icons/Google_Favicon_2025.svg" 
+                                alt="Search" 
+                                style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
+                            Image
+                        </button>
+                    </div>
+                    <label style="display: block; margin-block-start: .3rem; margin-block-end: .1rem;">Upload an cover image:</label>
+                    <div class="flexRow">
+                        <input id="imageUrl" type="text" class="flexGrow">
+                        <button id="btnUploadImage" style="margin-inline-start: .3rem;"><i class="fa fa-upload"></i></button>
+                    </div>
+                </div>            
+            </div>        
+        </div>
+        `;
+	constructor() {
+		super(EboRadioDetails.styleText, EboRadioDetails.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {
+		shadow.getElementById("bigImage").addEventListener("click", (ev) => {});
+		shadow.getElementById("btnUpdateStreamData")?.addEventListener("click", () => {});
+		shadow.getElementById("btnSearchImage")?.addEventListener("click", () => {
+			let streamName = this.streamInfo?.stream.name;
+			if (!streamName) return;
+			searchImageOnGoogle("radio " + streamName);
+		});
+		shadow.getElementById("btnUploadImage")?.addEventListener("click", () => {});
+	}
+	async update(shadow) {
+		if (this.streamInfo) {
+			let streamName = shadow.getElementById("streamName");
+			streamName.innerHTML = this.streamInfo.stream.name ?? "--no name--";
+			let imgTag = shadow.getElementById("bigImage");
+			imgTag.src = this.streamInfo.bigImageUrl;
+			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
+			body.innerHTML = "";
+			addMetaDataRow(body, "More info?:", "dunno...");
+			addMetaDataRow(body, "Genre", "todo...");
+			addMetaDataRow(body, "Playlists", "todo...");
+		}
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -6410,7 +6514,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboListButtonBar);
 		EboComponent.define(EboDialog);
 		EboComponent.define(EboAlbumDetails);
-		EboComponent.define(EboRadioDetailsComp);
 		EboComponent.define(EboBrowseFilterComp);
 		EboComponent.define(EboSettingsComp);
 		EboComponent.define(EboListItemComp);
@@ -6418,6 +6521,8 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboOption);
 		EboComponent.define(EboIconDropdown);
 		EboComponent.define(EboGenresComp);
+		EboComponent.define(EboRadioDetails);
+		EboComponent.define(EboRadioHistoryComp);
 		EboComponent.define(EboBigRadioComp);
 		setupStuff();
 	});

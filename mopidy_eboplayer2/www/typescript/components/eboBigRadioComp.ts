@@ -3,7 +3,8 @@ import {GuiSource} from "../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {ExpandedStreamModel} from "../modelTypes";
-import {EboRadioDetailsComp} from "./eboRadioDetailsComp";
+import {EboRadioHistoryComp} from "./eboRadioHistoryComp";
+import {EboRadioDetails} from "./eboRadioDetails";
 
 
 export class EboBigRadioComp extends EboComponent {
@@ -82,6 +83,7 @@ export class EboBigRadioComp extends EboComponent {
             }
             #tableWrapper {
                 overflow: hidden;
+                display: flex;
             }
             ebo-radio-details-view {
                 height: 100%;
@@ -116,7 +118,7 @@ export class EboBigRadioComp extends EboComponent {
             <div id="bottom">
                 <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
                 <div id="tableWrapper">
-                    <ebo-radio-details-view img="" ></ebo-radio-details-view>
+                    <ebo-radio-history img="" ></ebo-radio-history>
                 </div>
             </div>
         </div>        
@@ -153,8 +155,10 @@ export class EboBigRadioComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        let radioDetailsComp = shadow.querySelector("ebo-radio-details") as EboRadioDetailsComp;
+        let radioDetailsComp = shadow.querySelector("ebo-radio-details") as EboRadioDetails;
         radioDetailsComp.streamInfo = this.streamInfo;
+        let radioHistoryComp = shadow.querySelector("ebo-radio-history") as EboRadioHistoryComp;
+        radioHistoryComp.streamInfo = this.streamInfo;
         let img = shadow.getElementById("bigImage") as HTMLImageElement;
         if(this.streamInfo) {
             img.src = this.streamInfo.bigImageUrl;
@@ -162,7 +166,7 @@ export class EboBigRadioComp extends EboComponent {
             shadow.getElementById("name")!.innerHTML = this.streamInfo.stream.name;
             let buttonBar = shadow.querySelector("ebo-list-button-bar") as HTMLElement;
             buttonBar.setAttribute("uri", this.streamInfo.stream.ref.uri?? "--no albumInfo--");
-            let detailsComp = shadow.querySelector("ebo-radio-details") as EboRadioDetailsComp;
+            let detailsComp = shadow.querySelector("ebo-radio-details") as EboRadioHistoryComp;
             detailsComp.streamInfo = this.streamInfo;
         } else {
             img.style.visibility = "hidden";

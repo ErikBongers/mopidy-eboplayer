@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
-import {EboRadioDetailsComp} from "./eboRadioDetailsComp";
+import {EboRadioHistoryComp} from "./eboRadioHistoryComp";
 
 class EboBigTrackComp extends EboComponent {
     get albumInfo(): AlbumData {
@@ -203,7 +203,7 @@ class EboBigTrackComp extends EboComponent {
             // @ts-ignore
             shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
-        let redioDetailsComp = shadow.querySelector("ebo-radio-details-view") as EboRadioDetailsComp;
+        let redioDetailsComp = shadow.querySelector("ebo-radio-details-view") as EboRadioHistoryComp;
         redioDetailsComp.streamInfo = this.streamInfo;
         let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
         if(this.img != "") {

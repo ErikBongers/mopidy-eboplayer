@@ -3,7 +3,13 @@ import {ExpandedStreamModel, StreamUri} from "../modelTypes";
 import {EboButton} from "./eboButton";
 import {console_yellow} from "../global";
 
-export class EboRadioDetailsComp extends EboComponent {
+export class EboRadioHistoryComp extends EboComponent {
+    static override readonly tagName=  "ebo-radio-history";
+    // noinspection JSUnusedGlobalSymbols
+    static observedAttributes = [
+        "img",
+    ];
+
     private _streamInfo: ExpandedStreamModel | null = null;
     get streamInfo(): ExpandedStreamModel | null {
         return this._streamInfo;
@@ -13,14 +19,9 @@ export class EboRadioDetailsComp extends EboComponent {
         this.requestUpdate();
     }
 
-    static override readonly tagName=  "ebo-radio-details-view";
-    // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [
-        "img",
-    ];
 
     constructor() {
-        super(EboRadioDetailsComp.styleText, EboRadioDetailsComp.htmlText);
+        super(EboRadioHistoryComp.styleText, EboRadioHistoryComp.htmlText);
         this.requestRender();
     }
 

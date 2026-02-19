@@ -24,7 +24,7 @@ import {Commands} from "./commands";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {EboDialog} from "./components/eboDialog";
 import {EboAlbumDetails} from "./components/eboAlbumDetails";
-import {EboRadioDetailsComp} from "./components/eboRadioDetailsComp";
+import {EboRadioHistoryComp} from "./components/eboRadioHistoryComp";
 import {EboBrowseFilterComp} from "./components/eboBrowseFilterComp";
 import {EboSettingsComp} from "./components/eboSettingsComp";
 import {EboListItemComp} from "./components/eboListItemComp";
@@ -40,6 +40,7 @@ import {EboGenresComp} from "./components/eboGenresComp";
 import {GenresView} from "./views/genresView";
 import {EboBigRadioComp} from "./components/eboBigRadioComp";
 import {RadioView} from "./views/radioView";
+import {EboRadioDetails} from "./components/eboRadioDetails";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -70,7 +71,6 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboListButtonBar);
             EboComponent.define(EboDialog);
             EboComponent.define(EboAlbumDetails);
-            EboComponent.define(EboRadioDetailsComp);
             EboComponent.define(EboBrowseFilterComp);
             EboComponent.define(EboSettingsComp);
             EboComponent.define(EboListItemComp);
@@ -78,6 +78,8 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboOption);
             EboComponent.define(EboIconDropdown);
             EboComponent.define(EboGenresComp);
+            EboComponent.define(EboRadioDetails);
+            EboComponent.define(EboRadioHistoryComp);
             EboComponent.define(EboBigRadioComp);
 
             setupStuff();
