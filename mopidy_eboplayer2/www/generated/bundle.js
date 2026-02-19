@@ -3839,7 +3839,13 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
         
                     <div id="info">
                         <h3 id="text" class="selectable"></h3>
-                        <h3 id="name" class="selectable"></h3>
+                        <h3 class="selectable flexRow">
+                            <div id="name" class="selectable flexGrow"></div>
+                            <ebo-button toggle>
+                                <i slot="off" class="fa fa-heart-o"></i>
+                                <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
+                            </ebo-button>
+                        </h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
