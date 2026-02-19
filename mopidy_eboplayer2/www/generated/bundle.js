@@ -2749,6 +2749,11 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
             <div id="wrapper">
                 <div id="tableScroller">
                     <table id="tracksTable">
+                        <colgroup>
+                            <col span="1" style="width: auto;">
+                            <col span="1" style="width: 1em;">                        
+                            <col span="1" style="width: 1em;">                        
+                        </colgroup>
                         <tbody>
                         </tbody>                
                     </table>
@@ -2769,6 +2774,13 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 			let tdData = tr.appendChild(document.createElement("td"));
 			tr.dataset.uri = track.track.uri;
 			tdData.innerText = track.track.name ?? "--no name--";
+			let tdHeart = tr.appendChild(document.createElement("td"));
+			tdHeart.innerHTML = `
+                    <ebo-button toggle>
+                        <i slot="off" class="fa fa-heart-o"></i>
+                        <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>
+                    </ebo-button>
+                `;
 			let tdButton = tr.appendChild(document.createElement("td"));
 			tdButton.innerHTML = `
                     <ebo-menu-button >
@@ -3639,6 +3651,9 @@ var EboButton = class EboButton extends EboComponent {
 		super(EboButton.styleText, EboButton.htmlText);
 		this.img = "";
 		this.pressTimer = new MouseTimer(this, (source) => this.onClick(source), (source, clickCount) => this.onMultiClick(source, clickCount), (source) => this.onFilterButtonTimeOut(source));
+		this.addEventListener("click", (ev) => {
+			ev.stopPropagation();
+		});
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		switch (name) {
@@ -4591,7 +4606,8 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
             <div id="wrapper">
                 <div class="flexRow">
                     <ebo-button id="btnFavorite" toggle class="iconButton">
-                        <i class="fa fa-heart-o"></i>                        
+                        <i slot="off" class="fa fa-heart-o"></i>                        
+                        <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                        
                     </ebo-button>
                     <button id="btnRemembered" class="roundBorder">Remembered items</button>                                            
                 </div>

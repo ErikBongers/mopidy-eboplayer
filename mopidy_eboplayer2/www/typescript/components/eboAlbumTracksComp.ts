@@ -77,6 +77,11 @@ export class EboAlbumTracksComp extends EboComponent {
             <div id="wrapper">
                 <div id="tableScroller">
                     <table id="tracksTable">
+                        <colgroup>
+                            <col span="1" style="width: auto;">
+                            <col span="1" style="width: 1em;">                        
+                            <col span="1" style="width: 1em;">                        
+                        </colgroup>
                         <tbody>
                         </tbody>                
                     </table>
@@ -101,6 +106,13 @@ export class EboAlbumTracksComp extends EboComponent {
                 let tdData = tr.appendChild(document.createElement("td"));
                 tr.dataset.uri = track.track.uri;
                 tdData.innerText = track.track.name?? "--no name--";
+                let tdHeart = tr.appendChild(document.createElement("td"));
+                tdHeart.innerHTML = `
+                    <ebo-button toggle>
+                        <i slot="off" class="fa fa-heart-o"></i>
+                        <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>
+                    </ebo-button>
+                `;
                 let tdButton = tr.appendChild(document.createElement("td"));
                 tdButton.innerHTML = `
                     <ebo-menu-button >

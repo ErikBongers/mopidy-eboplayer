@@ -62,7 +62,8 @@ export class EboRadioHistoryComp extends EboComponent {
             <div id="wrapper">
                 <div class="flexRow">
                     <ebo-button id="btnFavorite" toggle class="iconButton">
-                        <i class="fa fa-heart-o"></i>                        
+                        <i slot="off" class="fa fa-heart-o"></i>                        
+                        <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                        
                     </ebo-button>
                     <button id="btnRemembered" class="roundBorder">Remembered items</button>                                            
                 </div>

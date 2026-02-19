@@ -50,6 +50,9 @@ export class EboButton extends EboComponent {
             (source, clickCount) => this.onMultiClick(source, clickCount),
             (source) => this.onFilterButtonTimeOut(source)
         );
+        this.addEventListener("click", (ev) => {
+            ev.stopPropagation();
+        });
     }
 
     // noinspection JSUnusedGlobalSymbols
