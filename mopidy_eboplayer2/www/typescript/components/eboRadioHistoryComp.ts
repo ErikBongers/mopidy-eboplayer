@@ -61,10 +61,6 @@ export class EboRadioHistoryComp extends EboComponent {
         static htmlText = `
             <div id="wrapper">
                 <div class="flexRow">
-                    <ebo-button id="btnFavorite" toggle class="iconButton">
-                        <i slot="off" class="fa fa-heart-o"></i>                        
-                        <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                        
-                    </ebo-button>
                     <button id="btnRemembered" class="roundBorder">Remembered items</button>                                            
                 </div>
                 <div id="tableScroller">
@@ -91,10 +87,6 @@ export class EboRadioHistoryComp extends EboComponent {
         let btnRemembered = shadow.getElementById("btnRemembered") as HTMLButtonElement;
         btnRemembered.addEventListener("click", (ev) => {
             this.dispatchEboEvent("rememberedRequested.eboplayer", {});
-        });
-        let btnFavorite = shadow.getElementById("btnFavorite") as EboButton;
-        btnFavorite.addEventListener("click", (ev) => {
-            this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": this.streamInfo?.stream!.ref.uri as StreamUri});
         });
     }
 

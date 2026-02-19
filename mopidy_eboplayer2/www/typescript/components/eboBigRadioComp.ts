@@ -2,9 +2,10 @@ import {EboComponent} from "./EboComponent";
 import {GuiSource} from "../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
-import {ExpandedStreamModel} from "../modelTypes";
+import {ExpandedStreamModel, StreamUri} from "../modelTypes";
 import {EboRadioHistoryComp} from "./eboRadioHistoryComp";
 import {EboRadioDetails} from "./eboRadioDetails";
+import {EboButton} from "./eboButton";
 
 
 export class EboBigRadioComp extends EboComponent {
@@ -109,7 +110,13 @@ export class EboBigRadioComp extends EboComponent {
         
                     <div id="info">
                         <h3 id="text" class="selectable"></h3>
-                        <h3 id="name" class="selectable"></h3>
+                        <h3 class="selectable flexRow">
+                            <div id="name" class="selectable flexGrow"></div>
+                            <ebo-button id="btnFavorite" toggle>
+                                <i slot="off" class="fa fa-heart-o"></i>
+                                <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
+                            </ebo-button>
+                        </h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
@@ -154,6 +161,11 @@ export class EboBigRadioComp extends EboComponent {
             wrapper.classList.add("front");
             wrapper.classList.remove("back");
         });
+        let btnFavorite = shadow.getElementById("btnFavorite") as EboButton;
+        btnFavorite.addEventListener("click", (ev) => {
+            this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": this.streamInfo?.stream!.ref.uri as StreamUri});
+        });
+
         this.requestUpdate();
     }
 

@@ -4611,10 +4611,6 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 	static htmlText = `
             <div id="wrapper">
                 <div class="flexRow">
-                    <ebo-button id="btnFavorite" toggle class="iconButton">
-                        <i slot="off" class="fa fa-heart-o"></i>                        
-                        <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                        
-                    </ebo-button>
                     <button id="btnRemembered" class="roundBorder">Remembered items</button>                                            
                 </div>
                 <div id="tableScroller">
@@ -6059,7 +6055,13 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
         
                     <div id="info">
                         <h3 id="text" class="selectable"></h3>
-                        <h3 id="name" class="selectable"></h3>
+                        <h3 class="selectable flexRow">
+                            <div id="name" class="selectable flexGrow"></div>
+                            <ebo-button id="btnFavorite" toggle>
+                                <i slot="off" class="fa fa-heart-o"></i>
+                                <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
+                            </ebo-button>
+                        </h3>
                         <div id="stream_lines" class="selectable info"></div>
                         <div id="extra" class="selectable info"></div>
                     </div>
@@ -6098,6 +6100,9 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 			let wrapper = this.getShadow().querySelector("#wrapper");
 			wrapper.classList.add("front");
 			wrapper.classList.remove("back");
+		});
+		shadow.getElementById("btnFavorite").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": this.streamInfo?.stream.ref.uri });
 		});
 		this.requestUpdate();
 	}
