@@ -127,7 +127,7 @@ h3#modalname a{
     padding: 0;
 }
 
-#currentTrackBigView {
+#timelineDetails {
     flex: 1;
     display: flex;
     overflow: hidden;
@@ -232,7 +232,7 @@ ebo-player-bar {
 }
 
 
-ebo-big-track-view {
+ebo-timeline-details {
     text-align: center;
     & h3 {
         margin-bottom: 0;

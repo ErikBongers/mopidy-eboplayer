@@ -24,9 +24,9 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     bind() {
-        let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
-        currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-            currentTrackBigViewComp.setAttribute("show_back", "false");
+        let timelineDetailsComponent = document.getElementById("timelineDetails") as EboBrowseComp;
+        timelineDetailsComponent.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+            timelineDetailsComponent.setAttribute("show_back", "false");
         });
         this.component.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
             await this.onPlayTrackClicked(ev.detail.uri);

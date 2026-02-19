@@ -1,16 +1,16 @@
 import {AllUris, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
-import EboBigTrackComp from "../components/eboBigTrackComp";
 import {State} from "../playerState";
 import {ComponentView} from "./view";
 import {console_yellow} from "../global";
+import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
 
-export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboBigTrackComp> {
+export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeLineDetailsComp> {
     private streamLines: string;
     private programTitle: string = "";
     private uri: string | null = null;
     private track: ExpandedStreamModel | ExpandedFileTrackModel | null;
 
-    constructor(state: State, component: EboBigTrackComp) {
+    constructor(state: State, component: EboTimeLineDetailsComp) {
         super(state, component);
     }
 

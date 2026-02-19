@@ -2589,226 +2589,6 @@ var TimelineView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboBigTrackComp.ts
-var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
-	get albumInfo() {
-		return this._albumInfo;
-	}
-	set albumInfo(value) {
-		this._albumInfo = value;
-		this.requestRender();
-	}
-	_streamInfo = null;
-	get streamInfo() {
-		return this._streamInfo;
-	}
-	set streamInfo(value) {
-		this._streamInfo = value;
-		this.requestUpdate();
-	}
-	static tagName = "ebo-big-track-view";
-	static progressBarAttributes = [
-		"position",
-		"min",
-		"max",
-		"button",
-		"active"
-	];
-	static observedAttributes = [
-		"name",
-		"stream_lines",
-		"extra",
-		"img",
-		"disabled",
-		"show_back",
-		"program_title",
-		...EboBigTrackComp.progressBarAttributes
-	];
-	name = "";
-	stream_lines = "";
-	extra = "";
-	enabled = false;
-	show_back = false;
-	position = "40";
-	min = "0";
-	max = "100";
-	button = "false";
-	active = "true";
-	program_title = "";
-	img = "";
-	_albumInfo = AlbumNone;
-	static styleText = `
-            <style>
-                :host { 
-                    display: flex;
-                } 
-                h3 {
-                    margin-block-start: .5em;
-                    margin-block-end: .5em;
-                }
-                .albumCoverContainer {
-                    display: flex;
-                    flex-direction: column;
-                    /*align-content: center;*/
-                    overflow: hidden;
-                }
-                img#bigImage {
-                    width: 100%;
-                    height: 100%;
-                    object-fit: contain;
-                    min-width: 200px;
-                    min-height: 200px;
-                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
-                }
-                img#smallImage {
-                    width: 2.1rem;
-                    height: 2.1rem;
-                    object-fit: contain;
-                    margin-right: .5rem;
-                }
-                ebo-progressbar {
-                    margin-top: .5em;
-                }
-                #wrapper {
-                    display: flex;
-                    flex-direction: row;
-                    height: 100%;
-                    width: 100%;
-                    #front {
-                        display: flex;
-                        flex-direction: column;
-                        width: 100%;
-                        align-items: center;
-                    }
-                    #back {
-                        width: 100%;
-                        padding: 1rem;
-                    }
-                }
-                #wrapper.front {
-                    #back {
-                        display: none;
-                    }                
-                }
-                #wrapper.back {
-                    #front {
-                        position: absolute;
-                        display: none;
-                    }                
-                }
-                .info {
-                    font-size: .7em;
-                }
-                ebo-radio-details-view {
-                    height: 100%;
-                }
-                #albumTableWrapper {
-                    height: 100%;
-                    font-size: .8rem;
-                }
-            </style>
-        `;
-	static htmlText = `
-            <div id="wrapper" class="front">
-                <div id="front">
-                    <div class="albumCoverContainer">
-                        <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
-                        <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
-                    </div>
-        
-                    <div id="info">
-                        <h3 id="albumTitle" class="selectable"></h3>
-                        <h3 id="name" class="selectable"></h3>
-                        <div id="stream_lines" class="selectable info"></div>
-                        <div id="extra" class="selectable info"></div>
-                    </div>
-                </div>
-                <div id="back">
-                    <div id="header" class="flexRow">
-                        <img id="smallImage" src="" alt="Album image">
-                        <span id="title" class="selectable"></span>
-                    </div>
-                    <div id="albumTableWrapper">
-                        <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
-                    </div>
-                </div>
-            </div>        
-        `;
-	constructor() {
-		super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
-	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		if (EboBigTrackComp.progressBarAttributes.includes(name)) {
-			this.updateStringProperty(name, newValue);
-			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
-			return;
-		}
-		switch (name) {
-			case "name":
-			case "stream_lines":
-			case "extra":
-			case "img":
-			case "program_title":
-				this[name] = newValue;
-				break;
-			case "enabled":
-			case "show_back":
-				this.updateBoolProperty(name, newValue);
-				break;
-		}
-		this.requestUpdate();
-	}
-	render(shadow) {
-		this.addShadowEventListener("bigImage", "click", (ev) => {
-			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
-		});
-		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
-			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
-		});
-		this.requestUpdate();
-	}
-	update(shadow) {
-		[
-			"name",
-			"stream_lines",
-			"extra"
-		].forEach((attName) => {
-			shadow.getElementById(attName).innerHTML = this[attName];
-		});
-		if (this.program_title != "") shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
-		let progressBarElement = shadow.querySelector("ebo-progressbar");
-		EboBigTrackComp.progressBarAttributes.forEach((attName) => {
-			progressBarElement.setAttribute(attName, this[attName]);
-		});
-		let img = shadow.getElementById("bigImage");
-		img.src = this.img;
-		this.switchFrontBackNoRender();
-		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let redioDetailsComp = shadow.querySelector("ebo-radio-details-view");
-		redioDetailsComp.streamInfo = this.streamInfo;
-		let smallImg = shadow.getElementById("smallImage");
-		if (this.img != "") {
-			img.style.visibility = "";
-			smallImg.style.visibility = "";
-			img.src = this.img;
-			smallImg.src = this.img;
-		} else {
-			img.style.visibility = "hidden";
-			smallImg.style.visibility = "hidden";
-		}
-		let title = shadow.getElementById("title");
-		title.textContent = this.name;
-	}
-	switchFrontBackNoRender() {
-		let wrapper = this.shadow.getElementById("wrapper");
-		wrapper.classList.remove("front", "back");
-		if (this.show_back) wrapper.classList.add("back");
-		else wrapper.classList.add("front");
-	}
-};
-var eboBigTrackComp_default = EboBigTrackComp;
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
 var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 	streamLines;
@@ -3238,14 +3018,14 @@ var MainView = class extends View {
 		this.state.getModel().addEboEventListener("currentRadioChanged.eboplayer", async () => {
 			await this.onRadioToViewChanged();
 		});
-		let currentTrackBigViewComp = document.getElementById("currentTrackBigView");
-		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
+		let timelineDetailsView = document.getElementById("timelineDetails");
+		timelineDetailsView.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
 			await this.onBigTrackAlbumImgClick();
 		});
-		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-			currentTrackBigViewComp.setAttribute("show_back", "false");
+		timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+			timelineDetailsView.setAttribute("show_back", "false");
 		});
-		currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
+		timelineDetailsView.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
 		this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
@@ -3319,7 +3099,7 @@ var MainView = class extends View {
 	}
 	hashToViewId(hash) {
 		switch (hash) {
-			case Views.NowPlaying: return "currentTrackBigView";
+			case Views.NowPlaying: return "timelineDetails";
 			case Views.Browse: return "browseView";
 			case Views.WhatsNew: return "browseView";
 			case Views.Remembered: return "rememberedView";
@@ -3415,7 +3195,7 @@ var MainView = class extends View {
 			if (expandedTrackInfo.album?.albumInfo) this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
 			return;
 		}
-		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("currentTrackBigView").setAttribute("show_back", "true");
+		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) document.getElementById("timelineDetails").setAttribute("show_back", "true");
 	}
 	async onTrackListChanged() {
 		if (!this.state.getModel().getCurrentTrack()) {
@@ -3437,8 +3217,8 @@ var MainView = class extends View {
 				albumComp.albumInfo = null;
 				albumComp.setAttribute("img", streamModel.bigImageUrl);
 				albumComp.setAttribute("name", streamModel.stream.name);
-				let bigTrackComp = document.getElementById("currentTrackBigView");
-				bigTrackComp.streamInfo = streamModel;
+				let timelineDetails = document.getElementById("timelineDetails");
+				timelineDetails.streamInfo = streamModel;
 			}
 		});
 	}
@@ -5477,9 +5257,9 @@ var AlbumView = class extends ComponentView {
 		});
 	}
 	bind() {
-		let currentTrackBigViewComp = document.getElementById("currentTrackBigView");
-		currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-			currentTrackBigViewComp.setAttribute("show_back", "false");
+		let timelineDetailsComponent = document.getElementById("timelineDetails");
+		timelineDetailsComponent.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+			timelineDetailsComponent.setAttribute("show_back", "false");
 		});
 		this.component.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
 			await this.onPlayTrackClicked(ev.detail.uri);
@@ -6493,6 +6273,225 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer2/www/typescript/components/eboTimeLineDetailsComp.ts
+var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
+	static tagName = "ebo-timeline-details";
+	static progressBarAttributes = [
+		"position",
+		"min",
+		"max",
+		"button",
+		"active"
+	];
+	static observedAttributes = [
+		"name",
+		"stream_lines",
+		"extra",
+		"img",
+		"disabled",
+		"show_back",
+		"program_title",
+		...EboTimeLineDetailsComp.progressBarAttributes
+	];
+	get albumInfo() {
+		return this._albumInfo;
+	}
+	set albumInfo(value) {
+		this._albumInfo = value;
+		this.requestRender();
+	}
+	_streamInfo = null;
+	get streamInfo() {
+		return this._streamInfo;
+	}
+	set streamInfo(value) {
+		this._streamInfo = value;
+		this.requestUpdate();
+	}
+	name = "";
+	stream_lines = "";
+	extra = "";
+	enabled = false;
+	show_back = false;
+	position = "40";
+	min = "0";
+	max = "100";
+	button = "false";
+	active = "true";
+	program_title = "";
+	img = "";
+	_albumInfo = AlbumNone;
+	static styleText = `
+            <style>
+                :host { 
+                    display: flex;
+                } 
+                h3 {
+                    margin-block-start: .5em;
+                    margin-block-end: .5em;
+                }
+                .albumCoverContainer {
+                    display: flex;
+                    flex-direction: column;
+                    /*align-content: center;*/
+                    overflow: hidden;
+                }
+                img#bigImage {
+                    width: 100%;
+                    height: 100%;
+                    object-fit: contain;
+                    min-width: 200px;
+                    min-height: 200px;
+                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
+                }
+                img#smallImage {
+                    width: 2.1rem;
+                    height: 2.1rem;
+                    object-fit: contain;
+                    margin-right: .5rem;
+                }
+                ebo-progressbar {
+                    margin-top: .5em;
+                }
+                #wrapper {
+                    display: flex;
+                    flex-direction: row;
+                    height: 100%;
+                    width: 100%;
+                    #front {
+                        display: flex;
+                        flex-direction: column;
+                        width: 100%;
+                        align-items: center;
+                    }
+                    #back {
+                        width: 100%;
+                        padding: 1rem;
+                    }
+                }
+                #wrapper.front {
+                    #back {
+                        display: none;
+                    }                
+                }
+                #wrapper.back {
+                    #front {
+                        position: absolute;
+                        display: none;
+                    }                
+                }
+                .info {
+                    font-size: .7em;
+                }
+                ebo-radio-details-view {
+                    height: 100%;
+                }
+                #albumTableWrapper {
+                    height: 100%;
+                    font-size: .8rem;
+                }
+            </style>
+        `;
+	static htmlText = `
+            <div id="wrapper" class="front">
+                <div id="front">
+                    <div class="albumCoverContainer">
+                        <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
+                        <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
+                    </div>
+        
+                    <div id="info">
+                        <h3 id="albumTitle" class="selectable"></h3>
+                        <h3 id="name" class="selectable"></h3>
+                        <div id="stream_lines" class="selectable info"></div>
+                        <div id="extra" class="selectable info"></div>
+                    </div>
+                </div>
+                <div id="back">
+                    <div id="header" class="flexRow">
+                        <img id="smallImage" src="" alt="Album image">
+                        <span id="title" class="selectable"></span>
+                    </div>
+                    <div id="albumTableWrapper">
+                        <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
+                    </div>
+                </div>
+            </div>        
+        `;
+	constructor() {
+		super(EboTimeLineDetailsComp.styleText, EboTimeLineDetailsComp.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		if (EboTimeLineDetailsComp.progressBarAttributes.includes(name)) {
+			this.updateStringProperty(name, newValue);
+			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
+			return;
+		}
+		switch (name) {
+			case "name":
+			case "stream_lines":
+			case "extra":
+			case "img":
+			case "program_title":
+				this[name] = newValue;
+				break;
+			case "enabled":
+			case "show_back":
+				this.updateBoolProperty(name, newValue);
+				break;
+		}
+		this.requestUpdate();
+	}
+	render(shadow) {
+		this.addShadowEventListener("bigImage", "click", (ev) => {
+			this.dispatchEboEvent("bigTrackAlbumImgClicked.eboplayer", {});
+		});
+		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
+		});
+		this.requestUpdate();
+	}
+	update(shadow) {
+		[
+			"name",
+			"stream_lines",
+			"extra"
+		].forEach((attName) => {
+			shadow.getElementById(attName).innerHTML = this[attName];
+		});
+		if (this.program_title != "") shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
+		let progressBarElement = shadow.querySelector("ebo-progressbar");
+		EboTimeLineDetailsComp.progressBarAttributes.forEach((attName) => {
+			progressBarElement.setAttribute(attName, this[attName]);
+		});
+		let img = shadow.getElementById("bigImage");
+		img.src = this.img;
+		this.switchFrontBackNoRender();
+		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
+		let redioDetailsComp = shadow.querySelector("ebo-radio-details-view");
+		redioDetailsComp.streamInfo = this.streamInfo;
+		let smallImg = shadow.getElementById("smallImage");
+		if (this.img != "") {
+			img.style.visibility = "";
+			smallImg.style.visibility = "";
+			img.src = this.img;
+			smallImg.src = this.img;
+		} else {
+			img.style.visibility = "hidden";
+			smallImg.style.visibility = "hidden";
+		}
+		let title = shadow.getElementById("title");
+		title.textContent = this.name;
+	}
+	switchFrontBackNoRender() {
+		let wrapper = this.shadow.getElementById("wrapper");
+		wrapper.classList.remove("front", "back");
+		if (this.show_back) wrapper.classList.add("back");
+		else wrapper.classList.add("front");
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer2/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -6504,7 +6503,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((texts) => {
 		EboComponent.setGlobalCss(texts);
 		EboComponent.define(EboProgressBar);
-		EboComponent.define(eboBigTrackComp_default);
+		EboComponent.define(EboTimeLineDetailsComp);
 		EboComponent.define(EboAlbumTracksComp);
 		EboComponent.define(EboBrowseComp);
 		EboComponent.define(EboButton);
@@ -6546,7 +6545,7 @@ function setupStuff() {
 	let radioView = new RadioView(state, document.getElementById("dialog"), document.getElementById("bigRadioView"));
 	let mainView = new MainView(state, browseView, albumView, radioView);
 	let headerView = new HeaderView(state);
-	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, document.getElementById("currentTrackBigView"));
+	let timelineDetailsView = new BigTrackViewCurrentOrSelectedAdapter(state, document.getElementById("timelineDetails"));
 	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
 	let historyView = new TimelineView(state);
 	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));
@@ -6554,7 +6553,7 @@ function setupStuff() {
 	let views = [
 		mainView,
 		headerView,
-		currentTrackView,
+		timelineDetailsView,
 		buttonBarView,
 		historyView,
 		rememberedView,

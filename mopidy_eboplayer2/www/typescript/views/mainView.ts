@@ -4,7 +4,6 @@ import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
-import EboBigTrackComp from "../components/eboBigTrackComp";
 import {EboSettingsComp} from "../components/eboSettingsComp";
 import {BrowseView} from "./browseView";
 import {DisplayMode} from "../components/eboListItemComp";
@@ -13,6 +12,7 @@ import {State} from "../playerState";
 import {addEboEventListener} from "../events";
 import {EboBigRadioComp} from "../components/eboBigRadioComp";
 import {RadioView} from "./radioView";
+import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
 
 export class MainView extends View {
     private browseView: BrowseView;
@@ -51,14 +51,14 @@ export class MainView extends View {
         this.state.getModel().addEboEventListener("currentRadioChanged.eboplayer", async () => {
             await this.onRadioToViewChanged();
         });
-        let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
-        currentTrackBigViewComp.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
+        let timelineDetailsView = document.getElementById("timelineDetails") as EboBrowseComp;
+        timelineDetailsView.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
             await this.onBigTrackAlbumImgClick();
         });
-        currentTrackBigViewComp.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-            currentTrackBigViewComp.setAttribute("show_back", "false");
+        timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+            timelineDetailsView.setAttribute("show_back", "false");
         });
-        currentTrackBigViewComp.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
+        timelineDetailsView.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
             await this.rememberStreamLines(ev.detail.lines);
         });
 
@@ -144,7 +144,7 @@ export class MainView extends View {
     private hashToViewId(hash: Views): string {
         switch (hash) {
             case Views.NowPlaying:
-                return "currentTrackBigView";
+                return "timelineDetails";
             case Views.Browse:
                 return "browseView";
             case Views.WhatsNew:
@@ -253,8 +253,8 @@ export class MainView extends View {
             return;
         }
         if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
-            let bigTrackView = document.getElementById("currentTrackBigView") as EboBigTrackComp;
-            bigTrackView.setAttribute("show_back", "true");
+            let timelineDetailsComponent = document.getElementById("timelineDetails") as EboTimeLineDetailsComp;
+            timelineDetailsComponent.setAttribute("show_back", "true");
         }
     }
 
@@ -283,8 +283,8 @@ export class MainView extends View {
                     albumComp.albumInfo = null;
                     albumComp.setAttribute("img", streamModel.bigImageUrl);
                     albumComp.setAttribute("name", streamModel.stream.name);
-                    let bigTrackComp = document.getElementById("currentTrackBigView") as EboBigTrackComp;
-                    bigTrackComp.streamInfo = streamModel;
+                    let timelineDetails = document.getElementById("timelineDetails") as EboTimeLineDetailsComp;
+                    timelineDetails.streamInfo = streamModel;
                 }
             });
     }

@@ -2,7 +2,14 @@ import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import {EboRadioHistoryComp} from "./eboRadioHistoryComp";
 
-class EboBigTrackComp extends EboComponent {
+export class EboTimeLineDetailsComp extends EboComponent {
+    static override readonly tagName=  "ebo-timeline-details";
+    static progressBarAttributes = ["position", "min", "max", "button", "active"];
+    // noinspection JSUnusedGlobalSymbols
+    static observedAttributes = [
+        "name", "stream_lines", "extra", "img", "disabled", "show_back", "program_title",
+        ...EboTimeLineDetailsComp.progressBarAttributes
+    ];
     get albumInfo(): AlbumData {
         return this._albumInfo;
     }
@@ -21,13 +28,6 @@ class EboBigTrackComp extends EboComponent {
         this.requestUpdate();
     }
 
-    static override readonly tagName=  "ebo-big-track-view";
-    static progressBarAttributes = ["position", "min", "max", "button", "active"];
-    // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "show_back", "program_title",
-        ...EboBigTrackComp.progressBarAttributes
-    ];
     private name: string = "";
     private stream_lines: string = "";
     private extra: string = "";
@@ -145,12 +145,12 @@ class EboBigTrackComp extends EboComponent {
         `;
 
     constructor() {
-        super(EboBigTrackComp.styleText, EboBigTrackComp.htmlText);
+        super(EboTimeLineDetailsComp.styleText, EboTimeLineDetailsComp.htmlText);
     }
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        if(EboBigTrackComp.progressBarAttributes.includes(name)) {
+        if(EboTimeLineDetailsComp.progressBarAttributes.includes(name)) {
             this.updateStringProperty(name, newValue);
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
@@ -192,7 +192,7 @@ class EboBigTrackComp extends EboComponent {
             shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
         }
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
-        EboBigTrackComp.progressBarAttributes.forEach(attName => {
+        EboTimeLineDetailsComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });
@@ -228,7 +228,4 @@ class EboBigTrackComp extends EboComponent {
         else
             wrapper.classList.add("front");
     }
-
 }
-
-export default EboBigTrackComp

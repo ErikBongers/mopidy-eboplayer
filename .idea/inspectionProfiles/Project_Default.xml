@@ -8,7 +8,7 @@
     <inspection_tool class="HtmlUnknownTag" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="myValues">
         <value>
-          <list size="30">
+          <list size="31">
             <item index="0" class="java.lang.String" itemvalue="nobr" />
             <item index="1" class="java.lang.String" itemvalue="noembed" />
             <item index="2" class="java.lang.String" itemvalue="comment" />
@@ -39,6 +39,7 @@
             <item index="27" class="java.lang.String" itemvalue="ebo-radio-details" />
             <item index="28" class="java.lang.String" itemvalue="ebo-big-radio-view" />
             <item index="29" class="java.lang.String" itemvalue="ebo-radio-history" />
+            <item index="30" class="java.lang.String" itemvalue="ebo-timeline-details" />
           </list>
         </value>
       </option>
