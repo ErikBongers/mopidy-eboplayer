@@ -8,7 +8,7 @@
     <inspection_tool class="HtmlUnknownTag" enabled="true" level="WARNING" enabled_by_default="true">
       <option name="myValues">
         <value>
-          <list size="28">
+          <list size="29">
             <item index="0" class="java.lang.String" itemvalue="nobr" />
             <item index="1" class="java.lang.String" itemvalue="noembed" />
             <item index="2" class="java.lang.String" itemvalue="comment" />
@@ -16,27 +16,28 @@
             <item index="4" class="java.lang.String" itemvalue="embed" />
             <item index="5" class="java.lang.String" itemvalue="script" />
             <item index="6" class="java.lang.String" itemvalue="history-line" />
-            <item index="7" class="java.lang.String" itemvalue="ebo-progresssbar" />
-            <item index="8" class="java.lang.String" itemvalue="ebo-progressbar" />
-            <item index="9" class="java.lang.String" itemvalue="ebo-big-track-view" />
-            <item index="10" class="java.lang.String" itemvalue="ebo-album-tracks-view" />
-            <item index="11" class="java.lang.String" itemvalue="ebo-browse-view" />
-            <item index="12" class="java.lang.String" itemvalue="ebo-button" />
-            <item index="13" class="java.lang.String" itemvalue="ebo-big-album-view" />
-            <item index="14" class="java.lang.String" itemvalue="ebo-button-bar" />
-            <item index="15" class="java.lang.String" itemvalue="ebo-menu-button" />
-            <item index="16" class="java.lang.String" itemvalue="ebo-list-button-bar" />
-            <item index="17" class="java.lang.String" itemvalue="ebo-dialog" />
-            <item index="18" class="java.lang.String" itemvalue="ebo-album-details" />
-            <item index="19" class="java.lang.String" itemvalue="ebo-radio-details-view" />
-            <item index="20" class="java.lang.String" itemvalue="ebo-player-bar" />
-            <item index="21" class="java.lang.String" itemvalue="ebo-browse-filter" />
-            <item index="22" class="java.lang.String" itemvalue="ebo-settings-view" />
-            <item index="23" class="java.lang.String" itemvalue="ebo-list-item" />
-            <item index="24" class="java.lang.String" itemvalue="ebo-remembered-view" />
-            <item index="25" class="java.lang.String" itemvalue="ebo-dropdown" />
-            <item index="26" class="java.lang.String" itemvalue="ebo-option" />
-            <item index="27" class="java.lang.String" itemvalue="ebo-genres-view" />
+            <item index="7" class="java.lang.String" itemvalue="ebo-progressbar" />
+            <item index="8" class="java.lang.String" itemvalue="ebo-big-track-view" />
+            <item index="9" class="java.lang.String" itemvalue="ebo-album-tracks-view" />
+            <item index="10" class="java.lang.String" itemvalue="ebo-browse-view" />
+            <item index="11" class="java.lang.String" itemvalue="ebo-button" />
+            <item index="12" class="java.lang.String" itemvalue="ebo-big-album-view" />
+            <item index="13" class="java.lang.String" itemvalue="ebo-button-bar" />
+            <item index="14" class="java.lang.String" itemvalue="ebo-menu-button" />
+            <item index="15" class="java.lang.String" itemvalue="ebo-list-button-bar" />
+            <item index="16" class="java.lang.String" itemvalue="ebo-dialog" />
+            <item index="17" class="java.lang.String" itemvalue="ebo-album-details" />
+            <item index="18" class="java.lang.String" itemvalue="ebo-radio-details-view" />
+            <item index="19" class="java.lang.String" itemvalue="ebo-player-bar" />
+            <item index="20" class="java.lang.String" itemvalue="ebo-browse-filter" />
+            <item index="21" class="java.lang.String" itemvalue="ebo-settings-view" />
+            <item index="22" class="java.lang.String" itemvalue="ebo-list-item" />
+            <item index="23" class="java.lang.String" itemvalue="ebo-remembered-view" />
+            <item index="24" class="java.lang.String" itemvalue="ebo-dropdown" />
+            <item index="25" class="java.lang.String" itemvalue="ebo-option" />
+            <item index="26" class="java.lang.String" itemvalue="ebo-genres-view" />
+            <item index="27" class="java.lang.String" itemvalue="ebo-radio-details" />
+            <item index="28" class="java.lang.String" itemvalue="ebo-big-radio-view" />
           </list>
         </value>
       </option>

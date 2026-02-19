@@ -1,6 +1,6 @@
 import {BrowseFilterBreadCrumbStack, Model} from "../model";
 import {jsonParse} from "../functionsvars";
-import {AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter} from "../modelTypes";
+import {AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, StreamUri} from "../modelTypes";
 import models from "../../js/mopidy";
 import Ref = models.Ref;
 import {DisplayMode} from "../components/eboListItemComp";
@@ -72,6 +72,10 @@ export class LocalStorageProxy {
 
     saveAlbumBeingEdited(albumUri: AlbumUri | null) {
         localStorage.setItem("albumBeingEdited", albumUri ?? "");
+    }
+
+    saveRadioBeingEdited(albumUri: StreamUri | null) {
+        localStorage.setItem("radioBeingEdited", albumUri ?? "");
     }
 
     getAlbumBeingEdited() {

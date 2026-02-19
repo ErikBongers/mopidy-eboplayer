@@ -130,13 +130,13 @@ export class EboAlbumDetails extends EboComponent {
             let {artists, composers, genreDefs} = await this.albumInfo.getAllDetails();
             //do the `await`s first before clearing and filling, to avoid data races! (double lines)
             body.innerHTML = "";
-            this.addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
-            this.addMetaDataRow(body, "Artists:", artists.map(artist => {
+            addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
+            addMetaDataRow(body, "Artists:", artists.map(artist => {
                 return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `
             }).join(" "));
-            this.addMetaDataRow(body, "Composers:", composers.map(artist => artist.name).join(","));
+            addMetaDataRow(body, "Composers:", composers.map(artist => artist.name).join(","));
             let genresHtml = "";
             genreDefs.forEach(def => {
                 let defHtml = "";
@@ -147,8 +147,8 @@ export class EboAlbumDetails extends EboComponent {
                 genresHtml += defHtml;
             });
             genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
-            this.addMetaDataRow(body, "Genre", genresHtml);
-            this.addMetaDataRow(body, "Playlists", "todo...");
+            addMetaDataRow(body, "Genre", genresHtml);
+            addMetaDataRow(body, "Playlists", "todo...");
             body.querySelectorAll(".linkButton").forEach((link: HTMLElement) => {
                 link.addEventListener("click", (ev) => {
                     this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
@@ -161,13 +161,14 @@ export class EboAlbumDetails extends EboComponent {
         }
     }
 
-    private addMetaDataRow(body: HTMLTableSectionElement, colText1: string, colText2: string) {
-        let tr = body.appendChild(document.createElement("tr"));
-        let td1 = tr.appendChild(document.createElement("td"));
-        td1.innerHTML = colText1;
-        let td2 = tr.appendChild(document.createElement("td"));
-        td2.innerHTML = colText2;
-        td2.classList.add("selectable");
-    }
+}
+
+export function addMetaDataRow(body: HTMLTableSectionElement, colText1: string, colText2: string) {
+    let tr = body.appendChild(document.createElement("tr"));
+    let td1 = tr.appendChild(document.createElement("td"));
+    td1.innerHTML = colText1;
+    let td2 = tr.appendChild(document.createElement("td"));
+    td2.innerHTML = colText2;
+    td2.classList.add("selectable");
 }
 

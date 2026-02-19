@@ -68,6 +68,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private scanStatus: string = "";
     private allRefsMap: Map<AllUris, ExpandedRef> | null = null;
     private favorites: Set<AllUris> | null  = null;
+    private radioToView: StreamUri | null = null;
 
     constructor() {
         super();
@@ -352,5 +353,11 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     setFavorites(favorites: AllUris[]){
         this.favorites = new Set(favorites);
         this.dispatchEboEvent("favoritesChanged.eboplayer", {})
+    }
+
+    getRadioToView = () => this.radioToView;
+    setRadioToView(radioUri: StreamUri | null) {
+        this.radioToView = radioUri;
+        this.dispatchEboEvent("currentRadioChanged.eboplayer", {});
     }
 }

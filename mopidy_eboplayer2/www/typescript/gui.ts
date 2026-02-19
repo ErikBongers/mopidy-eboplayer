@@ -38,6 +38,8 @@ import {EboOption} from "./components/eboOption";
 import {EboIconDropdown} from "./components/eboIconDropdown";
 import {EboGenresComp} from "./components/eboGenresComp";
 import {GenresView} from "./views/genresView";
+import {EboBigRadioComp} from "./components/eboBigRadioComp";
+import {RadioView} from "./views/radioView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -76,6 +78,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboOption);
             EboComponent.define(EboIconDropdown);
             EboComponent.define(EboGenresComp);
+            EboComponent.define(EboBigRadioComp);
 
             setupStuff();
         });
@@ -110,7 +113,8 @@ function setupStuff() {
 
     let browseView = new BrowseView(state, document.getElementById("browseView") as EboBrowseComp);
     let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp);
-    let mainView = new MainView(state, browseView, albumView);
+    let radioView = new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp);
+    let mainView = new MainView(state, browseView, albumView, radioView);
     let headerView = new HeaderView(state);
     let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, document.getElementById("currentTrackBigView") as EboBigTrackComp);
     let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);

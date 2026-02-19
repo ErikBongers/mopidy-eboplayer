@@ -11,20 +11,25 @@ import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
+import {EboBigRadioComp} from "../components/eboBigRadioComp";
+import {RadioView} from "./radioView";
 
 export class MainView extends View {
     private browseView: BrowseView;
     private albumView: AlbumView;
+    private radioView: RadioView;
 
-    constructor(state: State, browseView: BrowseView, albumView: AlbumView) {
+    constructor(state: State, browseView: BrowseView, albumView: AlbumView, radioView: RadioView) {
         super(state);
         this.browseView = browseView;
         this.albumView = albumView;
+        this.radioView = radioView;
     }
 
     bind() {
         this.browseView.bind();
         this.albumView.bind();
+        this.radioView.bind();
         document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
             this.onBrowseButtonClick();
         });
@@ -42,6 +47,9 @@ export class MainView extends View {
         });
         this.state.getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
             await this.onAlbumToViewChanged();
+        });
+        this.state.getModel().addEboEventListener("currentRadioChanged.eboplayer", async () => {
+            await this.onRadioToViewChanged();
         });
         let currentTrackBigViewComp = document.getElementById("currentTrackBigView") as EboBrowseComp;
         currentTrackBigViewComp.addEboEventListener("bigTrackAlbumImgClicked.eboplayer", async () => {
@@ -83,12 +91,20 @@ export class MainView extends View {
 
     private getListButtonStates(currentView: Views) {
         let states: ListButtonStates = ListButtonState_AllHidden();
-        if(currentView == Views.Album) {
-            states = this.showHideTrackAndAlbumButtons(states, "show");
-            states.new_playlist = "hide";
-            states.edit = "hide";
-            states.line_or_icon = "hide";
-            return states;
+        switch (currentView) {
+            case Views.Album:
+                states = this.showHideTrackAndAlbumButtons(states, "show");
+                states.new_playlist = "hide";
+                states.edit = "hide";
+                states.line_or_icon = "hide";
+                return states;
+            case Views.Radio:
+                states = this.showHideTrackAndAlbumButtons(states, "show");
+                states.new_playlist = "hide";
+                states.edit = "hide";
+                states.line_or_icon = "hide";
+                return states;
+
         }
         return states;
     }
@@ -114,6 +130,9 @@ export class MainView extends View {
             case Views.Album:
                 this.state.getController().setView(Views.Album);
                 break;
+            case Views.Radio:
+                this.state.getController().setView(Views.Radio);
+                break;
         }
     }
 
@@ -138,6 +157,8 @@ export class MainView extends View {
                 return "settingsView";
             case Views.Genres:
                 return "genresView"
+            case Views.Radio:
+                return "bigRadioView";
             default:
                 return unreachable(hash);
         }
@@ -182,6 +203,19 @@ export class MainView extends View {
                 }
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.btn_states = this.getListButtonStates(view);
+                layout.classList.add("showFullView");
+                break;
+            case Views.Radio:
+                location.hash = Views.Radio;
+                if(prevViewClass == "browse") { //Provide some navigation back.
+                    browseBtn.dataset.goto = Views.Browse;
+                    browseBtn.title = "Search";
+                } else {
+                    browseBtn.dataset.goto = Views.NowPlaying;
+                    browseBtn.title = "Now playing";
+                }
+                let radioComp = document.getElementById("bigRadioView") as EboBigRadioComp;
+                radioComp.btn_states = this.getListButtonStates(view);
                 layout.classList.add("showFullView");
                 break;
             case Views.Settings:
@@ -261,6 +295,14 @@ export class MainView extends View {
             return;
         let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
         this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
+    }
+
+    private async onRadioToViewChanged() {
+        let radioToView = this.state.getModel().getRadioToView();
+        if(!radioToView)
+            return;
+        let radioModel = await this.state.getController().getExpandedTrackModel(radioToView) as ExpandedStreamModel;
+        this.radioView.setStreamComponentData(radioModel);
     }
 
     private async rememberStreamLines(lines: string[]) {

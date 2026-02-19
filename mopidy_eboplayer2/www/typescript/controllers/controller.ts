@@ -4,7 +4,7 @@ import models, {core, Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
-import {createAllRefs, Refs, SomeRefs} from "../refs";
+import {createAllRefs, Refs, RefType, SomeRefs} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, isBreadCrumbForAlbum, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
@@ -217,9 +217,6 @@ export class Controller extends Commands {
     }
 
     async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
-        if(type  == "radio") { //todo
-            return; //don't dive.
-        }
         if(type == "track") {
             let track = await this.getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
             if(track.album?.albumInfo?.uri)
@@ -231,6 +228,12 @@ export class Controller extends Commands {
         if(type == "album") {
             this.getExpandedAlbumModel(uri as AlbumUri).then(() => { //fetch before changing view, to avoid flicker.
                 this.showAlbum(uri as AlbumUri, null);
+            });
+        }
+
+        if(type  == "radio") {
+            this.getExpandedTrackModel(uri as StreamUri).then(() => { //fetch before changing view, to avoid flicker.
+                this.showRadio(uri as StreamUri);
             });
         }
 
@@ -443,13 +446,18 @@ export class Controller extends Commands {
         return this.webProxy.createPlaylist(name)
     }
 
-    async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {
+    async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: RefType, sequence: number) {
         return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
     }
 
     showAlbum(albumUri: AlbumUri, selectedTrackUri: TrackUri | null) {
         this.model.setAlbumToView(albumUri, selectedTrackUri);
         this.model.setView(Views.Album);
+    }
+
+    showRadio(radioUri: StreamUri) {
+        this.model.setRadioToView(radioUri);
+        this.model.setView(Views.Radio);
     }
 
     async remember(s: string) {

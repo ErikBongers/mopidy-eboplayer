@@ -1,5 +1,5 @@
 import {AlbumMetaData, AlbumUri, AllUris, GenreDef, GenreReplacement, HistoryLineDef, RememberDef, RememberId, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
-import {ExpandedRef} from "../refs";
+import {ExpandedRef, RefType} from "../refs";
 
 export type AlbumMetaDict = {[uri: AlbumUri]: AlbumMetaData};
 
@@ -56,7 +56,7 @@ export class WebProxy {
         return null;
     }
 
-    async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: string, sequence: number) {
+    async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: RefType, sequence: number) {
         let url = this.ebobackUrl(`add_ref_to_playlist`);
         //add params to body of post request
         let data = new FormData();

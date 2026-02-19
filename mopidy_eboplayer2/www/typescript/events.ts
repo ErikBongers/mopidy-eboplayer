@@ -26,6 +26,7 @@ export interface EboEventHandlersEventMap {
     "genreDefsChanged.eboplayer"                : VoidArgs,
     "favoritesChanged.eboplayer"                : VoidArgs,
     "albumGenreEditRequested.eboplayer"         : UriArgs,
+    "currentRadioChanged.eboplayer"             : VoidArgs,
     "favoriteToggle.eboplayer"                  : UriArgs,
     "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
     "dialogOkClicked.eboplayer"                 : DialogArgs,
@@ -161,7 +162,7 @@ export interface BrowseResultClickArgs extends EboEventArgs {
     type: string,
 }
 
-export type GuiSource = "albumView" | "browseView";
+export type GuiSource = "albumView" | "browseView" | "radioView";
 export interface GuiSourceArgs extends EboEventArgs {
     source: GuiSource
 }
