@@ -205,7 +205,7 @@ export class EboPlayerBar extends EboComponent {
         let img = shadow.querySelector("img") as HTMLImageElement;
         titleEl.style.display = this.show_info ? "" : "none";
         if(this.image_url) {
-            img.style.visibility =  this.show_info ? "visible" : "hidden";
+            img.style.visibility = "visible";
             img.setAttribute("src", this.image_url);
         }
         else

@@ -1,3 +1,6 @@
+* Add menu to timeline items.
+  > a heart to add it to Favorites.
+
 * For now, allow to add a stream to a playlist (Favorites).
   > save the URL of the stream
     > just like with files, this implies that the full definition can be found elsewhere (in the track table)
