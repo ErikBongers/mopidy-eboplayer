@@ -88,6 +88,9 @@ export class EboBigRadioComp extends EboComponent {
             ebo-radio-details-view {
                 height: 100%;
             }
+            ebo-radio-history {
+                width: 100%;
+            }       
             #back {
                 min-height: 40vh;
             }

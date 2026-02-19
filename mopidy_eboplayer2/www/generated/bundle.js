@@ -4576,6 +4576,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
                 }
                 #tracksTable {
                     width: 100%;
+                    font-size: .7rem;
                     border-collapse: collapse;
                     tr.lastLine {
                         border-bottom: 1px solid #ffffff80;
@@ -6017,6 +6018,9 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
             ebo-radio-details-view {
                 height: 100%;
             }
+            ebo-radio-history {
+                width: 100%;
+            }       
             #back {
                 min-height: 40vh;
             }

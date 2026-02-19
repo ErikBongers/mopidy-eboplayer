@@ -47,6 +47,7 @@ export class EboRadioHistoryComp extends EboComponent {
                 }
                 #tracksTable {
                     width: 100%;
+                    font-size: .7rem;
                     border-collapse: collapse;
                     tr.lastLine {
                         border-bottom: 1px solid #ffffff80;
