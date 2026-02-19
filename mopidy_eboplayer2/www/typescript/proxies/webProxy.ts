@@ -153,7 +153,7 @@ export class WebProxy {
     }
 
     async getFavorites(): Promise<AllUris[]> {
-        let url = this.ebobackUrl(`toggle_favorite`);
+        let url = this.ebobackUrl(`get_favorite_uris`);
         let res = await fetch(url);
         return await res.json();
     }
