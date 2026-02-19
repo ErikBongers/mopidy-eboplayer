@@ -179,4 +179,12 @@ export class CacheHandler extends Commands{
         this.model.setGenreDefs(genreDefs);
         return this.model.getGenreDefs() as GenreDef[];
     }
+
+    async getFavorites() {
+        if(this.model.getFavorites())
+            return this.model.getFavorites() as Set<AllUris>;
+        let favorites = await this.webProxy.getFavorites();
+        this.model.setFavorites(favorites);
+        return this.model.getFavorites() as Set<AllUris>;
+    }
 }

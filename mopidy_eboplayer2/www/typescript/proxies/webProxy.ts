@@ -151,4 +151,10 @@ export class WebProxy {
         let result = await res.json();
         return result.is_favorite as boolean;
     }
+
+    async getFavorites(): Promise<AllUris[]> {
+        let url = this.ebobackUrl(`toggle_favorite`);
+        let res = await fetch(url);
+        return await res.json();
+    }
 }

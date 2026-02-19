@@ -58,6 +58,7 @@ export class Controller extends Commands {
         await this.cache.getGenreReplacementsCached();
         await this.cache.getRemembersCached();
         await this.cache.getGenreDefs();
+        await this.cache.getFavorites();
     }
 
     initialize (views: View[]) {

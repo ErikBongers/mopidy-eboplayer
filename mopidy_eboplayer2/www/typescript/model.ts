@@ -67,6 +67,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private remembers: RememberDef[] | null = null;
     private scanStatus: string = "";
     private allRefsMap: Map<AllUris, ExpandedRef> | null = null;
+    private favorites: Set<AllUris> | null  = null;
 
     constructor() {
         super();
@@ -345,5 +346,11 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     setGenreDefs(genreDefs: GenreDef[]) {
         this.genreDefs = genreDefs;
         this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
+    }
+
+    getFavorites = () => this.favorites;
+    setFavorites(favorites: AllUris[]){
+        this.favorites = new Set(favorites);
+        this.dispatchEboEvent("favoritesChanged.eboplayer", {})
     }
 }
