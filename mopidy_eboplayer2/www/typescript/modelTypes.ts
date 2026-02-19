@@ -23,7 +23,7 @@ export type PlaylistUri = Branded<string, "PlaylistUri">;
 export type GenreUri = Branded<string, "GenreUri">;
 export type ArtistUri = Branded<string, "ArtistUri">;
 export type ImageUri = Branded<string, "ImageUri">;
-export type StreamUri = Branded<string, "StreamUri">;
+export type StreamUri = Branded<string, "StreamUri">; //todo: merge with RadioUri?
 export type LibraryUri = Branded<string, "LibraryUri">;
 export type BrowseUri = Branded<string, "BrowseUri">;
 
