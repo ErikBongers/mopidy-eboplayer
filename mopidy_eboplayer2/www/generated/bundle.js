@@ -1689,6 +1689,11 @@ var WebProxy = class {
 		url.searchParams.set("playlist_name", name);
 		return (await (await fetch(url)).json()).playlist_uri;
 	}
+	async toggleFavorite(uri) {
+		let url = this.ebobackUrl(`toggle_favorite`);
+		url.searchParams.set("uri", uri);
+		return (await (await fetch(url)).json()).is_favorite;
+	}
 };
 
 //#endregion
@@ -2049,6 +2054,9 @@ var Controller = class extends Commands {
 	}
 	async saveAlbumGenre(albumUri, genre) {
 		await this.webProxy.setAlbumGenre(albumUri, genre);
+	}
+	toggleFavorite(uri) {
+		this.webProxy.toggleFavorite(uri);
 	}
 };
 
@@ -2774,28 +2782,16 @@ var EboBigTrackComp = class EboBigTrackComp extends EboComponent {
 var eboBigTrackComp_default = EboBigTrackComp;
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/componentViewAdapter.ts
-var ComponentViewAdapter = class extends View {
-	componentId;
-	constructor(state, id) {
-		super(state);
-		this.componentId = id;
-	}
-	bind() {}
-};
-
-//#endregion
 //#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
-var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
+var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 	streamLines;
 	programTitle = "";
 	uri = null;
 	track;
-	constructor(state, id) {
-		super(state, id);
+	constructor(state, component) {
+		super(state, component);
 	}
 	bind() {
-		super.bind();
 		this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
 			await this.onCurrentOrSelectedChanged();
 		});
@@ -2807,6 +2803,9 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 		});
 		this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
 			this.onProgramTitleChanged();
+		});
+		this.component.addEboEventListener("favoriteToggle.eboplayer", async (ev) => {
+			this.onToggleFavorite(ev.detail.uri);
 		});
 	}
 	async onCurrentOrSelectedChanged() {
@@ -2822,7 +2821,7 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 			let linesObject = this.state.getModel().getActiveStreamLines();
 			if (this.uri && linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
 		}
-		document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
+		this.component.setAttribute("stream_lines", this.streamLines);
 	}
 	async setUri(uri) {
 		this.uri = uri;
@@ -2857,18 +2856,20 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentViewAdapter {
 			if (artists) info += "<br>" + artists;
 			if (composers) info += "<br>" + composers;
 		}
-		let comp = document.getElementById(this.componentId);
-		comp.setAttribute("name", name);
-		comp.setAttribute("info", info);
-		comp.setAttribute("position", position);
-		comp.setAttribute("button", button);
-		comp.setAttribute("img", imageUrl);
-		comp.setAttribute("program_title", this.programTitle);
+		this.component.setAttribute("name", name);
+		this.component.setAttribute("info", info);
+		this.component.setAttribute("position", position);
+		this.component.setAttribute("button", button);
+		this.component.setAttribute("img", imageUrl);
+		this.component.setAttribute("program_title", this.programTitle);
 		this.onStreamLinesChanged();
 	}
 	onProgramTitleChanged() {
 		this.programTitle = this.state.getModel().getCurrentProgramTitle();
 		this.setComponentData();
+	}
+	onToggleFavorite(uri) {
+		this.state.getController().toggleFavorite(uri);
 	}
 };
 
@@ -4738,6 +4739,12 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
         `;
 	static htmlText = `
             <div id="wrapper">
+                <div class="flexRow">
+                    <ebo-button id="btnFavorite" toggle class="iconButton">
+                        <i class="fa fa-heart-o"></i>                        
+                    </ebo-button>
+                    <button id="btnRemembered" class="roundBorder">Remembered items</button>                                            
+                </div>
                 <div id="tableScroller">
                     <table id="tracksTable">
                         <colgroup>
@@ -4747,9 +4754,6 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
                         <tbody>
                         </tbody>                
                     </table>
-                    <div id="tableFooter">
-                        <button class="roundBorder">Remembered items</button>                                            
-                    </div>
                 </div>          
             </div>
             <dialog popover id="albumTrackPopup">
@@ -4759,8 +4763,11 @@ var EboRadioDetailsComp = class EboRadioDetailsComp extends EboComponent {
 		this.requestUpdate();
 	}
 	async render(shadow) {
-		shadow.getElementById("tableFooter").addEventListener("click", (ev) => {
+		shadow.getElementById("btnRemembered").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
+		});
+		shadow.getElementById("btnFavorite").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": this.streamInfo?.stream.ref.uri });
 		});
 	}
 	update(shadow) {
@@ -6123,7 +6130,7 @@ function setupStuff() {
 	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));
 	let mainView = new MainView(state, browseView, albumView);
 	let headerView = new HeaderView(state);
-	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, "currentTrackBigView");
+	let currentTrackView = new BigTrackViewCurrentOrSelectedAdapter(state, document.getElementById("currentTrackBigView"));
 	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
 	let historyView = new TimelineView(state);
 	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));

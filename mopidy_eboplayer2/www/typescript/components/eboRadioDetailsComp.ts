@@ -1,5 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {ExpandedStreamModel} from "../modelTypes";
+import {ExpandedStreamModel, StreamUri} from "../modelTypes";
+import {EboButton} from "./eboButton";
+import {console_yellow} from "../global";
 
 export class EboRadioDetailsComp extends EboComponent {
     private _streamInfo: ExpandedStreamModel | null = null;
@@ -56,6 +58,12 @@ export class EboRadioDetailsComp extends EboComponent {
         `;
         static htmlText = `
             <div id="wrapper">
+                <div class="flexRow">
+                    <ebo-button id="btnFavorite" toggle class="iconButton">
+                        <i class="fa fa-heart-o"></i>                        
+                    </ebo-button>
+                    <button id="btnRemembered" class="roundBorder">Remembered items</button>                                            
+                </div>
                 <div id="tableScroller">
                     <table id="tracksTable">
                         <colgroup>
@@ -65,9 +73,6 @@ export class EboRadioDetailsComp extends EboComponent {
                         <tbody>
                         </tbody>                
                     </table>
-                    <div id="tableFooter">
-                        <button class="roundBorder">Remembered items</button>                                            
-                    </div>
                 </div>          
             </div>
             <dialog popover id="albumTrackPopup">
@@ -80,10 +85,14 @@ export class EboRadioDetailsComp extends EboComponent {
         }
 
     override async render(shadow:ShadowRoot) {
-        let tableFooter = shadow.getElementById("tableFooter") as HTMLDivElement;
-        tableFooter.addEventListener("click", (ev) => {
+        let btnRemembered = shadow.getElementById("btnRemembered") as HTMLButtonElement;
+        btnRemembered.addEventListener("click", (ev) => {
             this.dispatchEboEvent("rememberedRequested.eboplayer", {});
-        })
+        });
+        let btnFavorite = shadow.getElementById("btnFavorite") as EboButton;
+        btnFavorite.addEventListener("click", (ev) => {
+            this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": this.streamInfo?.stream!.ref.uri as StreamUri});
+        });
     }
 
     override update(shadow:ShadowRoot) {

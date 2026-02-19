@@ -1,3 +1,5 @@
+* Favorites: see storage.py WIP
+
 * Add menu to timeline items.
   > a heart to add it to Favorites.
 

@@ -482,4 +482,8 @@ export class Controller extends Commands {
     async saveAlbumGenre(albumUri: AlbumUri, genre: string) {
         await this.webProxy.setAlbumGenre(albumUri, genre);
     }
+
+    toggleFavorite(uri: AllUris) {
+        let isFavorite = this.webProxy.toggleFavorite(uri);
+    }
 }

@@ -1,20 +1,20 @@
-import {ComponentViewAdapter} from "./componentViewAdapter";
-import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
+import {AllUris, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
 import EboBigTrackComp from "../components/eboBigTrackComp";
 import {State} from "../playerState";
+import {ComponentView} from "./view";
+import {console_yellow} from "../global";
 
-export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
+export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboBigTrackComp> {
     private streamLines: string;
     private programTitle: string = "";
     private uri: string | null = null;
     private track: ExpandedStreamModel | ExpandedFileTrackModel | null;
 
-    constructor(state: State, id: string) {
-        super(state, id);
+    constructor(state: State, component: EboBigTrackComp) {
+        super(state, component);
     }
 
-    override bind() {
-        super.bind();
+    bind() {
         this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
             await this.onCurrentOrSelectedChanged();
         });
@@ -26,6 +26,9 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
         });
         this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
+        });
+        this.component.addEboEventListener("favoriteToggle.eboplayer", async (ev) => {
+            this.onToggleFavorite(ev.detail.uri);
         });
     }
 
@@ -44,8 +47,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
             if (this.uri && linesObject?.uri == this.uri)
                 this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
         }
-        // @ts-ignore
-        document.getElementById(this.componentId).setAttribute("stream_lines", this.streamLines);
+        this.component.setAttribute("stream_lines", this.streamLines);
     }
 
     async setUri(uri: TrackUri | StreamUri | null) {
@@ -86,18 +88,21 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentViewAdapter {
                     info += "<br>" + composers;
             }
         }
-        let comp = document.getElementById(this.componentId) as EboBigTrackComp;
-        comp.setAttribute("name", name);
-        comp.setAttribute("info", info);
-        comp.setAttribute("position", position);
-        comp.setAttribute("button", button);
-        comp.setAttribute("img", imageUrl);
-        comp.setAttribute("program_title", this.programTitle);
+        this.component.setAttribute("name", name);
+        this.component.setAttribute("info", info);
+        this.component.setAttribute("position", position);
+        this.component.setAttribute("button", button);
+        this.component.setAttribute("img", imageUrl);
+        this.component.setAttribute("program_title", this.programTitle);
         this.onStreamLinesChanged();
     }
 
     private onProgramTitleChanged() {
         this.programTitle = this.state.getModel().getCurrentProgramTitle();
         this.setComponentData();
+    }
+
+    private onToggleFavorite(uri: AllUris) {
+        this.state.getController().toggleFavorite(uri);
     }
 }

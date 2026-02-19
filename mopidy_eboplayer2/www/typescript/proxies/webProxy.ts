@@ -143,4 +143,12 @@ export class WebProxy {
         let result = await res.json();
         return result.playlist_uri as AllUris;
     }
+
+    async toggleFavorite(uri: AllUris) {
+        let url = this.ebobackUrl(`toggle_favorite`);
+        url.searchParams.set("uri", uri);
+        let res = await fetch(url);
+        let result = await res.json();
+        return result.is_favorite as boolean;
+    }
 }
