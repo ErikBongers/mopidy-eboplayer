@@ -944,6 +944,7 @@ var Model = class extends EboEventTargetClass {
 	remembers = null;
 	scanStatus = "";
 	allRefsMap = null;
+	favorites = null;
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -1161,6 +1162,11 @@ var Model = class extends EboEventTargetClass {
 	setGenreDefs(genreDefs) {
 		this.genreDefs = genreDefs;
 		this.dispatchEboEvent("genreDefsChanged.eboplayer", {});
+	}
+	getFavorites = () => this.favorites;
+	setFavorites(favorites) {
+		this.favorites = new Set(favorites);
+		this.dispatchEboEvent("favoritesChanged.eboplayer", {});
 	}
 };
 
@@ -1694,6 +1700,10 @@ var WebProxy = class {
 		url.searchParams.set("uri", uri);
 		return (await (await fetch(url)).json()).is_favorite;
 	}
+	async getFavorites() {
+		let url = this.ebobackUrl(`get_favorite_uris`);
+		return await (await fetch(url)).json();
+	}
 };
 
 //#endregion
@@ -1733,6 +1743,7 @@ var Controller = class extends Commands {
 		await this.cache.getGenreReplacementsCached();
 		await this.cache.getRemembersCached();
 		await this.cache.getGenreDefs();
+		await this.cache.getFavorites();
 	}
 	initialize(views) {
 		this.mopidy.on("state:online", async () => {
@@ -3787,7 +3798,9 @@ var EboButton = class EboButton extends EboComponent {
 	static htmlText = `
         <button>
             <img id="bigImage" src="" alt="Button image">
-            <slot></slot>           
+            <slot></slot>      
+            <slot name="on"></slot>     
+            <slot name="off"></slot>     
         </button>
         `;
 	constructor() {
@@ -3829,6 +3842,10 @@ var EboButton = class EboButton extends EboComponent {
 		} else imgTag.style.display = "none";
 		if (this.toggle) this.setClassFromBoolAttribute(imgTag, "pressed");
 		this.setClassFromBoolAttribute(imgTag, "disabled");
+		let onSlot = shadow.querySelector("slot[name='on']");
+		let offSlot = shadow.querySelector("slot[name='off']");
+		onSlot.style.display = this.pressed ? "block" : "none";
+		offSlot.style.display = this.pressed ? "none" : "block";
 	}
 	onClick(eboButton) {
 		if (this.disabled) return;
@@ -5752,6 +5769,12 @@ var CacheHandler = class extends Commands {
 		let genreDefs = await this.webProxy.fetchGenreDefs();
 		this.model.setGenreDefs(genreDefs);
 		return this.model.getGenreDefs();
+	}
+	async getFavorites() {
+		if (this.model.getFavorites()) return this.model.getFavorites();
+		let favorites = await this.webProxy.getFavorites();
+		this.model.setFavorites(favorites);
+		return this.model.getFavorites();
 	}
 };
 

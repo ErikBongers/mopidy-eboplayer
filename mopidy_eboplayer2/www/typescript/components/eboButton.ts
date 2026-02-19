@@ -35,7 +35,9 @@ export class EboButton extends EboComponent {
     static htmlText = `
         <button>
             <img id="bigImage" src="" alt="Button image">
-            <slot></slot>           
+            <slot></slot>      
+            <slot name="on"></slot>     
+            <slot name="off"></slot>     
         </button>
         `;
 
@@ -90,6 +92,10 @@ export class EboButton extends EboComponent {
         if(this.toggle)
             this.setClassFromBoolAttribute(imgTag, "pressed");
         this.setClassFromBoolAttribute(imgTag, "disabled");
+        let onSlot = shadow.querySelector("slot[name='on']") as HTMLSlotElement;
+        let offSlot = shadow.querySelector("slot[name='off']") as HTMLSlotElement;
+        onSlot.style.display = this.pressed ? "block" : "none";
+        offSlot.style.display = this.pressed ? "none" : "block";
     }
 
     private onClick(eboButton: EboButton) {

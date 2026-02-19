@@ -1,3 +1,15 @@
+Radio
+-----
+> Doesn't have a dedicated view.
+  > if it fills fullscreen, what should it show?
+  > obviousliy it's history.
+    > but that looks A LOT like Now Playing...
+      > Not with the buttons "Show remembered only" and "Favorite"
+
+* Browse: click on radio/stream should open details!
+  > model.
+  > model.view needs to change to...radio?
+
 * Favorites: see storage.py WIP
 
 * Add menu to timeline items.
