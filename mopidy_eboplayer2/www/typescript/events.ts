@@ -29,6 +29,7 @@ export interface EboEventHandlersEventMap {
     "currentRadioChanged.eboplayer"             : VoidArgs,
     "favoriteToggle.eboplayer"                  : UriArgs,
     "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
+    "detailsRadioImgClicked.eboplayer"          : VoidArgs,
     "dialogOkClicked.eboplayer"                 : DialogArgs,
     "displayModeChanged.eboplayer"              : DisplayModeArgs,
     "editClicked.eboplayer"                     : GuiSourceArgs,

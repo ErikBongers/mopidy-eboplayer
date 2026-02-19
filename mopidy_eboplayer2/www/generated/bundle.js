@@ -6068,7 +6068,7 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 			wrapper.classList.toggle("front");
 			wrapper.classList.toggle("back");
 		});
-		this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
+		this.addEboEventListener("detailsRadioImgClicked.eboplayer", () => {
 			let wrapper = this.getShadow().querySelector("#wrapper");
 			wrapper.classList.add("front");
 			wrapper.classList.remove("back");
@@ -6213,7 +6213,7 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 	static htmlText = `
         <div>
             <div id="header" class="flexRow">
-                <img id="bigImage" src="" alt="Radio image">
+                <img id="smallImage" src="" alt="Radio image">
                 <span id="streamName" class="selectable"></span>
             </div>
             <div id="tableContainer" class="flexColumn">
@@ -6248,7 +6248,9 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		shadow.getElementById("bigImage").addEventListener("click", (ev) => {});
+		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("detailsRadioImgClicked.eboplayer", {});
+		});
 		shadow.getElementById("btnUpdateStreamData")?.addEventListener("click", () => {});
 		shadow.getElementById("btnSearchImage")?.addEventListener("click", () => {
 			let streamName = this.streamInfo?.stream.name;
@@ -6261,7 +6263,7 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 		if (this.streamInfo) {
 			let streamName = shadow.getElementById("streamName");
 			streamName.innerHTML = this.streamInfo.stream.name ?? "--no name--";
-			let imgTag = shadow.getElementById("bigImage");
+			let imgTag = shadow.getElementById("smallImage");
 			imgTag.src = this.streamInfo.bigImageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			body.innerHTML = "";

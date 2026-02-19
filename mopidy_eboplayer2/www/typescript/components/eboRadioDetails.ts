@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
-import {AlbumUri, ArtistUri, ExpandedStreamModel} from "../modelTypes";
+import {ExpandedStreamModel} from "../modelTypes";
 import {searchImageOnGoogle} from "../global";
-import {addMetaDataRow, EboAlbumDetails} from "./eboAlbumDetails";
+import {addMetaDataRow} from "./eboAlbumDetails";
 
 export class EboRadioDetails extends EboComponent {
     static override readonly tagName=  "ebo-radio-details";
@@ -48,7 +48,7 @@ export class EboRadioDetails extends EboComponent {
     static htmlText = `
         <div>
             <div id="header" class="flexRow">
-                <img id="bigImage" src="" alt="Radio image">
+                <img id="smallImage" src="" alt="Radio image">
                 <span id="streamName" class="selectable"></span>
             </div>
             <div id="tableContainer" class="flexColumn">
@@ -86,10 +86,9 @@ export class EboRadioDetails extends EboComponent {
     }
 
     override render(shadow:ShadowRoot) {
-        let imageTag = shadow.getElementById("bigImage") as HTMLImageElement;
+        let imageTag = shadow.getElementById("smallImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {
-            //todo: separate message or generalize message?
-            //this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
+            this.dispatchEboEvent("detailsRadioImgClicked.eboplayer", {});
         });
         let btnUpdateStreamData = shadow.getElementById("btnUpdateStreamData");
         btnUpdateStreamData?.addEventListener("click", () => {
@@ -114,7 +113,7 @@ export class EboRadioDetails extends EboComponent {
         if(this.streamInfo) {
             let streamName = shadow.getElementById("streamName") as HTMLElement;
             streamName.innerHTML = this.streamInfo.stream.name?? "--no name--";
-            let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
+            let imgTag = shadow.getElementById("smallImage") as HTMLImageElement;
             imgTag.src = this.streamInfo.bigImageUrl;
 
             let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;
