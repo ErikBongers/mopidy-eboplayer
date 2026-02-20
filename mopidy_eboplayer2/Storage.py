@@ -106,9 +106,12 @@ class Storage:
             json.dump(state, f)
 
     def switch_stream_uri(self, uri):
-        if self.current_track_uri != "":
-            self.add_empty_title()
+        if self.current_track_uri == "":
+            return
+        if not self.current_track_uri.startswith("eboback:stream:"):
+            return
 
+        self.add_empty_title()
         self.set_stream_uri(uri)
         self.add_empty_title()
 
