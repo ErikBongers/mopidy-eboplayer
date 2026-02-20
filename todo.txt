@@ -1,4 +1,10 @@
-* Create a browse shortcut for favorites.
+* top left buttons
+  - heart
+  - browse
+  - now playing
+    > make squircle
+  > hide when appropriate.
+    > browse and now-playing are SEPARATE buttons!
 
 * eboback: rework favorite uri <-> item translation to use relative paths by default
   > relative path to...

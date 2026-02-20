@@ -3055,6 +3055,9 @@ var MainView = class extends View {
 		document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
 			this.onBrowseButtonClick();
 		});
+		document.getElementById("headerNowPlayingBtn")?.addEventListener("click", () => {
+			this.onNowPlayingButtonClick();
+		});
 		document.getElementById("headerFavoritesBtn")?.addEventListener("click", async () => {
 			await this.state.getController().gotoFavorites();
 		});
@@ -3139,20 +3142,10 @@ var MainView = class extends View {
 		return states;
 	}
 	onBrowseButtonClick() {
-		switch (document.getElementById("headerSearchBtn").dataset.goto) {
-			case Views.Browse:
-				this.state.getController().setView(Views.Browse);
-				break;
-			case Views.NowPlaying:
-				this.state.getController().setView(Views.NowPlaying);
-				break;
-			case Views.Album:
-				this.state.getController().setView(Views.Album);
-				break;
-			case Views.Radio:
-				this.state.getController().setView(Views.Radio);
-				break;
-		}
+		this.state.getController().setView(Views.Browse);
+	}
+	onNowPlayingButtonClick() {
+		this.state.getController().setView(Views.NowPlaying);
 	}
 	async setCurrentView() {
 		let view = this.state.getModel().getView();
@@ -3175,8 +3168,9 @@ var MainView = class extends View {
 		document.querySelectorAll(".fullView").forEach((v) => v.classList.remove("shownView"));
 		document.getElementById(this.hashToViewId(view)).classList.add("shownView");
 		let browseBtn = document.getElementById("headerSearchBtn");
+		let nowPlayingBtn = document.getElementById("headerNowPlayingBtn");
 		let layout = document.getElementById("layout");
-		let prevViewClass = [...layout.classList].filter((c) => [
+		[...layout.classList].filter((c) => [
 			"browse",
 			"bigAlbum",
 			"bigTrack"
@@ -3190,58 +3184,48 @@ var MainView = class extends View {
 				layout.classList.add("showFullView");
 			case Views.Browse:
 				location.hash = view;
-				browseBtn.dataset.goto = Views.NowPlaying;
-				browseBtn.title = "Now playing";
+				browseBtn.style.display = "none";
+				nowPlayingBtn.style.display = "block";
 				this.browseView.updateCompFromState(resultsDisplayMode);
 				layout.classList.add("showFullView");
 				break;
 			case Views.NowPlaying:
 				location.hash = "";
-				browseBtn.dataset.goto = Views.Browse;
-				browseBtn.title = "Search";
+				browseBtn.style.display = "block";
+				nowPlayingBtn.style.display = "none";
 				break;
 			case Views.Album:
 				location.hash = Views.Album;
-				if (prevViewClass == "browse") {
-					browseBtn.dataset.goto = Views.Browse;
-					browseBtn.title = "Search";
-				} else {
-					browseBtn.dataset.goto = Views.NowPlaying;
-					browseBtn.title = "Now playing";
-				}
+				browseBtn.style.display = "block";
+				nowPlayingBtn.style.display = "block";
 				let albumComp = document.getElementById("bigAlbumView");
 				albumComp.btn_states = this.getListButtonStates(view);
 				layout.classList.add("showFullView");
 				break;
 			case Views.Radio:
 				location.hash = Views.Radio;
-				if (prevViewClass == "browse") {
-					browseBtn.dataset.goto = Views.Browse;
-					browseBtn.title = "Search";
-				} else {
-					browseBtn.dataset.goto = Views.NowPlaying;
-					browseBtn.title = "Now playing";
-				}
+				browseBtn.style.display = "block";
+				nowPlayingBtn.style.display = "block";
 				let radioComp = document.getElementById("bigRadioView");
 				radioComp.btn_states = this.getListButtonStates(view);
 				layout.classList.add("showFullView");
 				break;
 			case Views.Settings:
 				location.hash = Views.Settings;
-				browseBtn.dataset.goto = Views.NowPlaying;
-				browseBtn.title = "Now playing";
+				browseBtn.style.display = "block";
+				nowPlayingBtn.style.display = "block";
 				layout.classList.add("showFullView");
 				break;
 			case Views.Remembered:
 				location.hash = Views.Remembered;
-				browseBtn.dataset.goto = Views.NowPlaying;
-				browseBtn.title = "Now playing";
+				browseBtn.style.display = "block";
+				nowPlayingBtn.style.display = "block";
 				layout.classList.add("showFullView");
 				break;
 			case Views.Genres:
 				location.hash = Views.Genres;
-				browseBtn.dataset.goto = Views.NowPlaying;
-				browseBtn.title = "Now playing";
+				browseBtn.style.display = "block";
+				nowPlayingBtn.style.display = "block";
 				layout.classList.add("showFullView");
 				break;
 			default: return unreachable(view);

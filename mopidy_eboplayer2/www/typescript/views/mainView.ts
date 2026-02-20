@@ -33,6 +33,9 @@ export class MainView extends View {
         document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
             this.onBrowseButtonClick();
         });
+        document.getElementById("headerNowPlayingBtn")?.addEventListener("click", () => {
+            this.onNowPlayingButtonClick();
+        });
         document.getElementById("headerFavoritesBtn")?.addEventListener("click", async () => {
             await this.state.getController().gotoFavorites();
         });
@@ -125,21 +128,11 @@ export class MainView extends View {
     }
 
     private onBrowseButtonClick() {
-        let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
-        switch (browseBtn.dataset.goto) {
-            case Views.Browse:
-                this.state.getController().setView(Views.Browse);
-                break;
-            case Views.NowPlaying:
-                this.state.getController().setView(Views.NowPlaying);
-                break;
-            case Views.Album:
-                this.state.getController().setView(Views.Album);
-                break;
-            case Views.Radio:
-                this.state.getController().setView(Views.Radio);
-                break;
-        }
+        this.state.getController().setView(Views.Browse);
+    }
+
+    private onNowPlayingButtonClick() {
+        this.state.getController().setView(Views.NowPlaying);
     }
 
     async setCurrentView() {
@@ -176,6 +169,7 @@ export class MainView extends View {
         let currentView = document.getElementById(this.hashToViewId(view)) as HTMLElement;
         currentView.classList.add("shownView");
         let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
+        let nowPlayingBtn = document.getElementById("headerNowPlayingBtn") as HTMLButtonElement;
         let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
         let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
@@ -188,58 +182,48 @@ export class MainView extends View {
                 //fall through
             case Views.Browse:
                 location.hash = view;
-                browseBtn.dataset.goto = Views.NowPlaying;
-                browseBtn.title = "Now playing";
+                browseBtn.style.display = "none";
+                nowPlayingBtn.style.display = "block";
                 this.browseView.updateCompFromState(resultsDisplayMode);
                 layout.classList.add("showFullView");
                 break;
             case Views.NowPlaying:
                 location.hash = ""; //default = now playing
-                browseBtn.dataset.goto = Views.Browse;
-                browseBtn.title = "Search";
+                browseBtn.style.display = "block";
+                nowPlayingBtn.style.display = "none";
                 break;
             case Views.Album:
                 location.hash = Views.Album;
-                if(prevViewClass == "browse") { //Provide some navigation back.
-                    browseBtn.dataset.goto = Views.Browse;
-                    browseBtn.title = "Search";
-                } else {
-                    browseBtn.dataset.goto = Views.NowPlaying;
-                    browseBtn.title = "Now playing";
-                }
+                browseBtn.style.display = "block";
+                nowPlayingBtn.style.display = "block";
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.btn_states = this.getListButtonStates(view);
                 layout.classList.add("showFullView");
                 break;
             case Views.Radio:
                 location.hash = Views.Radio;
-                if(prevViewClass == "browse") { //Provide some navigation back.
-                    browseBtn.dataset.goto = Views.Browse;
-                    browseBtn.title = "Search";
-                } else {
-                    browseBtn.dataset.goto = Views.NowPlaying;
-                    browseBtn.title = "Now playing";
-                }
+                browseBtn.style.display = "block";
+                nowPlayingBtn.style.display = "block";
                 let radioComp = document.getElementById("bigRadioView") as EboBigRadioComp;
                 radioComp.btn_states = this.getListButtonStates(view);
                 layout.classList.add("showFullView");
                 break;
             case Views.Settings:
                 location.hash = Views.Settings;
-                browseBtn.dataset.goto = Views.NowPlaying;
-                browseBtn.title = "Now playing";
+                browseBtn.style.display = "block";
+                nowPlayingBtn.style.display = "block";
                 layout.classList.add("showFullView");
                 break;
             case Views.Remembered:
                 location.hash = Views.Remembered;
-                browseBtn.dataset.goto = Views.NowPlaying;
-                browseBtn.title = "Now playing";
+                browseBtn.style.display = "block";
+                nowPlayingBtn.style.display = "block";
                 layout.classList.add("showFullView");
                 break;
             case Views.Genres:
                 location.hash = Views.Genres;
-                browseBtn.dataset.goto = Views.NowPlaying;
-                browseBtn.title = "Now playing";
+                browseBtn.style.display = "block";
+                nowPlayingBtn.style.display = "block";
                 layout.classList.add("showFullView");
                 break;
             default:

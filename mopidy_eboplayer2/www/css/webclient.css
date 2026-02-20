@@ -87,23 +87,17 @@ button, input {
         overflow: scroll;
         scrollbar-width: none;
     }
-    #headerSearchBtn {
+    #headerNowPlayingBtn {
         img {
-            width: 20px;
-            height: 20px;
-            display: none;
+            width: 18px;
+            height: 18px;
+            corner-shape: squircle;
+            border-radius: 50%;
         }
     }
-
-    #headerSearchBtn[data-goto="#NowPlaying"] {
-        i {
-            display: none;
-        }
-        img {
-            display: block;
-        }
+    ul#header li {
+        margin-inline: .1rem;
     }
-
 }
 
 .flex_wrap_content {

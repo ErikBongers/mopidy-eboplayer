@@ -92,6 +92,10 @@ button {
     flex-grow: 1;
 }
 
+.flexShrink {
+    flex-shrink: 1;
+}
+
 .italic {
     font-style: italic;
 }
