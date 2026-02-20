@@ -781,12 +781,17 @@ var ExpandedFileTrackModel = class {
 var ExpandedStreamModel = class {
 	stream;
 	historyLines;
-	constructor(stream, historyLinew) {
+	controller;
+	constructor(stream, historyLinew, controller) {
 		this.stream = stream;
 		this.historyLines = historyLinew;
+		this.controller = controller;
 	}
 	get bigImageUrl() {
 		return getBaseUrl() + "/eboback/image/" + (this.stream.ref?.idMaxImage ?? "-- no expanded ref or image --");
+	}
+	isFavorite() {
+		return this.controller.isFavorite(this.stream.ref.uri);
 	}
 };
 var ExpandedAlbumModel = class {
@@ -801,6 +806,9 @@ var ExpandedAlbumModel = class {
 	get bigImageUrl() {
 		if (this.album.ref.idMaxImage) return getBaseUrl() + "/eboback/image/" + this.album.ref.idMaxImage;
 		return getDefaultImageUrl(this.album.ref.refType);
+	}
+	async isFavorite() {
+		return await this.controller.isFavorite(this.album.ref.uri);
 	}
 	async getTrackModels() {
 		let trackModels = [];
@@ -1167,6 +1175,10 @@ var Model = class extends EboEventTargetClass {
 	}
 	getFavorites = () => this.favorites;
 	setFavorites(favorites) {
+		if (favorites == null) {
+			this.favorites = null;
+			return;
+		}
 		this.favorites = new Set(favorites);
 		this.dispatchEboEvent("favoritesChanged.eboplayer", {});
 	}
@@ -1963,7 +1975,7 @@ var Controller = class extends Commands {
 					remembered: rememberStrings.includes(lineStr)
 				};
 			});
-			return new ExpandedStreamModel(track, expandedStreamLines);
+			return new ExpandedStreamModel(track, expandedStreamLines, this);
 		}
 		if (track) {
 			let uri = track?.track?.album?.uri;
@@ -2082,8 +2094,14 @@ var Controller = class extends Commands {
 	async saveAlbumGenre(albumUri, genre) {
 		await this.webProxy.setAlbumGenre(albumUri, genre);
 	}
-	toggleFavorite(uri) {
+	async toggleFavorite(uri) {
 		this.webProxy.toggleFavorite(uri);
+		this.model.setFavorites(null);
+		await this.cache.getFavorites();
+	}
+	async isFavorite(uri) {
+		if (!uri) return false;
+		return (await this.cache.getFavorites()).has(uri);
 	}
 };
 
@@ -2611,9 +2629,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 		this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
 			this.onProgramTitleChanged();
 		});
-		this.component.addEboEventListener("favoriteToggle.eboplayer", async (ev) => {
-			this.onToggleFavorite(ev.detail.uri);
-		});
 	}
 	async onCurrentOrSelectedChanged() {
 		let currentTrackUri = this.state.getModel().getCurrentTrack();
@@ -2674,9 +2689,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 	onProgramTitleChanged() {
 		this.programTitle = this.state.getModel().getCurrentProgramTitle();
 		this.setComponentData();
-	}
-	onToggleFavorite(uri) {
-		this.state.getController().toggleFavorite(uri);
 	}
 };
 
@@ -3062,6 +3074,9 @@ var MainView = class extends View {
 		addEboEventListener(layout, "genreSelected.eboplayer", (ev) => {
 			this.onGenreSelected(ev.detail.text);
 		});
+		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
+			await this.onToggleFavorite(ev.detail.uri);
+		});
 	}
 	getListButtonStates(currentView) {
 		let states = ListButtonState_AllHidden();
@@ -3256,6 +3271,9 @@ var MainView = class extends View {
 		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
 		if (!albumBeingEdited) return;
 		this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
+	}
+	async onToggleFavorite(uri) {
+		await this.state.getController().toggleFavorite(uri);
 	}
 };
 
@@ -3765,7 +3783,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	name = "";
 	extra = "";
 	img = "";
-	albumClickEvent;
 	_albumInfo = null;
 	_btn_states = ListButtonState_AllHidden();
 	static styleText = `
@@ -3841,7 +3858,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                         <h3 id="text" class="selectable"></h3>
                         <h3 class="selectable flexRow">
                             <div id="name" class="selectable flexGrow"></div>
-                            <ebo-button toggle>
+                            <ebo-button id="btnFavorite" toggle>
                                 <i slot="off" class="fa fa-heart-o"></i>
                                 <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
                             </ebo-button>
@@ -3865,12 +3882,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	constructor() {
 		super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
 		this.albumInfo = null;
-		this.albumClickEvent = new CustomEvent("albumClick", {
-			bubbles: true,
-			cancelable: false,
-			composed: true,
-			detail: "todo: tadaaa!"
-		});
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboBigAlbumComp.progressBarAttributes.includes(name)) {
@@ -3918,10 +3929,18 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		listButtonBar.btn_states = this.btn_states;
 		if (this.selected_track_uris.length > 0) listButtonBar.setAttribute("use_selected_color", "true");
 		else listButtonBar.removeAttribute("use_selected_color");
+		this.updateFavorite();
 	}
 	onActiveTrackChanged() {
 		let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view");
 		tracksComp.activeTrackUri = this.activeTrackUri;
+	}
+	updateFavorite() {
+		let btnFavorite = this.shadow.getElementById("btnFavorite");
+		if (this.albumInfo) this.albumInfo.isFavorite().then((isFavorite) => {
+			btnFavorite.toggleAttribute("pressed", isFavorite);
+		});
+		else btnFavorite.removeAttribute("pressed");
 	}
 };
 
@@ -4634,9 +4653,6 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 		shadow.getElementById("btnRemembered").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
 		});
-		shadow.getElementById("btnFavorite").addEventListener("click", (ev) => {
-			this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": this.streamInfo?.stream.ref.uri });
-		});
 	}
 	update(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
@@ -5313,6 +5329,9 @@ var AlbumView = class extends ComponentView {
 		this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
 			this.onGenreEditRequested(ev.detail);
 		});
+		this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async (ev) => {
+			await this.onFavoritesChanged();
+		});
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {
 		document.getElementById("bigAlbumView");
@@ -5368,6 +5387,9 @@ var AlbumView = class extends ComponentView {
 		location.hash = "#Genres";
 		this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri);
 		location.reload();
+	}
+	async onFavoritesChanged() {
+		await this.component.updateFavorite();
 	}
 };
 
@@ -6122,6 +6144,14 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 		} else img.style.visibility = "hidden";
 		let listButtonBar = shadow.querySelector("ebo-list-button-bar");
 		listButtonBar.btn_states = this.btn_states;
+		this.updateFavorite();
+	}
+	updateFavorite() {
+		let btnFavorite = this.shadow.getElementById("btnFavorite");
+		if (this.streamInfo) this.streamInfo.isFavorite().then((isFavorite) => {
+			btnFavorite.toggleAttribute("pressed", isFavorite);
+		});
+		else btnFavorite.removeAttribute("pressed");
 	}
 };
 
@@ -6154,6 +6184,9 @@ var RadioView = class extends ComponentView {
 		});
 		this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
 			this.onGenreEditRequested(ev.detail);
+		});
+		this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async (ev) => {
+			await this.onFavoritesChanged();
 		});
 	}
 	setStreamComponentData(streamModel) {
@@ -6199,6 +6232,9 @@ var RadioView = class extends ComponentView {
 		location.hash = "#Genres";
 		this.state.getController().localStorageProxy.saveRadioBeingEdited(detail.uri);
 		location.reload();
+	}
+	async onFavoritesChanged() {
+		this.component.updateFavorite();
 	}
 };
 

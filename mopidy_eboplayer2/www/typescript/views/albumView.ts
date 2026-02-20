@@ -61,6 +61,9 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
             this.onGenreEditRequested(ev.detail);
         });
+        this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async ev => {
+            await this.onFavoritesChanged();
+        });
     }
 
     setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
@@ -138,5 +141,9 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         location.hash = "#Genres";
         this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri as AlbumUri);
         location.reload();
+    }
+
+    private async onFavoritesChanged() {
+        await this.component.updateFavorite();
     }
 }

@@ -43,6 +43,10 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
         this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
             this.onGenreEditRequested(ev.detail);
         });
+        this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async ev => {
+            await this.onFavoritesChanged();
+        });
+
     }
 
     setStreamComponentData(streamModel: ExpandedStreamModel) {
@@ -101,5 +105,9 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
         location.hash = "#Genres";
         this.state.getController().localStorageProxy.saveRadioBeingEdited(detail.uri as StreamUri);
         location.reload();
+    }
+
+    private async onFavoritesChanged() {
+        this.component.updateFavorite();
     }
 }

@@ -1,6 +1,6 @@
 import {Model} from "../model";
 import {Commands} from "../commands";
-import models, {core, Mopidy} from "../../js/mopidy";
+import models, {Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
@@ -8,7 +8,6 @@ import {createAllRefs, ExpandedRef} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
-import Ref = models.Ref;
 
 export class CacheHandler extends Commands{
     protected model: Model;

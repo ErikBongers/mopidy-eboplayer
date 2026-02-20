@@ -164,14 +164,20 @@ export class ExpandedFileTrackModel {
 export class ExpandedStreamModel {
     stream: StreamTrackModel;
     historyLines: ExpandedHistoryLineGroup[];
+    controller: Controller;
 
-    constructor(stream: StreamTrackModel, historyLinew: ExpandedHistoryLineGroup[]) {
+    constructor(stream: StreamTrackModel, historyLinew: ExpandedHistoryLineGroup[], controller: Controller) {
         this.stream = stream;
         this.historyLines = historyLinew;
+        this.controller = controller;
     }
 
     get bigImageUrl() {
         return getBaseUrl() + "/eboback/image/" + (this.stream.ref?.idMaxImage?? "-- no expanded ref or image --");
+    }
+
+    isFavorite() {
+        return this.controller.isFavorite(this.stream.ref.uri as StreamUri);
     }
 }
 
@@ -200,6 +206,10 @@ export class ExpandedAlbumModel {
         if(this.album.ref.idMaxImage)
             return getBaseUrl() + "/eboback/image/" + this.album.ref.idMaxImage;
         return getDefaultImageUrl(this.album.ref.refType);
+    }
+
+    async isFavorite()  {
+        return await this.controller.isFavorite(this.album.ref.uri as AlbumUri);
     }
 
     async getTrackModels() {

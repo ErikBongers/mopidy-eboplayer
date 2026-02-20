@@ -27,9 +27,6 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeL
         this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
         });
-        this.component.addEboEventListener("favoriteToggle.eboplayer", async (ev) => {
-            this.onToggleFavorite(ev.detail.uri);
-        });
     }
 
     private async onCurrentOrSelectedChanged() {
@@ -100,9 +97,5 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeL
     private onProgramTitleChanged() {
         this.programTitle = this.state.getModel().getCurrentProgramTitle();
         this.setComponentData();
-    }
-
-    private onToggleFavorite(uri: AllUris) {
-        this.state.getController().toggleFavorite(uri);
     }
 }

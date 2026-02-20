@@ -1,6 +1,3 @@
-* Heart cannot be shared for full album and tracks, because...
-  > unless we put a heart next to the favored tracks
-    > but then user thinks it can be clicked...and when it's not there, you can't click!
 Radio
 -----
 > Doesn't have a dedicated view.

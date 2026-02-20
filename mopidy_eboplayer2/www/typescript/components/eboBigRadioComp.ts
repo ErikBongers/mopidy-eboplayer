@@ -188,5 +188,17 @@ export class EboBigRadioComp extends EboComponent {
         }
         let listButtonBar = shadow.querySelector("ebo-list-button-bar") as EboListButtonBar;
         listButtonBar.btn_states = this.btn_states;
+        this.updateFavorite();
+    }
+
+    updateFavorite() {
+        let btnFavorite = this.shadow.getElementById("btnFavorite") as EboButton;
+        if(this.streamInfo) {
+            this.streamInfo.isFavorite().then((isFavorite) => {
+                btnFavorite.toggleAttribute("pressed", isFavorite);
+            });
+        } else {
+            btnFavorite.removeAttribute("pressed");
+        }
     }
 }

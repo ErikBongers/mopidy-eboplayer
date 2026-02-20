@@ -350,7 +350,11 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     }
 
     getFavorites = () => this.favorites;
-    setFavorites(favorites: AllUris[]){
+    setFavorites(favorites: AllUris[] | null){
+        if(favorites == null) {
+            this.favorites = null;
+            return; //no dispatch.
+        }
         this.favorites = new Set(favorites);
         this.dispatchEboEvent("favoritesChanged.eboplayer", {})
     }

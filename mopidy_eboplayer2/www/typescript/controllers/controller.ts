@@ -335,7 +335,7 @@ export class Controller extends Commands {
                 return expandedLineGroup;
             });
             // noinspection UnnecessaryLocalVariableJS
-            return new ExpandedStreamModel(track, expandedStreamLines);
+            return new ExpandedStreamModel(track, expandedStreamLines, this);
         }
         if(track) {
             let uri = track?.track?.album?.uri;
@@ -492,7 +492,16 @@ export class Controller extends Commands {
         await this.webProxy.setAlbumGenre(albumUri, genre);
     }
 
-    toggleFavorite(uri: AllUris) {
+    async toggleFavorite(uri: AllUris) {
         let isFavorite = this.webProxy.toggleFavorite(uri);
+        this.model.setFavorites(null);
+        await this.cache.getFavorites();
+    }
+
+    async isFavorite(uri: AllUris | undefined | null) {
+        if(!uri)
+            return false;
+        let favorites = await this.cache.getFavorites();
+        return favorites.has(uri);
     }
 }

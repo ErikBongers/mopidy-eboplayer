@@ -5,6 +5,7 @@ import {GuiSource} from "../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
 import {arrayToggle} from "../global";
+import {EboButton} from "./eboButton";
 
 
 export class EboBigAlbumComp extends EboComponent {
@@ -49,7 +50,6 @@ export class EboBigAlbumComp extends EboComponent {
     private name: string = "";
     private extra: string = "";
     private img: string  = "";
-    private albumClickEvent: CustomEvent<unknown>;
     private _albumInfo: ExpandedAlbumModel | null = null;
     private _btn_states: ListButtonStates = ListButtonState_AllHidden();
 
@@ -128,7 +128,7 @@ export class EboBigAlbumComp extends EboComponent {
                         <h3 id="text" class="selectable"></h3>
                         <h3 class="selectable flexRow">
                             <div id="name" class="selectable flexGrow"></div>
-                            <ebo-button toggle>
+                            <ebo-button id="btnFavorite" toggle>
                                 <i slot="off" class="fa fa-heart-o"></i>
                                 <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
                             </ebo-button>
@@ -153,12 +153,6 @@ export class EboBigAlbumComp extends EboComponent {
     constructor() {
         super(EboBigAlbumComp.styleText, EboBigAlbumComp.htmlText);
         this.albumInfo = null;
-        this.albumClickEvent = new CustomEvent("albumClick", {
-            bubbles: true,
-            cancelable: false,
-            composed: true, //needed to 'break' out of the shadow.
-            detail: "todo: tadaaa!"
-        });
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -216,10 +210,22 @@ export class EboBigAlbumComp extends EboComponent {
             listButtonBar.setAttribute("use_selected_color", "true");
         else
             listButtonBar.removeAttribute("use_selected_color");
+        this.updateFavorite();
     }
 
     private onActiveTrackChanged() {
         let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.activeTrackUri = this.activeTrackUri;
+    }
+
+    updateFavorite() {
+        let btnFavorite = this.shadow.getElementById("btnFavorite") as EboButton;
+        if(this.albumInfo) {
+            this.albumInfo.isFavorite().then((isFavorite) => {
+                btnFavorite.toggleAttribute("pressed", isFavorite);
+            });
+        } else {
+            btnFavorite.removeAttribute("pressed");
+        }
     }
 }

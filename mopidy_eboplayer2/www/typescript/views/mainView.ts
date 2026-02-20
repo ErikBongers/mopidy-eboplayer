@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, StreamUri, TrackUri, Views} from "../modelTypes";
+import {AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, StreamUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {unreachable} from "../global";
@@ -86,6 +86,9 @@ export class MainView extends View {
 
         addEboEventListener(layout, "genreSelected.eboplayer", ev => {
             this.onGenreSelected(ev.detail.text);
+        });
+        addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
+            await this.onToggleFavorite(ev.detail.uri);
         });
     }
 
@@ -317,5 +320,9 @@ export class MainView extends View {
         if(!albumBeingEdited)
             return;
         this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
+    }
+
+    private async onToggleFavorite(uri: AllUris) {
+        await this.state.getController().toggleFavorite(uri);
     }
 }
