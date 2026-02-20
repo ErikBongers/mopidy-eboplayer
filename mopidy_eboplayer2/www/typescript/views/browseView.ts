@@ -59,6 +59,13 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     private onRefsFiltered() {
         this.component.results = this.state.getModel().getCurrentSearchResults();
         this.component.action_btn_states = this.getListButtonStates();
+        let displayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+        let effectiveDisplayMode = displayMode;
+        if(!this.component.results.refs.some(res => res.item.idMaxImage)) {
+            effectiveDisplayMode = "line";
+        }
+
+        this.component.setAttribute("display_mode", effectiveDisplayMode);
     }
 
     private getListButtonStates() {
@@ -110,7 +117,14 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
         this.component.setFocusAndSelect();
         this.component.action_btn_states = this.getListButtonStates();
-        this.component.setAttribute("display_mode", displayMode);
+
+        //todo: duplicate code: see onRefsFiltered()
+        let effectiveDisplayMode = displayMode;
+        if(!this.component.results.refs.some(res => res.item.idMaxImage)) {
+            effectiveDisplayMode = "line";
+        }
+
+        this.component.setAttribute("display_mode", effectiveDisplayMode);
     }
 
     private showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState): ListButtonStates {

@@ -5218,6 +5218,9 @@ var BrowseView = class extends ComponentView {
 	onRefsFiltered() {
 		this.component.results = this.state.getModel().getCurrentSearchResults();
 		this.component.action_btn_states = this.getListButtonStates();
+		let effectiveDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+		if (!this.component.results.refs.some((res) => res.item.idMaxImage)) effectiveDisplayMode = "line";
+		this.component.setAttribute("display_mode", effectiveDisplayMode);
 	}
 	getListButtonStates() {
 		let states = ListButtonState_AllHidden();
@@ -5257,7 +5260,9 @@ var BrowseView = class extends ComponentView {
 		this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
 		this.component.setFocusAndSelect();
 		this.component.action_btn_states = this.getListButtonStates();
-		this.component.setAttribute("display_mode", displayMode);
+		let effectiveDisplayMode = displayMode;
+		if (!this.component.results.refs.some((res) => res.item.idMaxImage)) effectiveDisplayMode = "line";
+		this.component.setAttribute("display_mode", effectiveDisplayMode);
 	}
 	showHideTrackAndAlbumButtons(states, state) {
 		states.add = state;
