@@ -1,3 +1,7 @@
+* eboback: rework favorite uri <-> item translation to use relative paths by default
+  > but also allow absolute paths
+    > if within media dir! check! otherwise the "media dir" is a useless concept.
+
 Radio
 -----
 > Doesn't have a dedicated view.

@@ -2796,7 +2796,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 			tdData.innerText = track.track.name ?? "--no name--";
 			let tdHeart = tr.appendChild(document.createElement("td"));
 			tdHeart.innerHTML = `
-                    <ebo-button toggl class="heartButton">
+                    <ebo-button toggle class="heartButton">
                         <i slot="off" class="fa fa-heart-o"></i>
                         <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>
                     </ebo-button>
