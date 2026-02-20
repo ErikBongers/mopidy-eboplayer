@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {ExpandedAlbumModel, TrackUri} from "../modelTypes";
+import {AlbumUri, ExpandedAlbumModel, TrackUri} from "../modelTypes";
 import {GuiSource} from "../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
@@ -183,6 +183,10 @@ export class EboBigAlbumComp extends EboComponent {
             wrapper.classList.add("front");
             wrapper.classList.remove("back");
         });
+        let heartButton = shadow.getElementById("btnFavorite") as EboButton;
+        heartButton.addEboEventListener("pressedChange.eboplayer", (ev) => {
+            this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": this.albumInfo?.album.ref.uri as AlbumUri});
+        });
     }
 
     override update(shadow:ShadowRoot) {
@@ -227,5 +231,7 @@ export class EboBigAlbumComp extends EboComponent {
         } else {
             btnFavorite.removeAttribute("pressed");
         }
+        let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
+        tracksComp.updateFavorites();
     }
 }

@@ -144,6 +144,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     private async onFavoritesChanged() {
-        await this.component.updateFavorite();
+        this.component.updateFavorite();
     }
 }

@@ -150,14 +150,20 @@ export const TrackNone = {type: "none"} as NoneTrackModel;
 export class ExpandedFileTrackModel {
     track: FileTrackModel;
     album: AlbumModel | null;
+    controller: Controller;
 
-    constructor(track: FileTrackModel, album: AlbumModel | null) {
+    constructor(track: FileTrackModel, album: AlbumModel | null, controller: Controller) {
         this.track = track;
         this.album = album;
+        this.controller = controller;
     }
 
     get bigImageUrl() {
         return getBaseUrl() +  "/eboback/image/" + (this.track.ref.idMaxImage);
+    }
+
+    async isFavorite() {
+        return await this.controller.isFavorite(this.track.ref.uri as TrackUri);
     }
 }
 
@@ -220,6 +226,10 @@ export class ExpandedAlbumModel {
                 trackModels.push(model as FileTrackModel);
         }
         return trackModels;
+    }
+
+    async isTrackFavorite(uri: TrackUri) {
+        return this.controller.isFavorite(uri);
     }
 
     async getGenreReplacements(): Promise<GenreReplacement[]> {

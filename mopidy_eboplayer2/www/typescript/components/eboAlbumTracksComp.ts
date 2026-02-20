@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {ExpandedAlbumModel, ExpandedStreamModel, TrackUri} from "../modelTypes";
 import {EboMenuButton} from "./eboMenuButton";
+import {EboButton} from "./eboButton";
 
 export class EboAlbumTracksComp extends EboComponent {
     get selected_track_uris(): TrackUri[] {
@@ -108,7 +109,7 @@ export class EboAlbumTracksComp extends EboComponent {
                 tdData.innerText = track.track.name?? "--no name--";
                 let tdHeart = tr.appendChild(document.createElement("td"));
                 tdHeart.innerHTML = `
-                    <ebo-button toggle>
+                    <ebo-button toggl class="heartButton">
                         <i slot="off" class="fa fa-heart-o"></i>
                         <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>
                     </ebo-button>
@@ -147,7 +148,11 @@ export class EboAlbumTracksComp extends EboComponent {
                 tr.addEventListener("click", (ev) => {
                     tr.classList.toggle("selected");
                     this.dispatchEboEvent("trackClicked.eboplayer", {uri: tr.dataset.uri as TrackUri});
-                })
+                });
+                let heartButton = tdHeart.querySelector("ebo-button.heartButton") as EboButton;
+                heartButton.addEboEventListener("pressedChange.eboplayer", (ev) => {
+                    this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": track.track.uri});
+                });
             });
         }
         this.highLightActiveTrack();
@@ -163,13 +168,14 @@ export class EboAlbumTracksComp extends EboComponent {
         }
     }
 
-    override update(shadow:ShadowRoot) {
+    override async update(shadow:ShadowRoot) {
         shadow.querySelectorAll("tr").forEach(tr => {
             if(this._selected_track_uris.includes(tr.dataset.uri as TrackUri)) {
                 tr.classList.add("selected");
             } else
                 tr.classList.remove("selected");
         });
+        await this.updateFavorites();
     }
 
     private getSelectedUris() {
@@ -178,5 +184,14 @@ export class EboAlbumTracksComp extends EboComponent {
                 return tr.dataset.uri;
             })
             .filter((uri: string) => uri != null && uri != "" && uri != undefined) as TrackUri[];
+    }
+
+    async updateFavorites(){
+        let trs = this.getShadow().querySelectorAll("#tracksTable tr") as NodeListOf<HTMLTableRowElement>;
+        for (const tr of trs) {
+            let isFavorite = await this.albumInfo?.isTrackFavorite(tr.dataset.uri as TrackUri)?? false;
+            let eboButton = tr.querySelector("ebo-button.heartButton") as EboButton;
+            eboButton.toggleAttribute("pressed", isFavorite);
+        }
     }
 }

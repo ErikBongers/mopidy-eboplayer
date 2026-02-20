@@ -770,12 +770,17 @@ const TrackNone = { type: "none" };
 var ExpandedFileTrackModel = class {
 	track;
 	album;
-	constructor(track, album) {
+	controller;
+	constructor(track, album, controller) {
 		this.track = track;
 		this.album = album;
+		this.controller = controller;
 	}
 	get bigImageUrl() {
 		return getBaseUrl() + "/eboback/image/" + this.track.ref.idMaxImage;
+	}
+	async isFavorite() {
+		return await this.controller.isFavorite(this.track.ref.uri);
 	}
 };
 var ExpandedStreamModel = class {
@@ -817,6 +822,9 @@ var ExpandedAlbumModel = class {
 			if (model) trackModels.push(model);
 		}
 		return trackModels;
+	}
+	async isTrackFavorite(uri) {
+		return this.controller.isFavorite(uri);
 	}
 	async getGenreReplacements() {
 		let trackModels = await this.getTrackModels();
@@ -1981,7 +1989,7 @@ var Controller = class extends Commands {
 			let uri = track?.track?.album?.uri;
 			let album = null;
 			if (uri) album = (await this.cache.lookupAlbumsCached([uri]))[0];
-			return new ExpandedFileTrackModel(track, album);
+			return new ExpandedFileTrackModel(track, album, this);
 		}
 		throw new Error("trackUri not found in library");
 	}
@@ -2095,7 +2103,7 @@ var Controller = class extends Commands {
 		await this.webProxy.setAlbumGenre(albumUri, genre);
 	}
 	async toggleFavorite(uri) {
-		this.webProxy.toggleFavorite(uri);
+		await this.webProxy.toggleFavorite(uri);
 		this.model.setFavorites(null);
 		await this.cache.getFavorites();
 	}
@@ -2788,7 +2796,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 			tdData.innerText = track.track.name ?? "--no name--";
 			let tdHeart = tr.appendChild(document.createElement("td"));
 			tdHeart.innerHTML = `
-                    <ebo-button toggle>
+                    <ebo-button toggl class="heartButton">
                         <i slot="off" class="fa fa-heart-o"></i>
                         <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>
                     </ebo-button>
@@ -2824,6 +2832,9 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 				tr.classList.toggle("selected");
 				this.dispatchEboEvent("trackClicked.eboplayer", { uri: tr.dataset.uri });
 			});
+			tdHeart.querySelector("ebo-button.heartButton").addEboEventListener("pressedChange.eboplayer", (ev) => {
+				this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": track.track.uri });
+			});
 		});
 		this.highLightActiveTrack();
 		this.requestUpdate();
@@ -2833,16 +2844,24 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 		let tr = this.getShadow().querySelector(`tr[data-uri="${this._activeTrackUri}"]`);
 		if (tr) tr.classList.add("current", "textGlow");
 	}
-	update(shadow) {
+	async update(shadow) {
 		shadow.querySelectorAll("tr").forEach((tr) => {
 			if (this._selected_track_uris.includes(tr.dataset.uri)) tr.classList.add("selected");
 			else tr.classList.remove("selected");
 		});
+		await this.updateFavorites();
 	}
 	getSelectedUris() {
 		return [...this.getShadow().querySelectorAll("tr.selected")].map((tr) => {
 			return tr.dataset.uri;
 		}).filter((uri) => uri != null && uri != "" && uri != void 0);
+	}
+	async updateFavorites() {
+		let trs = this.getShadow().querySelectorAll("#tracksTable tr");
+		for (const tr of trs) {
+			let isFavorite = await this.albumInfo?.isTrackFavorite(tr.dataset.uri) ?? false;
+			tr.querySelector("ebo-button.heartButton").toggleAttribute("pressed", isFavorite);
+		}
 	}
 };
 
@@ -3908,6 +3927,9 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			wrapper.classList.add("front");
 			wrapper.classList.remove("back");
 		});
+		shadow.getElementById("btnFavorite").addEboEventListener("pressedChange.eboplayer", (ev) => {
+			this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": this.albumInfo?.album.ref.uri });
+		});
 	}
 	update(shadow) {
 		["name", "extra"].forEach((attName) => {
@@ -3941,6 +3963,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			btnFavorite.toggleAttribute("pressed", isFavorite);
 		});
 		else btnFavorite.removeAttribute("pressed");
+		this.getShadow().querySelector("ebo-album-tracks-view").updateFavorites();
 	}
 };
 
@@ -5389,7 +5412,7 @@ var AlbumView = class extends ComponentView {
 		location.reload();
 	}
 	async onFavoritesChanged() {
-		await this.component.updateFavorite();
+		this.component.updateFavorite();
 	}
 };
 

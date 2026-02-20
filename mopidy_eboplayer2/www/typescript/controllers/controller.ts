@@ -344,7 +344,7 @@ export class Controller extends Commands {
                 let albums = await this.cache.lookupAlbumsCached([uri]);
                 album = albums[0];
             }
-            return new ExpandedFileTrackModel(track, album);
+            return new ExpandedFileTrackModel(track, album, this);
         }
         throw new Error("trackUri not found in library");
     }
@@ -493,7 +493,7 @@ export class Controller extends Commands {
     }
 
     async toggleFavorite(uri: AllUris) {
-        let isFavorite = this.webProxy.toggleFavorite(uri);
+        await this.webProxy.toggleFavorite(uri);
         this.model.setFavorites(null);
         await this.cache.getFavorites();
     }
