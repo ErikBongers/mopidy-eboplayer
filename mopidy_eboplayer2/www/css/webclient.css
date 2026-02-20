@@ -98,6 +98,9 @@ button, input {
     ul#header li {
         margin-inline: .1rem;
     }
+    #contentHeadline {
+        justify-self: center;
+    }
 }
 
 .flex_wrap_content {
