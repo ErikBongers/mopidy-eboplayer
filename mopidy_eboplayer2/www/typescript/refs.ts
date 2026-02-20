@@ -9,7 +9,7 @@ export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "rad
 export interface ExpandedRef { //todo: make generic over AllUris and subtypes.
     refType: RefType,
     name: string,
-    uri: string,
+    uri: string, //todo: make AllUris.
     lastModified: number | null,
     idMaxImage: number | null,
     idMinImage: number | null

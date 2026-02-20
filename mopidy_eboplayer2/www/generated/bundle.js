@@ -1928,6 +1928,7 @@ var Controller = class extends Commands {
 				newBrowseFilter.artist = true;
 				newBrowseFilter.album = true;
 				newBrowseFilter.track = true;
+				newBrowseFilter.radio = true;
 				break;
 		}
 		await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
@@ -2110,6 +2111,17 @@ var Controller = class extends Commands {
 	async isFavorite(uri) {
 		if (!uri) return false;
 		return (await this.cache.getFavorites()).has(uri);
+	}
+	async gotoFavorites() {
+		let favoritesName = "Favorites";
+		let allRefs = await this.cache.getAllRefsCached();
+		console.log(allRefs);
+		let favoritesRef = allRefs.playlists.find((res) => res.item.name == favoritesName);
+		console.log(favoritesRef);
+		if (!favoritesRef) return;
+		await this.clearBreadCrumbs();
+		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
+		this.setView(Views.Browse);
 	}
 };
 
@@ -3042,6 +3054,9 @@ var MainView = class extends View {
 		this.radioView.bind();
 		document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
 			this.onBrowseButtonClick();
+		});
+		document.getElementById("headerFavoritesBtn")?.addEventListener("click", async () => {
+			await this.state.getController().gotoFavorites();
 		});
 		document.getElementById("settingsBtn")?.addEventListener("click", async () => {
 			await this.onSettingsButtonClick();

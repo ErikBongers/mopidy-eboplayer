@@ -1,40 +1,12 @@
+* Create a browse shortcut for favorites.
+
 * eboback: rework favorite uri <-> item translation to use relative paths by default
+  > relative path to...
+    1. playlist file.
+      > .wpf files use this method, with even back tracking with dot-dot paths.
+    2. media dir, if 1. does not match.
   > but also allow absolute paths
     > if within media dir! check! otherwise the "media dir" is a useless concept.
-
-Radio
------
-> Doesn't have a dedicated view.
-  > if it fills fullscreen, what should it show?
-  > obviousliy it's history.
-    > but that looks A LOT like Now Playing...
-      > Not with the buttons "Show remembered only" and "Favorite"
-
-* Browse: click on radio/stream should open details!
-  > model.
-  > model.view needs to change to...radio?
-
-* Favorites: see storage.py WIP
-
-* Add menu to timeline items.
-  > a heart to add it to Favorites.
-
-* For now, allow to add a stream to a playlist (Favorites).
-  > save the URL of the stream
-    > just like with files, this implies that the full definition can be found elsewhere (in the track table)
-
-
-* How to add an album to a playlist?
-  > is a URI avoidable?
-    > perhaps the directory of the album?
-      > Yeah...that would already allow for directories containing tracks of multiple albums.
-
-* Create add_to_favorites action
-  > takes a uri
-  > server saves uri to playlist.items
-    > if "Favorites" does not exist yet, the playlist is created.
-    > the item could currently be a file or a stream.
-      > to add: albums,....
 
 * After scan, cache should be completely invalid on webserver(s).
   > how?

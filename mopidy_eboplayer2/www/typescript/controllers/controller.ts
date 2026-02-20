@@ -269,6 +269,7 @@ export class Controller extends Commands {
                 newBrowseFilter.artist = true;
                 newBrowseFilter.album = true;
                 newBrowseFilter.track = true;
+                newBrowseFilter.radio = true;
                 break;
         }
         await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
@@ -503,5 +504,18 @@ export class Controller extends Commands {
             return false;
         let favorites = await this.cache.getFavorites();
         return favorites.has(uri);
+    }
+
+    async gotoFavorites() {
+        let favoritesName = "Favorites"; //todo: get from settings.
+        let allRefs = await this.cache.getAllRefsCached();
+        console.log(allRefs);
+        let favoritesRef = allRefs.playlists.find(res => res.item.name == favoritesName);
+        console.log(favoritesRef);
+        if(!favoritesRef)
+            return;
+        await this.clearBreadCrumbs();
+        await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri as AllUris, "playlist", false);
+        this.setView(Views.Browse);
     }
 }

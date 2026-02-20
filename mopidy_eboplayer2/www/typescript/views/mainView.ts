@@ -33,6 +33,9 @@ export class MainView extends View {
         document.getElementById("headerSearchBtn")?.addEventListener("click", () => {
             this.onBrowseButtonClick();
         });
+        document.getElementById("headerFavoritesBtn")?.addEventListener("click", async () => {
+            await this.state.getController().gotoFavorites();
+        });
         document.getElementById("settingsBtn")?.addEventListener("click", async () => {
             await this.onSettingsButtonClick();
         });
