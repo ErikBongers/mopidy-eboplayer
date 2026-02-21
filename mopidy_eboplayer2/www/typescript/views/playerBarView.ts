@@ -123,7 +123,7 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
 
     private onButtonBarImgClicked() {
         this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
-        this.state.getController().setView(Views.NowPlaying);
+        this.state.getController().viewController.setView(Views.NowPlaying);
     }
 
     private onActiveStreamLinesChanged() {

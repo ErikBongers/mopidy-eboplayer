@@ -83,7 +83,7 @@ export class MainView extends View {
 
         let layout = document.getElementById("layout") as HTMLElement;
         addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
-            this.state.getController().setView(Views.Remembered);
+            this.state.getController().viewController.setView(Views.Remembered);
         });
 
         addEboEventListener(layout, "genreSelected.eboplayer", ev => {
@@ -128,11 +128,11 @@ export class MainView extends View {
     }
 
     private onBrowseButtonClick() {
-        this.state.getController().setView(Views.Browse);
+        this.state.getController().viewController.setView(Views.Browse);
     }
 
     private onNowPlayingButtonClick() {
-        this.state.getController().setView(Views.NowPlaying);
+        this.state.getController().viewController.setView(Views.NowPlaying);
     }
 
     async setCurrentView() {
@@ -238,14 +238,14 @@ export class MainView extends View {
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
             if(expandedTrackInfo.album?.albumInfo)
-                this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
+                this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
             else { //orphaned track (no album)
                 this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
             }
             return;
         }
         if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
-            this.state.getController().showRadio(expandedTrackInfo.stream.ref.uri as StreamUri);
+            this.state.getController().viewController.showRadio(expandedTrackInfo.stream.ref.uri as StreamUri);
         }
     }
 

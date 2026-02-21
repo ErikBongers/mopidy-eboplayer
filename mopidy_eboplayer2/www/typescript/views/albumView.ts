@@ -56,7 +56,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
             await this.state.getController().webProxy.uploadAlbumImages(ev.detail.albumUri, ev.detail.imageUrl);
         });
         this.component.addEboEventListener("browseToArtist.eboplayer", async (ev) => {
-            await this.state.getController().browseToArtist(ev.detail);
+            await this.state.getController().viewController.browseToArtist(ev.detail);
         });
         this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
             this.onGenreEditRequested(ev.detail);

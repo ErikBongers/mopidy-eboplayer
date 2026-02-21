@@ -10,8 +10,8 @@ import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {View} from "../views/view";
-import {RefArgs} from "../events";
 import {CacheHandler} from "./cacheHandler";
+import {ViewController} from "./viewController";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
@@ -31,7 +31,7 @@ class Controller extends Commands {
     private eboWsBackCtrl: JsonRpcController;
     protected player: PlayController;
     cache: CacheHandler;
-    lastViewed: LastViewed | null = null;
+    viewController: ViewController;
 
     constructor(model: Model, mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController, cache: CacheHandler) {
         super(mopidy);
@@ -43,6 +43,7 @@ class Controller extends Commands {
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWsFrontCtrl = eboWsFrontCtrl;
         this.eboWsBackCtrl = eboWsBackCtrl;
+        this.viewController = new ViewController(model, mopidy, this);
     }
 
     async getInitialData(views: View[])  {
@@ -67,12 +68,7 @@ class Controller extends Commands {
             this.model.setConnectionState(ConnectionState.Online);
             await this.getInitialData(views);
             this.model.setHistory(await this.webProxy.fetchHistory());
-            if(this.lastViewed) {
-                if(this.lastViewed.view == Views.Album) {
-                    this.gotoAlbum(this.lastViewed.uri as AlbumUri);
-                    this.lastViewed = null;
-                }
-            }
+            this.viewController.setInitialView();
         });
 
         this.mopidy.on('state:offline', () => {
@@ -228,18 +224,18 @@ class Controller extends Commands {
         if(type == "track") {
             let track = await this.getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
             if(track.album?.albumInfo?.uri)
-                this.showAlbum(track.album?.albumInfo?.uri, uri as TrackUri);
+                this.viewController.showAlbum(track.album?.albumInfo?.uri, uri as TrackUri);
             //else: don't dive
             return; //don't change the breadcrumb and filter.
         }
 
         if(type == "album") {
-            this.gotoAlbum(uri as AlbumUri);
+            this.viewController.gotoAlbum(uri as AlbumUri);
         }
 
         if(type  == "radio") {
             this.getExpandedTrackModel(uri as StreamUri).then(() => { //fetch before changing view, to avoid flicker.
-                this.showRadio(uri as StreamUri);
+                this.viewController.showRadio(uri as StreamUri);
             });
         }
 
@@ -284,12 +280,6 @@ class Controller extends Commands {
         await this.filterBrowseResults();
     }
 
-    gotoAlbum(uri: AlbumUri) {
-        this.getExpandedAlbumModel(uri).then(() => { //fetch before changing view, to avoid flicker.
-            this.showAlbum(uri, null);
-        });
-    }
-
     async setWhatsNewFilter() {
         await this.clearBreadCrumbs();
         let browseFilter = new BrowseFilter();
@@ -316,7 +306,7 @@ class Controller extends Commands {
             await this.filterBrowseResults();
         } else if(breadCrumb instanceof BreadCrumbRef) {
             if(isBreadCrumbForAlbum(breadCrumb)) {
-                this.showAlbum(breadCrumb.data.uri, null);
+                this.viewController.showAlbum(breadCrumb.data.uri, null);
                 return;
             }
             this.model.resetBreadCrumbsTo(id);
@@ -420,10 +410,6 @@ class Controller extends Commands {
         this.model.setCurrentRefs(await this.cache.getAllRefsCached());
     }
 
-    setView(view: Views) {
-        this.model.setView(view);
-    }
-
     async addCurrentSearchResultsToPlayer() {
         let results = this.model.getCurrentSearchResults();
         await this.player.add(results.refs.map(r => r.item.uri));
@@ -435,17 +421,6 @@ class Controller extends Commands {
 
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: RefType, sequence: number) {
         return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
-    }
-
-    showAlbum(albumUri: AlbumUri, selectedTrackUri: TrackUri | null) {
-        this.localStorageProxy.setLastViewed(Views.Album, albumUri);
-        this.model.setAlbumToView(albumUri, selectedTrackUri);
-        this.model.setView(Views.Album);
-    }
-
-    showRadio(radioUri: StreamUri) {
-        this.model.setRadioToView(radioUri);
-        this.model.setView(Views.Radio);
     }
 
     async remember(s: string) {
@@ -460,12 +435,6 @@ class Controller extends Commands {
     async deleteRemember(id: RememberId) {
         await this.webProxy.deleteRemember(id);
         this.model.setRemembers(null);
-    }
-
-    async browseToArtist(args: RefArgs) {
-        await this.clearBreadCrumbs();
-        await this.diveIntoBrowseResult(args.name, args.uri, args.type, false);
-        this.setView(Views.Browse);
     }
 
     async setRepeat(repeat: boolean) {
@@ -503,7 +472,7 @@ class Controller extends Commands {
             return;
         await this.clearBreadCrumbs();
         await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
-        this.setView(Views.Browse);
+        this.viewController.setView(Views.Browse);
     }
 
     showTempMessage(message: string, type: MessageType) {

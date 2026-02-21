@@ -128,15 +128,6 @@ function setupStuff() {
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
 
-    if(location.hash == Views.Album) {
-        let lastViewed = controller.localStorageProxy.getLastViewed();
-        if(lastViewed)
-            controller.lastViewed = lastViewed;
-        else
-            controller.setView(Views.NowPlaying);
-    }
-    else
-        controller.setView((location.hash!="" ? location.hash : Views.NowPlaying) as Views);
 
     mopidy.connect();
     eboWsFrontCtrl.connect();
