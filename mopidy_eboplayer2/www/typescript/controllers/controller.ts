@@ -319,24 +319,26 @@ export class Controller extends Commands {
         }
     }
 
+    async getExpandedStreamLines(streamUri: StreamUri) {
+        let streamLines = await this.fetchStreamLines(streamUri);
+        let remembers = await this.cache.lookupRemembersCached();
+        let rememberStrings = remembers.map(r => r.text);
+        return streamLines.map(lines => {
+            let lineStr = lines.join("\n");
+            let expandedLineGroup: ExpandedHistoryLineGroup = {
+                lines,
+                remembered: rememberStrings.includes(lineStr)
+            };
+            return expandedLineGroup;
+        });
+    }
     async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)
             return null;
         let track = await this.cache.lookupTrackCached(trackUri);
         if(track?.type == "stream") {
-            let streamLines = await this.fetchStreamLines(trackUri);
-            let remembers = await this.cache.lookupRemembersCached();
-            let rememberStrings = remembers.map(r => r.text);
-            let expandedStreamLines = streamLines.map(lines => {
-                let lineStr = lines.join("\n");
-                let expandedLineGroup: ExpandedHistoryLineGroup = {
-                    lines,
-                    remembered: rememberStrings.includes(lineStr)
-                };
-                return expandedLineGroup;
-            });
             // noinspection UnnecessaryLocalVariableJS
-            return new ExpandedStreamModel(track, expandedStreamLines, this);
+            return new ExpandedStreamModel(track, this);
         }
         if(track) {
             let uri = track?.track?.album?.uri;

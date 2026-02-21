@@ -785,11 +785,9 @@ var ExpandedFileTrackModel = class {
 };
 var ExpandedStreamModel = class {
 	stream;
-	historyLines;
 	controller;
-	constructor(stream, historyLinew, controller) {
+	constructor(stream, controller) {
 		this.stream = stream;
-		this.historyLines = historyLinew;
 		this.controller = controller;
 	}
 	get bigImageUrl() {
@@ -797,6 +795,9 @@ var ExpandedStreamModel = class {
 	}
 	isFavorite() {
 		return this.controller.isFavorite(this.stream.ref.uri);
+	}
+	getStreamLinesHistory() {
+		return this.controller.getExpandedStreamLines(this.stream.ref.uri);
 	}
 };
 var ExpandedAlbumModel = class {
@@ -1971,21 +1972,21 @@ var Controller = class extends Commands {
 			await this.filterBrowseResults();
 		}
 	}
+	async getExpandedStreamLines(streamUri) {
+		let streamLines = await this.fetchStreamLines(streamUri);
+		let rememberStrings = (await this.cache.lookupRemembersCached()).map((r) => r.text);
+		return streamLines.map((lines) => {
+			let lineStr = lines.join("\n");
+			return {
+				lines,
+				remembered: rememberStrings.includes(lineStr)
+			};
+		});
+	}
 	async getExpandedTrackModel(trackUri) {
 		if (!trackUri) return null;
 		let track = await this.cache.lookupTrackCached(trackUri);
-		if (track?.type == "stream") {
-			let streamLines = await this.fetchStreamLines(trackUri);
-			let rememberStrings = (await this.cache.lookupRemembersCached()).map((r) => r.text);
-			let expandedStreamLines = streamLines.map((lines) => {
-				let lineStr = lines.join("\n");
-				return {
-					lines,
-					remembered: rememberStrings.includes(lineStr)
-				};
-			});
-			return new ExpandedStreamModel(track, expandedStreamLines, this);
-		}
+		if (track?.type == "stream") return new ExpandedStreamModel(track, this);
 		if (track) {
 			let uri = track?.track?.album?.uri;
 			let album = null;
@@ -4676,11 +4677,11 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
 		});
 	}
-	update(shadow) {
+	async update(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
 		if (this.streamInfo) {
-			this.streamInfo.historyLines.forEach((lineGroup, index) => {
+			(await this.streamInfo.getStreamLinesHistory()).forEach((lineGroup, index) => {
 				let tr = null;
 				lineGroup.lines.forEach((line) => {
 					tr = tbody.appendChild(document.createElement("tr"));

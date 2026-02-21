@@ -169,12 +169,10 @@ export class ExpandedFileTrackModel {
 
 export class ExpandedStreamModel {
     stream: StreamTrackModel;
-    historyLines: ExpandedHistoryLineGroup[];
     controller: Controller;
 
-    constructor(stream: StreamTrackModel, historyLinew: ExpandedHistoryLineGroup[], controller: Controller) {
+    constructor(stream: StreamTrackModel, controller: Controller) {
         this.stream = stream;
-        this.historyLines = historyLinew;
         this.controller = controller;
     }
 
@@ -184,6 +182,10 @@ export class ExpandedStreamModel {
 
     isFavorite() {
         return this.controller.isFavorite(this.stream.ref.uri as StreamUri);
+    }
+
+    getStreamLinesHistory() {
+        return this.controller.getExpandedStreamLines(this.stream.ref.uri as StreamUri);
     }
 }
 

@@ -90,11 +90,11 @@ export class EboRadioHistoryComp extends EboComponent {
         });
     }
 
-    override update(shadow:ShadowRoot) {
+    override async update(shadow:ShadowRoot) {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.streamInfo) {
-            this.streamInfo.historyLines.forEach((lineGroup, index) => {
+            (await this.streamInfo.getStreamLinesHistory()).forEach((lineGroup, index) => {
                 let tr: HTMLTableRowElement | null = null;
                 lineGroup.lines.forEach(line => {
                     tr = tbody.appendChild(document.createElement("tr"));
