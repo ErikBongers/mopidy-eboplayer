@@ -120,7 +120,7 @@ export interface AlbumModel {
     type: "album";
     tracks: TrackUri[];
     albumInfo: models.Album | null;
-    ref: ExpandedRef
+    ref: ExpandedRef<AlbumUri>
 }
 
 export interface FileTrackModel {
@@ -130,14 +130,14 @@ export interface FileTrackModel {
     composer?: string;
     performer: string;
     songlenght: number;
-    ref: ExpandedRef;
+    ref: ExpandedRef<TrackUri>;
 }
 
 export interface StreamTrackModel {
     type: "stream";
     track: models.Track;
     name: string;
-    ref: ExpandedRef;
+    ref: ExpandedRef<StreamUri>;
 }
 
 export interface NoneTrackModel {

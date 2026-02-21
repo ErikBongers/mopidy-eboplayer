@@ -69,7 +69,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private albumToView: AlbumToView | null = null;
     private remembers: RememberDef[] | null = null;
     private scanStatus: string = "";
-    private allRefsMap: Map<AllUris, ExpandedRef> | null = null;
+    private allRefsMap: Map<AllUris, ExpandedRef<AllUris>> | null = null;
     private favorites: Set<AllUris> | null  = null;
     private radioToView: StreamUri | null = null;
     private streamLinesHistory:  Map<StreamUri, ExpandedHistoryLineGroup[] | null> = new Map();
@@ -129,7 +129,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
 
     setAllRefs(refs: AllRefs) {
         this.allRefs = refs;
-        this.allRefsMap = new Map<AllUris, ExpandedRef>(
+        this.allRefsMap = new Map<AllUris, ExpandedRef<AllUris>>(
             refs.allRefs
                 .map(res => [res.uri, res])
         );

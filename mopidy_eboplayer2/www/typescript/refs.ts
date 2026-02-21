@@ -1,15 +1,15 @@
 import models from "../js/mopidy";
-import {AllUris, BrowseFilter} from "./modelTypes";
+import {AllUris, BrowseFilter, GenreUri} from "./modelTypes";
 import {Controller} from "./controllers/controller";
 import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
 import {CacheHandler} from "./controllers/cacheHandler";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
-export interface ExpandedRef { //todo: make generic over AllUris and subtypes.
+export interface ExpandedRef<TUri extends AllUris> {
     refType: RefType,
     name: string,
-    uri: AllUris,
+    uri: TUri,
     lastModified: number | null,
     idMaxImage: number | null,
     idMinImage: number | null
@@ -17,10 +17,10 @@ export interface ExpandedRef { //todo: make generic over AllUris and subtypes.
 
 abstract class SearchResultParent {
     protected type: "ref" | "genreReplacement";
-    item: ExpandedRef;
+    item: ExpandedRef<AllUris>;
     weight: number;
     protected defaultImageUrl?: string;
-    protected constructor(type: "ref" | "genreReplacement", item: ExpandedRef, weight: number, defaultImageUrl?: string) {
+    protected constructor(type: "ref" | "genreReplacement", item: ExpandedRef<AllUris>, weight: number, defaultImageUrl?: string) {
         this.type = type;
         this.item = item;
         this.weight = weight;
@@ -37,7 +37,7 @@ abstract class SearchResultParent {
 
 export class RefSearchResult extends SearchResultParent {
     cache: CacheHandler;
-    constructor(item: ExpandedRef, weight: number, cache: CacheHandler, defaultImageUrl?: string) {
+    constructor(item: ExpandedRef<AllUris>, weight: number, cache: CacheHandler, defaultImageUrl?: string) {
         super("ref", item, weight, getDefaultImageUrl(item.refType, defaultImageUrl));
         this.cache = cache;
     }
@@ -46,7 +46,7 @@ export class RefSearchResult extends SearchResultParent {
 
 export class GenreSearchResult  extends SearchResultParent {
     cache: CacheHandler;
-    constructor(item: ExpandedRef, weight: number, cache: CacheHandler, imageUrl?: string) {
+    constructor(item: ExpandedRef<GenreUri>, weight: number, cache: CacheHandler, imageUrl?: string) {
         super("genreReplacement", item, weight, "images/icons/Genre.svg");
         this.cache = cache;
     }
@@ -181,7 +181,7 @@ export abstract class Refs {
         let results = refs.map(async ref => {
             let refType = SomeRefs.toRefType(ref);
             if(refType == "genre") {
-                let expandedRef: ExpandedRef = {refType: refType, name: ref.name?? '???', uri: ref.uri, lastModified: null, idMaxImage: null, idMinImage: null};
+                let expandedRef: ExpandedRef<GenreUri> = {refType: refType, name: ref.name?? '???', uri: ref.uri as GenreUri, lastModified: null, idMaxImage: null, idMinImage: null};
                 return new GenreSearchResult(expandedRef,-1, cache);
             }
             let expandedRef = refMap.get(ref.uri);
@@ -223,11 +223,11 @@ export abstract class Refs {
     }
 }
 
-export async function createAllRefs(cache: CacheHandler, allRefs: ExpandedRef[]) {
+export async function createAllRefs(cache: CacheHandler, allRefs: ExpandedRef<AllUris>[]) {
     return new AllRefs(cache, allRefs);
 }
 
-function filterRefsToResult(refs: ExpandedRef[], refType: RefType, cache: CacheHandler) {
+function filterRefsToResult(refs: ExpandedRef<AllUris>[], refType: RefType, cache: CacheHandler) {
     return refs
         .filter(ref => ref.refType == refType)
         .map(expandedRef => {
@@ -236,7 +236,7 @@ function filterRefsToResult(refs: ExpandedRef[], refType: RefType, cache: CacheH
 }
 
 export class AllRefs extends Refs {
-    allRefs: ExpandedRef[];
+    allRefs: ExpandedRef<AllUris>[];
     tracks: SearchResult[];
     albums: SearchResult[];
     artists: SearchResult[];
@@ -245,7 +245,7 @@ export class AllRefs extends Refs {
     playlists: SearchResult[];
     availableRefTypes: Set<RefType>;
 
-    constructor(cache: CacheHandler, allRefs: ExpandedRef[]) {
+    constructor(cache: CacheHandler, allRefs: ExpandedRef<AllUris>[]) {
         super();
         this.allRefs = allRefs;
         this.tracks = filterRefsToResult(allRefs, "track", cache);
@@ -255,7 +255,7 @@ export class AllRefs extends Refs {
         this.genres = allRefs
             .filter(ref => ref.refType == "genre")
             .map(expandedRef => {
-                return new GenreSearchResult(expandedRef, 0, cache);
+                return new GenreSearchResult(expandedRef as ExpandedRef<GenreUri>, 0, cache);
             });
         this.playlists = filterRefsToResult(allRefs, "playlist", cache);
 

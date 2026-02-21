@@ -4,7 +4,7 @@ import models, {Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
-import {createAllRefs, ExpandedRef} from "../refs";
+import {AllRefs, createAllRefs, ExpandedRef} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -56,7 +56,7 @@ export class CacheHandler extends Commands{
                 type: "stream",
                 track,
                 name: track.name?? "--no name--",
-                ref: allRefsMap.get(track.uri) as ExpandedRef
+                ref: allRefsMap.get(track.uri) as ExpandedRef<StreamUri>
             } satisfies StreamTrackModel;
         }
         //for now, assume it's a file track
@@ -67,7 +67,7 @@ export class CacheHandler extends Commands{
             title: track.name?? "--no name--",
             performer: "",
             songlenght: 0,
-            ref: allRefsMap.get(track.uri) as ExpandedRef
+            ref: allRefsMap.get(track.uri) as ExpandedRef<TrackUri>
         };
         //just in case...
         if (!track.name || track.name === '') {
@@ -107,7 +107,7 @@ export class CacheHandler extends Commands{
                 type: "album",
                 albumInfo: trackList[0].album?? null,
                 tracks: trackList.map(track => track.uri as TrackUri),
-                ref: allRefs.get(albumUri) as ExpandedRef //removing undefined type. Let it crash.
+                ref: allRefs.get(albumUri) as ExpandedRef<AlbumUri> //removing undefined type. Let it crash.
             }
             return albumModel;
         });
@@ -147,7 +147,7 @@ export class CacheHandler extends Commands{
 
     async getAllRefsMapCached() {
         await this.getAllRefsCached();
-        return this.model.getAllRefsMap() as Map<AllUris, ExpandedRef>; //removing NULL from type - assuming a map has been loaded.
+        return this.model.getAllRefsMap() as Map<AllUris, ExpandedRef<AllUris>>; //removing NULL from type - assuming a map has been loaded.
     }
 
     async getGenreReplacementsCached() {

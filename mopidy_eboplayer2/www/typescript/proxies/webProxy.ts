@@ -107,7 +107,7 @@ export class WebProxy {
     async fetchAllRefs() {
         let url = this.ebobackUrl(`get_all_refs`);
         let res = await fetch(url);
-        return await res.json() as ExpandedRef[];
+        return await res.json() as ExpandedRef<AllUris>[];
     }
 
     async updateAlbumData(albumUri: AlbumUri) {
