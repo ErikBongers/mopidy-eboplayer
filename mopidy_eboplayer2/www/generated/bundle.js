@@ -4712,7 +4712,14 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
                                 <button id="rememberTrack" class="roundBorder">Remember track</button>
                                 <button id="excludeLine" class="roundBorder">Exclude line</button>
                                 <button id="isProgramTitle" class="roundBorder">Line is program title</button>
-                                <button id="googleSearchBtn" class="roundBorder">Google</button>
+                                <button id="googleSearchBtn" 
+                                    class="roundBorder" 
+                                    style="padding-inline-start: .7rem;">
+                                    <img src="images/icons/Google_Favicon_2025.svg" 
+                                        alt="Search" 
+                                        style="height: .6rem; width: .6rem; position: relative; top: .15rem;margin-right: .1rem;">
+                                    Search
+                                </button>
                             </div>
                         </ebo-menu-button>`;
 					td2.querySelector("#rememberTrack")?.addEventListener("click", (ev) => {
@@ -5529,7 +5536,14 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
                     <div class="flexColumn">
                         <button id="deleteRememberedBtn" class="roundBorder">Delete</button>
                         <button id="deleteAllRememberedBtn" class="roundBorder">Delete all</button>
-                        <button id="googleRememberedBtn" class="roundBorder">Google</button>
+                        <button id="googleRememberedBtn" 
+                            class="roundBorder" 
+                            style="padding-inline-start: .7rem;">
+                            <img src="images/icons/Google_Favicon_2025.svg" 
+                                alt="Search" 
+                                style="height: .8rem; width: .8rem; position: relative; top: .15rem;margin-right: .1rem;">
+                            Search
+                        </button>
                     </div>
                 </ebo-menu-button>`;
 			td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {

@@ -73,7 +73,14 @@ export class EboRememberedComp extends EboComponent {
                     <div class="flexColumn">
                         <button id="deleteRememberedBtn" class="roundBorder">Delete</button>
                         <button id="deleteAllRememberedBtn" class="roundBorder">Delete all</button>
-                        <button id="googleRememberedBtn" class="roundBorder">Google</button>
+                        <button id="googleRememberedBtn" 
+                            class="roundBorder" 
+                            style="padding-inline-start: .7rem;">
+                            <img src="images/icons/Google_Favicon_2025.svg" 
+                                alt="Search" 
+                                style="height: .8rem; width: .8rem; position: relative; top: .15rem;margin-right: .1rem;">
+                            Search
+                        </button>
                     </div>
                 </ebo-menu-button>`;
             td2.querySelector("#deleteRememberedBtn")?.addEventListener("click", (ev) => {
