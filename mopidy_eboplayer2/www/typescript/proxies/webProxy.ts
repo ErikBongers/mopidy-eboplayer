@@ -156,6 +156,8 @@ export class WebProxy {
     }
 
     async getFavoritesPlaylistName(): Promise<string> {
-        return "Favorites"; //todo: get from server.
+        let url = this.ebobackUrl(`get_favorites_playlist_name`);
+        let res = await fetch(url);
+        return await res.text();
     }
 }

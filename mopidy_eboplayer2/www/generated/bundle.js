@@ -1783,7 +1783,8 @@ var WebProxy = class {
 		return await (await fetch(url)).json();
 	}
 	async getFavoritesPlaylistName() {
-		return "Favorites";
+		let url = this.ebobackUrl(`get_favorites_playlist_name`);
+		return await (await fetch(url)).text();
 	}
 };
 
