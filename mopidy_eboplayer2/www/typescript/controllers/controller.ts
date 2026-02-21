@@ -415,7 +415,7 @@ export class Controller extends Commands {
 
     async addCurrentSearchResultsToPlayer() {
         let results = this.model.getCurrentSearchResults();
-        await this.player.add(results.refs.map(r => r.item.uri as AllUris));
+        await this.player.add(results.refs.map(r => r.item.uri));
     }
 
     async createPlaylist(name: string) {
@@ -490,7 +490,7 @@ export class Controller extends Commands {
         if(!favoritesRef)
             return;
         await this.clearBreadCrumbs();
-        await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri as AllUris, "playlist", false);
+        await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
         this.setView(Views.Browse);
     }
 

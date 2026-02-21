@@ -131,7 +131,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         this.allRefs = refs;
         this.allRefsMap = new Map<AllUris, ExpandedRef>(
             refs.allRefs
-                .map(res => [res.uri as AllUris, res])
+                .map(res => [res.uri, res])
         );
     }
 

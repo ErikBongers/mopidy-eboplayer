@@ -162,7 +162,7 @@ export class ExpandedFileTrackModel {
     }
 
     async isFavorite() {
-        return await this.controller.isFavorite(this.track.ref.uri as TrackUri);
+        return await this.controller.isFavorite(this.track.ref.uri);
     }
 }
 
@@ -216,7 +216,7 @@ export class ExpandedAlbumModel {
     }
 
     async isFavorite()  {
-        return await this.controller.isFavorite(this.album.ref.uri as AlbumUri);
+        return await this.controller.isFavorite(this.album.ref.uri);
     }
 
     async getTrackModels() {
