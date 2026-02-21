@@ -5312,9 +5312,8 @@ var BrowseView = class extends ComponentView {
 	onRefsFiltered() {
 		this.component.results = this.state.getModel().getCurrentSearchResults();
 		this.component.action_btn_states = this.getListButtonStates();
-		let effectiveDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
-		if (!this.component.results.refs.some((res) => res.item.idMaxImage)) effectiveDisplayMode = "line";
-		this.component.setAttribute("display_mode", effectiveDisplayMode);
+		let displayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+		this.setEffectiveDisplayMode(displayMode);
 	}
 	getListButtonStates() {
 		let states = ListButtonState_AllHidden();
@@ -5347,13 +5346,13 @@ var BrowseView = class extends ComponentView {
 	}
 	updateCompFromState(displayMode) {
 		this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
-		this.component.results = this.state.getModel()?.getCurrentSearchResults() ?? {
-			refs: [],
-			availableRefTypes: /* @__PURE__ */ new Set()
-		};
-		this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
+		this.component.results = this.state.getModel().getCurrentSearchResults();
+		this.component.breadCrumbs = this.state.getModel().getBreadCrumbs();
 		this.component.setFocusAndSelect();
 		this.component.action_btn_states = this.getListButtonStates();
+		this.setEffectiveDisplayMode(displayMode);
+	}
+	setEffectiveDisplayMode(displayMode) {
 		let effectiveDisplayMode = displayMode;
 		if (!this.component.results.refs.some((res) => res.item.idMaxImage)) effectiveDisplayMode = "line";
 		this.component.setAttribute("display_mode", effectiveDisplayMode);

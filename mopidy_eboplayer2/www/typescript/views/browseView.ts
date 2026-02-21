@@ -60,12 +60,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.component.results = this.state.getModel().getCurrentSearchResults();
         this.component.action_btn_states = this.getListButtonStates();
         let displayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
-        let effectiveDisplayMode = displayMode;
-        if(!this.component.results.refs.some(res => res.item.idMaxImage)) {
-            effectiveDisplayMode = "line";
-        }
-
-        this.component.setAttribute("display_mode", effectiveDisplayMode);
+        this.setEffectiveDisplayMode(displayMode);
     }
 
     private getListButtonStates() {
@@ -118,9 +113,12 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.component.setFocusAndSelect();
         this.component.action_btn_states = this.getListButtonStates();
 
-        //todo: duplicate code: see onRefsFiltered()
+        this.setEffectiveDisplayMode(displayMode);
+    }
+
+    private setEffectiveDisplayMode(displayMode: "line" | "icon") {
         let effectiveDisplayMode = displayMode;
-        if(!this.component.results.refs.some(res => res.item.idMaxImage)) {
+        if (!this.component.results.refs.some(res => res.item.idMaxImage)) {
             effectiveDisplayMode = "line";
         }
 
