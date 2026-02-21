@@ -1,7 +1,7 @@
 import models, {Branded} from "../js/mopidy";
 import {BreadCrumb} from "./breadCrumb";
 import {ExpandedRef} from "./refs";
-import {Controller} from "./controllers/controller";
+import Controller from "./controllers/controller";
 import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
 import Image = models.Image;
@@ -394,3 +394,8 @@ export interface HistoryLineDef {
 }
 
 export type PlaybackUserOptions = "justPlay" | "repeat" | "repeatSingle" | "single";
+
+export interface LastViewed {
+    view: Views,
+    uri: AllUris | null
+}

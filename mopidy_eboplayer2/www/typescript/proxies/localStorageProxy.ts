@@ -1,6 +1,6 @@
 import {BrowseFilterBreadCrumbStack, Model} from "../model";
 import {jsonParse} from "../functionsvars";
-import {AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, StreamUri} from "../modelTypes";
+import {AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, LastViewed, StreamUri, Views} from "../modelTypes";
 import models from "../../js/mopidy";
 import Ref = models.Ref;
 import {DisplayMode} from "../components/eboListItemComp";
@@ -92,5 +92,16 @@ export class LocalStorageProxy {
 
     getLineOrIconPreference() {
         return (localStorage.getItem("lineOrIconPreference") ?? "line") as DisplayMode;
+    }
+
+    setLastViewed(view: Views, uri: AllUris) {
+        let lastViewed = {view, uri} satisfies LastViewed;
+        localStorage.setItem("lastViewed", JSON.stringify(lastViewed));
+    }
+    getLastViewed() {
+        let lastViewed =  localStorage.getItem("lastViewed");
+        if(!lastViewed)
+            return null;
+        return JSON.parse(lastViewed) as LastViewed;
     }
 }

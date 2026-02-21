@@ -5,7 +5,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
 import {createAllRefs, Refs, RefType, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, isBreadCrumbForAlbum, MessageType, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, isBreadCrumbForAlbum, LastViewed, MessageType, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -22,7 +22,7 @@ export const LIBRARY_PROTOCOL = "eboback:";
 //The controller updates the model and has functions called by the views.
 //The controller does not update the views directly.
 //The controller should not listen to model events, to avoid circular updates (dead loops).
-export class Controller extends Commands {
+class Controller extends Commands {
     protected model: Model;
     public mopidyProxy: MopidyProxy;
     public webProxy: WebProxy;
@@ -31,6 +31,7 @@ export class Controller extends Commands {
     private eboWsBackCtrl: JsonRpcController;
     protected player: PlayController;
     cache: CacheHandler;
+    lastViewed: LastViewed | null = null;
 
     constructor(model: Model, mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController, cache: CacheHandler) {
         super(mopidy);
@@ -66,6 +67,12 @@ export class Controller extends Commands {
             this.model.setConnectionState(ConnectionState.Online);
             await this.getInitialData(views);
             this.model.setHistory(await this.webProxy.fetchHistory());
+            if(this.lastViewed) {
+                if(this.lastViewed.view == Views.Album) {
+                    this.gotoAlbum(this.lastViewed.uri as AlbumUri);
+                    this.lastViewed = null;
+                }
+            }
         });
 
         this.mopidy.on('state:offline', () => {
@@ -227,9 +234,7 @@ export class Controller extends Commands {
         }
 
         if(type == "album") {
-            this.getExpandedAlbumModel(uri as AlbumUri).then(() => { //fetch before changing view, to avoid flicker.
-                this.showAlbum(uri as AlbumUri, null);
-            });
+            this.gotoAlbum(uri as AlbumUri);
         }
 
         if(type  == "radio") {
@@ -277,6 +282,12 @@ export class Controller extends Commands {
 
         await this.fetchRefsForCurrentBreadCrumbs()
         await this.filterBrowseResults();
+    }
+
+    gotoAlbum(uri: AlbumUri) {
+        this.getExpandedAlbumModel(uri).then(() => { //fetch before changing view, to avoid flicker.
+            this.showAlbum(uri, null);
+        });
     }
 
     async setWhatsNewFilter() {
@@ -427,6 +438,7 @@ export class Controller extends Commands {
     }
 
     showAlbum(albumUri: AlbumUri, selectedTrackUri: TrackUri | null) {
+        this.localStorageProxy.setLastViewed(Views.Album, albumUri);
         this.model.setAlbumToView(albumUri, selectedTrackUri);
         this.model.setView(Views.Album);
     }
@@ -498,3 +510,5 @@ export class Controller extends Commands {
         this.model.setTempMessage({message, type});
     }
 }
+
+export default Controller

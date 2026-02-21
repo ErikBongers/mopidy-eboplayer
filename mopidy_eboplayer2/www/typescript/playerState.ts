@@ -1,6 +1,6 @@
 import {Mopidy} from "../js/mopidy";
 import {ReadOnlyModel} from "./model";
-import {Controller} from "./controllers/controller";
+import Controller from "./controllers/controller";
 import {DeepReadonly} from "./modelTypes";
 import {PlayController} from "./controllers/playController";
 import {CacheHandler} from "./controllers/cacheHandler";

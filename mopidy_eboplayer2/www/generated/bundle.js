@@ -1640,6 +1640,18 @@ var LocalStorageProxy = class {
 	getLineOrIconPreference() {
 		return localStorage.getItem("lineOrIconPreference") ?? "line";
 	}
+	setLastViewed(view, uri) {
+		let lastViewed = {
+			view,
+			uri
+		};
+		localStorage.setItem("lastViewed", JSON.stringify(lastViewed));
+	}
+	getLastViewed() {
+		let lastViewed = localStorage.getItem("lastViewed");
+		if (!lastViewed) return null;
+		return JSON.parse(lastViewed);
+	}
 };
 
 //#endregion
@@ -1779,6 +1791,7 @@ var Controller = class extends Commands {
 	eboWsBackCtrl;
 	player;
 	cache;
+	lastViewed = null;
 	constructor(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopdyProxy, player, cache) {
 		super(mopidy);
 		this.cache = cache;
@@ -1811,6 +1824,12 @@ var Controller = class extends Commands {
 			this.model.setConnectionState(ConnectionState.Online);
 			await this.getInitialData(views);
 			this.model.setHistory(await this.webProxy.fetchHistory());
+			if (this.lastViewed) {
+				if (this.lastViewed.view == Views.Album) {
+					this.gotoAlbum(this.lastViewed.uri);
+					this.lastViewed = null;
+				}
+			}
 		});
 		this.mopidy.on("state:offline", () => {
 			this.model.setConnectionState(ConnectionState.Offline);
@@ -1922,9 +1941,7 @@ var Controller = class extends Commands {
 			if (track.album?.albumInfo?.uri) this.showAlbum(track.album?.albumInfo?.uri, uri);
 			return;
 		}
-		if (type == "album") this.getExpandedAlbumModel(uri).then(() => {
-			this.showAlbum(uri, null);
-		});
+		if (type == "album") this.gotoAlbum(uri);
 		if (type == "radio") this.getExpandedTrackModel(uri).then(() => {
 			this.showRadio(uri);
 		});
@@ -1966,6 +1983,11 @@ var Controller = class extends Commands {
 		await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 		await this.fetchRefsForCurrentBreadCrumbs();
 		await this.filterBrowseResults();
+	}
+	gotoAlbum(uri) {
+		this.getExpandedAlbumModel(uri).then(() => {
+			this.showAlbum(uri, null);
+		});
 	}
 	async setWhatsNewFilter() {
 		await this.clearBreadCrumbs();
@@ -2080,6 +2102,7 @@ var Controller = class extends Commands {
 		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
 	}
 	showAlbum(albumUri, selectedTrackUri) {
+		this.localStorageProxy.setLastViewed(Views.Album, albumUri);
 		this.model.setAlbumToView(albumUri, selectedTrackUri);
 		this.model.setView(Views.Album);
 	}
@@ -2139,6 +2162,7 @@ var Controller = class extends Commands {
 		});
 	}
 };
+var controller_default = Controller;
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/playerBarView.ts
@@ -6703,7 +6727,7 @@ function setupStuff() {
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);
 	let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
-	let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
+	let controller = new controller_default(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
 	let state = new State(mopidy, model, controller, player, cacheHandler);
 	let browseView = new BrowseView(state, document.getElementById("browseView"));
 	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));
@@ -6726,8 +6750,11 @@ function setupStuff() {
 	];
 	views.forEach((v) => v.bindRecursive());
 	controller.initialize(views);
-	if (location.hash == Views.Album) controller.setView(Views.NowPlaying);
-	else controller.setView(location.hash != "" ? location.hash : Views.NowPlaying);
+	if (location.hash == Views.Album) {
+		let lastViewed = controller.localStorageProxy.getLastViewed();
+		if (lastViewed) controller.lastViewed = lastViewed;
+		else controller.setView(Views.NowPlaying);
+	} else controller.setView(location.hash != "" ? location.hash : Views.NowPlaying);
 	mopidy.connect();
 	eboWsFrontCtrl.connect();
 	eboWsBackCtrl.connect();

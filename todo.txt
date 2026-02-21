@@ -1,3 +1,7 @@
+* Refresh #Album or other view
+  > get from url, containing the uri or...
+  > get from local storage.
+
 * eboback: rework favorite uri <-> item translation to use relative paths by default
   > relative path to...
     1. playlist file.

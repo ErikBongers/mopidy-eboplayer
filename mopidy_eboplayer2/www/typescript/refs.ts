@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllUris, BrowseFilter, GenreUri} from "./modelTypes";
-import {Controller} from "./controllers/controller";
+import Controller from "./controllers/controller";
 import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
 import {CacheHandler} from "./controllers/cacheHandler";
