@@ -25,7 +25,6 @@ class Storage:
             os.makedirs(self.storage_dir)
 
     def get_all_titles(self):
-        logger.info(f"streamTitlesFile: {self.streamTitlesFile}")
         if self.streamTitlesFile == "":
             return []
 
@@ -110,7 +109,6 @@ class Storage:
             json.dump(state, f)
 
     def switch_stream_uri(self, uri):
-        logger.info(f"switch_stream_uri: {uri}")
         if uri == "":
             return
         if not uri.startswith("eboback:stream:"):
@@ -126,5 +124,4 @@ class Storage:
         self.streamTitlesFile = self.streamTitlesFile.replace("http://", "")
         self.streamTitlesFile = url_to_filename(self.streamTitlesFile)
         self.streamTitlesFile = self.storage_dir + "/" + self.streamTitlesFile + ".txt"
-        logger.info(self.streamTitlesFile)
         Path(self.streamTitlesFile, exist_ok=True).touch()
