@@ -28,6 +28,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         self.core.mixer.set_volume(volume)
 
     def track_playback_started(self, tl_track):
+        logger.info("TRACK STARTED")
         self.current_track_uri = tl_track.track.uri
         self.storage.switch_stream_uri(self.current_track_uri)
         if self.current_track_uri.startswith("eboback:stream:"):
@@ -82,5 +83,6 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         #     self.on_track_ended()
 
     def on_track_ended(self):
+        logger.info("TRACK ENDED")
         self.current_track_uri = ""
         self.storage.switch_stream_uri(self.current_track_uri)

@@ -25,8 +25,11 @@ class Storage:
             os.makedirs(self.storage_dir)
 
     def get_all_titles(self):
-        lines = []
         logger.info(f"streamTitlesFile: {self.streamTitlesFile}")
+        if self.streamTitlesFile == "":
+            return []
+
+        lines = []
         with open(self.streamTitlesFile, 'rb+') as file:
             lines = tail(file, 100)
         return lines
@@ -107,6 +110,7 @@ class Storage:
             json.dump(state, f)
 
     def switch_stream_uri(self, uri):
+        logger.info(f"switch_stream_uri: {uri}")
         if self.current_track_uri == "":
             return
         if not self.current_track_uri.startswith("eboback:stream:"):
