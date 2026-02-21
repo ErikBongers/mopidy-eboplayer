@@ -79,7 +79,7 @@ class Controller extends Commands {
             this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
         });
 
-        this.mopidy.on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: try to link `name` argument to `data` type automatically.
+        this.mopidy.on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
