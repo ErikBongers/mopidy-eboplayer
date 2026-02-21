@@ -44,8 +44,9 @@ export class ViewController extends Commands {
                 break;
             default:
                 this.setView((location.hash!="" ? location.hash : Views.NowPlaying) as Views);
-                break;
+                return;
         }
+        this.setView(Views.NowPlaying);
     }
 
     gotoAlbum(uri: AlbumUri) {
