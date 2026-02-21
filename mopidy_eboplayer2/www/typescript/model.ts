@@ -73,6 +73,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private favorites: Set<AllUris> | null  = null;
     private radioToView: StreamUri | null = null;
     private streamLinesHistory:  Map<StreamUri, ExpandedHistoryLineGroup[] | null> = new Map();
+    private favoritesPlaylistName: string | null = null;
 
     constructor() {
         super();
@@ -391,4 +392,10 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         this.streamLinesHistory.set(streamUri, history);
         this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", {"uri": streamUri});
     }
+
+    setFavoritesPlaylistName(name: string | null) {
+        this.favoritesPlaylistName = name;
+        //no dispatch needed.
+    }
+    getFavoritesPlaylistName = () => this.favoritesPlaylistName;
 }

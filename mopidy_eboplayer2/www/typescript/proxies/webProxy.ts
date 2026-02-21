@@ -154,4 +154,8 @@ export class WebProxy {
         let res = await fetch(url);
         return await res.json();
     }
+
+    async getFavoritesPlaylistName(): Promise<string> {
+        return "Favorites"; //todo: get from server.
+    }
 }

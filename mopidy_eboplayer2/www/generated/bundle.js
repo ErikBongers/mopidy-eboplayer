@@ -969,6 +969,7 @@ var Model = class extends EboEventTargetClass {
 	favorites = null;
 	radioToView = null;
 	streamLinesHistory = /* @__PURE__ */ new Map();
+	favoritesPlaylistName = null;
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -1221,6 +1222,10 @@ var Model = class extends EboEventTargetClass {
 		this.streamLinesHistory.set(streamUri, history);
 		this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", { "uri": streamUri });
 	}
+	setFavoritesPlaylistName(name) {
+		this.favoritesPlaylistName = name;
+	}
+	getFavoritesPlaylistName = () => this.favoritesPlaylistName;
 };
 
 //#endregion
@@ -1777,6 +1782,9 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_favorite_uris`);
 		return await (await fetch(url)).json();
 	}
+	async getFavoritesPlaylistName() {
+		return "Favorites";
+	}
 };
 
 //#endregion
@@ -2185,7 +2193,7 @@ var Controller = class extends Commands {
 		return (await this.cache.getFavorites()).has(uri);
 	}
 	async gotoFavorites() {
-		let favoritesName = "Favorites";
+		let favoritesName = await this.cache.getFavoritePlaylistName();
 		let allRefs = await this.cache.getAllRefsCached();
 		console.log(allRefs);
 		let favoritesRef = allRefs.playlists.find((res) => res.item.name == favoritesName);
@@ -5801,6 +5809,12 @@ var CacheHandler = class extends Commands {
 			return grouped;
 		}
 		return stream_lines.reduce(groupLines, new Array([])).filter((lineGroup) => lineGroup.length);
+	}
+	async getFavoritePlaylistName() {
+		if (this.model.getFavoritesPlaylistName()) return this.model.getFavoritesPlaylistName();
+		let name = await this.webProxy.getFavoritesPlaylistName();
+		this.model.setFavoritesPlaylistName(name);
+		return name;
 	}
 };
 

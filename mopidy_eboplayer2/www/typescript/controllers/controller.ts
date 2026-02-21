@@ -463,7 +463,7 @@ class Controller extends Commands {
     }
 
     async gotoFavorites() {
-        let favoritesName = "Favorites"; //todo: get from settings.
+        let favoritesName = await this.cache.getFavoritePlaylistName();
         let allRefs = await this.cache.getAllRefsCached();
         console.log(allRefs);
         let favoritesRef = allRefs.playlists.find(res => res.item.name == favoritesName);

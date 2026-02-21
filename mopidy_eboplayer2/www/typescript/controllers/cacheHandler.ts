@@ -220,4 +220,12 @@ export class CacheHandler extends Commands{
             .reduce<string[][]>(groupLines, new Array([]))
             .filter(lineGroup => lineGroup.length); // remove empty groups.
     }
+
+    async getFavoritePlaylistName() {
+        if(this.model.getFavoritesPlaylistName())
+            return this.model.getFavoritesPlaylistName() as string;
+        let name = await this.webProxy.getFavoritesPlaylistName();
+        this.model.setFavoritesPlaylistName(name);
+        return name;
+    }
 }
