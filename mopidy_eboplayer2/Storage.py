@@ -111,9 +111,9 @@ class Storage:
 
     def switch_stream_uri(self, uri):
         logger.info(f"switch_stream_uri: {uri}")
-        if self.current_track_uri == "":
+        if uri == "":
             return
-        if not self.current_track_uri.startswith("eboback:stream:"):
+        if not uri.startswith("eboback:stream:"):
             return
 
         self.add_empty_title()
