@@ -77,7 +77,7 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeL
                 position = "60"; //todo: just a test
                 button = "true";
                 imageUrl = this.track.bigImageUrl;
-                let artists = this.track.track.track.artists.map(a => a.name).join(", ");
+                let artists = this.track.track.track.artists?.map(a => a.name).join(", ") ?? "";
                 let composers = this.track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
                 if (artists)
                     info += "<br>" + artists;

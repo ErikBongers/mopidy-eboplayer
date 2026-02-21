@@ -18,7 +18,7 @@ export interface EboEventHandlersEventMap {
     "browseToArtist.eboplayer"                  : RefArgs,
     "buttonBarAlbumImgClicked.eboplayer"        : VoidArgs,
     "changingVolume.eboplayer"                  : VolumeEventArgs,
-    "connectionChanged.eboplayer"               : VoidArgs, //todo: never received?
+    "connectionChanged.eboplayer"               : VoidArgs,
     "currentImageSet.eboplayer"                 : VoidArgs, //todo: never received?
     "currentRefsLoaded.eboplayer"               : VoidArgs,
     "currentTrackChanged.eboplayer"             : VoidArgs,
@@ -39,6 +39,7 @@ export interface EboEventHandlersEventMap {
     "streamLinesHistoryChanged.eboplayer"       : UriArgs,
     "longPress.eboplayer"                       : VoidArgs,
     "messageChanged.eboplayer"                  : VoidArgs,
+    "tempMessageChanged.eboplayer"              : VoidArgs,
     "modelBrowseFilterChanged.eboplayer"        : VoidArgs,
     "newPlaylistClicked.eboplayer"              : GuiSourceArgs,
     "optionSelected.eboplayer"                  : OptionArgs,

@@ -937,6 +937,10 @@ var Model = class extends EboEventTargetClass {
 		type: MessageType.None,
 		message: ""
 	};
+	tempMessage = {
+		type: MessageType.None,
+		message: ""
+	};
 	playbackMode = {
 		repeat: false,
 		random: false,
@@ -1076,6 +1080,19 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("messageChanged.eboplayer", {});
 	}
 	getCurrentMessage = () => this.currentMessage;
+	setTempMessage(message) {
+		this.tempMessage = message;
+		this.dispatchEboEvent("tempMessageChanged.eboplayer", {});
+		window.setTimeout(() => this.clearTempMessage(), 3 * 1e3);
+	}
+	getTempMessage = () => this.tempMessage;
+	clearTempMessage() {
+		this.tempMessage = {
+			type: MessageType.None,
+			message: ""
+		};
+		this.dispatchEboEvent("tempMessageChanged.eboplayer", {});
+	}
 	clearMessage() {
 		this.setMessage({
 			type: MessageType.None,
@@ -1243,9 +1260,14 @@ var HeaderView = class extends View {
 		this.state.getModel().addEboEventListener("messageChanged.eboplayer", () => {
 			this.onMessageChanged();
 		});
+		this.state.getModel().addEboEventListener("tempMessageChanged.eboplayer", () => {
+			this.onMessageChanged();
+		});
 	}
 	onMessageChanged() {
 		let msg = this.state.getModel().getCurrentMessage();
+		let tempMsg = this.state.getModel().getTempMessage();
+		if (tempMsg.type != MessageType.None) msg = tempMsg;
 		let headerSpan = document.getElementById("contentHeadline");
 		headerSpan.innerText = msg.message;
 		switch (msg.type) {
@@ -2110,6 +2132,12 @@ var Controller = class extends Commands {
 		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
 		this.setView(Views.Browse);
 	}
+	showTempMessage(message, type) {
+		this.model.setTempMessage({
+			message,
+			type
+		});
+	}
 };
 
 //#endregion
@@ -2680,7 +2708,7 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 			position = "60";
 			button = "true";
 			imageUrl = this.track.bigImageUrl;
-			let artists = this.track.track.track.artists.map((a) => a.name).join(", ");
+			let artists = this.track.track.track.artists?.map((a) => a.name).join(", ") ?? "";
 			let composers = this.track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
 			if (artists) info += "<br>" + artists;
 			if (composers) info += "<br>" + composers;
@@ -3068,7 +3096,7 @@ var MainView = class extends View {
 		});
 		let timelineDetailsView = document.getElementById("timelineDetails");
 		timelineDetailsView.addEboEventListener("bigTimelineImageClicked.eboplayer", async () => {
-			await this.onBigTimelineImgClick();
+			await this.onTimelineBigImgClick();
 		});
 		timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
 			timelineDetailsView.setAttribute("show_back", "false");
@@ -3218,13 +3246,14 @@ var MainView = class extends View {
 			default: return unreachable(view);
 		}
 	}
-	async onBigTimelineImgClick() {
+	async onTimelineBigImgClick() {
 		let selectedTrack = this.state.getModel().getSelectedTrack();
 		if (!selectedTrack) return;
 		let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
 		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
 			if (expandedTrackInfo.album?.albumInfo) this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
+			else this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
 			return;
 		}
 		if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) this.state.getController().showRadio(expandedTrackInfo.stream.ref.uri);

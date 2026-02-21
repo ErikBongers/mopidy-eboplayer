@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -34,7 +34,11 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     selectedTrack: TrackUri | StreamUri | null = null;
     volume: number;
     connectionState: ConnectionState = ConnectionState.Offline;
-    currentMessage: Message = {
+    private currentMessage: Message = {
+        type: MessageType.None,
+        message: ""
+    };
+    private tempMessage: Message = {
         type: MessageType.None,
         message: ""
     };
@@ -223,6 +227,20 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     }
 
     getCurrentMessage = () => this.currentMessage;
+
+    setTempMessage(message: Message) {
+        this.tempMessage = message;
+        this.dispatchEboEvent("tempMessageChanged.eboplayer", {});
+        window.setTimeout(() => this.clearTempMessage(), 3*1000);
+    }
+    getTempMessage = () => this.tempMessage;
+    clearTempMessage() {
+        this.tempMessage = {
+            type: MessageType.None,
+            message: ""
+        };
+        this.dispatchEboEvent("tempMessageChanged.eboplayer", {});
+    }
 
     clearMessage() {
         this.setMessage( { type: MessageType.None, message: ""});

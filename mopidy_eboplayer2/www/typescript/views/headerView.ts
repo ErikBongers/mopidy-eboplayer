@@ -6,10 +6,16 @@ export class HeaderView extends View {
         this.state.getModel().addEboEventListener("messageChanged.eboplayer", () => {
             this.onMessageChanged();
         });
+        this.state.getModel().addEboEventListener("tempMessageChanged.eboplayer", () => {
+            this.onMessageChanged();
+        });
     }
 
     private onMessageChanged() {
         let msg = this.state.getModel().getCurrentMessage();
+        let tempMsg = this.state.getModel().getTempMessage();
+        if(tempMsg.type != MessageType.None)
+            msg = tempMsg;
         let headerSpan = document.getElementById("contentHeadline") as HTMLSpanElement;
         headerSpan.innerText = msg.message;
         switch (msg.type) {

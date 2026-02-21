@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, StreamUri, TrackUri, Views} from "../modelTypes";
+import {AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/eboBrowseComp";
 import {unreachable} from "../global";
@@ -239,7 +239,9 @@ export class MainView extends View {
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
             if(expandedTrackInfo.album?.albumInfo)
                 this.state.getController().showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
-            //todo: else?
+            else { //orphaned track (no album)
+                this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
+            }
             return;
         }
         if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
