@@ -1734,14 +1734,14 @@ var WebProxy = class {
 	async updateAlbumData(albumUri) {
 		let url = this.ebobackUrl(`update_album_data`);
 		url.searchParams.set("album_uri", albumUri);
-		await (await fetch(url)).text();
+		await fetch(url);
 		return null;
 	}
 	async uploadAlbumImages(albumUri, imageUrl) {
 		let url = this.ebobackUrl(`upload_album_image`);
 		url.searchParams.set("album_uri", albumUri);
 		url.searchParams.set("image_url", imageUrl);
-		await (await fetch(url)).text();
+		await fetch(url);
 		return null;
 	}
 	async setAlbumGenre(albumUri, genre) {

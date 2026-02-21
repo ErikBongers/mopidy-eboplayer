@@ -113,16 +113,14 @@ export class WebProxy {
     async updateAlbumData(albumUri: AlbumUri) {
         let url = this.ebobackUrl(`update_album_data`);
         url.searchParams.set("album_uri", albumUri);
-        let res = await fetch(url);
-        await res.text(); //todo: needed?
+        await fetch(url);
         return null;
     }
     async uploadAlbumImages(albumUri: AlbumUri, imageUrl: string) {
         let url = this.ebobackUrl(`upload_album_image`);
         url.searchParams.set("album_uri", albumUri);
         url.searchParams.set("image_url", imageUrl);
-        let res = await fetch(url);
-        await res.text(); //todo: needed?
+        await fetch(url);
         return null;
     }
 
@@ -131,7 +129,6 @@ export class WebProxy {
         url.searchParams.set("album_uri", albumUri);
         url.searchParams.set("genre", genre);
         await fetch(url);
-        // await res.text(); //todo: needed?
         return null;
 
     }
