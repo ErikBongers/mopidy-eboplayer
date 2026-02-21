@@ -1784,7 +1784,6 @@ var WebProxy = class {
 var ViewController = class extends Commands {
 	model;
 	localStorageProxy;
-	lastViewed = null;
 	controller;
 	constructor(model, mopidy, controller) {
 		super(mopidy);
@@ -1792,25 +1791,38 @@ var ViewController = class extends Commands {
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.controller = controller;
 	}
-	initialize() {
-		if (location.hash == Views.Album) {
-			let lastViewed = this.controller.localStorageProxy.getLastViewed();
-			if (lastViewed) this.lastViewed = lastViewed;
-			else this.setView(Views.NowPlaying);
-		} else this.setView(location.hash != "" ? location.hash : Views.NowPlaying);
-	}
 	setInitialView() {
-		this.initialize();
-		if (this.lastViewed) {
-			if (this.lastViewed.view == Views.Album) {
-				this.gotoAlbum(this.lastViewed.uri);
-				this.lastViewed = null;
-			}
+		let lastViewed = this.controller.localStorageProxy.getLastViewed();
+		if (!lastViewed) {
+			this.setView(Views.NowPlaying);
+			return;
+		}
+		switch (lastViewed.view) {
+			case Views.Album:
+				if (location.hash == Views.Album) {
+					this.gotoAlbum(lastViewed.uri);
+					return;
+				}
+				break;
+			case Views.Radio:
+				if (location.hash == Views.Radio) {
+					this.gotoRadio(lastViewed.uri);
+					return;
+				}
+				break;
+			default:
+				this.setView(location.hash != "" ? location.hash : Views.NowPlaying);
+				break;
 		}
 	}
 	gotoAlbum(uri) {
 		this.controller.getExpandedAlbumModel(uri).then(() => {
 			this.showAlbum(uri, null);
+		});
+	}
+	gotoRadio(uri) {
+		this.controller.getExpandedTrackModel(uri).then(() => {
+			this.showRadio(uri);
 		});
 	}
 	setView(view) {
@@ -1822,6 +1834,7 @@ var ViewController = class extends Commands {
 		this.model.setView(Views.Album);
 	}
 	showRadio(radioUri) {
+		this.localStorageProxy.setLastViewed(Views.Radio, radioUri);
 		this.model.setRadioToView(radioUri);
 		this.model.setView(Views.Radio);
 	}

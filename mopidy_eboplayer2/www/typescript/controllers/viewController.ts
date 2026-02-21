@@ -11,13 +11,9 @@ import {RefArgs} from "../events";
 import {CacheHandler} from "./cacheHandler";
 import Controller from "./controller";
 
-//The controller updates the model and has functions called by the views.
-//The controller does not update the views directly.
-//The controller should not listen to model events, to avoid circular updates (dead loops).
 export class ViewController extends Commands {
     protected model: Model;
     public localStorageProxy: LocalStorageProxy;
-    lastViewed: LastViewed | null = null;
     private controller: Controller;
 
     constructor(model: Model, mopidy: Mopidy, controller: Controller) {
@@ -27,31 +23,40 @@ export class ViewController extends Commands {
         this.controller = controller;
     }
 
-    initialize() {
-        if(location.hash == Views.Album) {
-            let lastViewed = this.controller.localStorageProxy.getLastViewed();
-            if(lastViewed)
-                this.lastViewed = lastViewed;
-            else
-                this.setView(Views.NowPlaying);
-        }
-        else
-            this.setView((location.hash!="" ? location.hash : Views.NowPlaying) as Views);
-    }
-
     setInitialView () {
-        this.initialize();
-        if(this.lastViewed) {
-            if(this.lastViewed.view == Views.Album) {
-                this.gotoAlbum(this.lastViewed.uri as AlbumUri);
-                this.lastViewed = null;
-            }
+        let lastViewed = this.controller.localStorageProxy.getLastViewed();
+        if (!lastViewed) {
+            this.setView(Views.NowPlaying);
+            return;
+        }
+        switch (lastViewed.view) {
+            case Views.Album:
+                if (location.hash == Views.Album) {
+                    this.gotoAlbum(lastViewed.uri as AlbumUri);
+                    return;
+                }
+                break;
+            case Views.Radio:
+                if (location.hash == Views.Radio) {
+                    this.gotoRadio(lastViewed.uri as StreamUri);
+                    return;
+                }
+                break;
+            default:
+                this.setView((location.hash!="" ? location.hash : Views.NowPlaying) as Views);
+                break;
         }
     }
 
     gotoAlbum(uri: AlbumUri) {
         this.controller.getExpandedAlbumModel(uri).then(() => { //fetch before changing view, to avoid flicker.
             this.showAlbum(uri, null);
+        });
+    }
+
+    gotoRadio(uri: StreamUri) {
+        this.controller.getExpandedTrackModel(uri).then(() => { //fetch before changing view, to avoid flicker.
+            this.showRadio(uri);
         });
     }
 
@@ -66,6 +71,7 @@ export class ViewController extends Commands {
     }
 
     showRadio(radioUri: StreamUri) {
+        this.localStorageProxy.setLastViewed(Views.Radio, radioUri);
         this.model.setRadioToView(radioUri);
         this.model.setView(Views.Radio);
     }
