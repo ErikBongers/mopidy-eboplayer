@@ -49,7 +49,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         consume: false,
         single: false
     }
-    private playState: PlayState = "unknown";
+    private playState: PlayState | null = null;
     private activeStreamLines: StreamTitles;
     private history: HistoryLineDef[];
     private trackList: TlTrack[] = [];
@@ -263,7 +263,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
 
     getVolume = () => this.volume;
 
-    getPlayState(): PlayState {
+    getPlayState(): PlayState | null {
         return this.playState;
     }
 

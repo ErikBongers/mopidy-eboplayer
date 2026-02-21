@@ -947,7 +947,7 @@ var Model = class extends EboEventTargetClass {
 		consume: false,
 		single: false
 	};
-	playState = "unknown";
+	playState = null;
 	activeStreamLines;
 	history;
 	trackList = [];
@@ -2218,7 +2218,7 @@ var PlayerBarView = class extends ComponentView {
 	}
 	async onPlaybackStateChanged() {
 		let playState = this.state.getModel().getPlayState();
-		this.component.setAttribute("play_state", playState);
+		this.component.setAttribute("play_state", playState ?? "stopped");
 		await this.updateComponent();
 	}
 	async onCurrentTrackChanged() {
@@ -6409,7 +6409,6 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
                 </table>
                 <div style="border-block-start: solid 1px rgba(255,255,255,.5); margin-block-start:.5rem; padding-block-start: .5rem;">
                     <div class="flexRow">
-                        <button id="btnUpdateStreamData" class="roundBorder iconButton"><i class="fa fa-refresh"></i></button>
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
@@ -6438,7 +6437,6 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("detailsRadioImgClicked.eboplayer", {});
 		});
-		shadow.getElementById("btnUpdateStreamData")?.addEventListener("click", () => {});
 		shadow.getElementById("btnSearchImage")?.addEventListener("click", () => {
 			let streamName = this.streamInfo?.stream.name;
 			if (!streamName) return;

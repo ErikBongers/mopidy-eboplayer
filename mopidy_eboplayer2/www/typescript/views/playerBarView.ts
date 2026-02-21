@@ -63,7 +63,7 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
 
     private async onPlaybackStateChanged() {
         let playState = this.state.getModel().getPlayState();
-        this.component.setAttribute("play_state", playState);
+        this.component.setAttribute("play_state", playState??"stopped");
         await this.updateComponent();
     }
 

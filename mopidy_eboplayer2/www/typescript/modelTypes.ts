@@ -306,7 +306,7 @@ export interface PlaybackFlags {
     single: boolean
 }
 
-export type PlayState = "stopped" | "playing" | "paused" | "unknown"; //todo: "unknown" is not a mopidy state but a local one. Split up type?
+export type PlayState = "stopped" | "playing" | "paused";
 
 export interface HistoryRef {
     __model__: string,
