@@ -1,6 +1,3 @@
-* model: store stream line history in a map per radio station.
-  > only clear the specific history if that station has started of receives a new streamLine.
-
 * eboback: rework favorite uri <-> item translation to use relative paths by default
   > relative path to...
     1. playlist file.

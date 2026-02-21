@@ -59,7 +59,7 @@ export class MainView extends View {
         });
         let timelineDetailsView = document.getElementById("timelineDetails") as EboBrowseComp;
         timelineDetailsView.addEboEventListener("bigTimelineImageClicked.eboplayer", async () => {
-            await this.onBigTimelineImgClick();
+            await this.onTimelineBigImgClick();
         });
         timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
             timelineDetailsView.setAttribute("show_back", "false");
@@ -231,7 +231,7 @@ export class MainView extends View {
         }
     }
 
-    private async onBigTimelineImgClick() {
+    private async onTimelineBigImgClick() {
         let selectedTrack = this.state.getModel().getSelectedTrack();
         if (!selectedTrack) return;
         let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);

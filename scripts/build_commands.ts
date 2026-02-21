@@ -263,7 +263,7 @@ function writeParams(writer: Writer, funcDef: FuncDef, indent: number) {
             let type = guessParamType(funcDef, param);
             if(type != "Object") {
                 if (param.default == null) {
-                    //optional = "?"; //todo: this makes way too many params optional.
+                    //optional = "?"; //this makes way too many params optional.
                 } else {
                     defaultValue = ` = ${param.default}`;
                 }
@@ -318,12 +318,12 @@ function findParamTypeInDescription(funcDef: FuncDef, param: Param): Result<stri
     }
     switch (type) {
         case "dict": return Success("Object");
-        case "list of string": return Success("string[]"); //todo: make generic
+        case "list of string": return Success("string[]");
         case "bool":
         case "True":
         case "False":
-            return Success("boolean"); //todo: make generic
-        case "int": return Success("number"); //todo: make generic
+            return Success("boolean");
+        case "int": return Success("number");
         default: return Success(type);
     }
 }
