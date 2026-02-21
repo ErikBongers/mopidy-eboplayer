@@ -113,8 +113,8 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
 
     updateCompFromState(displayMode: DisplayMode) {
         this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter(); //todo: already set in controller?
-        this.component.results = this.state.getModel()?.getCurrentSearchResults() ?? {refs: [], availableRefTypes: new Set()}; //todo: the default should be provided by getCurrentSearchResults()
-        this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
+        this.component.results = this.state.getModel().getCurrentSearchResults();
+        this.component.breadCrumbs = this.state.getModel().getBreadCrumbs();
         this.component.setFocusAndSelect();
         this.component.action_btn_states = this.getListButtonStates();
 
