@@ -185,7 +185,7 @@ export class ExpandedStreamModel {
     }
 
     getStreamLinesHistory() {
-        return this.controller.getExpandedStreamLines(this.stream.ref.uri as StreamUri);
+        return this.controller.cache.getExpandedStreamLines(this.stream.ref.uri as StreamUri);
     }
 }
 

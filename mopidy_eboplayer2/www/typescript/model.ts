@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, NoneTrackModel, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -69,6 +69,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private allRefsMap: Map<AllUris, ExpandedRef> | null = null;
     private favorites: Set<AllUris> | null  = null;
     private radioToView: StreamUri | null = null;
+    private streamLinesHistory:  ExpandedHistoryLineGroup[] | null;
 
     constructor() {
         super();
@@ -363,5 +364,15 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     setRadioToView(radioUri: StreamUri | null) {
         this.radioToView = radioUri;
         this.dispatchEboEvent("currentRadioChanged.eboplayer", {});
+    }
+
+    getStreamLinesHistory = () => this.streamLinesHistory;
+    setStreamLinesHistory(history: ExpandedHistoryLineGroup[] | null) {
+        if(history == null) {
+            this.streamLinesHistory = null;
+            return; //no dispatch.
+        }
+        this.streamLinesHistory = history;
+        this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", {});
     }
 }

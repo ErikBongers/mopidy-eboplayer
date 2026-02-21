@@ -5,7 +5,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
 import {createAllRefs, ExpandedRef} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 
@@ -185,5 +185,37 @@ export class CacheHandler extends Commands{
         let favorites = await this.webProxy.getFavorites();
         this.model.setFavorites(favorites);
         return this.model.getFavorites() as Set<AllUris>;
+    }
+
+    async getExpandedStreamLines(streamUri: StreamUri) {
+        if(this.model.getStreamLinesHistory())
+            return this.model.getStreamLinesHistory() as ExpandedHistoryLineGroup[];
+
+        let streamLines = await this.fetchStreamLines(streamUri);
+        let remembers = await this.lookupRemembersCached();
+        let rememberStrings = remembers.map(r => r.text);
+        return streamLines.map(lines => {
+            let lineStr = lines.join("\n");
+            let expandedLineGroup: ExpandedHistoryLineGroup = {
+                lines,
+                remembered: rememberStrings.includes(lineStr)
+            };
+            return expandedLineGroup;
+        });
+    }
+
+    private async fetchStreamLines(streamUri: string) {
+        let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
+        function groupLines (grouped: string[][], line: string) {
+            if(line == "---") {
+                grouped.push([]);
+                return grouped;
+            }
+            grouped[grouped.length-1].push(line);
+            return grouped;
+        }
+        return stream_lines
+            .reduce<string[][]>(groupLines, new Array([]))
+            .filter(lineGroup => lineGroup.length); // remove empty groups.
     }
 }

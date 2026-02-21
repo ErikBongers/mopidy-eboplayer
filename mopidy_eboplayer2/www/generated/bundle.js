@@ -797,7 +797,7 @@ var ExpandedStreamModel = class {
 		return this.controller.isFavorite(this.stream.ref.uri);
 	}
 	getStreamLinesHistory() {
-		return this.controller.getExpandedStreamLines(this.stream.ref.uri);
+		return this.controller.cache.getExpandedStreamLines(this.stream.ref.uri);
 	}
 };
 var ExpandedAlbumModel = class {
@@ -964,6 +964,7 @@ var Model = class extends EboEventTargetClass {
 	allRefsMap = null;
 	favorites = null;
 	radioToView = null;
+	streamLinesHistory;
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -1195,6 +1196,15 @@ var Model = class extends EboEventTargetClass {
 	setRadioToView(radioUri) {
 		this.radioToView = radioUri;
 		this.dispatchEboEvent("currentRadioChanged.eboplayer", {});
+	}
+	getStreamLinesHistory = () => this.streamLinesHistory;
+	setStreamLinesHistory(history) {
+		if (history == null) {
+			this.streamLinesHistory = null;
+			return;
+		}
+		this.streamLinesHistory = history;
+		this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", {});
 	}
 };
 
@@ -1972,17 +1982,6 @@ var Controller = class extends Commands {
 			await this.filterBrowseResults();
 		}
 	}
-	async getExpandedStreamLines(streamUri) {
-		let streamLines = await this.fetchStreamLines(streamUri);
-		let rememberStrings = (await this.cache.lookupRemembersCached()).map((r) => r.text);
-		return streamLines.map((lines) => {
-			let lineStr = lines.join("\n");
-			return {
-				lines,
-				remembered: rememberStrings.includes(lineStr)
-			};
-		});
-	}
 	async getExpandedTrackModel(trackUri) {
 		if (!trackUri) return null;
 		let track = await this.cache.lookupTrackCached(trackUri);
@@ -2045,18 +2044,6 @@ var Controller = class extends Commands {
 	}
 	async setAllRefsAsCurrent() {
 		this.model.setCurrentRefs(await this.cache.getAllRefsCached());
-	}
-	async fetchStreamLines(streamUri) {
-		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
-		function groupLines(grouped, line) {
-			if (line == "---") {
-				grouped.push([]);
-				return grouped;
-			}
-			grouped[grouped.length - 1].push(line);
-			return grouped;
-		}
-		return stream_lines.reduce(groupLines, new Array([])).filter((lineGroup) => lineGroup.length);
 	}
 	setView(view) {
 		this.model.setView(view);
@@ -5676,6 +5663,30 @@ var CacheHandler = class extends Commands {
 		let favorites = await this.webProxy.getFavorites();
 		this.model.setFavorites(favorites);
 		return this.model.getFavorites();
+	}
+	async getExpandedStreamLines(streamUri) {
+		if (this.model.getStreamLinesHistory()) return this.model.getStreamLinesHistory();
+		let streamLines = await this.fetchStreamLines(streamUri);
+		let rememberStrings = (await this.lookupRemembersCached()).map((r) => r.text);
+		return streamLines.map((lines) => {
+			let lineStr = lines.join("\n");
+			return {
+				lines,
+				remembered: rememberStrings.includes(lineStr)
+			};
+		});
+	}
+	async fetchStreamLines(streamUri) {
+		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
+		function groupLines(grouped, line) {
+			if (line == "---") {
+				grouped.push([]);
+				return grouped;
+			}
+			grouped[grouped.length - 1].push(line);
+			return grouped;
+		}
+		return stream_lines.reduce(groupLines, new Array([])).filter((lineGroup) => lineGroup.length);
 	}
 };
 

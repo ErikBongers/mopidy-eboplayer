@@ -319,19 +319,6 @@ export class Controller extends Commands {
         }
     }
 
-    async getExpandedStreamLines(streamUri: StreamUri) {
-        let streamLines = await this.fetchStreamLines(streamUri);
-        let remembers = await this.cache.lookupRemembersCached();
-        let rememberStrings = remembers.map(r => r.text);
-        return streamLines.map(lines => {
-            let lineStr = lines.join("\n");
-            let expandedLineGroup: ExpandedHistoryLineGroup = {
-                lines,
-                remembered: rememberStrings.includes(lineStr)
-            };
-            return expandedLineGroup;
-        });
-    }
     async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)
             return null;
@@ -419,21 +406,6 @@ export class Controller extends Commands {
 
     private async setAllRefsAsCurrent() {
         this.model.setCurrentRefs(await this.cache.getAllRefsCached());
-    }
-
-    async fetchStreamLines(streamUri: string) {
-        let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
-        function groupLines (grouped: string[][], line: string) {
-            if(line == "---") {
-                grouped.push([]);
-                return grouped;
-            }
-            grouped[grouped.length-1].push(line);
-            return grouped;
-        }
-        return stream_lines
-            .reduce<string[][]>(groupLines, new Array([]))
-            .filter(lineGroup => lineGroup.length); // remove empty groups.
     }
 
     setView(view: Views) {
