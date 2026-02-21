@@ -64,10 +64,6 @@ export class MainView extends View {
         timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
             timelineDetailsView.setAttribute("show_back", "false");
         });
-        timelineDetailsView.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
-            await this.rememberStreamLines(ev.detail.lines);
-        });
-
         this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
             settingsComp.scanStatus = ev.detail.text;
@@ -96,6 +92,10 @@ export class MainView extends View {
         addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
             await this.onToggleFavorite(ev.detail.uri);
         });
+        addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
+            await this.rememberStreamLines(ev.detail.lines);
+        });
+
     }
 
     private getListButtonStates(currentView: Views) {

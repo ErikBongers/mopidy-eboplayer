@@ -3101,9 +3101,6 @@ var MainView = class extends View {
 		timelineDetailsView.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
 			timelineDetailsView.setAttribute("show_back", "false");
 		});
-		timelineDetailsView.addEboEventListener("rememberStreamLines.eboplayer", async (ev) => {
-			await this.rememberStreamLines(ev.detail.lines);
-		});
 		this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
 			let settingsComp$1 = document.getElementById("settingsView");
 			settingsComp$1.scanStatus = ev.detail.text;
@@ -3128,6 +3125,9 @@ var MainView = class extends View {
 		});
 		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
 			await this.onToggleFavorite(ev.detail.uri);
+		});
+		addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
+			await this.rememberStreamLines(ev.detail.lines);
 		});
 	}
 	getListButtonStates(currentView) {
@@ -4712,6 +4712,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
                                 <button id="rememberTrack" class="roundBorder">Remember track</button>
                                 <button id="excludeLine" class="roundBorder">Exclude line</button>
                                 <button id="isProgramTitle" class="roundBorder">Line is program title</button>
+                                <button id="googleSearchBtn" class="roundBorder">Google</button>
                             </div>
                         </ebo-menu-button>`;
 					td2.querySelector("#rememberTrack")?.addEventListener("click", (ev) => {
@@ -4719,6 +4720,12 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 					});
 					td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {});
 					td2.querySelector("#isProgramTitle")?.addEventListener("click", (ev) => {});
+					td2.querySelector("#googleSearchBtn")?.addEventListener("click", (ev) => {
+						let dataIndex = parseInt(ev.currentTarget.closest("tr")?.dataset.index ?? "-1");
+						if (dataIndex == -1) return;
+						let firstTdText = [...tbody.querySelectorAll(`tr[data-index="${dataIndex}"]`)].map((tr$1) => tr$1.cells[0].textContent ?? "").join(" ");
+						searchOnGoogle(firstTdText);
+					});
 				});
 				if (tr != null) tr.classList.add("lastLine");
 			});

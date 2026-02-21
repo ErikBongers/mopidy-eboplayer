@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {ExpandedStreamModel, StreamUri} from "../modelTypes";
 import {EboButton} from "./eboButton";
-import {console_yellow} from "../global";
+import {console_yellow, searchOnGoogle} from "../global";
 
 export class EboRadioHistoryComp extends EboComponent {
     static override readonly tagName=  "ebo-radio-history";
@@ -94,7 +94,8 @@ export class EboRadioHistoryComp extends EboComponent {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";
         if(this.streamInfo) {
-            (await this.streamInfo.getStreamLinesHistory()).forEach((lineGroup, index) => {
+            let lineGroups = await this.streamInfo.getStreamLinesHistory();
+            lineGroups.forEach((lineGroup, index) => {
                 let tr: HTMLTableRowElement | null = null;
                 lineGroup.lines.forEach(line => {
                     tr = tbody.appendChild(document.createElement("tr"));
@@ -111,6 +112,7 @@ export class EboRadioHistoryComp extends EboComponent {
                                 <button id="rememberTrack" class="roundBorder">Remember track</button>
                                 <button id="excludeLine" class="roundBorder">Exclude line</button>
                                 <button id="isProgramTitle" class="roundBorder">Line is program title</button>
+                                <button id="googleSearchBtn" class="roundBorder">Google</button>
                             </div>
                         </ebo-menu-button>`;
                     td2.querySelector("#rememberTrack")?.addEventListener("click", (ev) => {
@@ -119,6 +121,14 @@ export class EboRadioHistoryComp extends EboComponent {
                     td2.querySelector("#excludeLine")?.addEventListener("click", (ev) => {
                     });
                     td2.querySelector("#isProgramTitle")?.addEventListener("click", (ev) => {
+                    });
+                    td2.querySelector("#googleSearchBtn")?.addEventListener("click", (ev) => {
+                        let dataIndex = parseInt((ev.currentTarget as HTMLElement).closest("tr")?.dataset.index??"-1");
+                        if(dataIndex == -1)
+                            return;
+                        let rows = tbody.querySelectorAll<HTMLTableRowElement>(`tr[data-index="${dataIndex}"]`);
+                        let firstTdText = [...rows].map(tr => tr.cells[0].textContent ?? "").join(" ");
+                        searchOnGoogle(firstTdText);
                     });
                 });
                 if(tr != null)
