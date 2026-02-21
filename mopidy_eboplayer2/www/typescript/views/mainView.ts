@@ -266,7 +266,7 @@ export class MainView extends View {
                         let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
                         this.albumView.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
                     }
-                    //todo: else?
+                    //else: album view will not be shown when track has no album...but are we sure?
                 }
                 else if(track?.type == "stream") {
                     let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
