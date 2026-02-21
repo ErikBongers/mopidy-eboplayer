@@ -57,7 +57,6 @@ export class EboRadioDetails extends EboComponent {
                 </table>
                 <div style="border-block-start: solid 1px rgba(255,255,255,.5); margin-block-start:.5rem; padding-block-start: .5rem;">
                     <div class="flexRow">
-                        <button id="btnUpdateStreamData" class="roundBorder iconButton"><i class="fa fa-refresh"></i></button>
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
@@ -89,10 +88,6 @@ export class EboRadioDetails extends EboComponent {
         let imageTag = shadow.getElementById("smallImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {
             this.dispatchEboEvent("detailsRadioImgClicked.eboplayer", {});
-        });
-        let btnUpdateStreamData = shadow.getElementById("btnUpdateStreamData");
-        btnUpdateStreamData?.addEventListener("click", () => {
-            //todo ?
         });
         let btnSearchImage = shadow.getElementById("btnSearchImage");
         btnSearchImage?.addEventListener("click", () => {

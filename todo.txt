@@ -1,6 +1,8 @@
-* Refresh #Album or other view
-  > get from url, containing the uri or...
-  > get from local storage.
+* Simplify Now Playing?
+  > Hide timeline?
+    > Playbar drop down menu:
+    > separate from repeat icon
+    > add item to show timeline.
 
 * eboback: rework favorite uri <-> item translation to use relative paths by default
   > relative path to...
