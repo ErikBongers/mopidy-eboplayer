@@ -19,7 +19,6 @@ export interface EboEventHandlersEventMap {
     "buttonBarAlbumImgClicked.eboplayer"        : VoidArgs,
     "changingVolume.eboplayer"                  : VolumeEventArgs,
     "connectionChanged.eboplayer"               : VoidArgs,
-    "currentImageSet.eboplayer"                 : VoidArgs, //todo: never received?
     "currentRefsLoaded.eboplayer"               : VoidArgs,
     "currentTrackChanged.eboplayer"             : VoidArgs,
     "deleteRemember.eboplayer"                  : RemeberIdArgs,
@@ -115,7 +114,7 @@ export interface UriArgs extends EboEventArgs {
 }
 
 export interface RefArgs extends EboEventArgs {
-    name: string; //todo: use pre-existing type instead of these 3 fields?
+    name: string;
     type: RefType;
     uri: AllUris;
 }

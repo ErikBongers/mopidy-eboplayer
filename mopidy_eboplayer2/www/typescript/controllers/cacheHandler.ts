@@ -168,7 +168,7 @@ export class CacheHandler extends Commands{
             return this.model.getRemembers() as RememberDef[];
         let remembers = await this.webProxy.fetchRemembers();
         this.model.setRemembers(remembers);
-        return this.model.getRemembers() as RememberDef[]; //todo: this triggers the rememberedChanged event, which may already be a reason for this chached function call. Maybe this is ok...
+        return this.model.getRemembers() as RememberDef[];
     }
 
     async getGenreDefs() {
