@@ -115,6 +115,8 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     }
 
     private async onStreamLineHistoryChanged() {
+        //only update if the currenltyy viewed stream history has changed.
+        this.component.requestUpdate();
         //don't do anything yet. The component shouldn't constantly refresh (yet)
         //causes of this message:
         // - change of current trac

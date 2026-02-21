@@ -6279,7 +6279,9 @@ var RadioView = class extends ComponentView {
 	async onFavoritesChanged() {
 		this.component.updateFavorite();
 	}
-	async onStreamLineHistoryChanged() {}
+	async onStreamLineHistoryChanged() {
+		this.component.requestUpdate();
+	}
 };
 
 //#endregion
