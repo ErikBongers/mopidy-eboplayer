@@ -63,13 +63,12 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private currentRefs: Refs | null = null;
     private view: Views = Views.NowPlaying;
     private albumToView: AlbumToView | null = null;
-    // private albumCache: Set<LibraryItem> = new Map();
     private remembers: RememberDef[] | null = null;
     private scanStatus: string = "";
     private allRefsMap: Map<AllUris, ExpandedRef> | null = null;
     private favorites: Set<AllUris> | null  = null;
     private radioToView: StreamUri | null = null;
-    private streamLinesHistory:  ExpandedHistoryLineGroup[] | null;
+    private streamLinesHistory:  Map<StreamUri, ExpandedHistoryLineGroup[] | null> = new Map();
 
     constructor() {
         super();
@@ -366,13 +365,12 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("currentRadioChanged.eboplayer", {});
     }
 
-    getStreamLinesHistory = () => this.streamLinesHistory;
-    setStreamLinesHistory(history: ExpandedHistoryLineGroup[] | null) {
-        if(history == null) {
-            this.streamLinesHistory = null;
-            return; //no dispatch.
-        }
-        this.streamLinesHistory = history;
-        this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", {});
+    getStreamLinesHistory(streamUri: StreamUri) {
+        return this.streamLinesHistory.get(streamUri) ?? null;
+    }
+
+    setStreamLinesHistory(streamUri: StreamUri, history: ExpandedHistoryLineGroup[] | null) {
+        this.streamLinesHistory.set(streamUri, history);
+        this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", {"uri": streamUri});
     }
 }

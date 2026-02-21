@@ -188,13 +188,13 @@ export class CacheHandler extends Commands{
     }
 
     async getExpandedStreamLines(streamUri: StreamUri) {
-        if(this.model.getStreamLinesHistory())
-            return this.model.getStreamLinesHistory() as ExpandedHistoryLineGroup[];
+        if(this.model.getStreamLinesHistory(streamUri))
+            return this.model.getStreamLinesHistory(streamUri) as ExpandedHistoryLineGroup[];
 
         let streamLines = await this.fetchStreamLines(streamUri);
         let remembers = await this.lookupRemembersCached();
         let rememberStrings = remembers.map(r => r.text);
-        return streamLines.map(lines => {
+        let history = streamLines.map(lines => {
             let lineStr = lines.join("\n");
             let expandedLineGroup: ExpandedHistoryLineGroup = {
                 lines,
@@ -202,6 +202,8 @@ export class CacheHandler extends Commands{
             };
             return expandedLineGroup;
         });
+        this.model.setStreamLinesHistory(streamUri, history);
+        return history;
     }
 
     private async fetchStreamLines(streamUri: string) {

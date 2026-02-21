@@ -964,7 +964,7 @@ var Model = class extends EboEventTargetClass {
 	allRefsMap = null;
 	favorites = null;
 	radioToView = null;
-	streamLinesHistory;
+	streamLinesHistory = /* @__PURE__ */ new Map();
 	constructor() {
 		super();
 		this.initializeBreadcrumbStack();
@@ -1197,14 +1197,12 @@ var Model = class extends EboEventTargetClass {
 		this.radioToView = radioUri;
 		this.dispatchEboEvent("currentRadioChanged.eboplayer", {});
 	}
-	getStreamLinesHistory = () => this.streamLinesHistory;
-	setStreamLinesHistory(history) {
-		if (history == null) {
-			this.streamLinesHistory = null;
-			return;
-		}
-		this.streamLinesHistory = history;
-		this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", {});
+	getStreamLinesHistory(streamUri) {
+		return this.streamLinesHistory.get(streamUri) ?? null;
+	}
+	setStreamLinesHistory(streamUri, history) {
+		this.streamLinesHistory.set(streamUri, history);
+		this.dispatchEboEvent("streamLinesHistoryChanged.eboplayer", { "uri": streamUri });
 	}
 };
 
@@ -1837,6 +1835,7 @@ var Controller = class extends Commands {
 		this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data) => {
 			let streamTitles = data.stream_titles;
 			this.model.setActiveStreamLinesHistory(streamTitles);
+			this.model.setStreamLinesHistory(streamTitles.uri, null);
 		});
 		this.eboWsFrontCtrl.on("event:programTitleChanged", (data) => {
 			this.model.setCurrentProgramTitle(data.program_title);
@@ -5665,16 +5664,18 @@ var CacheHandler = class extends Commands {
 		return this.model.getFavorites();
 	}
 	async getExpandedStreamLines(streamUri) {
-		if (this.model.getStreamLinesHistory()) return this.model.getStreamLinesHistory();
+		if (this.model.getStreamLinesHistory(streamUri)) return this.model.getStreamLinesHistory(streamUri);
 		let streamLines = await this.fetchStreamLines(streamUri);
 		let rememberStrings = (await this.lookupRemembersCached()).map((r) => r.text);
-		return streamLines.map((lines) => {
+		let history = streamLines.map((lines) => {
 			let lineStr = lines.join("\n");
 			return {
 				lines,
 				remembered: rememberStrings.includes(lineStr)
 			};
 		});
+		this.model.setStreamLinesHistory(streamUri, history);
+		return history;
 	}
 	async fetchStreamLines(streamUri) {
 		let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
@@ -6227,6 +6228,9 @@ var RadioView = class extends ComponentView {
 		this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async (ev) => {
 			await this.onFavoritesChanged();
 		});
+		this.state.getModel().addEboEventListener("streamLinesHistoryChanged.eboplayer", async (ev) => {
+			await this.onStreamLineHistoryChanged();
+		});
 	}
 	setStreamComponentData(streamModel) {
 		document.getElementById("bigRadioView");
@@ -6275,6 +6279,7 @@ var RadioView = class extends ComponentView {
 	async onFavoritesChanged() {
 		this.component.updateFavorite();
 	}
+	async onStreamLineHistoryChanged() {}
 };
 
 //#endregion

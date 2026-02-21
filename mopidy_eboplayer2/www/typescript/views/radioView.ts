@@ -46,6 +46,9 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
         this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async ev => {
             await this.onFavoritesChanged();
         });
+        this.state.getModel().addEboEventListener("streamLinesHistoryChanged.eboplayer", async ev => {
+            await this.onStreamLineHistoryChanged();
+        });
 
     }
 
@@ -109,5 +112,12 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
 
     private async onFavoritesChanged() {
         this.component.updateFavorite();
+    }
+
+    private async onStreamLineHistoryChanged() {
+        //don't do anything yet. The component shouldn't constantly refresh (yet)
+        //causes of this message:
+        // - change of current trac
+        // - new stream line
     }
 }
