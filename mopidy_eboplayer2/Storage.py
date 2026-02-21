@@ -26,6 +26,7 @@ class Storage:
 
     def get_all_titles(self):
         lines = []
+        logger.info(f"streamTitlesFile: {self.streamTitlesFile}")
         with open(self.streamTitlesFile, 'rb+') as file:
             lines = tail(file, 100)
         return lines
