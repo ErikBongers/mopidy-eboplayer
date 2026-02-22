@@ -33,6 +33,8 @@ export class EboBrowseFilterComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
 
+    hideInfoButton: boolean = false;
+
     static styleText = `
         <style>
             :host { 
@@ -82,6 +84,26 @@ export class EboBrowseFilterComp extends EboComponent {
             label {
                 font-size: .9rem;
             }
+            #showInfoBtn {
+                margin-inline-start: auto;
+                height: 1.2rem;
+                width: 1.2rem;   
+            }
+            #info {
+                margin: .5rem;
+                padding: .5rem;
+                background-color: #444;
+                border-radius: 1rem;
+                font-size: .7rem;
+                & img {
+                    width: 1.2rem;
+                    height: 1.2rem;
+                    margin-right: .5rem;
+                }
+                label {
+                    font-size: inherit;
+                }
+            }
         </style>
         `;
 
@@ -115,7 +137,25 @@ export class EboBrowseFilterComp extends EboComponent {
             <ebo-button toggle id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button toggle id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="all"> ALL </ebo-button>
-            <button> &nbsp;&nbsp;(?) </button>
+            <ebo-button id="showInfoBtn" img="images/icons/Info.svg" class="whiteIcon"></ebo-button>
+        </div>
+        <div id="info" style="display: none;">
+            <div class="flexRow">
+                <p class="flexGrow">Uee these buttons to only show</p>
+                <button class="flexShrink" id="closeInfoBtn">X</button>
+            </div>
+            <table>
+                <tr><td><img src="images/icons/Album.svg" alt="Album" class="whiteIcon"></td><td>Album</td></tr>
+                <tr><td><img src="images/icons/Track.svg" alt="Track" class="whiteIcon"></td><td>Track</td></tr>
+                <tr><td><img src="images/icons/Radio.svg" alt="Radio" class="whiteIcon"></td><td>Radio</td></tr>
+                <tr><td><img src="images/icons/Artist.svg" alt="Artist" class="whiteIcon"></td><td>Artist</td></tr>
+                <tr><td><img src="images/icons/Playlist.svg" alt="Playlist" class="whiteIcon"></td><td>Playlist</td></tr>
+                <tr><td><img src="images/icons/Genre.svg" alt="Genre" class="whiteIcon"></td><td>Genre</td></tr>
+                <tr><td>ALL</td><td>Show all</td></tr>
+            </table>
+            <p>Double click these buttons to single select them.</p>
+            <input type="checkbox" id="chkNeverShowInfoAgain" name="chkNeverShowInfoAgain">
+            <label for="chkNeverShowInfoAgain">Got it – don't show the info button again.</label>
         </div>
     </div>    
 </div>        
@@ -153,7 +193,7 @@ export class EboBrowseFilterComp extends EboComponent {
         allButton.addEventListener("click", (ev) => {
             this.onShowAllTypesButtonPress();
         });
-        shadow.querySelectorAll("ebo-button")
+        shadow.querySelectorAll("ebo-button.filterButton")
             .forEach((btn: EboButton) => {
                 btn.addEboEventListener("pressedChange.eboplayer", async (ev) => {
                     this.onFilterButtonPress(ev);
@@ -165,10 +205,31 @@ export class EboBrowseFilterComp extends EboComponent {
                     this.onFilterButtonDoubleClick(ev);
                 })
             });
+
         let selectDate = shadow.getElementById("selectDate") as HTMLSelectElement;
         selectDate.addEventListener("change", (ev: Event) => {
             this.onDateFilterChanged();
         });
+
+        let showInfoBtn = shadow.getElementById("showInfoBtn") as HTMLButtonElement;
+        showInfoBtn.addEventListener("click", (ev) => {
+            let info = shadow.getElementById("info") as HTMLElement;
+            info.style.display = info.style.display == "none" ? "block" : "none";
+        });
+
+        showInfoBtn.style.display = this.hideInfoButton ? "none" : "block";
+        let closeInfoBtn = shadow.getElementById("closeInfoBtn") as HTMLButtonElement;
+        closeInfoBtn.addEventListener("click", (ev) => {
+            let info = shadow.getElementById("info") as HTMLElement;
+            info.style.display = "none";
+        });
+
+        let chkNeverShowInfoAgain = shadow.getElementById("chkNeverShowInfoAgain") as HTMLInputElement;
+        chkNeverShowInfoAgain.addEventListener("change", (ev: Event) => {
+            showInfoBtn.style.display = chkNeverShowInfoAgain.checked ? "none" : "block";
+            this.dispatchEboEvent("hideBrowseInfoButton.eboplayer", {});
+        });
+
         this.requestUpdate();
     }
 
@@ -224,6 +285,8 @@ export class EboBrowseFilterComp extends EboComponent {
         }
         let selectDate = shadow.getElementById("selectDate") as HTMLSelectElement;
         selectDate.value = this._browseFilter.addedSince.toString();
+        let showInfoBtn = shadow.getElementById("showInfoBtn") as HTMLButtonElement;
+        showInfoBtn.style.display = this.hideInfoButton ? "none" : "block";
     }
 
     private updateFilterButton(btn: EboButton) {

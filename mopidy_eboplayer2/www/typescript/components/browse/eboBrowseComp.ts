@@ -6,12 +6,22 @@ import {unreachable} from "../../global";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "../eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
 import {DisplayMode, EboListItemComp} from "../eboListItemComp";
+import {text} from "node:stream/consumers";
 
 export class EboBrowseComp extends EboComponent {
+    get hideInfoButton(): boolean {
+        return this._hideInfoButton;
+    }
+
+    set hideInfoButton(value: boolean) {
+        this._hideInfoButton = value;
+        this.requestUpdate();
+    }
     static override readonly tagName=  "ebo-browse-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = ["display_mode"];
     currentResultHasImages: boolean = false;
+    private _hideInfoButton: boolean = false;
 
     get genreReplacements(){
         return this._genreReplacements;
@@ -210,6 +220,7 @@ export class EboBrowseComp extends EboComponent {
         lines.forEach(line => line.setAttribute("display", activeDisplayMode));
         this.classList.remove("icon", "line");
         this.classList.add(activeDisplayMode);
+        this.updateHideInfoButton();
     }
 
     setSearchInfo(text: string) {
@@ -291,7 +302,6 @@ export class EboBrowseComp extends EboComponent {
                         img="${imageUrl}"
                         image_class="${imageClass}">
                     </ebo-list-item>`;
-
         }
 
         tableWrapper.innerHTML = html;
@@ -328,4 +338,8 @@ export class EboBrowseComp extends EboComponent {
         this.dispatchEboEvent("breadCrumbClick.eboplayer", {breadcrumbId: parseInt(<string>btn.dataset.id)});
     }
 
+    private updateHideInfoButton() {
+        let eboBrowseFilter = this.getShadow().querySelector("ebo-browse-filter") as EboBrowseFilterComp;
+        eboBrowseFilter.hideInfoButton = this.hideInfoButton;
+    }
 }

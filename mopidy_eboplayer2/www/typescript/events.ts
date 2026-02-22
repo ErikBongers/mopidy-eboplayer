@@ -34,6 +34,7 @@ export interface EboEventHandlersEventMap {
     "editClicked.eboplayer"                     : GuiSourceArgs,
     "genreReplacementsChanged.eboplayer"        : VoidArgs,
     "guiBrowseFilterChanged.eboplayer"          : VoidArgs,
+    "hideBrowseInfoButton.eboplayer"            : VoidArgs,
     "historyChanged.eboplayer"                  : VoidArgs,
     "streamLinesHistoryChanged.eboplayer"       : UriArgs,
     "longPress.eboplayer"                       : VoidArgs,

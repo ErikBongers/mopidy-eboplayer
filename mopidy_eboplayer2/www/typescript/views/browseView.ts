@@ -12,6 +12,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     bind() {
+        this.component.hideInfoButton = this.state.getController().localStorageProxy.getHideBrowseInfoButton();
         this.on("guiBrowseFilterChanged.eboplayer", async () => {
             await this.onGuiBrowseFilterChanged();
         });
@@ -50,6 +51,9 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
             this.state.getController().localStorageProxy.saveLineOrIconPreference(ev.detail.mode);
         });
         this.component.setAttribute("display_mode", this.state.getController().localStorageProxy.getLineOrIconPreference());
+        this.component.addEboEventListener("hideBrowseInfoButton.eboplayer", async (ev) => {
+            this.state.getController().localStorageProxy.setHideBrowseInfoButton(true);
+        });
     }
 
     private async onGuiBrowseFilterChanged() {

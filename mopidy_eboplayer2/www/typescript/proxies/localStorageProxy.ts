@@ -104,4 +104,11 @@ export class LocalStorageProxy {
             return null;
         return JSON.parse(lastViewed) as LastViewed;
     }
+
+    setHideBrowseInfoButton(hide: boolean) {
+        localStorage.setItem("hideBrowseInfoButton", hide.toString());
+    }
+    getHideBrowseInfoButton() {
+        return localStorage.getItem("hideBrowseInfoButton") == "true";
+    }
 }

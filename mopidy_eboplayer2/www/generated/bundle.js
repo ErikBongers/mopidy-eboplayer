@@ -1657,6 +1657,12 @@ var LocalStorageProxy = class {
 		if (!lastViewed) return null;
 		return JSON.parse(lastViewed);
 	}
+	setHideBrowseInfoButton(hide) {
+		localStorage.setItem("hideBrowseInfoButton", hide.toString());
+	}
+	getHideBrowseInfoButton() {
+		return localStorage.getItem("hideBrowseInfoButton") == "true";
+	}
 };
 
 //#endregion
@@ -3388,9 +3394,17 @@ var MainView = class extends View {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/browse/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
+	get hideInfoButton() {
+		return this._hideInfoButton;
+	}
+	set hideInfoButton(value) {
+		this._hideInfoButton = value;
+		this.requestUpdate();
+	}
 	static tagName = "ebo-browse-view";
 	static observedAttributes = ["display_mode"];
 	currentResultHasImages = false;
+	_hideInfoButton = false;
 	get genreReplacements() {
 		return this._genreReplacements;
 	}
@@ -3564,6 +3578,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 		shadow.querySelectorAll("ebo-list-item").forEach((line) => line.setAttribute("display", activeDisplayMode));
 		this.classList.remove("icon", "line");
 		this.classList.add(activeDisplayMode);
+		this.updateHideInfoButton();
 	}
 	setSearchInfo(text) {
 		let searchInfo = this.getShadow().getElementById("searchInfo");
@@ -3670,6 +3685,10 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	onBreadCrumbClicked(ev) {
 		let btn = ev.currentTarget;
 		this.dispatchEboEvent("breadCrumbClick.eboplayer", { breadcrumbId: parseInt(btn.dataset.id) });
+	}
+	updateHideInfoButton() {
+		let eboBrowseFilter = this.getShadow().querySelector("ebo-browse-filter");
+		eboBrowseFilter.hideInfoButton = this.hideInfoButton;
 	}
 };
 
@@ -4864,6 +4883,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 	_browseFilter;
 	_availableRefTypes;
 	static observedAttributes = [];
+	hideInfoButton = false;
 	static styleText = `
         <style>
             :host { 
@@ -4913,6 +4933,26 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
             label {
                 font-size: .9rem;
             }
+            #showInfoBtn {
+                margin-inline-start: auto;
+                height: 1.2rem;
+                width: 1.2rem;   
+            }
+            #info {
+                margin: .5rem;
+                padding: .5rem;
+                background-color: #444;
+                border-radius: 1rem;
+                font-size: .7rem;
+                & img {
+                    width: 1.2rem;
+                    height: 1.2rem;
+                    margin-right: .5rem;
+                }
+                label {
+                    font-size: inherit;
+                }
+            }
         </style>
         `;
 	static htmlText = `
@@ -4944,7 +4984,25 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
             <ebo-button toggle id="filterPlaylist" img="images/icons/Playlist.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button toggle id="filterGenre" img="images/icons/Genre.svg" class="filterButton whiteIcon"></ebo-button>
             <ebo-button id="all"> ALL </ebo-button>
-            <button> &nbsp;&nbsp;(?) </button>
+            <ebo-button id="showInfoBtn" img="images/icons/Info.svg" class="whiteIcon"></ebo-button>
+        </div>
+        <div id="info" style="display: none;">
+            <div class="flexRow">
+                <p class="flexGrow">Uee these buttons to only show</p>
+                <button class="flexShrink" id="closeInfoBtn">X</button>
+            </div>
+            <table>
+                <tr><td><img src="images/icons/Album.svg" alt="Album" class="whiteIcon"></td><td>Album</td></tr>
+                <tr><td><img src="images/icons/Track.svg" alt="Track" class="whiteIcon"></td><td>Track</td></tr>
+                <tr><td><img src="images/icons/Radio.svg" alt="Radio" class="whiteIcon"></td><td>Radio</td></tr>
+                <tr><td><img src="images/icons/Artist.svg" alt="Artist" class="whiteIcon"></td><td>Artist</td></tr>
+                <tr><td><img src="images/icons/Playlist.svg" alt="Playlist" class="whiteIcon"></td><td>Playlist</td></tr>
+                <tr><td><img src="images/icons/Genre.svg" alt="Genre" class="whiteIcon"></td><td>Genre</td></tr>
+                <tr><td>ALL</td><td>Show all</td></tr>
+            </table>
+            <p>Double click these buttons to single select them.</p>
+            <input type="checkbox" id="chkNeverShowInfoAgain" name="chkNeverShowInfoAgain">
+            <label for="chkNeverShowInfoAgain">Got it – don't show the info button again.</label>
         </div>
     </div>    
 </div>        
@@ -4975,7 +5033,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		shadow.getElementById("all").addEventListener("click", (ev) => {
 			this.onShowAllTypesButtonPress();
 		});
-		shadow.querySelectorAll("ebo-button").forEach((btn) => {
+		shadow.querySelectorAll("ebo-button.filterButton").forEach((btn) => {
 			btn.addEboEventListener("pressedChange.eboplayer", async (ev) => {
 				this.onFilterButtonPress(ev);
 			});
@@ -4988,6 +5046,21 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		});
 		shadow.getElementById("selectDate").addEventListener("change", (ev) => {
 			this.onDateFilterChanged();
+		});
+		let showInfoBtn = shadow.getElementById("showInfoBtn");
+		showInfoBtn.addEventListener("click", (ev) => {
+			let info = shadow.getElementById("info");
+			info.style.display = info.style.display == "none" ? "block" : "none";
+		});
+		showInfoBtn.style.display = this.hideInfoButton ? "none" : "block";
+		shadow.getElementById("closeInfoBtn").addEventListener("click", (ev) => {
+			let info = shadow.getElementById("info");
+			info.style.display = "none";
+		});
+		let chkNeverShowInfoAgain = shadow.getElementById("chkNeverShowInfoAgain");
+		chkNeverShowInfoAgain.addEventListener("change", (ev) => {
+			showInfoBtn.style.display = chkNeverShowInfoAgain.checked ? "none" : "block";
+			this.dispatchEboEvent("hideBrowseInfoButton.eboplayer", {});
 		});
 		this.requestUpdate();
 	}
@@ -5031,6 +5104,8 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		else allButton.removeAttribute("disabled");
 		let selectDate = shadow.getElementById("selectDate");
 		selectDate.value = this._browseFilter.addedSince.toString();
+		let showInfoBtn = shadow.getElementById("showInfoBtn");
+		showInfoBtn.style.display = this.hideInfoButton ? "none" : "block";
 	}
 	updateFilterButton(btn) {
 		let propName = btn.id.replace("filter", "").charAt(0).toLowerCase() + btn.id.replace("filter", "").slice(1);
@@ -5277,6 +5352,7 @@ var BrowseView = class extends ComponentView {
 		super(state, component);
 	}
 	bind() {
+		this.component.hideInfoButton = this.state.getController().localStorageProxy.getHideBrowseInfoButton();
 		this.on("guiBrowseFilterChanged.eboplayer", async () => {
 			await this.onGuiBrowseFilterChanged();
 		});
@@ -5315,6 +5391,9 @@ var BrowseView = class extends ComponentView {
 			this.state.getController().localStorageProxy.saveLineOrIconPreference(ev.detail.mode);
 		});
 		this.component.setAttribute("display_mode", this.state.getController().localStorageProxy.getLineOrIconPreference());
+		this.component.addEboEventListener("hideBrowseInfoButton.eboplayer", async (ev) => {
+			this.state.getController().localStorageProxy.setHideBrowseInfoButton(true);
+		});
 	}
 	async onGuiBrowseFilterChanged() {
 		await this.state.getController().setAndSaveBrowseFilter(this.component.browseFilter);
