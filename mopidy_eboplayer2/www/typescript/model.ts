@@ -273,7 +273,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
     }
 
-    setActiveStreamLinesHistory(streamTitles: StreamTitles) {
+    setActiveStreamLines(streamTitles: StreamTitles) {
         this.activeStreamLines = streamTitles;
         this.dispatchEboEvent("activeStreamLinesChanged.eboplayer", {});
     }

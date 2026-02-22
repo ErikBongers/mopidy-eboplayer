@@ -61,6 +61,7 @@ class Controller extends Commands {
         await this.cache.getRemembersCached();
         await this.cache.getGenreDefs();
         await this.cache.getFavorites();
+        await this.updateStreamLines();
     }
 
     initialize (views: View[]) {
@@ -145,7 +146,7 @@ class Controller extends Commands {
         });
         this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
             let streamTitles: StreamTitles = data.stream_titles;
-            this.model.setActiveStreamLinesHistory(streamTitles);
+            this.model.setActiveStreamLines(streamTitles);
             this.model.setStreamLinesHistory(streamTitles.uri as StreamUri, null);
         });
         this.eboWsFrontCtrl.on("event:programTitleChanged", (data: {program_title: string}) => {
@@ -196,20 +197,20 @@ class Controller extends Commands {
 
     private async updateStreamLines() {
         if (this.model.getPlayState() != "playing") {
-            this.model.setActiveStreamLinesHistory(NoStreamTitles);
+            this.model.setActiveStreamLines(NoStreamTitles);
             return;
         }
         if (this.model.currentTrack == null) {
-            this.model.setActiveStreamLinesHistory(NoStreamTitles);
+            this.model.setActiveStreamLines(NoStreamTitles);
             return;
         }
 
         let trackModel = await this.cache.lookupTrackCached(this.model.currentTrack);
         if (trackModel?.type == "stream") {
             let lines = await this.webProxy.fetchActiveStreamLines(this.model.currentTrack as StreamUri);
-            this.model.setActiveStreamLinesHistory(lines);
+            this.model.setActiveStreamLines(lines);
         } else {
-            this.model.setActiveStreamLinesHistory(NoStreamTitles);
+            this.model.setActiveStreamLines(NoStreamTitles);
         }
     }
 

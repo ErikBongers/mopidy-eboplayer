@@ -1131,7 +1131,7 @@ var Model = class extends EboEventTargetClass {
 		this.playState = state;
 		this.dispatchEboEvent("playbackStateChanged.eboplayer", {});
 	}
-	setActiveStreamLinesHistory(streamTitles) {
+	setActiveStreamLines(streamTitles) {
 		this.activeStreamLines = streamTitles;
 		this.dispatchEboEvent("activeStreamLinesChanged.eboplayer", {});
 	}
@@ -1901,6 +1901,7 @@ var Controller = class extends Commands {
 		await this.cache.getRemembersCached();
 		await this.cache.getGenreDefs();
 		await this.cache.getFavorites();
+		await this.updateStreamLines();
 	}
 	initialize(views) {
 		this.mopidy.on("state:online", async () => {
@@ -1953,7 +1954,7 @@ var Controller = class extends Commands {
 		});
 		this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data) => {
 			let streamTitles = data.stream_titles;
-			this.model.setActiveStreamLinesHistory(streamTitles);
+			this.model.setActiveStreamLines(streamTitles);
 			this.model.setStreamLinesHistory(streamTitles.uri, null);
 		});
 		this.eboWsFrontCtrl.on("event:programTitleChanged", (data) => {
@@ -1996,17 +1997,17 @@ var Controller = class extends Commands {
 	}
 	async updateStreamLines() {
 		if (this.model.getPlayState() != "playing") {
-			this.model.setActiveStreamLinesHistory(NoStreamTitles);
+			this.model.setActiveStreamLines(NoStreamTitles);
 			return;
 		}
 		if (this.model.currentTrack == null) {
-			this.model.setActiveStreamLinesHistory(NoStreamTitles);
+			this.model.setActiveStreamLines(NoStreamTitles);
 			return;
 		}
 		if ((await this.cache.lookupTrackCached(this.model.currentTrack))?.type == "stream") {
 			let lines = await this.webProxy.fetchActiveStreamLines(this.model.currentTrack);
-			this.model.setActiveStreamLinesHistory(lines);
-		} else this.model.setActiveStreamLinesHistory(NoStreamTitles);
+			this.model.setActiveStreamLines(lines);
+		} else this.model.setActiveStreamLines(NoStreamTitles);
 	}
 	async setAndSaveBrowseFilter(filter, applyFilter = "apply") {
 		this.localStorageProxy.saveCurrentBrowseFilter(filter);
