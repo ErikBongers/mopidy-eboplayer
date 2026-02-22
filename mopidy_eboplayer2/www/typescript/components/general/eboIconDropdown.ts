@@ -1,5 +1,5 @@
-import {EboComponent} from "./EboComponent";
-import {PlaybackUserOptions} from "../modelTypes";
+import {EboComponent} from "../EboComponent";
+import {PlaybackUserOptions} from "../../modelTypes";
 
 export class EboIconDropdown extends EboComponent {
     static override readonly tagName=  "ebo-dropdown";

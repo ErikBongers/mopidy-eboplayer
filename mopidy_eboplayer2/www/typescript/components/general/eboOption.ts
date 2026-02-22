@@ -1,4 +1,4 @@
-import {EboComponent} from "./EboComponent";
+import {EboComponent} from "../EboComponent";
 
 export class EboOption extends EboComponent {
     static override readonly tagName=  "ebo-option";

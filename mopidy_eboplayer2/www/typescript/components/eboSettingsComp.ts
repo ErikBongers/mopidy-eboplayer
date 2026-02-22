@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {EboButton} from "./eboButton";
+import {EboButton} from "./general/eboButton";
 
 export class EboSettingsComp extends EboComponent {
     static override readonly tagName=  "ebo-settings-view";

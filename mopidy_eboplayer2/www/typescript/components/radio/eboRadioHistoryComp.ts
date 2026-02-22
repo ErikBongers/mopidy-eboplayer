@@ -1,7 +1,7 @@
-import {EboComponent} from "./EboComponent";
-import {ExpandedStreamModel, StreamUri} from "../modelTypes";
-import {EboButton} from "./eboButton";
-import {console_yellow, searchOnGoogle} from "../global";
+import {EboComponent} from "../EboComponent";
+import {ExpandedStreamModel, StreamUri} from "../../modelTypes";
+import {EboButton} from "../general/eboButton";
+import {console_yellow, searchOnGoogle} from "../../global";
 
 export class EboRadioHistoryComp extends EboComponent {
     static override readonly tagName=  "ebo-radio-history";
@@ -115,7 +115,7 @@ export class EboRadioHistoryComp extends EboComponent {
                                 <button id="googleSearchBtn" 
                                     class="roundBorder" 
                                     style="padding-inline-start: .7rem;">
-                                    <img src="images/icons/Google_Favicon_2025.svg" 
+                                    <img src="../../../images/icons/Google_Favicon_2025.svg" 
                                         alt="Search" 
                                         style="height: .6rem; width: .6rem; position: relative; top: .15rem;margin-right: .1rem;">
                                     Search

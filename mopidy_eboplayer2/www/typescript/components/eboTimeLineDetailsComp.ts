@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
-import {EboRadioHistoryComp} from "./eboRadioHistoryComp";
+import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 
 export class EboTimeLineDetailsComp extends EboComponent {
     static override readonly tagName=  "ebo-timeline-details";

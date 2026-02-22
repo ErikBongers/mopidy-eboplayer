@@ -4,6 +4,8 @@
     > separate from repeat icon
     > add item to show timeline.
 
+* Genre: also show artist for a genre.
+
 * eboback: rework favorite uri <-> item translation to use relative paths by default
   > relative path to...
     1. playlist file.
@@ -15,25 +17,6 @@
 * After scan, cache should be completely invalid on webserver(s).
   > how?
   > eTag should do it.
-
-* Make playlists work, in prep of "Favorites"
-  > create a get_playlist_defs action.
-  > add to playlist:
-    > don't use mopidy - it has a horrible api. (save FULL playlist only).
-    > basic playlist functions:
-      - create
-        > create playlist file in playlist folder
-        > reload playlist(s?) into db on every playlist action.
-      - add_uri
-      - delete_uri
-      - ...
-
-* Add favorites: I have to click too much to get to Klara.
-  > favorites is just a playlist.
-    > name defined in root.eboplayer.
-    > When flagging an item as a favorite, the playlist may get created if not exists.
-  > button always visible (next to search on the top left?)
-  > favorites is shown in browse.
 
 * Diving updates the UI too much.
   > how to delay messages?
@@ -50,44 +33,22 @@
     > 20 on phone, 30 or more on desktop.
   > only expand those results!!!
 
-* Add google search on as much as possible
 * See if we can get rid of bigTrackView
   > clicking on an timline item should go immediately to
     - big album
     - a stream/radio view?
       > perhaps this should stay in Playing Now?
 
-* Create a favorites view
-  - has title
-  - has a loading bar ABOVE it, that is shown when the user starts filltering and all refs are being loaded.
-    > the favorites remain visible.
-
-Favorites
-----------
-Sql view has been created:
-* create a screen
-  > in browse show favourites when empty filter.
-  > when filtering, replace it with all refs (filtered)
-  > disadvantage: user may think that filtering will happen within favorites.
-    > Show a title "Favorites" and disappear this when filtering.
-    > show favorites as big icons with very small titles?
-      > allow switching to list view?
-
-* Lazy load all refs
-  > loading all albums seems to be fast..
-  > currently all refs are fetched when browse window is showing all refs.
-    > only load all refs if browse window is actually visible
-      > perhaps load all refs in a less blocking way?
-        > priority of await?
-
 * track.artists: perhaps split into separate table if multiple artists are allowed?
 
-  > should be able to get favourites based on :
+Popular
+--------
+  > should be able to get populars based on :
     - count(uri)
     - count(uri) since a date
 
 * Empty browse filter shows most recent list.
-  > and/or favourites?
+  > and/or popular?
   > backend.py already has a play_back_started listener
     > store in database.
       > log EACH play start.
@@ -96,64 +57,13 @@ Sql view has been created:
     > limit to last n, with option to look further.
     > allow cleanup of history, full or partial (older than..., remove track/album, scheme other than eboback...)
 
-* Allow setting/changing the sole genre of a track/album
-  > Allow free typing but show a wiki-ok checkmark, and base suggestions on wiki.
-    > pref-filled list from wiki should show the items collapsed.
-    > allow list to be customized
-      > hide certain items, allowing hidden items to be revealed if wanted.
-      > already used ones, obviously at the top.
-
-
-
 * Show something while loading the whole database.
   > test in Whats new.
 
-* implement streamline buttons.
- > add "Google search" buttn.
-
 * Album view: highlight current/playing track.
-
-Playlists vs Genres
-====================
-Wiki has a list of genres. A track belongs to one genre.
-Filters per genres have no order.
-Playlists can contain unrelated tracks in a defined order.
-So, technically, you could have Classic playlist and a Classic genre.
-You could implement a classic playlist as a filter on genre, and re-arrange the tracks in the list.
-If new tracks are added to that genre, they get to the top or bottom of that playlist. Perhaps rather the top, as they are more recent and this more wanted. Also, this triggers the user to rearrange them if wanted.
-Standard sequence for a playlist track is -1 (if automatically added) and last-trackk-plus-1 if user-added.
-Scenario
---------
-A playlist based on a genre.
-A new album is added to the genre.
-Album is added genericly based on file date. Most recent ones on top.
-  > assuming all track dates for a given album are almost the same.
-Playlist has option to decide if fixed tracks come at start of end of playlist.
-At any time can use decide to make a track/album/all generic tracks fixed.
-Re-ordering per track or per album.
-Playlists can collapse based on album, artist,genre for easy re-arranging.
-Playlists can be filtered in edit mode for easy re-arranging.
-Scenario 2
------------
-Album is added. It has tracks of 2 different genres.
-  > The album has 2 genres (even if the tracks only have one genre).
-We label the album with "Gamba" and "Jordi".
-That may implicitely create a playlist and add those albums to it (not the tracks!).
-When viewing the playlists, the added albums are shown and can be expanded to tracks but grayed out.
-The expanded tracks can be "unwrapped" or some better word...?
-Any playlist can be grouped per album.
-  > this adds new lines with the album title, but grayed out.
-  > the album can be "packed" again...or better word?
-
-
-
-* Add a mute button.
 
 * Load data when list item becomes visible: https://www.youtube.com/watch?v=Jo8ABAJtMM0
 
-* Most tracks/albums have no genre
-  > allow to easily set Genre for a track/album.
-  > prefilled list but option to create a genre.
 * Add button in Browse to show hidden items (replaced genres)
   > what icon? Eye?
 
@@ -163,8 +73,6 @@ Any playlist can be grouped per album.
 
 * Grouping at album/artist level should happen in playlists.
 
-* Create track/album/artist_genre table.
-  >
 * Scan: fill genres in track_genre table.
 > when a new track is added, genres are added as-is.
 > when viewing track/album details: genres are striped-out when there is a replace-genre.
@@ -278,248 +186,3 @@ What do I need?
   >>> https://blog.alexmaccaw.com/javascript-wake-event/
   > or this alternative of window blur/focus
     >>> https://stackoverflow.com/questions/13798516/javascript-event-for-mobile-browser-re-launch-or-device-wake
-
-* Browse: dbllick on radio starts it and goes to Now Playing.
-  > Animated visual feedback of dblclick:
-    > Fade in and out the active bkg color of play bar.
-
-* Set active track in page title.
-
-* Navigating Browse/Now playing/Album
-  > Now playing shows title of track and playlist.
-  > Browse shows filters + album view.
-  > Album view shows...well, the album (same view as in browse)
-  * Navigation:
-    - Image next to play bar:
-      > goto Now Playing
-    - Right corner magnifier:
-      > goto Browse
-      > you can go back because the maginfier changes into album.
-      > you can also go back via play bar
-    - Click on album in in Now Playing:
-      > goto Album
-
-
-* Brows: click on album:
-  > show album view UNDER search fields!!!
-  > show tracks under album image.
-  > add tabs to switch between tracks/info/meta
-    > show album image a bit smaller to indicate that this is not the "now playing" view.
-      > this means, don't use big view compoonent or split it up!!!
-
-
-* Big view of current track:
-  > show album title on top of track name.
-  > clicking art shows...
-    > tabs!
-      - tracks
-      - info
-        > artists, composersyear, etc...
-        > info text found online?
-      - meta
-        > genre
-        > file location?
-        > uri
-        > ...
-
-
-* Browse: click on album:
-  > goto album
-  > deepest dive thus is: playlist > album > track? Or do playlists not contain albums?
-
-* show an info button next to filter buttons.
-  > show info block with a "remove info button" button. When pressing, inform user this can be changed in settings.
-
-* Show tracklist in timeline.
-
-
-Browse
-======
-- a search field
-  > pre-filled with last search.
-- search results
-- filter buttons:
-  > a row of buttons for each of the following:
-    - albums: square with disc sticking out?
-    - artists: torso silhouette?
-    - tracks: lines?
-    - streams/radio: radio icon or antenna? (wifi logo-like)
-    - files: file icon
-    - playlists: stacked page of lines > tracks icon, but stacked.
-    - history: history icon: curled up lines.
-    - radio: radio icon?
-    - genre: veritas or flower icon.
-      > a circle, a square and a triangle?
-      > Arrows pointing in different directions?
-        > different shapes?
-
-* have image view and a list view.
-  > have a wall-of-albums,
-    > perhaps even random?
-    > perhaps 3 views: list, album (/w title) and wall?
-* image views are configurable
-  > number of columns.
-  > spacing configurable?
-* buttons to filter search results for albums, artists and tracks.
-* when on a track, allow to browse upward into album, artist, playlists.
-
-Browse: user behaviour:
-  > cursor immediately in search field,, which is the header field?
-    > could give conflict with error messages.
-  > last search is prefilled.
-  > submit search per key-stroke.
-    > if not fast enough: local cache.
-  > how to go back?
-    > the browse icon changes in a mini album.
-
- Buttons (ellipsis), double click, long click
- =============================================
- * These can be set via settings.
-   > default is buttons=visible.
-* Single click is selection by default.
-* Double click is play.
-* Long click is same as button.
-
-Queue
-======
-When queue goes to the next track, these events occur:
-  - volume_changed
-  - track_playback_ended -> time_positin, tl_Track
-  - playback_state_changed -> playing
-  - track_playback_started -> TlTrack
-
-
-* Iris player seems to have a way to get all the tracks really fast.
-  > but cannot add radio strams (with names) to playlists.
-  > also only possible to add a track to a list via the "now playing" screen.
-
-
-* Track line: ellipsis button:
-  - Play
-  - Details
-    > shows artist, album and tracklists this track belongs to.
-
-* Webcomponent with template: https://css-tricks.com/web-components-are-easier-than-you-think/
-
-* Implement start screen.
-  > if no current track:
-    > get history.
-      > if none: (probably!)
-        > show Browser in that case.
-      > if found, display it, positioned at last track.
-  > if current track:
-    > it will probably be shown automatically, but also start playing automatically...which may not be a bad thing...
-
-* when a new track is played (default click on play button), these commands are sent:
-  - play is stopped. (needed? or automatically done when clearinngg the tracklist?)
-  - the tracklist is cleared.
-  - new track is added to the tracklist
-  - tracklist filter is cleared.
-  >> event:tracklistchanged is sent.
-  > that's it!
-    > query:
-      - tracklist
-      - current track (TLtrack
-
-Layout
-=========
-
-Start screen always last track/stream.
-  > what if there is no last track?
-  > A user will want to select something to play.
-    > Goto Search and show history, if present.
-  > All lists will highlight the active (if any) track/album,...
-When playing a track of an album, artist, playlist:
-  > user shoud be able to go to the list.
-  > if the window is long (or wide) enough, show the list, centered around the active track.
-  > user can hide this list to have a cleaner view.
-    > need a button to show the list.
-      > icon? a hamburger with 4 lines and a brighter line in the middle?
-
- When a track is playing, a mini-player should be displayed at the bottom (or top?).
- Volume, plus a mute button should always be visible.
- Playback options should be under a menu, as they are not often used.
-
-Per track or list:
-   > highlight the active one.
-   > a play button to immediately start playing.
-   > a menu for all the other actions.
-
-Search button is entrypoint to all lists of tracks
-  - history (this one on top or even expanded, if present)
-  - streams
-  - files
-  - albums
-  - artists
-
-Have a stream title history as well. Per radio station?
-Stream title history has max of 100 items?
-
-* On stream start, and extension start: clear history or at least write a dummy history block:
-      ---
-      Starting stream xxx
-      ---
-  > not needed on extension start, if on stream start creates a separator.
-
-* Replace Home pane with last played..
-  > perhaps merge this pane with Now Playing?
-* get rid of jQuery
-* flex or grid?
-* setVolume(): use a curved function for better low volume control.
-  > User option?
-  > For both input and output in range [0..100]:
-    > Quadratic: (x*x)/100
-    > Cubic: (x*x*x)/10000
-
-
-* "Streams" are mopidy playlists.
-  > has 2 fields: name and uri
-  > if uri starts with file: or http:, a different backend is triggered.
-
-
-  Track info for streams or files
-  ---------------------------------
-  Streams
-  -------
-  {
-    "tl_track": {
-      "__model__": "TlTrack",
-      "tlid": 1,
-      "track": {
-        "__model__": "Track",
-        "uri": "http://icecast.vrtcdn.be/klara-high.mp3",
-        "name": "VRT Klara"
-      }
-    },
-    "event": "track_playback_started"
-  }
-
-  Files
-  -----
-  {
-    "tl_track": {
-      "__model__": "TlTrack",
-      "tlid": 2,
-      "track": {
-        "__model__": "Track",
-        "uri": "file:///media/DATA1/Music/Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma",
-        "name": "La Femme d'Argent",
-        "artists": [
-          {
-            "__model__": "Artist",
-            "name": "Air"
-          }
-        ],
-        "album": {
-          "__model__": "Album",
-          "name": "Moon Safari",
-          "date": "1998"
-        },
-        "track_no": 1,
-        "date": "1998",
-        "length": 429986,
-        "bitrate": 128639
-      }
-    },
-    "event": "track_playback_started"
-  }

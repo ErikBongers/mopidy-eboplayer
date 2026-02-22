@@ -1,12 +1,12 @@
 import {ComponentView} from "./view";
 import {StreamUri, ExpandedAlbumModel, PlaylistUri, TrackUri, ExpandedStreamModel} from "../modelTypes";
-import {EboBrowseComp} from "../components/eboBrowseComp";
+import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {arrayToggle} from "../global";
 import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
-import {EboBigRadioComp} from "../components/eboBigRadioComp";
+import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
 
 export class RadioView extends ComponentView<EboBigRadioComp> {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;

@@ -1,11 +1,11 @@
-import {EboComponent} from "./EboComponent";
-import {GuiSource} from "../events";
-import {EboAlbumDetails} from "./eboAlbumDetails";
-import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
-import {ExpandedStreamModel, StreamUri} from "../modelTypes";
+import {EboComponent} from "../EboComponent";
+import {GuiSource} from "../../events";
+import {EboAlbumDetails} from "../album/eboAlbumDetails";
+import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "../eboListButtonBar";
+import {ExpandedStreamModel, StreamUri} from "../../modelTypes";
 import {EboRadioHistoryComp} from "./eboRadioHistoryComp";
 import {EboRadioDetails} from "./eboRadioDetails";
-import {EboButton} from "./eboButton";
+import {EboButton} from "../general/eboButton";
 
 
 export class EboBigRadioComp extends EboComponent {

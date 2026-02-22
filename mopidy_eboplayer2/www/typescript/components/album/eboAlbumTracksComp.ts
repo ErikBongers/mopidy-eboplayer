@@ -1,7 +1,7 @@
-import {EboComponent} from "./EboComponent";
-import {ExpandedAlbumModel, ExpandedStreamModel, TrackUri} from "../modelTypes";
-import {EboMenuButton} from "./eboMenuButton";
-import {EboButton} from "./eboButton";
+import {EboComponent} from "../EboComponent";
+import {ExpandedAlbumModel, ExpandedStreamModel, TrackUri} from "../../modelTypes";
+import {EboMenuButton} from "../general/eboMenuButton";
+import {EboButton} from "../general/eboButton";
 
 export class EboAlbumTracksComp extends EboComponent {
     get selected_track_uris(): TrackUri[] {

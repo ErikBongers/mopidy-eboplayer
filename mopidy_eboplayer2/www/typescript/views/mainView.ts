@@ -1,7 +1,7 @@
 import {View} from "./view";
 import {AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Views} from "../modelTypes";
-import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
-import {EboBrowseComp} from "../components/eboBrowseComp";
+import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
+import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {EboSettingsComp} from "../components/eboSettingsComp";
@@ -10,7 +10,7 @@ import {DisplayMode} from "../components/eboListItemComp";
 import {AlbumView} from "./albumView";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
-import {EboBigRadioComp} from "../components/eboBigRadioComp";
+import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
 import {RadioView} from "./radioView";
 import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
 

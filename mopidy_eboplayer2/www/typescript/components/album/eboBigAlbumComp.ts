@@ -1,11 +1,11 @@
-import {EboComponent} from "./EboComponent";
+import {EboComponent} from "../EboComponent";
 import {EboAlbumTracksComp} from "./eboAlbumTracksComp";
-import {AlbumUri, ExpandedAlbumModel, TrackUri} from "../modelTypes";
-import {GuiSource} from "../events";
+import {AlbumUri, ExpandedAlbumModel, TrackUri} from "../../modelTypes";
+import {GuiSource} from "../../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
-import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
-import {arrayToggle} from "../global";
-import {EboButton} from "./eboButton";
+import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "../eboListButtonBar";
+import {arrayToggle} from "../../global";
+import {EboButton} from "../general/eboButton";
 
 
 export class EboBigAlbumComp extends EboComponent {

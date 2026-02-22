@@ -1,5 +1,5 @@
-import {EboComponent} from "./EboComponent";
-import {MouseTimer} from "../MouseTimer";
+import {EboComponent} from "../EboComponent";
+import {MouseTimer} from "../../MouseTimer";
 
 export class EboButton extends EboComponent {
     static override readonly tagName=  "ebo-button";

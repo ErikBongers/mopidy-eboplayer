@@ -1,6 +1,6 @@
 import {ComponentView} from "./view";
 import {AllUris} from "../modelTypes";
-import {EboBrowseComp} from "../components/eboBrowseComp";
+import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {DisplayMode} from "../components/eboListItemComp";

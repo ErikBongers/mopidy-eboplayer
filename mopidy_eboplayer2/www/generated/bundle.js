@@ -2802,7 +2802,7 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboAlbumTracksComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/album/eboAlbumTracksComp.ts
 var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	get selected_track_uris() {
 		return this._selected_track_uris;
@@ -3386,7 +3386,7 @@ var MainView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboBrowseComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/browse/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	static tagName = "ebo-browse-view";
 	static observedAttributes = ["display_mode"];
@@ -3729,7 +3729,7 @@ var MouseTimer = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboButton.ts
+//#region mopidy_eboplayer2/www/typescript/components/general/eboButton.ts
 var EboButton = class EboButton extends EboComponent {
 	static tagName = "ebo-button";
 	static observedAttributes = [
@@ -3843,7 +3843,7 @@ var EboButton = class EboButton extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboBigAlbumComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/album/eboBigAlbumComp.ts
 var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	static tagName = "ebo-big-album-view";
 	static observedAttributes = [
@@ -4280,7 +4280,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboMenuButton.ts
+//#region mopidy_eboplayer2/www/typescript/components/general/eboMenuButton.ts
 var EboMenuButton = class EboMenuButton extends EboComponent {
 	static tagName = "ebo-menu-button";
 	static observedAttributes = [];
@@ -4545,7 +4545,7 @@ var EboDialog = class EboDialog extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboAlbumDetails.ts
+//#region mopidy_eboplayer2/www/typescript/components/album/eboAlbumDetails.ts
 var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 	get albumInfo() {
 		return this._albumInfo;
@@ -4599,7 +4599,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
-                            <img src="images/icons/Google_Favicon_2025.svg" 
+                            <img src="../../../images/icons/Google_Favicon_2025.svg" 
                                 alt="Search" 
                                 style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
                             Image
@@ -4690,7 +4690,7 @@ function addMetaDataRow(body, colText1, colText2) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboRadioHistoryComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/radio/eboRadioHistoryComp.ts
 var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 	static tagName = "ebo-radio-history";
 	static observedAttributes = ["img"];
@@ -4789,7 +4789,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
                                 <button id="googleSearchBtn" 
                                     class="roundBorder" 
                                     style="padding-inline-start: .7rem;">
-                                    <img src="images/icons/Google_Favicon_2025.svg" 
+                                    <img src="../../../images/icons/Google_Favicon_2025.svg" 
                                         alt="Search" 
                                         style="height: .6rem; width: .6rem; position: relative; top: .15rem;margin-right: .1rem;">
                                     Search
@@ -4843,7 +4843,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboBrowseFilterComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/browse/eboBrowseFilterComp.ts
 var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 	get availableRefTypes() {
 		return this._availableRefTypes;
@@ -4919,7 +4919,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 <div id="wrapper">
     <div id="filterBox">
         <div id="searchBox" class="flexRow">
-            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
+            <button id="headerSearchBtn"><img src="../../../images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
             <input id="searchText" type="text" autofocus>
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
         </div>
@@ -5821,7 +5821,7 @@ var CacheHandler = class extends Commands {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboOption.ts
+//#region mopidy_eboplayer2/www/typescript/components/general/eboOption.ts
 var EboOption = class EboOption extends EboComponent {
 	static tagName = "ebo-option";
 	static observedAttributes = ["value", "selected"];
@@ -5849,7 +5849,7 @@ var EboOption = class EboOption extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboIconDropdown.ts
+//#region mopidy_eboplayer2/www/typescript/components/general/eboIconDropdown.ts
 var EboIconDropdown = class EboIconDropdown extends EboComponent {
 	static tagName = "ebo-dropdown";
 	static observedAttributes = ["value"];
@@ -6145,7 +6145,7 @@ var GenresView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboBigRadioComp.ts
+//#region mopidy_eboplayer2/www/typescript/components/radio/eboBigRadioComp.ts
 var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 	static tagName = "ebo-big-radio-view";
 	static observedAttributes = [
@@ -6414,7 +6414,7 @@ var RadioView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboRadioDetails.ts
+//#region mopidy_eboplayer2/www/typescript/components/radio/eboRadioDetails.ts
 var EboRadioDetails = class EboRadioDetails extends EboComponent {
 	static tagName = "ebo-radio-details";
 	static observedAttributes = [];
@@ -6467,7 +6467,7 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
-                            <img src="images/icons/Google_Favicon_2025.svg" 
+                            <img src="../../../images/icons/Google_Favicon_2025.svg" 
                                 alt="Search" 
                                 style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
                             Image

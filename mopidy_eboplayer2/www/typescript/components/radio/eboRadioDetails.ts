@@ -1,7 +1,7 @@
-import {EboComponent} from "./EboComponent";
-import {ExpandedStreamModel} from "../modelTypes";
-import {searchImageOnGoogle} from "../global";
-import {addMetaDataRow} from "./eboAlbumDetails";
+import {EboComponent} from "../EboComponent";
+import {ExpandedStreamModel} from "../../modelTypes";
+import {searchImageOnGoogle} from "../../global";
+import {addMetaDataRow} from "../album/eboAlbumDetails";
 
 export class EboRadioDetails extends EboComponent {
     static override readonly tagName=  "ebo-radio-details";
@@ -60,7 +60,7 @@ export class EboRadioDetails extends EboComponent {
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
-                            <img src="images/icons/Google_Favicon_2025.svg" 
+                            <img src="../../../images/icons/Google_Favicon_2025.svg" 
                                 alt="Search" 
                                 style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
                             Image

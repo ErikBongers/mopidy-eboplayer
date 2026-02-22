@@ -1,5 +1,5 @@
 import {EboComponent} from "./EboComponent";
-import {EboButton} from "./eboButton";
+import {EboButton} from "./general/eboButton";
 import {GenreDef} from "../modelTypes";
 
 export type ExpandedGenreDef = {

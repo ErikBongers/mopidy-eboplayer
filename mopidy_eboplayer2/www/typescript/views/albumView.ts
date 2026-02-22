@@ -1,7 +1,7 @@
 import {ComponentView} from "./view";
 import {AlbumUri, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
-import {EboBigAlbumComp} from "../components/eboBigAlbumComp";
-import {EboBrowseComp} from "../components/eboBrowseComp";
+import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
+import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {arrayToggle} from "../global";
 import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";

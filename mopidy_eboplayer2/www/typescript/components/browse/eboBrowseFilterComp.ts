@@ -1,8 +1,8 @@
-import {EboComponent} from "./EboComponent";
-import {EboButton} from "./eboButton";
-import {BrowseFilter, BrowseFilterFlags} from "../modelTypes";
-import {RefType} from "../refs";
-import {EboplayerEvent, GuiSource, PressedArgs} from "../events";
+import {EboComponent} from "../EboComponent";
+import {EboButton} from "../general/eboButton";
+import {BrowseFilter, BrowseFilterFlags} from "../../modelTypes";
+import {RefType} from "../../refs";
+import {EboplayerEvent, GuiSource, PressedArgs} from "../../events";
 
 export class EboBrowseFilterComp extends EboComponent {
     get availableRefTypes(): Set<RefType> {
@@ -90,7 +90,7 @@ export class EboBrowseFilterComp extends EboComponent {
 <div id="wrapper">
     <div id="filterBox">
         <div id="searchBox" class="flexRow">
-            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
+            <button id="headerSearchBtn"><img src="../../../images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
             <input id="searchText" type="text" autofocus>
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
         </div>

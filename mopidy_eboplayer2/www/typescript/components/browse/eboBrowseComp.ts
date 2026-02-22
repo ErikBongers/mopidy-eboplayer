@@ -1,11 +1,11 @@
-import {EboComponent} from "./EboComponent";
-import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreReplacement} from "../modelTypes";
-import {EmptySearchResults, GenreSearchResult, SearchResult, SearchResults} from "../refs";
-import {GuiSource} from "../events";
-import {unreachable} from "../global";
-import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "./eboListButtonBar";
+import {EboComponent} from "../EboComponent";
+import {AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, FilterBreadCrumb, GenreReplacement} from "../../modelTypes";
+import {EmptySearchResults, GenreSearchResult, SearchResult, SearchResults} from "../../refs";
+import {GuiSource} from "../../events";
+import {unreachable} from "../../global";
+import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "../eboListButtonBar";
 import {EboBrowseFilterComp} from "./eboBrowseFilterComp";
-import {DisplayMode, EboListItemComp} from "./eboListItemComp";
+import {DisplayMode, EboListItemComp} from "../eboListItemComp";
 
 export class EboBrowseComp extends EboComponent {
     static override readonly tagName=  "ebo-browse-view";

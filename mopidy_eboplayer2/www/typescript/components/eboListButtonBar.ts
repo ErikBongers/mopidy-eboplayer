@@ -1,7 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {GuiSource} from "../events";
 import {AllUris} from "../modelTypes";
-import {EboButton} from "./eboButton";
+import {EboButton} from "./general/eboButton";
 
 export type ListButtonState = "show" | "hide" | "disabled";
 export type ListButtonStates = {
