@@ -4601,6 +4601,9 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                 opacity: .5;
                 text-decoration: line-through;
             }
+            .metaLabel {
+                align-content: baseline;
+            }
         </style>
     `;
 	static htmlText = `
@@ -4708,6 +4711,7 @@ function addMetaDataRow(body, colText1, colText2) {
 	let tr = body.appendChild(document.createElement("tr"));
 	let td1 = tr.appendChild(document.createElement("td"));
 	td1.innerHTML = colText1;
+	td1.classList.add("metaLabel");
 	let td2 = tr.appendChild(document.createElement("td"));
 	td2.innerHTML = colText2;
 	td2.classList.add("selectable");
