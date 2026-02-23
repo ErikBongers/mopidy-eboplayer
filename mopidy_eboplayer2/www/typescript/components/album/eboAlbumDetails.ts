@@ -82,15 +82,6 @@ export class EboAlbumDetails extends EboComponent {
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        // switch (name) {
-        //     case "img":
-        //         this[name] = newValue;
-        //         break;
-        //     case "pressed":
-        //     case "disabled":
-        //         this.updateBoolProperty(name, newValue);
-        //         break;
-        // }
         this.requestUpdate();
         }
 
@@ -136,7 +127,11 @@ export class EboAlbumDetails extends EboComponent {
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `
             }).join(" "));
-            addMetaDataRow(body, "Composers:", composers.map(artist => artist.name).join(","));
+            addMetaDataRow(body, "Composers:", composers.map(artist => {
+                return ` 
+                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+                `
+            }).join(" "));
             let genresHtml = "";
             genreDefs.forEach(def => {
                 let defHtml = "";

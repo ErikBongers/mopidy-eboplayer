@@ -1,3 +1,6 @@
+* Album details: make links of bot genre and it's replacement.
+  > Make an ExpandedGenre, containing refs with uri's for both genre and replacement.
+
 * Simplify Now Playing?
   > Hide timeline?
     > Playbar drop down menu:
