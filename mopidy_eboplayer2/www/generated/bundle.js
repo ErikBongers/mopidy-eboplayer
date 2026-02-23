@@ -2723,8 +2723,8 @@ var TimelineView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/bigTrackViewCurrentOrSelectedAdapter.ts
-var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
+//#region mopidy_eboplayer2/www/typescript/views/timeLineDetailsView.ts
+var TimeLineDetailsView = class extends ComponentView {
 	streamLines;
 	programTitle = "";
 	uri = null;
@@ -2785,6 +2785,7 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 			imageUrl = this.track.bigImageUrl;
 		} else {
 			name = this.track.track.title;
+			if (this.programTitle) name = this.programTitle + " -  " + name;
 			info = this.track.album?.albumInfo?.name ?? "--no name--";
 			position = "60";
 			button = "true";
@@ -2799,7 +2800,6 @@ var BigTrackViewCurrentOrSelectedAdapter = class extends ComponentView {
 		this.component.setAttribute("position", position);
 		this.component.setAttribute("button", button);
 		this.component.setAttribute("img", imageUrl);
-		this.component.setAttribute("program_title", this.programTitle);
 		this.onStreamLinesChanged();
 	}
 	onProgramTitleChanged() {
@@ -6612,7 +6612,6 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 		"img",
 		"disabled",
 		"show_back",
-		"program_title",
 		...EboTimeLineDetailsComp.progressBarAttributes
 	];
 	get albumInfo() {
@@ -6640,7 +6639,6 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 	max = "100";
 	button = "false";
 	active = "true";
-	program_title = "";
 	img = "";
 	_albumInfo = AlbumNone;
 	static styleText = `
@@ -6754,7 +6752,6 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 			case "stream_lines":
 			case "extra":
 			case "img":
-			case "program_title":
 				this[name] = newValue;
 				break;
 			case "enabled":
@@ -6781,7 +6778,6 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 		].forEach((attName) => {
 			shadow.getElementById(attName).innerHTML = this[attName];
 		});
-		if (this.program_title != "") shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboTimeLineDetailsComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
@@ -6867,7 +6863,7 @@ function setupStuff() {
 	let radioView = new RadioView(state, document.getElementById("dialog"), document.getElementById("bigRadioView"));
 	let mainView = new MainView(state, browseView, albumView, radioView);
 	let headerView = new HeaderView(state);
-	let timelineDetailsView = new BigTrackViewCurrentOrSelectedAdapter(state, document.getElementById("timelineDetails"));
+	let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails"));
 	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
 	let historyView = new TimelineView(state);
 	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));

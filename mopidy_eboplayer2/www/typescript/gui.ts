@@ -5,7 +5,7 @@ import Controller from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
 import {TimelineView} from "./views/timelineView";
-import {BigTrackViewCurrentOrSelectedAdapter} from "./views/bigTrackViewCurrentOrSelectedAdapter";
+import {TimeLineDetailsView} from "./views/timeLineDetailsView";
 import {EboAlbumTracksComp} from "./components/album/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
@@ -118,7 +118,7 @@ function setupStuff() {
     let radioView = new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp);
     let mainView = new MainView(state, browseView, albumView, radioView);
     let headerView = new HeaderView(state);
-    let timelineDetailsView = new BigTrackViewCurrentOrSelectedAdapter(state, document.getElementById("timelineDetails") as EboTimeLineDetailsComp);
+    let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails") as EboTimeLineDetailsComp);
     let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);
     let historyView = new TimelineView(state);
     let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);

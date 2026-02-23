@@ -7,7 +7,7 @@ export class EboTimeLineDetailsComp extends EboComponent {
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "show_back", "program_title",
+        "name", "stream_lines", "extra", "img", "disabled", "show_back",
         ...EboTimeLineDetailsComp.progressBarAttributes
     ];
     get albumInfo(): AlbumData {
@@ -39,7 +39,6 @@ export class EboTimeLineDetailsComp extends EboComponent {
     private max: string = "100";
     private button: string = "false";
     private active: string = "true";
-    private program_title: string = "";
 
     private img: string  = "";
     private _albumInfo: AlbumData = AlbumNone;
@@ -160,7 +159,6 @@ export class EboTimeLineDetailsComp extends EboComponent {
             case "stream_lines":
             case "extra":
             case "img":
-            case "program_title":
                 this[name] = newValue;
                 break;
             case "enabled":
@@ -187,10 +185,6 @@ export class EboTimeLineDetailsComp extends EboComponent {
             // @ts-ignore
             shadow.getElementById(attName).innerHTML = this[attName];
         });
-        if(this.program_title != "") {
-            // @ts-ignore
-            shadow.getElementById("name").innerHTML = this.name + " - " + this.program_title;
-        }
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboTimeLineDetailsComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore

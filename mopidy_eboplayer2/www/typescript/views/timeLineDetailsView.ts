@@ -4,7 +4,7 @@ import {ComponentView} from "./view";
 import {console_yellow} from "../global";
 import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
 
-export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeLineDetailsComp> {
+export class TimeLineDetailsView extends ComponentView<EboTimeLineDetailsComp> {
     private streamLines: string;
     private programTitle: string = "";
     private uri: string | null = null;
@@ -73,6 +73,8 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeL
                 imageUrl = this.track.bigImageUrl;
             } else {
                 name = this.track.track.title;
+                if(this.programTitle)
+                    name = this.programTitle + " -  " + name;
                 info = this.track.album?.albumInfo?.name?? "--no name--";
                 position = "60"; //todo: just a test
                 button = "true";
@@ -90,7 +92,6 @@ export class BigTrackViewCurrentOrSelectedAdapter extends ComponentView<EboTimeL
         this.component.setAttribute("position", position);
         this.component.setAttribute("button", button);
         this.component.setAttribute("img", imageUrl);
-        this.component.setAttribute("program_title", this.programTitle);
         this.onStreamLinesChanged();
     }
 
