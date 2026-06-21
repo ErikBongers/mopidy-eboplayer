@@ -53,11 +53,11 @@ export type TlId = Branded<number, "TlId">;
 namespace models {
     export type ModelType = "album" | "artist" | "directory" | "playlist" | "track";
 
-    export class TlTrack {
+    export interface TlTrack {
         readonly tlid: TlId;
         readonly track: Track;
     }
-    export class Track {
+    export interface Track {
         readonly uri: TrackUri | StreamUri;
         readonly name?: string;
         readonly artists: Artist[];
@@ -74,45 +74,45 @@ namespace models {
         readonly musicbrainz_id?: string;
         readonly last_modified?: number;
     }
-    export class SearchResult {
+    export interface SearchResult {
         readonly uri: URI;
-        readonly tracks: Track[];
-        readonly artists: Artist[];
-        readonly albums: Album[];
+        readonly tracks?: Track[];
+        readonly artists?: Artist[];
+        readonly albums?: Album[];
     }
 
-    export class Artist {
+    export interface Artist {
         readonly uri: URI;
         readonly name: string;
-        readonly sortname: string;
-        readonly musicbrainz_id: string;
+        readonly sortname?: string;
+        readonly musicbrainz_id?: string;
     }
 
-    export class Album {
+    export interface Album {
         readonly uri: AlbumUri;
         readonly name: string;
-        readonly artists: Artist[];
-        readonly num_tracks: number;
-        readonly num_discs: number;
-        readonly date: string;
-        readonly musicbrainz_id: string;
+        readonly artists?: Artist[];
+        readonly num_tracks?: number;
+        readonly num_discs?: number;
+        readonly date?: string;
+        readonly musicbrainz_id?: string;
     }
 
-    export class Image {
+    export interface Image {
         readonly uri: URI;
         readonly width: number;
         readonly height: number;
     }
 
-    export class Playlist {
+    export interface Playlist {
         readonly uri: URI;
         readonly name: string;
         readonly tracks: Track[];
-        readonly last_modified: number;
+        readonly last_modified?: number;
         readonly length: number;
     }
 
-    export class Ref<T extends AllUris> {
+    export interface Ref<T extends AllUris> {
         readonly uri: T;
         name?: string;
         readonly type: ModelType;

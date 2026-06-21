@@ -248,76 +248,6 @@ var OtherError = class extends Error {
 
 //#endregion
 //#region mopidy_eboplayer2/www/js/mopidy.ts
-let models;
-(function(_models) {
-	class TlTrack {
-		tlid;
-		track;
-	}
-	_models.TlTrack = TlTrack;
-	class Track {
-		uri;
-		name;
-		artists;
-		album;
-		composers;
-		performers;
-		genre;
-		track_no;
-		disc_no;
-		date;
-		length;
-		bitrate;
-		comment;
-		musicbrainz_id;
-		last_modified;
-	}
-	_models.Track = Track;
-	class SearchResult {
-		uri;
-		tracks;
-		artists;
-		albums;
-	}
-	_models.SearchResult = SearchResult;
-	class Artist {
-		uri;
-		name;
-		sortname;
-		musicbrainz_id;
-	}
-	_models.Artist = Artist;
-	class Album {
-		uri;
-		name;
-		artists;
-		num_tracks;
-		num_discs;
-		date;
-		musicbrainz_id;
-	}
-	_models.Album = Album;
-	class Image {
-		uri;
-		width;
-		height;
-	}
-	_models.Image = Image;
-	class Playlist {
-		uri;
-		name;
-		tracks;
-		last_modified;
-		length;
-	}
-	_models.Playlist = Playlist;
-	class Ref {
-		uri;
-		name;
-		type;
-	}
-	_models.Ref = Ref;
-})(models || (models = {}));
 var Mopidy = class {
 	_options;
 	rpcController;
@@ -493,7 +423,7 @@ var Refs = class {
 	set browseFilter(value) {
 		this._browseFilter = value;
 	}
-	_browseFilter;
+	_browseFilter = null;
 	async calculateWeight(result, browseFilter, thresholdDate) {
 		if (!browseFilter.isNoTypeSelected()) {
 			if (result instanceof RefSearchResult) {
@@ -931,7 +861,7 @@ var BrowseFilterBreadCrumbStack = class extends BreadCrumbStack {};
 var Model = class extends EboEventTargetClass {
 	currentTrack = null;
 	selectedTrack = null;
-	volume;
+	volume = 0;
 	connectionState = ConnectionState.Offline;
 	currentMessage = {
 		type: MessageType.None,
@@ -948,8 +878,8 @@ var Model = class extends EboEventTargetClass {
 		single: false
 	};
 	playState = null;
-	activeStreamLines;
-	history;
+	activeStreamLines = null;
+	history = [];
 	trackList = [];
 	libraryCache = /* @__PURE__ */ new Map();
 	imageCache = /* @__PURE__ */ new Map();
@@ -2331,7 +2261,7 @@ var PlayerBarView = class extends ComponentView {
 	}
 	onActiveStreamLinesChanged() {
 		let lines = this.state.getModel().getActiveStreamLines();
-		this.component.setAttribute("text", lines.active_titles.join("\n"));
+		this.component.setAttribute("text", lines?.active_titles.join("\n") ?? "");
 	}
 	async changeRepeat(selected) {
 		switch (selected) {
@@ -2612,7 +2542,7 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/timelineView.ts
 var TimelineView = class extends View {
-	clickedRow;
+	clickedRow = null;
 	constructor(state) {
 		super(state);
 	}
@@ -2725,10 +2655,10 @@ var TimelineView = class extends View {
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/views/timeLineDetailsView.ts
 var TimeLineDetailsView = class extends ComponentView {
-	streamLines;
+	streamLines = "";
 	programTitle = "";
 	uri = null;
-	track;
+	track = null;
 	constructor(state, component) {
 		super(state, component);
 	}
@@ -3001,8 +2931,8 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		"use_selected_color"
 	];
 	_btn_states = ListButtonState_AllHidden();
-	list_source;
-	uri;
+	list_source = "albumView";
+	uri = "";
 	use_selected_color = false;
 	static styleText = `
         <style>
@@ -3448,7 +3378,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	}
 	display_mode = "line";
 	_browseFilter;
-	_genreReplacements;
+	_genreReplacements = /* @__PURE__ */ new Map();
 	static styleText = `
         <style>
             :host { 
@@ -3697,7 +3627,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 //#region mopidy_eboplayer2/www/typescript/MouseTimer.ts
 const TIME_OUT_TIME = 500;
 var MouseTimer = class {
-	activeTimer;
+	activeTimer = null;
 	source;
 	mouseUpCount = 0;
 	isMouseDown = false;
@@ -4098,7 +4028,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 		"text",
 		"stop_or_pause"
 	];
-	play_state;
+	play_state = "";
 	show_info = false;
 	isVolumeSliding = false;
 	volume = 0;
@@ -4107,7 +4037,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 	allow_next = true;
 	text = "";
 	image_url = "";
-	stop_or_pause;
+	stop_or_pause = "";
 	_playMode = "justPlay";
 	static styleText = `
         <style>
@@ -4890,7 +4820,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		this.requestUpdate();
 	}
 	_browseFilter;
-	_availableRefTypes;
+	_availableRefTypes = /* @__PURE__ */ new Set();
 	static observedAttributes = [];
 	hideInfoButton = false;
 	static styleText = `
@@ -5173,7 +5103,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		this.update(this.shadow);
 	}
 	static observedAttributes = ["show_whats_new"];
-	_scanStatus;
+	_scanStatus = "";
 	show_whats_new = false;
 	static styleText = `
         <style>
@@ -5235,14 +5165,12 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 	static observedAttributes = [
 		"selected",
 		"img",
-		"selection_mode",
 		"display",
 		"text",
 		"image_class"
 	];
 	selected = false;
 	img;
-	selection_mode;
 	display = "icon";
 	text = "";
 	image_class = "";
@@ -5328,7 +5256,6 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 			case "display":
 				this.display = newValue;
 				break;
-			case "selection_mode":
 			case "selected":
 				this.updateBoolProperty(name, newValue);
 				break;
@@ -5913,7 +5840,7 @@ var CacheHandler = class extends Commands {
 var EboOption = class EboOption extends EboComponent {
 	static tagName = "ebo-option";
 	static observedAttributes = ["value", "selected"];
-	value;
+	value = "";
 	selected = false;
 	static styleText = `
         <style>

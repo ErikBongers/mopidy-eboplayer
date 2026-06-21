@@ -32,7 +32,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
     selectedTrack: TrackUri | StreamUri | null = null;
-    volume: number;
+    volume: number = 0;
     connectionState: ConnectionState = ConnectionState.Offline;
     private currentMessage: Message = {
         type: MessageType.None,
@@ -50,8 +50,8 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         single: false
     }
     private playState: PlayState | null = null;
-    private activeStreamLines: StreamTitles;
-    private history: HistoryLineDef[];
+    private activeStreamLines: StreamTitles | null = null;
+    private history: HistoryLineDef[] = [];
     private trackList: TlTrack[] = [];
     private libraryCache: Map<string, (FileTrackModel | StreamTrackModel | AlbumModel)> = new Map();
     private imageCache: Map<string, string> = new Map();

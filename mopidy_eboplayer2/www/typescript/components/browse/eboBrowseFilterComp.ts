@@ -28,7 +28,7 @@ export class EboBrowseFilterComp extends EboComponent {
 
     private _browseFilter: BrowseFilter;
 
-    private _availableRefTypes: Set<RefType>
+    private _availableRefTypes: Set<RefType> = new Set();
 
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
@@ -193,7 +193,7 @@ export class EboBrowseFilterComp extends EboComponent {
         allButton.addEventListener("click", (ev) => {
             this.onShowAllTypesButtonPress();
         });
-        shadow.querySelectorAll("ebo-button.filterButton")
+        (shadow.querySelectorAll("ebo-button.filterButton") as NodeListOf<EboButton>)
             .forEach((btn: EboButton) => {
                 btn.addEboEventListener("pressedChange.eboplayer", async (ev) => {
                     this.onFilterButtonPress(ev);

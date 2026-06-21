@@ -11,6 +11,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     }
     static globalCss: CSSStyleSheet[] = [];
     static cssCache: Map<string, CSSStyleSheet> = new Map();
+    // @ts-ignore
     protected shadow: ShadowRoot;
     protected styleTemplate?: HTMLTemplateElement;
     protected divTemplate?: HTMLTemplateElement;
@@ -189,7 +190,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         customElements.define(comp.tagName, comp);
     }
 
-    addShadowEventListener(id: string, type: string, listener: (this: HTMLElement, ev: MouseEvent) => any) {
+    addShadowEventListener(id: string, type: string, listener: (this: HTMLElement, ev: Event) => any) {
         this.shadow.getElementById(id)?.addEventListener(type, listener);
     }
 }

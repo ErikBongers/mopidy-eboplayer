@@ -14,7 +14,7 @@ export class EboPlayerBar extends EboComponent {
     static override readonly tagName=  "ebo-player-bar";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["play_state", "image_url", "show_info", "volume", "allow_play", "allow_prev", "allow_next", "text", "stop_or_pause"];
-    private play_state: string;
+    private play_state: string = "";
     private show_info: boolean = false;
     private isVolumeSliding: boolean = false;
     private volume: number = 0;
@@ -23,7 +23,7 @@ export class EboPlayerBar extends EboComponent {
     private allow_next: boolean = true;
     private text: string = "";
     private image_url: string = "";
-    private stop_or_pause: string;
+    private stop_or_pause: string = "";
     private _playMode: PlaybackUserOptions = "justPlay";
 
     // noinspection CssUnresolvedCustomProperty

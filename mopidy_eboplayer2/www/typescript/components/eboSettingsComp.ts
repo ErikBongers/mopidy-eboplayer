@@ -13,7 +13,7 @@ export class EboSettingsComp extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = ["show_whats_new"];
 
-    private _scanStatus: string;
+    private _scanStatus: string = "";
     private show_whats_new: boolean = false;
 
     static styleText= `

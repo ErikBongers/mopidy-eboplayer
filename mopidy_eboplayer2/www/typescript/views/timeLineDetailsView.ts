@@ -5,10 +5,10 @@ import {console_yellow} from "../global";
 import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
 
 export class TimeLineDetailsView extends ComponentView<EboTimeLineDetailsComp> {
-    private streamLines: string;
+    private streamLines: string = "";
     private programTitle: string = "";
     private uri: string | null = null;
-    private track: ExpandedStreamModel | ExpandedFileTrackModel | null;
+    private track: ExpandedStreamModel | ExpandedFileTrackModel | null = null;
 
     constructor(state: State, component: EboTimeLineDetailsComp) {
         super(state, component);

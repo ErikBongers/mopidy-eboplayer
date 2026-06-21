@@ -4,7 +4,7 @@ export class EboOption extends EboComponent {
     static override readonly tagName=  "ebo-option";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = ["value", "selected"];
-    private value: string;
+    private value: string = "";
     private selected: boolean = false;
 
     // noinspection CssUnresolvedCustomProperty

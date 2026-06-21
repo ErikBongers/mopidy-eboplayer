@@ -39,8 +39,8 @@ export class EboListButtonBar extends EboComponent {
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = ["list_source", "uri", "use_selected_color"];
     private _btn_states: ListButtonStates = ListButtonState_AllHidden();
-    list_source: GuiSource;
-    uri: string;
+    list_source: GuiSource = "albumView"; //todo: check if this default matters.
+    uri: string = "";
     use_selected_color: boolean = false;
     static styleText = `
         <style>

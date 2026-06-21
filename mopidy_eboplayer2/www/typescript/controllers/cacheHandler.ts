@@ -101,13 +101,13 @@ export class CacheHandler extends Commands{
     private async fetchAlbums(albumUris: AlbumUri[]): Promise<AlbumModel[]> {
         let dict = await this.mopidyProxy.lookup(albumUris);
         let allRefs = await this.getAllRefsMapCached();
-        let albumModelsPending = Object.keys(dict).map(async (albumUri: AlbumUri) => {
+        let albumModelsPending = Object.keys(dict).map(async (albumUri: string) => {
             let trackList = dict[albumUri] as models.Track[];
             let albumModel: AlbumModel = {
                 type: "album",
                 albumInfo: trackList[0].album?? null,
                 tracks: trackList.map(track => track.uri as TrackUri),
-                ref: allRefs.get(albumUri) as ExpandedRef<AlbumUri> //removing undefined type. Let it crash.
+                ref: allRefs.get(albumUri as AlbumUri) as ExpandedRef<AlbumUri> //removing undefined type. Let it crash.
             }
             return albumModel;
         });

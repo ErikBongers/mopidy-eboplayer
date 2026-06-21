@@ -4,7 +4,7 @@ import {HistoryLineDef, TrackUri} from "../modelTypes";
 import {State} from "../playerState";
 
 export class TimelineView extends View {
-    private clickedRow: HTMLTableRowElement;
+    private clickedRow: HTMLTableRowElement | null = null;
 
     constructor(state: State) {
         super(state);

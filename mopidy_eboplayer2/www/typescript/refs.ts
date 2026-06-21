@@ -67,7 +67,7 @@ export const EmptySearchResults: SearchResults = {refs: [], availableRefTypes: n
 export abstract class Refs {
     protected searchResults: SearchResults;
 
-    get browseFilter(): BrowseFilter {
+    get browseFilter(): BrowseFilter | null {
         return this._browseFilter;
     }
 
@@ -78,7 +78,7 @@ export abstract class Refs {
     set browseFilter(value: BrowseFilter) {
         this._browseFilter = value;
     }
-    private _browseFilter: BrowseFilter;
+    private _browseFilter: BrowseFilter | null = null;
 
     abstract filter(): Promise<void>;
 
@@ -139,11 +139,11 @@ export abstract class Refs {
         });
 
         let currentPosixDate = Math.floor(Date.now() / 1000);
-        let addedSinceInSeconds = this.browseFilter.addedSince * 60 * 60 * 24;
+        let addedSinceInSeconds = this.browseFilter!.addedSince * 60 * 60 * 24; //! todo: how do we know that browseFilter is filled?
         let thresholdDate = currentPosixDate - addedSinceInSeconds;
 
         for (const result of searchResults) {
-            await this.calculateWeight(result, this.browseFilter, thresholdDate);
+            await this.calculateWeight(result, this.browseFilter!, thresholdDate); //! todo: how do we know that browseFilter is filled?
         }
         return searchResults
             .filter(result => result.weight > 0)
@@ -270,7 +270,7 @@ export class AllRefs extends Refs {
 
     async filter() {
         this.searchResults = {
-            refs: await this.applyFilter(this.prefillWithTypes(this.browseFilter)),
+            refs: await this.applyFilter(this.prefillWithTypes(this.browseFilter!)), //! todo: how do we know that browseFilter is filled?
             availableRefTypes: this.availableRefTypes
         };
     }

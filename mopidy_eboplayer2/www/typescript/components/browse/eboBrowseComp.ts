@@ -78,7 +78,7 @@ export class EboBrowseComp extends EboComponent {
     private display_mode: DisplayMode = "line";
     private _browseFilter: BrowseFilter;
 
-    private _genreReplacements: Map<string, GenreReplacement>;
+    private _genreReplacements: Map<string, GenreReplacement> = new Map();
 
     static styleText= `
         <style>
@@ -305,7 +305,7 @@ export class EboBrowseComp extends EboComponent {
         }
 
         tableWrapper.innerHTML = html;
-        tableWrapper.querySelectorAll("ebo-list-item").forEach((row: HTMLElement) => {
+        (tableWrapper.querySelectorAll("ebo-list-item") as NodeListOf<HTMLElement>).forEach((row: HTMLElement) => {
             row.addEventListener("dblclick", ev => {this.onRowDoubleClicked(ev).then(r => {})});
             row.addEventListener("click", ev => {this.onRowClicked(ev)});
         });

@@ -1,7 +1,7 @@
 const TIME_OUT_TIME = 500;
 
 export class MouseTimer<Source> {
-    private activeTimer: number | null;
+    private activeTimer: number | null = null;
     private readonly source: Source;
     private mouseUpCount = 0;
     private isMouseDown = false;

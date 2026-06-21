@@ -128,7 +128,7 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
 
     private onActiveStreamLinesChanged() {
         let lines = this.state.getModel().getActiveStreamLines();
-        this.component.setAttribute("text", lines.active_titles.join("\n"));
+        this.component.setAttribute("text", lines?.active_titles.join("\n")??"");
     }
 
     private async changeRepeat(selected: PlaybackUserOptions | null) {

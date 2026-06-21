@@ -181,7 +181,7 @@ export class EboAlbumTracksComp extends EboComponent {
     private getSelectedUris() {
         return [...this.getShadow().querySelectorAll("tr.selected") as NodeListOf<HTMLTableRowElement>]
             .map((tr) => {
-                return tr.dataset.uri;
+                return tr.dataset.uri!; //! assuming this is always set.
             })
             .filter((uri: string) => uri != null && uri != "" && uri != undefined) as TrackUri[];
     }

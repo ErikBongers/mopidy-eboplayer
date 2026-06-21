@@ -6,10 +6,9 @@ export type DisplayMode = "line" | "icon";
 export class EboListItemComp extends EboComponent {
     static override readonly tagName=  "ebo-list-item";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["selected", "img", "selection_mode", "display", "text", 'image_class'];
+    static observedAttributes = ["selected", "img", "display", "text", 'image_class'];
     private selected: boolean = false;
     private img: string;
-    private selection_mode: boolean;
     private display: DisplayMode = "icon";
     private text: string = "";
     private image_class: string = "";
@@ -101,7 +100,6 @@ export class EboListItemComp extends EboComponent {
             case "display":
                 this.display = newValue as DisplayMode;
                 break;
-            case "selection_mode":
             case "selected":
                 this.updateBoolProperty(name, newValue);
                 break;

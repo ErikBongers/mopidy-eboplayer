@@ -147,7 +147,7 @@ export class EboAlbumDetails extends EboComponent {
             genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
             addMetaDataRow(body, "Genre", genresHtml);
             addMetaDataRow(body, "Playlists", "todo...");
-            body.querySelectorAll(".linkButton").forEach((link: HTMLElement) => {
+            (body.querySelectorAll(".linkButton") as NodeListOf<HTMLElement>).forEach((link: HTMLElement) => {
                 link.addEventListener("click", (ev) => {
                     this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
                 });

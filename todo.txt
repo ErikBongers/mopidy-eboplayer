@@ -1,3 +1,7 @@
+* Timeline line separator shouldn't be clickable.
+  > is it a progressbar?
+    > only the playing track should have a progressbar.
+
 * Album details: make links of bot genre and it's replacement.
   > Make an ExpandedGenre, containing refs with uri's for both genre and replacement.
 
