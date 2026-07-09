@@ -5896,7 +5896,7 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
                 &:popover-open {
                     opacity: 1;
                 }
-                .up & {
+                &.up {
                     bottom: anchor(top);
                     top: auto;
                 }
