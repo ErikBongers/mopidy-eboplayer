@@ -1,3 +1,9 @@
+* playback popupmenu drops below screen.
+
+* Create volume boost.
+  : amixer set Master 100%
+  > default is 50%
+* Use playing animations to make distinction between 'Now Playing' and other views.
 * Timeline line separator shouldn't be clickable.
   > is it a progressbar?
     > only the playing track should have a progressbar.

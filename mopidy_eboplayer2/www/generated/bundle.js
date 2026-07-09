@@ -4120,7 +4120,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
-                    <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
+                    <ebo-dropdown id="btnRepeat" style="margin-left: 1em;" direction="up">
                         <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
                         <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
                         <ebo-option value="repeatSingle" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
@@ -5865,9 +5865,11 @@ var EboOption = class EboOption extends EboComponent {
 
 //#endregion
 //#region mopidy_eboplayer2/www/typescript/components/general/eboIconDropdown.ts
+const Directions = ["up", "down"];
 var EboIconDropdown = class EboIconDropdown extends EboComponent {
 	static tagName = "ebo-dropdown";
-	static observedAttributes = ["value"];
+	static observedAttributes = ["value", "direction"];
+	direction = "down";
 	value = "justPlay";
 	static styleText = `
         <style>
@@ -5893,6 +5895,10 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
                 
                 &:popover-open {
                     opacity: 1;
+                }
+                .up & {
+                    bottom: anchor(top);
+                    top: auto;
                 }
             }
             
@@ -5926,6 +5932,9 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 			case "value":
 				this[name] = newValue;
 				break;
+			case "direction":
+				this.direction = newValue;
+				break;
 		}
 		this.requestUpdate();
 	}
@@ -5954,6 +5963,9 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 		let clone = selectedItem.cloneNode(true);
 		button.innerText = "";
 		button.appendChild(clone);
+		let menu = shadow.getElementById("menu");
+		menu.classList.remove(...Directions);
+		menu.classList.add(this.direction);
 	}
 };
 

@@ -1,11 +1,15 @@
 import {EboComponent} from "../EboComponent";
 import {PlaybackUserOptions} from "../../modelTypes";
 
+const Directions = ["up", "down"] as const;
+type Direction = typeof Directions[number];
+
 export class EboIconDropdown extends EboComponent {
     static override readonly tagName=  "ebo-dropdown";
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes: string[] = ["value"];
-    private value: PlaybackUserOptions = "justPlay";
+    static observedAttributes: string[] = ["value", "direction"];
+    private direction: Direction = "down";
+    private value: PlaybackUserOptions = "justPlay"; //todo: this is a use case/instance value, and should not be set here.
 
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
@@ -32,6 +36,10 @@ export class EboIconDropdown extends EboComponent {
                 
                 &:popover-open {
                     opacity: 1;
+                }
+                .up & {
+                    bottom: anchor(top);
+                    top: auto;
                 }
             }
             
@@ -69,6 +77,9 @@ export class EboIconDropdown extends EboComponent {
         switch (name) {
             case "value":
                 this[name] = newValue as PlaybackUserOptions;
+                break;
+            case "direction":
+                this.direction = newValue as Direction;
                 break;
         }
         this.requestUpdate();
@@ -111,5 +122,8 @@ export class EboIconDropdown extends EboComponent {
         let clone = selectedItem.cloneNode(true) as HTMLElement;
         button.innerText = "";
         button.appendChild(clone);
+        let menu = shadow.getElementById("menu") as HTMLElement;
+        menu.classList.remove(...Directions);
+        menu.classList.add(this.direction);
     }
 }

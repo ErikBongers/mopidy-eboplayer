@@ -109,7 +109,7 @@ export class EboPlayerBar extends EboComponent {
                     <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
-                    <ebo-dropdown id="btnRepeat" style="margin-left: 1em;">
+                    <ebo-dropdown id="btnRepeat" style="margin-left: 1em;" direction="up">
                         <ebo-option value="${"justPlay" satisfies PlaybackUserOptions}"><i class="fa fa-ellipsis-h"></i></ebo-option>
                         <ebo-option value="${"repeat" satisfies PlaybackUserOptions}"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
                         <ebo-option value="${"repeatSingle" satisfies PlaybackUserOptions}" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
