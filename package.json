@@ -5,9 +5,7 @@
   "main": "gui.js",
   "type": "module",
   "scripts": {
-    "build": "tsgo && rolldown -c",
-    "tsc": "tsc",
-    "tsgo": "tsgo"
+    "build": "tsc && rolldown -c"
   },
   "//": "install rolldown globally or add it to devDependencies",
   "devDependencies": {
