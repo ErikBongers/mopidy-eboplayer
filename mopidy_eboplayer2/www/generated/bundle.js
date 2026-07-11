@@ -4525,7 +4525,10 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                 margin-right: .5rem;
             }
             label {
-                margin-right: 1rem;
+                margin-right: .5rem;
+            }
+            label#volume {
+                margin-inline: .5rem;
             }
             .replaced {
                 opacity: .5;
@@ -4564,6 +4567,18 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                         <button id="btnUploadImage" style="margin-inline-start: .3rem;"><i class="fa fa-upload"></i></button>
                     </div>
                 </div>            
+                <div style="border-block-start: solid 1px rgba(255,255,255,.5); margin-block-start:.5rem; padding-block-start: .5rem;">
+                    <div class="flexRow">
+                        <label>Adjust volume:</label>
+                        <button id="btnVolumeDown">
+                            <i class="fa fa-volume-down"></i>
+                        </button>                    
+                        <label id="volume">+5</label>
+                        <button id="btnVolumeUp">
+                            <i class="fa fa-volume-up"></i>
+                        </button>                    
+                    </div>
+                </div>        
             </div>        
         </div>
         `;
@@ -4601,13 +4616,13 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			let { artists, composers, genreDefs } = await this.albumInfo.getAllDetails();
 			body.innerHTML = "";
-			addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
-			addMetaDataRow(body, "Artists:", artists.map((artist) => {
+			addDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
+			addDataRow(body, "Artists:", artists.map((artist) => {
 				return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `;
 			}).join(" "));
-			addMetaDataRow(body, "Composers:", composers.map((artist) => {
+			addDataRow(body, "Composers:", composers.map((artist) => {
 				return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `;
@@ -4620,8 +4635,8 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 				genresHtml += defHtml;
 			});
 			genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
-			addMetaDataRow(body, "Genre", genresHtml);
-			addMetaDataRow(body, "Playlists", "todo...");
+			addDataRow(body, "Genre", genresHtml);
+			addDataRow(body, "Playlists", "todo...");
 			body.querySelectorAll(".linkButton").forEach((link) => {
 				link.addEventListener("click", (ev) => {
 					this.dispatchEboEvent("browseToArtist.eboplayer", {
@@ -4634,10 +4649,23 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			shadow.querySelector("#btnEditGenre").addEventListener("click", (ev) => {
 				this.dispatchEboEvent("albumGenreEditRequested.eboplayer", { "uri": this.albumInfo?.album?.ref.uri });
 			});
+			let volumeLabel = shadow.getElementById("volume");
+			let volume = this.albumInfo.meta?.volumeAdjust ?? 0;
+			let volumeText = volume.toString();
+			if (volume > 0) volumeText = "+" + volumeText;
+			volumeLabel.innerHTML = volumeText;
+			shadow.getElementById("btnVolumeDown").addEventListener("click", (ev) => {
+				if (!this.albumInfo?.album) return;
+				this.dispatchEboEvent("albumVolumeAdjustDown.eboplayer", { uri: this.albumInfo.album.ref.uri });
+			});
+			shadow.getElementById("btnVolumeUp").addEventListener("click", (ev) => {
+				if (!this.albumInfo?.album) return;
+				this.dispatchEboEvent("albumVolumeAdjustUp.eboplayer", { uri: this.albumInfo.album.ref.uri });
+			});
 		}
 	}
 };
-function addMetaDataRow(body, colText1, colText2) {
+function addDataRow(body, colText1, colText2) {
 	let tr = body.appendChild(document.createElement("tr"));
 	let td1 = tr.appendChild(document.createElement("td"));
 	td1.innerHTML = colText1;
@@ -6534,9 +6562,9 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 			imgTag.src = this.streamInfo.bigImageUrl;
 			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
 			body.innerHTML = "";
-			addMetaDataRow(body, "More info?:", "dunno...");
-			addMetaDataRow(body, "Genre", "todo...");
-			addMetaDataRow(body, "Playlists", "todo...");
+			addDataRow(body, "More info?:", "dunno...");
+			addDataRow(body, "Genre", "todo...");
+			addDataRow(body, "Playlists", "todo...");
 		}
 	}
 };

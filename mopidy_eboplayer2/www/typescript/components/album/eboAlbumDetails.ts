@@ -35,7 +35,10 @@ export class EboAlbumDetails extends EboComponent {
                 margin-right: .5rem;
             }
             label {
-                margin-right: 1rem;
+                margin-right: .5rem;
+            }
+            label#volume {
+                margin-inline: .5rem;
             }
             .replaced {
                 opacity: .5;
@@ -75,6 +78,18 @@ export class EboAlbumDetails extends EboComponent {
                         <button id="btnUploadImage" style="margin-inline-start: .3rem;"><i class="fa fa-upload"></i></button>
                     </div>
                 </div>            
+                <div style="border-block-start: solid 1px rgba(255,255,255,.5); margin-block-start:.5rem; padding-block-start: .5rem;">
+                    <div class="flexRow">
+                        <label>Adjust volume:</label>
+                        <button id="btnVolumeDown">
+                            <i class="fa fa-volume-down"></i>
+                        </button>                    
+                        <label id="volume">+5</label>
+                        <button id="btnVolumeUp">
+                            <i class="fa fa-volume-up"></i>
+                        </button>                    
+                    </div>
+                </div>        
             </div>        
         </div>
         `;
@@ -124,13 +139,13 @@ export class EboAlbumDetails extends EboComponent {
             let {artists, composers, genreDefs} = await this.albumInfo.getAllDetails();
             //do the `await`s first before clearing and filling, to avoid data races! (double lines)
             body.innerHTML = "";
-            addMetaDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
-            addMetaDataRow(body, "Artists:", artists.map(artist => {
+            addDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
+            addDataRow(body, "Artists:", artists.map(artist => {
                 return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `
             }).join(" "));
-            addMetaDataRow(body, "Composers:", composers.map(artist => {
+            addDataRow(body, "Composers:", composers.map(artist => {
                 return ` 
                     <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
                 `
@@ -145,8 +160,8 @@ export class EboAlbumDetails extends EboComponent {
                 genresHtml += defHtml;
             });
             genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
-            addMetaDataRow(body, "Genre", genresHtml);
-            addMetaDataRow(body, "Playlists", "todo...");
+            addDataRow(body, "Genre", genresHtml);
+            addDataRow(body, "Playlists", "todo...");
             (body.querySelectorAll(".linkButton") as NodeListOf<HTMLElement>).forEach((link: HTMLElement) => {
                 link.addEventListener("click", (ev) => {
                     this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
@@ -156,12 +171,30 @@ export class EboAlbumDetails extends EboComponent {
             genreEdit.addEventListener("click", (ev) => {
                 this.dispatchEboEvent("albumGenreEditRequested.eboplayer", {"uri": this.albumInfo?.album?.ref.uri as AlbumUri});
             });
+            let volumeLabel = shadow.getElementById("volume") as HTMLElement;
+            let volume = this.albumInfo.meta?.volumeAdjust??0;
+            let volumeText = volume.toString();
+            if(volume > 0)
+                volumeText = "+" + volumeText;
+            volumeLabel.innerHTML = volumeText;
+            let btnVolumeDown = shadow.getElementById("btnVolumeDown") as HTMLElement;
+            btnVolumeDown.addEventListener("click", (ev) => {
+                if(!this.albumInfo?.album)
+                    return;
+                this.dispatchEboEvent("albumVolumeAdjustDown.eboplayer", {uri: this.albumInfo.album.ref.uri});
+            });
+            let btnVolumeUp = shadow.getElementById("btnVolumeUp") as HTMLElement;
+            btnVolumeUp.addEventListener("click", (ev) => {
+                if(!this.albumInfo?.album)
+                    return;
+                this.dispatchEboEvent("albumVolumeAdjustUp.eboplayer", {uri: this.albumInfo.album.ref.uri});
+            });
         }
     }
 
 }
 
-export function addMetaDataRow(body: HTMLTableSectionElement, colText1: string, colText2: string) {
+export function addDataRow(body: HTMLTableSectionElement, colText1: string, colText2: string) {
     let tr = body.appendChild(document.createElement("tr"));
     let td1 = tr.appendChild(document.createElement("td"));
     td1.innerHTML = colText1;

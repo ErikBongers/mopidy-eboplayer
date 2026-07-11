@@ -192,6 +192,7 @@ export interface AlbumMetaData {
     showTrackNumbers: boolean,
     albumTitle: string,
     imageFile: string
+    volumeAdjust?: number
 }
 
 export interface CachedAlbumMetaData {

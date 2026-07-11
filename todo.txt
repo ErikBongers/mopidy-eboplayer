@@ -1,12 +1,9 @@
-* Create volume boost.
-  : amixer set Master 100%
-  > default is 50%
-  > reset to 50
-  > save in meta.
-    > create meta for track
-      > file name?
-        > just like album meta, based on tags album name and track name.
-  > set for whole album (save in album.meta)
+* add volume adjustments to albums and tracks.
+  > Album view
+    - Replace New playlist button with "Info" button that goes to the 'back' of the album
+      - Volume drop down? Or +/- buttons.
+
+* Album details: search icon not found (but works on localhost)
 
 * Use playing animations to make distinction between 'Now Playing' and other views.
 * Timeline line separator shouldn't be clickable.

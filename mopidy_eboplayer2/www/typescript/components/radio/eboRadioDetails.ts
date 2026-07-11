@@ -1,7 +1,7 @@
 import {EboComponent} from "../EboComponent";
 import {ExpandedStreamModel} from "../../modelTypes";
 import {searchImageOnGoogle} from "../../global";
-import {addMetaDataRow} from "../album/eboAlbumDetails";
+import {addDataRow} from "../album/eboAlbumDetails";
 
 export class EboRadioDetails extends EboComponent {
     static override readonly tagName=  "ebo-radio-details";
@@ -115,9 +115,9 @@ export class EboRadioDetails extends EboComponent {
             let body = table.tBodies[0];
 
             body.innerHTML = "";
-            addMetaDataRow(body, "More info?:", "dunno...");
-            addMetaDataRow(body, "Genre", "todo...");
-            addMetaDataRow(body, "Playlists", "todo...");
+            addDataRow(body, "More info?:", "dunno...");
+            addDataRow(body, "Genre", "todo...");
+            addDataRow(body, "Playlists", "todo...");
         }
     }
 }

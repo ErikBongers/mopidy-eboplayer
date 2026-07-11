@@ -26,6 +26,8 @@ export interface EboEventHandlersEventMap {
     "favoritesChanged.eboplayer"                : VoidArgs,
     "albumGenreEditRequested.eboplayer"         : UriArgs,
     "currentRadioChanged.eboplayer"             : VoidArgs,
+    "albumVolumeAdjustDown.eboplayer"           : UriArgs,
+    "albumVolumeAdjustUp.eboplayer"             : UriArgs,
     "favoriteToggle.eboplayer"                  : UriArgs,
     "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
     "detailsRadioImgClicked.eboplayer"          : VoidArgs,
