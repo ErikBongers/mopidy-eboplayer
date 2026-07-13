@@ -14,7 +14,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         super(EboPlayerFrontend, self).__init__(config, core)
         self.core = core
         self.config = config
-        self.storage = Storage(self.config['eboplayer2']['storage_dir'])
+        self.storage = Storage(self.config['eboplayer2']['storage_dir'], core)
         self.host = self.config['http']['hostname']
         self.port = self.config['http']['port']
         self.storage.setup()
@@ -83,3 +83,26 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
     def on_track_ended(self):
         self.current_track_uri = ""
         self.storage.switch_stream_uri(self.current_track_uri)
+
+    # TEST calling backend from front end, without WS:
+    # todo:
+    def handle_save_request(self, track_uri, custom_data):
+        # 1. Find your backend actor by its class name
+        backend_proxies = pykka.ActorRegistry.get_by_class_name("EbobackBackend")
+
+        if backend_proxies:
+            # 2. Get the proxy and call your custom method
+            backend_proxy = backend_proxies[0].proxy()
+
+            # 3. Call it asynchronously (returns a Future) to prevent deadlocks
+            future = backend_proxy.save_custom_metadata(track_uri, custom_data)
+            success = future.get() # Wait for the backend to finish saving
+
+            if success:
+                # 4. Now safely proceed with your "current track" check
+                self.check_if_current_track(track_uri)
+
+    def check_if_current_track(self, track_uri):
+        current = self.core.playback.get_current_tl_track().get()
+        if current and current.track.uri == track_uri:
+            print("Updated track is currently playing! Doing next action...")

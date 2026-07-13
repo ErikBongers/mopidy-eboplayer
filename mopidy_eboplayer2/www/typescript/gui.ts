@@ -93,16 +93,17 @@ function updateDocumentTitle (headline: string) {
 }
 
 function setupStuff() {
-    let webSocketUrl = getWebSocketUrl();
+    let webSocketUrl = getWebSocketUrl(); //todo: this is probably not used. Remove it?
     let connectOptions: Options = {
         webSocketUrl,
         autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
     };
     let mopidy = new Mopidy(connectOptions);
-    let wsFrontEndUrl = "ws://192.168.1.111:6680/eboplayer2/ws/";
+    let hostAndPort = getHostAndPort();
+    let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer2/ws/`;
     let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1000, 64000);
 
-    let wsBackEndUrl = "ws://192.168.1.111:6680/eboback/ws2/";
+    let wsBackEndUrl = `ws://${hostAndPort}/eboback/ws2/`;
     let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1000, 64000);
 
     let model = new Model();

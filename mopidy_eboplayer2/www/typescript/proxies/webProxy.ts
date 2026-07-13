@@ -149,6 +149,15 @@ export class WebProxy {
         return result.is_favorite as boolean;
     }
 
+    async volumeDown(uri: AllUris) {
+        //>>> //todo: this should go to the front end, which should call the backend to update the data and then adjust the alsa volume if the current track is affected.
+        let url = this.ebobackUrl(`volume_down`);
+        url.searchParams.set("uri", uri);
+        let res = await fetch(url);
+        let result = await res.json();
+        return result.is_favorite as boolean;
+    }
+
     async getFavorites(): Promise<AllUris[]> {
         let url = this.ebobackUrl(`get_favorite_uris`);
         let res = await fetch(url);

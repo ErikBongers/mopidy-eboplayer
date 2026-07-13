@@ -1714,6 +1714,11 @@ var WebProxy = class {
 		url.searchParams.set("uri", uri);
 		return (await (await fetch(url)).json()).is_favorite;
 	}
+	async volumeDown(uri) {
+		let url = this.ebobackUrl(`volume_down`);
+		url.searchParams.set("uri", uri);
+		return (await (await fetch(url)).json()).is_favorite;
+	}
 	async getFavorites() {
 		let url = this.ebobackUrl(`get_favorite_uris`);
 		return await (await fetch(url)).json();
@@ -2124,6 +2129,11 @@ var Controller = class extends Commands {
 	}
 	async toggleFavorite(uri) {
 		await this.webProxy.toggleFavorite(uri);
+		this.model.setFavorites(null);
+		await this.cache.getFavorites();
+	}
+	async volumeDown(uri) {
+		await this.webProxy.volumeDown(uri);
 		this.model.setFavorites(null);
 		await this.cache.getFavorites();
 	}
@@ -3137,6 +3147,9 @@ var MainView = class extends View {
 		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
 			await this.onToggleFavorite(ev.detail.uri);
 		});
+		addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
+			await this.onVolumeDown(ev.detail.uri);
+		});
 		addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
@@ -3319,6 +3332,9 @@ var MainView = class extends View {
 	}
 	async onToggleFavorite(uri) {
 		await this.state.getController().toggleFavorite(uri);
+	}
+	async onVolumeDown(uri) {
+		await this.state.getController().volumeDown(uri);
 	}
 };
 
@@ -6825,8 +6841,11 @@ function setupStuff() {
 		autoConnect: false
 	};
 	let mopidy = new Mopidy(connectOptions);
-	let eboWsFrontCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboplayer2/ws/", 1e3, 64e3);
-	let eboWsBackCtrl = new JsonRpcController("ws://192.168.1.111:6680/eboback/ws2/", 1e3, 64e3);
+	let hostAndPort = getHostAndPort();
+	let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer2/ws/`;
+	let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1e3, 64e3);
+	let wsBackEndUrl = `ws://${hostAndPort}/eboback/ws2/`;
+	let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
 	let model = new Model();
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
 	let player = new PlayController(model, mopidyProxy);

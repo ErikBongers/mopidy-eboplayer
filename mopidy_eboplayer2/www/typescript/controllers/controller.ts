@@ -456,6 +456,12 @@ class Controller extends Commands {
         await this.cache.getFavorites();
     }
 
+    async volumeDown(uri: AllUris) {
+        await this.webProxy.volumeDown(uri);
+        this.model.setFavorites(null);
+        await this.cache.getFavorites();
+    }
+
     async isFavorite(uri: AllUris | undefined | null) {
         if(!uri)
             return false;

@@ -92,6 +92,9 @@ export class MainView extends View {
         addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
             await this.onToggleFavorite(ev.detail.uri);
         });
+        addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
+            await this.onVolumeDown(ev.detail.uri);
+        });
         addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
             await this.rememberStreamLines(ev.detail.lines);
         });
@@ -313,5 +316,9 @@ export class MainView extends View {
 
     private async onToggleFavorite(uri: AllUris) {
         await this.state.getController().toggleFavorite(uri);
+    }
+
+    private async onVolumeDown(uri: AllUris) {
+        await this.state.getController().volumeDown(uri);
     }
 }

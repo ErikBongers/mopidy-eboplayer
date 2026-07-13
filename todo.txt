@@ -1,7 +1,17 @@
+* web sockets IPs are hard coded.
+* Test Frontend.handle_save_request()
+  > it should call a Backend.whatever()
+  .
+
 * add volume adjustments to albums and tracks.
-  > Album view
-    - Replace New playlist button with "Info" button that goes to the 'back' of the album
-      - Volume drop down? Or +/- buttons.
+  > save album volume
+    > see backend > action_handlers > set_album_genre()
+    > immediately apply the volume.
+      > just call eboback > playback.adjust_volume(current_track)
+        > how does backend know what the current track is?
+          > perhaps save it in playback.change_track() ?
+            ...and then use it in adjust_volume() instead of setting a param?
+              > rename to adjust_volume_for_current_track() ?
 
 * Album details: search icon not found (but works on localhost)
 

@@ -8,10 +8,11 @@ logger = logging.getLogger(__name__)
 
 class ActiveStreamLinesHandler(tornado.web.RequestHandler):
     # noinspection PyAttributeOutsideInit
-    def initialize(self, config, path):
+    def initialize(self, config, path, core):
         self.__path = path
         self.config = config
-        self.storage = Storage(self.config['eboplayer2']['storage_dir'])
+        self.core = core
+        self.storage = Storage(self.config['eboplayer2']['storage_dir'], core)
 
     def get(self, all_or_active):
         self.set_header("Access-Control-Allow-Origin", "*")

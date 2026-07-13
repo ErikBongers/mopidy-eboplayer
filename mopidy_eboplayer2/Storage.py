@@ -14,11 +14,12 @@ logger = logging.getLogger(__name__)
 SEPARATOR_LINE = "---"
 
 class Storage:
-    def __init__(self, storage_dir):
+    def __init__(self, storage_dir, core):
         self.storage_dir = storage_dir
         self.stateFile = self.storage_dir + '/state.json'
         self.streamTitlesFile = ""
         self.current_track_uri = ""
+        self.core = core
 
     def setup(self):
         if not os.path.exists(self.storage_dir):
