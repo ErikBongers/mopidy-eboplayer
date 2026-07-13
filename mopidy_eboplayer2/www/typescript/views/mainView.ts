@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Views} from "../modelTypes";
+import {AlbumUri, AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Views} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {unreachable} from "../global";
@@ -93,7 +93,7 @@ export class MainView extends View {
             await this.onToggleFavorite(ev.detail.uri);
         });
         addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
-            await this.onVolumeDown(ev.detail.uri);
+            await this.onAlbumVolumeDown(ev.detail.uri as AlbumUri);
         });
         addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
             await this.rememberStreamLines(ev.detail.lines);
@@ -318,7 +318,7 @@ export class MainView extends View {
         await this.state.getController().toggleFavorite(uri);
     }
 
-    private async onVolumeDown(uri: AllUris) {
-        await this.state.getController().volumeDown(uri);
+    private async onAlbumVolumeDown(uri: AlbumUri) {
+        await this.state.getController().setAlbumVolumeDown(uri);
     }
 }

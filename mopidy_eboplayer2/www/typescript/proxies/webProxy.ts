@@ -9,7 +9,7 @@ export class WebProxy {
 
     constructor(hostAndPort: string) {
         this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
-        this.eboplayerBase = `http://${hostAndPort}/eboplayer2/`;
+        this.eboplayerBase = `http://${hostAndPort}/eboplayer2/action/`;
     }
 
     playerUrl(relPath: string) {
@@ -20,14 +20,14 @@ export class WebProxy {
     }
 
     async fetchActiveStreamLines(uri: StreamUri) {
-        let url = this.playerUrl(`stream/activeLines`);
+        let url = this.playerUrl(`get_active_streamlines`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as StreamTitles;
     }
 
     async fetchAllStreamLines(uri: string) {
-        let url = this.playerUrl(`stream/allLines`);
+        let url = this.playerUrl(`get_all_streamlines`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         return await res.json() as string[];
@@ -149,9 +149,9 @@ export class WebProxy {
         return result.is_favorite as boolean;
     }
 
-    async volumeDown(uri: AllUris) {
+    async albumVolumeDown(uri: AllUris) {
         //>>> //todo: this should go to the front end, which should call the backend to update the data and then adjust the alsa volume if the current track is affected.
-        let url = this.ebobackUrl(`volume_down`);
+        let url = this.playerUrl(`volume_down`);
         url.searchParams.set("uri", uri);
         let res = await fetch(url);
         let result = await res.json();

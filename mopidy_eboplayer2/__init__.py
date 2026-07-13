@@ -46,12 +46,14 @@ class Extension(ext.Extension):
         from .web import IndexHandler, StaticHandler
         from .streamlineshandler import ActiveStreamLinesHandler
         from .webSocketHandler import EboWebsocketHandler
+        from .actionHandler import ActionHandler
 
         path = pathlib.Path(__file__).parent / "www"
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
             (r"/stream/(active|all)Lines", ActiveStreamLinesHandler, {"config": config, "path": path, "core": core}),
+            (r"/action/(.+)", ActionHandler, {"config": config, "path": path, "core": core}),
             (r"/ws/?", EboWebsocketHandler, {"config": config}),  #Why this pattern??? I know it's in mopidy http somewhere, but still...
             (r"/(.*)", StaticHandler, {"path": path}),
         ]
