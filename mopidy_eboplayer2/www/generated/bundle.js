@@ -1602,7 +1602,7 @@ var WebProxy = class {
 	eboplayerBase;
 	constructor(hostAndPort) {
 		this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
-		this.eboplayerBase = `http://${hostAndPort}/eboplayer2/`;
+		this.eboplayerBase = `http://${hostAndPort}/eboplayer2/action/`;
 	}
 	playerUrl(relPath) {
 		return new URL(this.eboplayerBase + relPath);
@@ -1611,12 +1611,12 @@ var WebProxy = class {
 		return new URL(this.ebobackBase + relPath);
 	}
 	async fetchActiveStreamLines(uri) {
-		let url = this.playerUrl(`stream/activeLines`);
+		let url = this.playerUrl(`get_active_streamlines`);
 		url.searchParams.set("uri", uri);
 		return await (await fetch(url)).json();
 	}
 	async fetchAllStreamLines(uri) {
-		let url = this.playerUrl(`stream/allLines`);
+		let url = this.playerUrl(`get_all_streamlines`);
 		url.searchParams.set("uri", uri);
 		return await (await fetch(url)).json();
 	}
@@ -1714,8 +1714,8 @@ var WebProxy = class {
 		url.searchParams.set("uri", uri);
 		return (await (await fetch(url)).json()).is_favorite;
 	}
-	async volumeDown(uri) {
-		let url = this.ebobackUrl(`volume_down`);
+	async albumVolumeDown(uri) {
+		let url = this.playerUrl(`volume_down`);
 		url.searchParams.set("uri", uri);
 		return (await (await fetch(url)).json()).is_favorite;
 	}
@@ -2132,8 +2132,8 @@ var Controller = class extends Commands {
 		this.model.setFavorites(null);
 		await this.cache.getFavorites();
 	}
-	async volumeDown(uri) {
-		await this.webProxy.volumeDown(uri);
+	async setAlbumVolumeDown(uri) {
+		await this.webProxy.albumVolumeDown(uri);
 		this.model.setFavorites(null);
 		await this.cache.getFavorites();
 	}
@@ -3148,7 +3148,7 @@ var MainView = class extends View {
 			await this.onToggleFavorite(ev.detail.uri);
 		});
 		addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
-			await this.onVolumeDown(ev.detail.uri);
+			await this.onAlbumVolumeDown(ev.detail.uri);
 		});
 		addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
@@ -3333,8 +3333,8 @@ var MainView = class extends View {
 	async onToggleFavorite(uri) {
 		await this.state.getController().toggleFavorite(uri);
 	}
-	async onVolumeDown(uri) {
-		await this.state.getController().volumeDown(uri);
+	async onAlbumVolumeDown(uri) {
+		await this.state.getController().setAlbumVolumeDown(uri);
 	}
 };
 
