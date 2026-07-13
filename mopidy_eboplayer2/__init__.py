@@ -44,7 +44,6 @@ class Extension(ext.Extension):
     def factory(self, config, core): # factory is a Python function used by a Mopidy extension to register a web application with the Mopidy HTTP server.
         from tornado.web import RedirectHandler
         from .web import IndexHandler, StaticHandler
-        from .streamlineshandler import ActiveStreamLinesHandler
         from .webSocketHandler import EboWebsocketHandler
         from .actionHandler import ActionHandler
 
@@ -52,7 +51,6 @@ class Extension(ext.Extension):
         return [
             (r"/", RedirectHandler, {"url": "index.html"}),
             (r"/(index.html)", IndexHandler, {"config": config, "path": path}),
-            (r"/stream/(active|all)Lines", ActiveStreamLinesHandler, {"config": config, "path": path, "core": core}),
             (r"/action/(.+)", ActionHandler, {"config": config, "path": path, "core": core}),
             (r"/ws/?", EboWebsocketHandler, {"config": config}),  #Why this pattern??? I know it's in mopidy http somewhere, but still...
             (r"/(.*)", StaticHandler, {"path": path}),
