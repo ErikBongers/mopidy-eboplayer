@@ -126,3 +126,6 @@ class Storage:
         self.streamTitlesFile = url_to_filename(self.streamTitlesFile)
         self.streamTitlesFile = self.storage_dir + "/" + self.streamTitlesFile + ".txt"
         Path(self.streamTitlesFile, exist_ok=True).touch()
+
+    def set_album_volume_down(self, uri: str):
+        pass

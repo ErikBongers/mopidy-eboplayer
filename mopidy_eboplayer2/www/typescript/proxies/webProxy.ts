@@ -150,12 +150,9 @@ export class WebProxy {
     }
 
     async albumVolumeDown(uri: AllUris) {
-        //>>> //todo: this should go to the front end, which should call the backend to update the data and then adjust the alsa volume if the current track is affected.
-        let url = this.playerUrl(`volume_down`);
+        let url = this.playerUrl(`set_album_volume_down`);
         url.searchParams.set("uri", uri);
-        let res = await fetch(url);
-        let result = await res.json();
-        return result.is_favorite as boolean;
+        await fetch(url);
     }
 
     async getFavorites(): Promise<AllUris[]> {

@@ -1715,9 +1715,9 @@ var WebProxy = class {
 		return (await (await fetch(url)).json()).is_favorite;
 	}
 	async albumVolumeDown(uri) {
-		let url = this.playerUrl(`volume_down`);
+		let url = this.playerUrl(`set_album_volume_down`);
 		url.searchParams.set("uri", uri);
-		return (await (await fetch(url)).json()).is_favorite;
+		await fetch(url);
 	}
 	async getFavorites() {
 		let url = this.ebobackUrl(`get_favorite_uris`);
