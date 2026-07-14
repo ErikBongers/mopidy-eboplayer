@@ -1913,9 +1913,20 @@ var Controller = class extends Commands {
 			this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
 			this.model.dispatchEboEvent("scanFinished.eboplayer", {});
 		});
-		this.eboWsFrontCtrl.on("event:volumeAdjustChanged", (data) => {
-			console.log(`volumeAdjustChanged: ${data.volumeAdjust} for ${data.uri}`);
+		this.eboWsFrontCtrl.on("event:volumeAdjustChanged", async (data) => {
+			await this.onVolumeAdjustChanged(data.uri, data.volumeAdjust);
 		});
+	}
+	async onVolumeAdjustChanged(uri, volumeAdjust) {
+		console.log(`volumeAdjustChanged: ${volumeAdjust} for ${uri}`);
+		let album = await this.cache.getMetaDataCached(uri);
+		if (album) {
+			album.volumeAdjust = volumeAdjust;
+			this.model.dispatchEboEvent("volumeAdjustChanged.eboplayer", {
+				volumeAdjust,
+				uri
+			});
+		}
 	}
 	async fetchAllAlbums() {
 		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
@@ -4035,6 +4046,9 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		else btnFavorite.removeAttribute("pressed");
 		this.getShadow().querySelector("ebo-album-tracks-view").updateFavorites();
 	}
+	updateVolumeAdjust() {
+		this.getShadow().querySelector("ebo-album-details").volumeAdjustChanged();
+	}
 };
 
 //#endregion
@@ -4647,53 +4661,56 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 		});
 	}
 	async update(shadow) {
-		if (this.albumInfo) {
-			let albumName = shadow.getElementById("albumName");
-			albumName.innerHTML = this.albumInfo.album?.albumInfo?.name ?? "--no name--";
-			let imgTag = shadow.getElementById("bigImage");
-			imgTag.src = this.albumInfo.bigImageUrl;
-			let body = shadow.querySelector("#tableContainer > table").tBodies[0];
-			let { artists, composers, genreDefs } = await this.albumInfo.getAllDetails();
-			body.innerHTML = "";
-			addDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
-			addDataRow(body, "Artists:", artists.map((artist) => {
-				return ` 
-                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
-                `;
-			}).join(" "));
-			addDataRow(body, "Composers:", composers.map((artist) => {
-				return ` 
-                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
-                `;
-			}).join(" "));
-			let genresHtml = "";
-			genreDefs.forEach((def) => {
-				let defHtml = "";
-				if (def.replacement) defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
-				else defHtml += def.ref.name;
-				genresHtml += defHtml;
-			});
-			genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
-			addDataRow(body, "Genre", genresHtml);
-			addDataRow(body, "Playlists", "todo...");
-			body.querySelectorAll(".linkButton").forEach((link) => {
-				link.addEventListener("click", (ev) => {
-					this.dispatchEboEvent("browseToArtist.eboplayer", {
-						"name": ev.target.textContent,
-						"type": "artist",
-						"uri": link.dataset.uri
-					});
+		if (!this.albumInfo) return;
+		let albumName = shadow.getElementById("albumName");
+		albumName.innerHTML = this.albumInfo.album?.albumInfo?.name ?? "--no name--";
+		let imgTag = shadow.getElementById("bigImage");
+		imgTag.src = this.albumInfo.bigImageUrl;
+		let body = shadow.querySelector("#tableContainer > table").tBodies[0];
+		let { artists, composers, genreDefs } = await this.albumInfo.getAllDetails();
+		body.innerHTML = "";
+		addDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
+		addDataRow(body, "Artists:", artists.map((artist) => {
+			return ` 
+                <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+            `;
+		}).join(" "));
+		addDataRow(body, "Composers:", composers.map((artist) => {
+			return ` 
+                <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+            `;
+		}).join(" "));
+		let genresHtml = "";
+		genreDefs.forEach((def) => {
+			let defHtml = "";
+			if (def.replacement) defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
+			else defHtml += def.ref.name;
+			genresHtml += defHtml;
+		});
+		genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
+		addDataRow(body, "Genre", genresHtml);
+		addDataRow(body, "Playlists", "todo...");
+		body.querySelectorAll(".linkButton").forEach((link) => {
+			link.addEventListener("click", (ev) => {
+				this.dispatchEboEvent("browseToArtist.eboplayer", {
+					"name": ev.target.textContent,
+					"type": "artist",
+					"uri": link.dataset.uri
 				});
 			});
-			shadow.querySelector("#btnEditGenre").addEventListener("click", (ev) => {
-				this.dispatchEboEvent("albumGenreEditRequested.eboplayer", { "uri": this.albumInfo?.album?.ref.uri });
-			});
-			let volumeLabel = shadow.getElementById("volume");
-			let volume = this.albumInfo.meta?.volumeAdjust ?? 0;
-			let volumeText = volume.toString();
-			if (volume > 0) volumeText = "+" + volumeText;
-			volumeLabel.innerHTML = volumeText;
-		}
+		});
+		shadow.querySelector("#btnEditGenre").addEventListener("click", (ev) => {
+			this.dispatchEboEvent("albumGenreEditRequested.eboplayer", { "uri": this.albumInfo?.album?.ref.uri });
+		});
+		this.volumeAdjustChanged();
+	}
+	volumeAdjustChanged() {
+		if (!this.albumInfo) return;
+		let volumeLabel = this.getShadow().getElementById("volume");
+		let volume = this.albumInfo.meta?.volumeAdjust ?? 0;
+		let volumeText = volume.toString();
+		if (volume > 0) volumeText = "+" + volumeText;
+		volumeLabel.innerHTML = volumeText;
 	}
 };
 function addDataRow(body, colText1, colText2) {
@@ -5533,8 +5550,11 @@ var AlbumView = class extends ComponentView {
 		this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
 			this.onGenreEditRequested(ev.detail);
 		});
-		this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async (ev) => {
-			await this.onFavoritesChanged();
+		this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", (ev) => {
+			this.component.updateFavorite();
+		});
+		this.state.getModel().addEboEventListener("volumeAdjustChanged.eboplayer", (ev) => {
+			this.component.updateVolumeAdjust();
 		});
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {
@@ -5591,9 +5611,6 @@ var AlbumView = class extends ComponentView {
 		location.hash = "#Genres";
 		this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri);
 		location.reload();
-	}
-	async onFavoritesChanged() {
-		this.component.updateFavorite();
 	}
 };
 

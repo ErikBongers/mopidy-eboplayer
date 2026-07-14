@@ -165,9 +165,18 @@ class Controller extends Commands {
             this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
             this.model.dispatchEboEvent("scanFinished.eboplayer", {});
         });
-        this.eboWsFrontCtrl.on("event:volumeAdjustChanged", (data: {uri: string, volumeAdjust: number}) => {
-            console.log(`volumeAdjustChanged: ${data.volumeAdjust} for ${data.uri}`);
+        this.eboWsFrontCtrl.on("event:volumeAdjustChanged", async (data: {uri: AllUris, volumeAdjust: number}) => {
+            await this.onVolumeAdjustChanged(data.uri, data.volumeAdjust);
         });
+    }
+
+    async onVolumeAdjustChanged(uri: AllUris, volumeAdjust: number) {
+        console.log(`volumeAdjustChanged: ${volumeAdjust} for ${uri}`);
+        let album = await this.cache.getMetaDataCached(uri); //todo: this could be a track uri!!!
+        if(album) {
+            album.volumeAdjust = volumeAdjust;
+            this.model.dispatchEboEvent("volumeAdjustChanged.eboplayer", {volumeAdjust, uri});
+        }
     }
 
     async fetchAllAlbums() {

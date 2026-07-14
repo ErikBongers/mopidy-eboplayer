@@ -139,57 +139,62 @@ export class EboAlbumDetails extends EboComponent {
     }
 
     override async update(shadow: ShadowRoot) {
-        if(this.albumInfo) {
-            let albumName = shadow.getElementById("albumName") as HTMLElement;
-            albumName.innerHTML = this.albumInfo.album?.albumInfo?.name?? "--no name--";
-            let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
-            imgTag.src = this.albumInfo.bigImageUrl;
+        if (!this.albumInfo)
+            return;
 
-            let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;
-            let body = table.tBodies[0];
+        let albumName = shadow.getElementById("albumName") as HTMLElement;
+        albumName.innerHTML = this.albumInfo.album?.albumInfo?.name ?? "--no name--";
+        let imgTag = shadow.getElementById("bigImage") as HTMLImageElement;
+        imgTag.src = this.albumInfo.bigImageUrl;
+        let table = shadow.querySelector("#tableContainer > table") as HTMLTableElement;
+        let body = table.tBodies[0];
+        let {artists, composers, genreDefs} = await this.albumInfo.getAllDetails();
+        body.innerHTML = "";
+        addDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date ?? "--no date--");
+        addDataRow(body, "Artists:", artists.map(artist => {
+            return ` 
+                <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+            `
+        }).join(" "));
+        addDataRow(body, "Composers:", composers.map(artist => {
+            return ` 
+                <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
+            `
+        }).join(" "));
+        let genresHtml = "";
+        genreDefs.forEach(def => {
+            let defHtml = "";
+            if (def.replacement)
+                defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
+            else
+                defHtml += def.ref.name;
+            genresHtml += defHtml;
+        });
+        genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
+        addDataRow(body, "Genre", genresHtml);
+        addDataRow(body, "Playlists", "todo...");
+        (body.querySelectorAll(".linkButton") as NodeListOf<HTMLElement>).forEach((link: HTMLElement) => {
+            link.addEventListener("click", (ev) => {
+                this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
+            });
+        });
+        let genreEdit = shadow.querySelector("#btnEditGenre") as HTMLElement;
+        genreEdit.addEventListener("click", (ev) => {
+            this.dispatchEboEvent("albumGenreEditRequested.eboplayer", {"uri": this.albumInfo?.album?.ref.uri as AlbumUri});
+        });
+        this.volumeAdjustChanged();
+    }
 
-            let {artists, composers, genreDefs} = await this.albumInfo.getAllDetails();
-            //do the `await`s first before clearing and filling, to avoid data races! (double lines)
-            body.innerHTML = "";
-            addDataRow(body, "Year:", this.albumInfo.album.albumInfo?.date?? "--no date--");
-            addDataRow(body, "Artists:", artists.map(artist => {
-                return ` 
-                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
-                `
-            }).join(" "));
-            addDataRow(body, "Composers:", composers.map(artist => {
-                return ` 
-                    <button class="linkButton" data-uri="${artist.uri}">${artist.name}</button>
-                `
-            }).join(" "));
-            let genresHtml = "";
-            genreDefs.forEach(def => {
-                let defHtml = "";
-                if(def.replacement)
-                    defHtml += `<span class="replaced">${def.ref.name}</span> &gt; ${def.replacement}`;
-                else
-                    defHtml += def.ref.name;
-                genresHtml += defHtml;
-            });
-            genresHtml += `<i id="btnEditGenre" class="fa fa-pencil miniEdit"></i>`;
-            addDataRow(body, "Genre", genresHtml);
-            addDataRow(body, "Playlists", "todo...");
-            (body.querySelectorAll(".linkButton") as NodeListOf<HTMLElement>).forEach((link: HTMLElement) => {
-                link.addEventListener("click", (ev) => {
-                    this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
-                });
-            });
-            let genreEdit = shadow.querySelector("#btnEditGenre") as HTMLElement;
-            genreEdit.addEventListener("click", (ev) => {
-                this.dispatchEboEvent("albumGenreEditRequested.eboplayer", {"uri": this.albumInfo?.album?.ref.uri as AlbumUri});
-            });
-            let volumeLabel = shadow.getElementById("volume") as HTMLElement;
-            let volume = this.albumInfo.meta?.volumeAdjust??0;
-            let volumeText = volume.toString();
-            if(volume > 0)
-                volumeText = "+" + volumeText;
-            volumeLabel.innerHTML = volumeText;
-        }
+    volumeAdjustChanged() {
+        if (!this.albumInfo)
+            return;
+
+        let volumeLabel = this.getShadow().getElementById("volume") as HTMLElement;
+        let volume = this.albumInfo.meta?.volumeAdjust??0;
+        let volumeText = volume.toString();
+        if(volume > 0)
+            volumeText = "+" + volumeText;
+        volumeLabel.innerHTML = volumeText;
     }
 
 }

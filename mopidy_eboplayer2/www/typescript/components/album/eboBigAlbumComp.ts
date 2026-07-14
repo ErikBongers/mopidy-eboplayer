@@ -234,4 +234,9 @@ export class EboBigAlbumComp extends EboComponent {
         let tracksComp = this.getShadow().querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
         tracksComp.updateFavorites();
     }
+
+    updateVolumeAdjust() {
+        let albumDetailsComp = this.getShadow().querySelector("ebo-album-details") as EboAlbumDetails;
+        albumDetailsComp.volumeAdjustChanged();
+    }
 }
