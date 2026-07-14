@@ -54,11 +54,13 @@ class ActionHandler(tornado.web.RequestHandler):
             future.get() # Wait for the backend to finish saving
 
             current_tl_track = self.core.playback.get_current_tl_track().get()
+            logger.info("Getting current track: ")
 
             if current_tl_track is not None:
                 track = current_tl_track.track
-                print(f"Now playing: {track.name} by {track.artists[0].name}")
-                print(f"TLID: {current_tl_track.tlid}")                #todo: broadcast to all clients if current track is affected.
+                logger.info(f"Now playing: {track.name} by {track.artists[0].name}")
+                logger.info(f"TLID: {current_tl_track.tlid}")
+            #todo: broadcast to all clients the affected tracks and their new volume.
 
     @staticmethod
     def setup():
