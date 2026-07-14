@@ -1,8 +1,11 @@
 import json
 import logging
+import typing
 
 import pykka
 import tornado.web
+from mopidy.core import tracklist
+from mopidy.models import TlTrack
 
 from mopidy_eboplayer2.Storage import Storage
 
@@ -50,9 +53,10 @@ class ActionHandler(tornado.web.RequestHandler):
             future.get() # Wait for the backend to finish saving
 
             # 4. Now safely proceed with your "current track" check
-            current = self.core.playback.get_current_tl_track().get()
-            logger.info("todo: broadcast new volume for current track: " + current.track.uri + ".")
-            #todo: broadcast to all clients if current track is affected.
+            current = typing.cast(TlTrack | None, self.core.playback.get_current_tl_track())
+            if current:
+                logger.info("todo: broadcast new volume for current track: " + current.track.uri + ".")
+                #todo: broadcast to all clients if current track is affected.
 
     @staticmethod
     def setup():
