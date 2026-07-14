@@ -53,7 +53,7 @@ class ActionHandler(tornado.web.RequestHandler):
             future.get() # Wait for the backend to finish saving
 
             # 4. Now safely proceed with your "current track" check
-            current = typing.cast(TlTrack | None, self.core.playback.get_current_tl_track())
+            current = typing.cast(TlTrack | None, self.core.playback.get_current_tl_track()).get()
             if current:
                 logger.info("todo: broadcast new volume for current track: " + current.track.uri + ".")
                 #todo: broadcast to all clients if current track is affected.

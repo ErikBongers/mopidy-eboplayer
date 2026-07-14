@@ -3150,6 +3150,9 @@ var MainView = class extends View {
 		addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
 			await this.onAlbumVolumeDown(ev.detail.uri);
 		});
+		addEboEventListener(layout, "albumVolumeAdjustUp.eboplayer", async (ev) => {
+			await this.onAlbumVolumeUp(ev.detail.uri);
+		});
 		addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
@@ -3334,6 +3337,9 @@ var MainView = class extends View {
 		await this.state.getController().toggleFavorite(uri);
 	}
 	async onAlbumVolumeDown(uri) {
+		await this.state.getController().setAlbumVolumeDown(uri);
+	}
+	async onAlbumVolumeUp(uri) {
 		await this.state.getController().setAlbumVolumeDown(uri);
 	}
 };
