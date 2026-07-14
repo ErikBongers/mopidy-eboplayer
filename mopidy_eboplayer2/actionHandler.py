@@ -5,7 +5,7 @@ import typing
 import pykka
 import tornado.web
 from mopidy.core import tracklist
-from mopidy.models import TlTrack
+from mopidy.models import TlTrack, Track
 from pykka import ThreadingFuture
 
 from mopidy_eboplayer2.Storage import Storage
@@ -43,24 +43,34 @@ class ActionHandler(tornado.web.RequestHandler):
         self.write(json.dumps(self.storage.get_active_titles_object(self.storage.get_all_titles())))
 
     def set_album_volume_down(self):
-        uri = self.get_argument("uri")
-        self.storage.set_album_volume_down(uri)
+        self.set_album_volume_up_or_down(False)
 
+    def set_album_volume_up(self):
+        self.set_album_volume_up_or_down(True)
+
+    def set_album_volume_up_or_down(self, volume_up: bool):
+        uri = self.get_argument("uri")
         backend_proxy = self.get_backend_proxy()
 
         if backend_proxy:
             # Call it asynchronously (returns a Future) to prevent deadlocks
-            future = backend_proxy.adjust_album_volume_down(uri)
+            if volume_up:
+                future = backend_proxy.adjust_album_volume_up(uri)
+            else:
+                future = backend_proxy.adjust_album_volume_down(uri)
             future.get() # Wait for the backend to finish saving
 
             current_tl_track = self.core.playback.get_current_tl_track().get()
             logger.info("Getting current track: ")
 
             if current_tl_track is not None:
-                track = current_tl_track.track
-                logger.info(f"Now playing: {track.name} by {track.artists[0].name}")
+                track: Track = current_tl_track.track
+                logger.info(f"Now playing (or selected): {track.name}")
                 logger.info(f"TLID: {current_tl_track.tlid}")
-            #todo: broadcast to all clients the affected tracks and their new volume.
+                #todo: change the volume!!!
+                future = backend_proxy.set_volume_from_track(track.uri)
+                future.get()
+                #todo: broadcast to all clients the affected tracks and their new volume.
 
     @staticmethod
     def setup():
