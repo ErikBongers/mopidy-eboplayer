@@ -1719,6 +1719,11 @@ var WebProxy = class {
 		url.searchParams.set("uri", uri);
 		await fetch(url);
 	}
+	async albumVolumeUp(uri) {
+		let url = this.playerUrl(`set_album_volume_up`);
+		url.searchParams.set("uri", uri);
+		await fetch(url);
+	}
 	async getFavorites() {
 		let url = this.ebobackUrl(`get_favorite_uris`);
 		return await (await fetch(url)).json();
@@ -2134,8 +2139,9 @@ var Controller = class extends Commands {
 	}
 	async setAlbumVolumeDown(uri) {
 		await this.webProxy.albumVolumeDown(uri);
-		this.model.setFavorites(null);
-		await this.cache.getFavorites();
+	}
+	async setAlbumVolumeUp(uri) {
+		await this.webProxy.albumVolumeUp(uri);
 	}
 	async isFavorite(uri) {
 		if (!uri) return false;
@@ -3340,7 +3346,7 @@ var MainView = class extends View {
 		await this.state.getController().setAlbumVolumeDown(uri);
 	}
 	async onAlbumVolumeUp(uri) {
-		await this.state.getController().setAlbumVolumeDown(uri);
+		await this.state.getController().setAlbumVolumeUp(uri);
 	}
 };
 

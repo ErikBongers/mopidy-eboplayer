@@ -27,7 +27,7 @@ class ActionHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, no-store, must-revalidate")
 
     def get(self, data_path: str):
-        if data_path in ["get_all_streamlines", "get_active_streamlines", "set_album_volume_down"]:
+        if data_path in ["get_all_streamlines", "get_active_streamlines", "set_album_volume_down", "set_album_volume_up"]:
             func = getattr(self, data_path)
             func()
             return
@@ -53,13 +53,12 @@ class ActionHandler(tornado.web.RequestHandler):
             future = backend_proxy.adjust_album_volume_down(uri)
             future.get() # Wait for the backend to finish saving
 
-            # 4. Now safely proceed with your "current track" check
-        current_tl_track = self.core.playback.get_current_tl_track().get()
+            current_tl_track = self.core.playback.get_current_tl_track().get()
 
-        if current_tl_track is not None:
-            track = current_tl_track.track
-            print(f"Now playing: {track.name} by {track.artists[0].name}")
-            print(f"TLID: {current_tl_track.tlid}")                #todo: broadcast to all clients if current track is affected.
+            if current_tl_track is not None:
+                track = current_tl_track.track
+                print(f"Now playing: {track.name} by {track.artists[0].name}")
+                print(f"TLID: {current_tl_track.tlid}")                #todo: broadcast to all clients if current track is affected.
 
     @staticmethod
     def setup():

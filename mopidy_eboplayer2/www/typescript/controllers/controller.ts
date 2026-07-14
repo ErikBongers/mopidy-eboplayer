@@ -458,8 +458,10 @@ class Controller extends Commands {
 
     async setAlbumVolumeDown(uri: AllUris) {
         await this.webProxy.albumVolumeDown(uri);
-        this.model.setFavorites(null);
-        await this.cache.getFavorites();
+    }
+
+    async setAlbumVolumeUp(uri: AllUris) {
+        await this.webProxy.albumVolumeUp(uri);
     }
 
     async isFavorite(uri: AllUris | undefined | null) {

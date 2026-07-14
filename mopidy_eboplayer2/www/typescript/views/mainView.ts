@@ -326,6 +326,6 @@ export class MainView extends View {
     }
 
     private async onAlbumVolumeUp(uri: AlbumUri) {
-        await this.state.getController().setAlbumVolumeDown(uri);
+        await this.state.getController().setAlbumVolumeUp(uri);
     }
 }

@@ -155,6 +155,12 @@ export class WebProxy {
         await fetch(url);
     }
 
+    async albumVolumeUp(uri: AllUris) {
+        let url = this.playerUrl(`set_album_volume_up`);
+        url.searchParams.set("uri", uri);
+        await fetch(url);
+    }
+
     async getFavorites(): Promise<AllUris[]> {
         let url = this.ebobackUrl(`get_favorite_uris`);
         let res = await fetch(url);
