@@ -72,13 +72,13 @@ class ActionHandler(tornado.web.RequestHandler):
                 #todo: change the volume!!!
                 future = backend_proxy.set_volume_from_track(track.uri)
                 future.get()
-                #todo: broadcast to all clients the affected tracks and their new volume.
-                the_event = {
-                    "event" : "volume_adjust_changed",
-                    "uri" : uri,
-                    "volumeAdjust" : new_volume_adjust
-                }
-                broadcast_to_websockets(json.dumps(the_event))
+            #todo: broadcast to all clients the affected tracks and their new volume.
+            the_event = {
+                "event" : "volume_adjust_changed",
+                "uri" : uri,
+                "volumeAdjust" : new_volume_adjust
+            }
+            broadcast_to_websockets(json.dumps(the_event))
 
     @staticmethod
     def setup():
