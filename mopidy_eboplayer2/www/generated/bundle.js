@@ -1913,6 +1913,9 @@ var Controller = class extends Commands {
 			this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
 			this.model.dispatchEboEvent("scanFinished.eboplayer", {});
 		});
+		this.eboWsFrontCtrl.on("event:volumeAdjustChanged", (data) => {
+			console.log(`volumeAdjustChanged: ${data.volumeAdjust} for ${data.uri}`);
+		});
 	}
 	async fetchAllAlbums() {
 		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
