@@ -124,6 +124,18 @@ export class EboAlbumDetails extends EboComponent {
         btnUploadImage?.addEventListener("click", () => {
             this.dispatchEboEvent("uploadAlbumImageClicked.eboplayer", {"albumUri": this.albumInfo?.album.ref.uri as AlbumUri, "imageUrl": (shadow.getElementById("imageUrl") as HTMLInputElement).value.trim()})
         });
+        let btnVolumeDown = shadow.getElementById("btnVolumeDown") as HTMLElement;
+        btnVolumeDown.addEventListener("click", (ev) => {
+            if(!this.albumInfo?.album)
+                return;
+            this.dispatchEboEvent("albumVolumeAdjustDown.eboplayer", {uri: this.albumInfo.album.ref.uri});
+        });
+        let btnVolumeUp = shadow.getElementById("btnVolumeUp") as HTMLElement;
+        btnVolumeUp.addEventListener("click", (ev) => {
+            if(!this.albumInfo?.album)
+                return;
+            this.dispatchEboEvent("albumVolumeAdjustUp.eboplayer", {uri: this.albumInfo.album.ref.uri});
+        });
     }
 
     override async update(shadow: ShadowRoot) {
@@ -177,18 +189,6 @@ export class EboAlbumDetails extends EboComponent {
             if(volume > 0)
                 volumeText = "+" + volumeText;
             volumeLabel.innerHTML = volumeText;
-            let btnVolumeDown = shadow.getElementById("btnVolumeDown") as HTMLElement;
-            btnVolumeDown.addEventListener("click", (ev) => {
-                if(!this.albumInfo?.album)
-                    return;
-                this.dispatchEboEvent("albumVolumeAdjustDown.eboplayer", {uri: this.albumInfo.album.ref.uri});
-            });
-            let btnVolumeUp = shadow.getElementById("btnVolumeUp") as HTMLElement;
-            btnVolumeUp.addEventListener("click", (ev) => {
-                if(!this.albumInfo?.album)
-                    return;
-                this.dispatchEboEvent("albumVolumeAdjustUp.eboplayer", {uri: this.albumInfo.album.ref.uri});
-            });
         }
     }
 

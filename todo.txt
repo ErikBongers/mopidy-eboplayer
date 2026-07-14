@@ -1,4 +1,5 @@
-* web sockets IPs are hard coded.
+* adjust volume: test: backend says it adjusted but it keeps going from 5 to 4. Thus 4 is not being saved in db and/or meta file.
+
 * Test Frontend.handle_save_request()
   > it should call a Backend.whatever()
   .

@@ -42,21 +42,26 @@ class ActionHandler(tornado.web.RequestHandler):
         uri = self.get_argument("uri")
         self.storage.set_album_volume_down(uri)
 
-        backend_proxies = pykka.ActorRegistry.get_by_class_name("EbobackBackend")
+        backend_proxy = self.get_backend_proxy()
 
-        if backend_proxies:
-            backend_proxy = backend_proxies[0].proxy()
-
+        if backend_proxy:
             # Call it asynchronously (returns a Future) to prevent deadlocks
             future = backend_proxy.adjust_album_volume_down(uri)
-            success = future.get() # Wait for the backend to finish saving
+            future.get() # Wait for the backend to finish saving
 
-            if success:
-                # 4. Now safely proceed with your "current track" check
-                current = self.core.playback.get_current_tl_track().get()
-                logger.info("todo: broadcast new volume for current track: " + current.track.uri + ".")
-                #todo: broadcast to all clients if current track is affected.
+            # 4. Now safely proceed with your "current track" check
+            current = self.core.playback.get_current_tl_track().get()
+            logger.info("todo: broadcast new volume for current track: " + current.track.uri + ".")
+            #todo: broadcast to all clients if current track is affected.
 
     @staticmethod
     def setup():
         pass
+
+    @staticmethod
+    def get_backend_proxy():
+        backend_proxies = pykka.ActorRegistry.get_by_class_name("EbobackBackend")
+        if backend_proxies:
+            return backend_proxies[0].proxy()
+        return None
+

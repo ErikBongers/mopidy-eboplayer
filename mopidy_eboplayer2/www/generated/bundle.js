@@ -4622,6 +4622,14 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 				"imageUrl": shadow.getElementById("imageUrl").value.trim()
 			});
 		});
+		shadow.getElementById("btnVolumeDown").addEventListener("click", (ev) => {
+			if (!this.albumInfo?.album) return;
+			this.dispatchEboEvent("albumVolumeAdjustDown.eboplayer", { uri: this.albumInfo.album.ref.uri });
+		});
+		shadow.getElementById("btnVolumeUp").addEventListener("click", (ev) => {
+			if (!this.albumInfo?.album) return;
+			this.dispatchEboEvent("albumVolumeAdjustUp.eboplayer", { uri: this.albumInfo.album.ref.uri });
+		});
 	}
 	async update(shadow) {
 		if (this.albumInfo) {
@@ -4670,14 +4678,6 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 			let volumeText = volume.toString();
 			if (volume > 0) volumeText = "+" + volumeText;
 			volumeLabel.innerHTML = volumeText;
-			shadow.getElementById("btnVolumeDown").addEventListener("click", (ev) => {
-				if (!this.albumInfo?.album) return;
-				this.dispatchEboEvent("albumVolumeAdjustDown.eboplayer", { uri: this.albumInfo.album.ref.uri });
-			});
-			shadow.getElementById("btnVolumeUp").addEventListener("click", (ev) => {
-				if (!this.albumInfo?.album) return;
-				this.dispatchEboEvent("albumVolumeAdjustUp.eboplayer", { uri: this.albumInfo.album.ref.uri });
-			});
 		}
 	}
 };
