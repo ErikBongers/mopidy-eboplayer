@@ -5248,7 +5248,11 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
             <ebo-button id="readConfigBtn" class="roundBorder">Read config</ebo-button>
-            <ebo-button id="writeConfigBtn" class="roundBorder">Write config</ebo-button>
+            <div class="flexRow">
+                <ebo-button id="writeConfigBtn" class="roundBorder">Exclude extension: </ebo-button>
+                <input id="txtExt" type="text"/>
+                <label id="writeConfigStatus"></label>
+            </div>
         </div>        
         `;
 	constructor() {
@@ -5266,6 +5270,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		shadow.getElementById("scanBtn").addEventListener("click", async (ev) => {
 			let scanStatus = shadow.getElementById("scanStatus");
 			scanStatus.innerText = "";
+			this.lastStatusShown = -1;
 			this.dispatchEboEvent("scanRequested.eboplayer", {});
 		});
 		shadow.getElementById("whatsNewBtn").addEventListener("click", async (ev) => {
@@ -5278,7 +5283,17 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 			this.dispatchEboEvent("mopidyConfigRequested.eboplayer", {});
 		});
 		shadow.getElementById("writeConfigBtn").addEventListener("click", async (ev) => {
-			this.dispatchEboEvent("mopidyConfigAddExclExt.eboplayer", { extension: ".abc" });
+			let inputExt = shadow.getElementById("txtExt");
+			let ext = inputExt.value;
+			if (!ext.startsWith(".")) ext = "." + ext.trim();
+			this.dispatchEboEvent("mopidyConfigAddExclExt.eboplayer", { extension: ext.toLowerCase() });
+			inputExt.value = "";
+			let label = shadow.getElementById("writeConfigStatus");
+			label.innerText = "Added extension. Don't forget to restart mopidy to take effect.";
+		});
+		shadow.getElementById("txtExt").addEventListener("keypress", async (ev) => {
+			let label = shadow.getElementById("writeConfigStatus");
+			label.innerText = "";
 		});
 	}
 	update(shadow) {
