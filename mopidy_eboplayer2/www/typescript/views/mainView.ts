@@ -66,7 +66,7 @@ export class MainView extends View {
         });
         this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
-            settingsComp.scanStatus = ev.detail.text;
+            settingsComp.scanStatus = ev.detail.status;
         });
         this.state.getModel().addEboEventListener("scanFinished.eboplayer", () => {
             let settingsComp = document.getElementById("settingsView") as EboSettingsComp;

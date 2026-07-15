@@ -156,13 +156,13 @@ class Controller extends Commands {
             console.log(data);
         });
         this.eboWsBackCtrl.on("event:scanStarted", (data: any) => {
-            this.model.setScanStatus(`${data.message}\n`);
+            this.model.setScanStatus({type: data.type, message: data.message});
         });
         this.eboWsBackCtrl.on("event:scanStatus", (data: any) => {
-            this.model.setScanStatus(this.model.getScanStatus() + (data.message as string) + "\n");
+            this.model.setScanStatus({type: data.type, message: data.message});
         });
         this.eboWsBackCtrl.on("event:scanFinished", (data: any) => {
-            this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
+            this.model.setScanStatus({type: data.type, message: data.message});
             this.model.dispatchEboEvent("scanFinished.eboplayer", {});
         });
         this.eboWsFrontCtrl.on("event:volumeAdjustChanged", async (data: {uri: AllUris, volumeAdjust: number}) => {
@@ -442,6 +442,7 @@ class Controller extends Commands {
     }
 
     async startScan() {
+        this.model.clearScanStatus();
         await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
     }
 

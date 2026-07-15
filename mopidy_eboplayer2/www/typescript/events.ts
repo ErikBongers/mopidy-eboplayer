@@ -2,6 +2,7 @@ import {AlbumUri, AllUris, PlaybackUserOptions, RememberId, TrackUri} from "./mo
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
 import {RefType} from "./refs";
+import {ScanStatus} from "./model";
 
 export interface EboEventHandlersEventMap {
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
@@ -62,7 +63,7 @@ export interface EboEventHandlersEventMap {
     "saveClicked.eboplayer"                     : SaveUriArgs,
     "scanFinished.eboplayer"                    : VoidArgs,
     "scanRequested.eboplayer"                   : VoidArgs,
-    "scanStatusChanged.eboplayer"               : StringArgs,
+    "scanStatusChanged.eboplayer"               : ScanStatusArgs,
     "selectedTrackChanged.eboplayer"            : VoidArgs,
     "stopPressed.eboplayer"                     : VoidArgs,
     "trackClicked.eboplayer"                    : UriArgs,
@@ -139,6 +140,10 @@ export interface PressedArgs extends EboEventArgs {
 
 export interface StringArgs extends EboEventArgs {
     text: string
+}
+
+export interface ScanStatusArgs extends EboEventArgs {
+    status: ScanStatus[]
 }
 
 export interface DialogArgs extends EboEventArgs {

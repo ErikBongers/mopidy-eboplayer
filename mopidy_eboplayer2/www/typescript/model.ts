@@ -18,6 +18,11 @@ export type OnlyGetMethods<T> = {
 
 export type ReadOnlyModel = OnlyGetMethods<Model>;
 
+export interface ScanStatus {
+    message: string,
+    type: "progress" | "details" | "error"
+}
+
 export interface AlbumToView {
     albumUri: AlbumUri;
     selectedTrackUri: TrackUri | null;
@@ -68,7 +73,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
     private view: Views = Views.NowPlaying;
     private albumToView: AlbumToView | null = null;
     private remembers: RememberDef[] | null = null;
-    private scanStatus: string = "";
+    private scanStatus: ScanStatus[] = [];
     private allRefsMap: Map<AllUris, ExpandedRef<AllUris>> | null = null;
     private favorites: Set<AllUris> | null  = null;
     private radioToView: StreamUri | null = null;
@@ -357,9 +362,12 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
 
     getRemembers = () => this.remembers;
 
-    setScanStatus(status: string) {
-        this.scanStatus = status;
-        this.dispatchEboEvent("scanStatusChanged.eboplayer", {text: status});
+    clearScanStatus() {
+        this.scanStatus = [];
+    }
+    setScanStatus(status: ScanStatus) {
+        this.scanStatus.push(status);
+        this.dispatchEboEvent("scanStatusChanged.eboplayer", {status: this.scanStatus});
     }
 
     getGenreDefs = () => this.genreDefs;

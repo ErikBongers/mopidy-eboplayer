@@ -894,7 +894,7 @@ var Model = class extends EboEventTargetClass {
 	view = Views.NowPlaying;
 	albumToView = null;
 	remembers = null;
-	scanStatus = "";
+	scanStatus = [];
 	allRefsMap = null;
 	favorites = null;
 	radioToView = null;
@@ -1122,9 +1122,12 @@ var Model = class extends EboEventTargetClass {
 		this.dispatchEboEvent("remembersChanged.eboplayer", {});
 	}
 	getRemembers = () => this.remembers;
+	clearScanStatus() {
+		this.scanStatus = [];
+	}
 	setScanStatus(status) {
-		this.scanStatus = status;
-		this.dispatchEboEvent("scanStatusChanged.eboplayer", { text: status });
+		this.scanStatus.push(status);
+		this.dispatchEboEvent("scanStatusChanged.eboplayer", { status: this.scanStatus });
 	}
 	getGenreDefs = () => this.genreDefs;
 	setGenreDefs(genreDefs) {
@@ -1904,13 +1907,22 @@ var Controller = class extends Commands {
 			console.log(data);
 		});
 		this.eboWsBackCtrl.on("event:scanStarted", (data) => {
-			this.model.setScanStatus(`${data.message}\n`);
+			this.model.setScanStatus({
+				type: data.type,
+				message: data.message
+			});
 		});
 		this.eboWsBackCtrl.on("event:scanStatus", (data) => {
-			this.model.setScanStatus(this.model.getScanStatus() + data.message + "\n");
+			this.model.setScanStatus({
+				type: data.type,
+				message: data.message
+			});
 		});
 		this.eboWsBackCtrl.on("event:scanFinished", (data) => {
-			this.model.setScanStatus(this.model.getScanStatus() + "Scan completed.");
+			this.model.setScanStatus({
+				type: data.type,
+				message: data.message
+			});
 			this.model.dispatchEboEvent("scanFinished.eboplayer", {});
 		});
 		this.eboWsFrontCtrl.on("event:volumeAdjustChanged", async (data) => {
@@ -2131,6 +2143,7 @@ var Controller = class extends Commands {
 		this.model.setRemembers(null);
 	}
 	async startScan() {
+		this.model.clearScanStatus();
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
 	}
 	async deleteRemember(id) {
@@ -3144,7 +3157,7 @@ var MainView = class extends View {
 		});
 		this.state.getModel().addEboEventListener("scanStatusChanged.eboplayer", (ev) => {
 			let settingsComp$1 = document.getElementById("settingsView");
-			settingsComp$1.scanStatus = ev.detail.text;
+			settingsComp$1.scanStatus = ev.detail.status;
 		});
 		this.state.getModel().addEboEventListener("scanFinished.eboplayer", () => {
 			document.getElementById("settingsView").setAttribute("show_whats_new", "");
@@ -5179,7 +5192,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		this.update(this.shadow);
 	}
 	static observedAttributes = ["show_whats_new"];
-	_scanStatus = "";
+	_scanStatus = [];
 	show_whats_new = false;
 	static styleText = `
         <style>
@@ -5194,6 +5207,15 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
             }
             #scanStatus {
                 font-size: .7rem;
+                details > div {
+                    margin-inline-start: 1ch;
+                }
+                & .details {
+                    opacity: .5;
+                }
+                & .error, & .error summary {
+                    color: red;
+                }
             }
         </style>
         `;
@@ -5218,6 +5240,8 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 	}
 	render(shadow) {
 		shadow.getElementById("scanBtn").addEventListener("click", async (ev) => {
+			let scanStatus = shadow.getElementById("scanStatus");
+			scanStatus.innerText = "";
 			this.dispatchEboEvent("scanRequested.eboplayer", {});
 		});
 		shadow.getElementById("whatsNewBtn").addEventListener("click", async (ev) => {
@@ -5229,7 +5253,28 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 	}
 	update(shadow) {
 		let scanStatus = shadow.getElementById("scanStatus");
-		scanStatus.innerText = this.scanStatus;
+		let lastStatus = this.scanStatus[this.scanStatus.length - 1];
+		switch (lastStatus.type) {
+			case "progress":
+				let summary = scanStatus.appendChild(document.createElement("details")).appendChild(document.createElement("summary"));
+				summary.innerText = lastStatus.message;
+				break;
+			case "details": {
+				let div = scanStatus.querySelector("details:last-of-type").appendChild(document.createElement("div"));
+				div.innerHTML = lastStatus.message;
+				div.classList.add(lastStatus.type);
+				break;
+			}
+			case "error": {
+				let lastDetails = scanStatus.querySelector("details:last-of-type");
+				let div = lastDetails.appendChild(document.createElement("div"));
+				div.innerHTML = lastStatus.message;
+				div.classList.add(lastStatus.type);
+				lastDetails.classList.add("error");
+				break;
+			}
+			default: unreachable(lastStatus.type);
+		}
 		shadow.getElementById("whatsNewBtn").classList.toggle("hidden", !this.show_whats_new);
 	}
 };
