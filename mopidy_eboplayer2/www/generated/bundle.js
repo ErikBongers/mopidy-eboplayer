@@ -5252,30 +5252,38 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		});
 	}
 	update(shadow) {
+		this.updateScanStatus(shadow);
+		shadow.getElementById("whatsNewBtn").classList.toggle("hidden", !this.show_whats_new);
+	}
+	lastStatusShown = -1;
+	updateScanStatus(shadow) {
 		let scanStatus = shadow.getElementById("scanStatus");
-		let lastStatus = this.scanStatus[this.scanStatus.length - 1];
-		switch (lastStatus.type) {
+		while (this.lastStatusShown < this.scanStatus.length - 1) this.lastStatusShown = this.addScanStatus(scanStatus, shadow, this.lastStatusShown + 1);
+	}
+	addScanStatus(scanStatus, shadow, statusIndex) {
+		let status = this.scanStatus[statusIndex];
+		switch (status.type) {
 			case "progress":
 				let summary = scanStatus.appendChild(document.createElement("details")).appendChild(document.createElement("summary"));
-				summary.innerText = lastStatus.message;
+				summary.innerText = status.message;
 				break;
 			case "details": {
 				let div = scanStatus.querySelector("details:last-of-type").appendChild(document.createElement("div"));
-				div.innerHTML = lastStatus.message;
-				div.classList.add(lastStatus.type);
+				div.innerHTML = status.message;
+				div.classList.add(status.type);
 				break;
 			}
 			case "error": {
 				let lastDetails = scanStatus.querySelector("details:last-of-type");
 				let div = lastDetails.appendChild(document.createElement("div"));
-				div.innerHTML = lastStatus.message;
-				div.classList.add(lastStatus.type);
+				div.innerHTML = status.message;
+				div.classList.add(status.type);
 				lastDetails.classList.add("error");
 				break;
 			}
-			default: unreachable(lastStatus.type);
+			default: unreachable(status.type);
 		}
-		shadow.getElementById("whatsNewBtn").classList.toggle("hidden", !this.show_whats_new);
+		return statusIndex;
 	}
 };
 
