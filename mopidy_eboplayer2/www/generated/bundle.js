@@ -1739,6 +1739,10 @@ var WebProxy = class {
 		let url = this.playerUrl(`get_mopidy_config_file`);
 		return await (await fetch(url)).text();
 	}
+	async addExclExtToMopidyConfigFile(ext) {
+		let url = this.playerUrl(`add_excluded_file_extension`);
+		return await (await fetch(url)).text();
+	}
 };
 
 //#endregion
@@ -2152,6 +2156,10 @@ var Controller = class extends Commands {
 	}
 	async readMopidyConfig() {
 		let config = await this.webProxy.getMopidyConfigFile();
+		console.log(config);
+	}
+	async addExclExtToMopidyConfig(ext) {
+		let config = await this.webProxy.addExclExtToMopidyConfigFile(ext);
 		console.log(config);
 	}
 	async deleteRemember(id) {
@@ -3180,6 +3188,9 @@ var MainView = class extends View {
 		});
 		settingsComp.addEboEventListener("mopidyConfigRequested.eboplayer", async () => {
 			await this.state.getController().readMopidyConfig();
+		});
+		settingsComp.addEboEventListener("mopidyConfigAddExt.eboplayer", async (ev) => {
+			await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
 		});
 		let layout = document.getElementById("layout");
 		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {

@@ -178,4 +178,11 @@ export class WebProxy {
         let res = await fetch(url);
         return await res.text();
     }
+
+    async addExclExtToMopidyConfigFile(ext: string) {
+        let url = this.playerUrl(`add_excluded_file_extension`);
+        let res = await fetch(url);
+        url.searchParams.set("ext", ext);
+        return await res.text();
+    }
 }

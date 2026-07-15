@@ -451,6 +451,11 @@ class Controller extends Commands {
         console.log(config);
     }
 
+    async addExclExtToMopidyConfig(ext: string) {
+        let config = await this.webProxy.addExclExtToMopidyConfigFile(ext)
+        console.log(config);
+    }
+
     async deleteRemember(id: RememberId) {
         await this.webProxy.deleteRemember(id);
         this.model.setRemembers(null);
