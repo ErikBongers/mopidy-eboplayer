@@ -85,6 +85,14 @@ class ActionHandler(tornado.web.RequestHandler):
             }
             broadcast_to_websockets(json.dumps(the_event))
 
+    def add_excluded_file_extension(self):
+        ext = self.get_argument("ext")
+        backend_proxy = self.get_backend_proxy()
+
+        if backend_proxy:
+            future = backend_proxy.add_excluded_file_extension(ext)
+            future.get()
+
     @staticmethod
     def setup():
         pass

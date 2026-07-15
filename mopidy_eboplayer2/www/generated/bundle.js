@@ -5237,6 +5237,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
             <ebo-button id="readConfigBtn" class="roundBorder">Read config</ebo-button>
+            <ebo-button id="writeConfigBtn" class="roundBorder">Write config</ebo-button>
         </div>        
         `;
 	constructor() {
@@ -5264,6 +5265,9 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		});
 		shadow.getElementById("readConfigBtn").addEventListener("click", async (ev) => {
 			this.dispatchEboEvent("mopidyConfigRequested.eboplayer", {});
+		});
+		shadow.getElementById("writeConfigBtn").addEventListener("click", async (ev) => {
+			this.dispatchEboEvent("mopidyConfigAddExt.eboplayer", { extension: ".abc" });
 		});
 	}
 	update(shadow) {

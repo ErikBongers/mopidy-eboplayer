@@ -59,6 +59,7 @@ export interface EboEventHandlersEventMap {
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "rememberedRequested.eboplayer"             : VoidArgs,
     "mopidyConfigRequested.eboplayer"           : VoidArgs,
+    "mopidyConfigAddExt.eboplayer"              : ExtArgs,
     "remembersChanged.eboplayer"                : VoidArgs,
     "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "saveClicked.eboplayer"                     : SaveUriArgs,
@@ -117,6 +118,10 @@ export interface OptionArgs extends EboEventArgs {
 
 export interface UriArgs extends EboEventArgs {
     uri: AllUris
+}
+
+export interface ExtArgs extends EboEventArgs {
+    extension: string
 }
 
 export interface VolumeAdjustArgs extends EboEventArgs {
