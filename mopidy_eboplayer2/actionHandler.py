@@ -44,7 +44,7 @@ class ActionHandler(tornado.web.RequestHandler):
         self.write(json.dumps(self.storage.get_active_titles_object(self.storage.get_all_titles())))
 
     def get_mopidy_config_file(self):
-        with open('data.txt', 'r') as file:
+        with open('/etc/mopidy/mopidy.conf', 'r') as file:
             data = file.read()
             self.write(data)
 

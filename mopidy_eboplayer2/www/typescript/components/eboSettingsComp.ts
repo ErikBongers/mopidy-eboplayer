@@ -51,7 +51,7 @@ export class EboSettingsComp extends EboComponent {
             <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
-            <ebo-button id="readConfigBtn" class="roundBorder hidden">Read config</ebo-button>
+            <ebo-button id="readConfigBtn" class="roundBorder">Read config</ebo-button>
         </div>        
         `;
 
