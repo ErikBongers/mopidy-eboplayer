@@ -83,7 +83,7 @@ export class MainView extends View {
         settingsComp.addEboEventListener("mopidyConfigRequested.eboplayer", async () => {
             await this.state.getController().readMopidyConfig();
         });
-        settingsComp.addEboEventListener("mopidyConfigAddExt.eboplayer", async (ev) => {
+        settingsComp.addEboEventListener("mopidyConfigAddExclExt.eboplayer", async (ev) => {
             await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
         });
 

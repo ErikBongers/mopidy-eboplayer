@@ -91,7 +91,7 @@ export class EboSettingsComp extends EboComponent {
         });
         let writeConfigBtn = shadow.getElementById("writeConfigBtn") as EboButton;
         writeConfigBtn.addEventListener("click", async (ev) => {
-            this.dispatchEboEvent("mopidyConfigAddExt.eboplayer", {extension: ".abc"});
+            this.dispatchEboEvent("mopidyConfigAddExclExt.eboplayer", {extension: ".abc"});
         });
     }
 

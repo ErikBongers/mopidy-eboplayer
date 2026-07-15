@@ -1741,6 +1741,7 @@ var WebProxy = class {
 	}
 	async addExclExtToMopidyConfigFile(ext) {
 		let url = this.playerUrl(`add_excluded_file_extension`);
+		url.searchParams.set("ext", ext);
 		return await (await fetch(url)).text();
 	}
 };
@@ -2159,8 +2160,7 @@ var Controller = class extends Commands {
 		console.log(config);
 	}
 	async addExclExtToMopidyConfig(ext) {
-		let config = await this.webProxy.addExclExtToMopidyConfigFile(ext);
-		console.log(config);
+		await this.webProxy.addExclExtToMopidyConfigFile(ext);
 	}
 	async deleteRemember(id) {
 		await this.webProxy.deleteRemember(id);
@@ -3189,7 +3189,7 @@ var MainView = class extends View {
 		settingsComp.addEboEventListener("mopidyConfigRequested.eboplayer", async () => {
 			await this.state.getController().readMopidyConfig();
 		});
-		settingsComp.addEboEventListener("mopidyConfigAddExt.eboplayer", async (ev) => {
+		settingsComp.addEboEventListener("mopidyConfigAddExclExt.eboplayer", async (ev) => {
 			await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
 		});
 		let layout = document.getElementById("layout");
@@ -5278,7 +5278,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 			this.dispatchEboEvent("mopidyConfigRequested.eboplayer", {});
 		});
 		shadow.getElementById("writeConfigBtn").addEventListener("click", async (ev) => {
-			this.dispatchEboEvent("mopidyConfigAddExt.eboplayer", { extension: ".abc" });
+			this.dispatchEboEvent("mopidyConfigAddExclExt.eboplayer", { extension: ".abc" });
 		});
 	}
 	update(shadow) {

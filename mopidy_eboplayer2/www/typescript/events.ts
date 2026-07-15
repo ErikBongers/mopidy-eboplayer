@@ -59,7 +59,7 @@ export interface EboEventHandlersEventMap {
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "rememberedRequested.eboplayer"             : VoidArgs,
     "mopidyConfigRequested.eboplayer"           : VoidArgs,
-    "mopidyConfigAddExt.eboplayer"              : ExtArgs,
+    "mopidyConfigAddExclExt.eboplayer"           : ExtArgs,
     "remembersChanged.eboplayer"                : VoidArgs,
     "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "saveClicked.eboplayer"                     : SaveUriArgs,
