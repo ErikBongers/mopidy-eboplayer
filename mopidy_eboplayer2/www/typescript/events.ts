@@ -58,6 +58,7 @@ export interface EboEventHandlersEventMap {
     "refsFiltered.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "rememberedRequested.eboplayer"             : VoidArgs,
+    "mopidyConfigRequested.eboplayer"           : VoidArgs,
     "remembersChanged.eboplayer"                : VoidArgs,
     "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "saveClicked.eboplayer"                     : SaveUriArgs,

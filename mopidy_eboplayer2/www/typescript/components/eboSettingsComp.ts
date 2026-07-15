@@ -51,6 +51,7 @@ export class EboSettingsComp extends EboComponent {
             <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
+            <ebo-button id="readConfigBtn" class="roundBorder hidden">Read config</ebo-button>
         </div>        
         `;
 
@@ -82,6 +83,10 @@ export class EboSettingsComp extends EboComponent {
         let rememberedBtn = shadow.getElementById("rememberedBtn") as EboButton;
         rememberedBtn.addEventListener("click", async (ev) => {
             this.dispatchEboEvent("rememberedRequested.eboplayer", {});
+        });
+        let configBtn = shadow.getElementById("readConfigBtn") as EboButton;
+        configBtn.addEventListener("click", async (ev) => {
+            this.dispatchEboEvent("mopidyConfigRequested.eboplayer", {});
         });
     }
 

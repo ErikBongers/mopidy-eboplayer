@@ -172,4 +172,10 @@ export class WebProxy {
         let res = await fetch(url);
         return await res.text();
     }
+
+    async getMopidyConfigFile() {
+        let url = this.playerUrl(`get_mopidy_config_file`);
+        let res = await fetch(url);
+        return await res.text();
+    }
 }

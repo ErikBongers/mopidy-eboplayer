@@ -1735,6 +1735,10 @@ var WebProxy = class {
 		let url = this.ebobackUrl(`get_favorites_playlist_name`);
 		return await (await fetch(url)).text();
 	}
+	async getMopidyConfigFile() {
+		let url = this.playerUrl(`get_mopidy_config_file`);
+		return await (await fetch(url)).text();
+	}
 };
 
 //#endregion
@@ -2145,6 +2149,10 @@ var Controller = class extends Commands {
 	async startScan() {
 		this.model.clearScanStatus();
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
+	}
+	async readMopidyConfig() {
+		let config = await this.webProxy.getMopidyConfigFile();
+		console.log(config);
 	}
 	async deleteRemember(id) {
 		await this.webProxy.deleteRemember(id);
@@ -3169,6 +3177,9 @@ var MainView = class extends View {
 		settingsComp.addEboEventListener("whatsNewRequested.eboplayer", () => {
 			window.location.hash = "#WhatsNew";
 			window.location.reload();
+		});
+		settingsComp.addEboEventListener("mopidyConfigRequested.eboplayer", async () => {
+			await this.state.getController().readMopidyConfig();
 		});
 		let layout = document.getElementById("layout");
 		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
@@ -5225,6 +5236,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
             <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
             <p id="scanStatus"></p>
             <ebo-button id="whatsNewBtn" class="roundBorder hidden">Show what's new!</ebo-button>
+            <ebo-button id="readConfigBtn" class="roundBorder hidden">Read config</ebo-button>
         </div>        
         `;
 	constructor() {
@@ -5249,6 +5261,9 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		});
 		shadow.getElementById("rememberedBtn").addEventListener("click", async (ev) => {
 			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
+		});
+		shadow.getElementById("readConfigBtn").addEventListener("click", async (ev) => {
+			this.dispatchEboEvent("mopidyConfigRequested.eboplayer", {});
 		});
 	}
 	update(shadow) {

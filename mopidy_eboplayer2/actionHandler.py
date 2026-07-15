@@ -28,7 +28,7 @@ class ActionHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, no-store, must-revalidate")
 
     def get(self, data_path: str):
-        if data_path in ["get_all_streamlines", "get_active_streamlines", "set_album_volume_down", "set_album_volume_up"]:
+        if data_path in ["get_all_streamlines", "get_active_streamlines", "set_album_volume_down", "set_album_volume_up", "get_mopidy_config_file"]:
             func = getattr(self, data_path)
             func()
             return
@@ -42,6 +42,11 @@ class ActionHandler(tornado.web.RequestHandler):
         uri = self.get_argument("uri")
         self.storage.set_stream_uri(uri)
         self.write(json.dumps(self.storage.get_active_titles_object(self.storage.get_all_titles())))
+
+    def get_mopidy_config_file(self):
+        with open('data.txt', 'r') as file:
+            data = file.read()
+            self.write(data)
 
     def set_album_volume_down(self):
         self.set_album_volume_up_or_down(False)

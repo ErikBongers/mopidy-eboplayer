@@ -80,6 +80,9 @@ export class MainView extends View {
             window.location.hash = "#WhatsNew";
             window.location.reload();
         });
+        settingsComp.addEboEventListener("mopidyConfigRequested.eboplayer", async () => {
+            await this.state.getController().readMopidyConfig();
+        });
 
         let layout = document.getElementById("layout") as HTMLElement;
         addEboEventListener(layout, "rememberedRequested.eboplayer", () => {

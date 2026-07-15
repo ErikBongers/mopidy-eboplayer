@@ -446,6 +446,11 @@ class Controller extends Commands {
         await this.eboWsBackCtrl.send({method: "start_scan"}, "fireAndForget");
     }
 
+    async readMopidyConfig() {
+        let config = await this.webProxy.getMopidyConfigFile();
+        console.log(config);
+    }
+
     async deleteRemember(id: RememberId) {
         await this.webProxy.deleteRemember(id);
         this.model.setRemembers(null);
