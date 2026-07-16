@@ -57,6 +57,11 @@ export class EboSettingsComp extends EboComponent {
                 <input id="txtExt" type="text"/>
                 <label id="writeConfigStatus"></label>
             </div>
+            <div class="flexRow">
+                <ebo-button id="getMixersBtn" class="roundBorder">Select audio mixer</ebo-button>
+                <select id="selectMixer" class="hidden"></select>
+                <label>Audio mixer:</label>
+            </div>
         </div>        
         `;
 
@@ -110,6 +115,10 @@ export class EboSettingsComp extends EboComponent {
             let label = shadow.getElementById("writeConfigStatus") as HTMLElement;
             label.innerText = "";
         });
+        let mixersBtn = shadow.getElementById("getMixersBtn") as EboButton;
+        mixersBtn.addEventListener("click", async (ev) => {
+            this.dispatchEboEvent("getMixers.eboplayer", {});
+        })
     }
 
     override update(shadow:ShadowRoot) {

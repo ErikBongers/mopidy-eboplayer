@@ -821,16 +821,16 @@ let AlbumDataType = /* @__PURE__ */ function(AlbumDataType$1) {
 	return AlbumDataType$1;
 }({});
 const AlbumNone = { type: AlbumDataType.None };
-let Views = /* @__PURE__ */ function(Views$1) {
-	Views$1["NowPlaying"] = "#NowPlaying";
-	Views$1["Browse"] = "#Browse";
-	Views$1["Album"] = "#Album";
-	Views$1["Settings"] = "#Settings";
-	Views$1["WhatsNew"] = "#WhatsNew";
-	Views$1["Remembered"] = "#Remembered";
-	Views$1["Genres"] = "#Genres";
-	Views$1["Radio"] = "#Radio";
-	return Views$1;
+let Pages = /* @__PURE__ */ function(Pages$1) {
+	Pages$1["NowPlaying"] = "#NowPlaying";
+	Pages$1["Browse"] = "#Browse";
+	Pages$1["Album"] = "#Album";
+	Pages$1["Settings"] = "#Settings";
+	Pages$1["WhatsNew"] = "#WhatsNew";
+	Pages$1["Remembered"] = "#Remembered";
+	Pages$1["Genres"] = "#Genres";
+	Pages$1["Radio"] = "#Radio";
+	return Pages$1;
 }({});
 
 //#endregion
@@ -891,7 +891,7 @@ var Model = class extends EboEventTargetClass {
 	currentProgramTitle = "";
 	allRefs = null;
 	currentRefs = null;
-	view = Views.NowPlaying;
+	page = Pages.NowPlaying;
 	albumToView = null;
 	remembers = null;
 	scanStatus = [];
@@ -1104,11 +1104,11 @@ var Model = class extends EboEventTargetClass {
 		this.currentRefs = refs;
 		this.dispatchEboEvent("currentRefsLoaded.eboplayer", {});
 	}
-	setView(view) {
-		this.view = view;
+	setPage(page) {
+		this.page = page;
 		this.dispatchEboEvent("viewChanged.eboplayer", {});
 	}
-	getView = () => this.view;
+	getPage = () => this.page;
 	setAlbumToView(uri, selectedTrackUri) {
 		this.albumToView = {
 			albumUri: uri,
@@ -1744,6 +1744,10 @@ var WebProxy = class {
 		url.searchParams.set("ext", ext);
 		return await (await fetch(url)).text();
 	}
+	async getMixers() {
+		let url = this.playerUrl(`get_mixers`);
+		return await (await fetch(url)).json();
+	}
 };
 
 //#endregion
@@ -1761,27 +1765,27 @@ var ViewController = class extends Commands {
 	setInitialView() {
 		let lastViewed = this.controller.localStorageProxy.getLastViewed();
 		if (!lastViewed) {
-			this.setView(Views.NowPlaying);
+			this.setView(Pages.NowPlaying);
 			return;
 		}
 		switch (lastViewed.view) {
-			case Views.Album:
-				if (location.hash == Views.Album) {
+			case Pages.Album:
+				if (location.hash == Pages.Album) {
 					this.gotoAlbum(lastViewed.uri);
 					return;
 				}
 				break;
-			case Views.Radio:
-				if (location.hash == Views.Radio) {
+			case Pages.Radio:
+				if (location.hash == Pages.Radio) {
 					this.gotoRadio(lastViewed.uri);
 					return;
 				}
 				break;
 			default:
-				this.setView(location.hash != "" ? location.hash : Views.NowPlaying);
+				this.setView(location.hash != "" ? location.hash : Pages.NowPlaying);
 				return;
 		}
-		this.setView(Views.NowPlaying);
+		this.setView(Pages.NowPlaying);
 	}
 	gotoAlbum(uri) {
 		this.controller.getExpandedAlbumModel(uri).then(() => {
@@ -1794,22 +1798,22 @@ var ViewController = class extends Commands {
 		});
 	}
 	setView(view) {
-		this.model.setView(view);
+		this.model.setPage(view);
 	}
 	showAlbum(albumUri, selectedTrackUri) {
-		this.localStorageProxy.setLastViewed(Views.Album, albumUri);
+		this.localStorageProxy.setLastViewed(Pages.Album, albumUri);
 		this.model.setAlbumToView(albumUri, selectedTrackUri);
-		this.model.setView(Views.Album);
+		this.model.setPage(Pages.Album);
 	}
 	showRadio(radioUri) {
-		this.localStorageProxy.setLastViewed(Views.Radio, radioUri);
+		this.localStorageProxy.setLastViewed(Pages.Radio, radioUri);
 		this.model.setRadioToView(radioUri);
-		this.model.setView(Views.Radio);
+		this.model.setPage(Pages.Radio);
 	}
 	async browseToArtist(args) {
 		await this.controller.clearBreadCrumbs();
 		await this.controller.diveIntoBrowseResult(args.name, args.uri, args.type, false);
-		this.setView(Views.Browse);
+		this.setView(Pages.Browse);
 	}
 };
 
@@ -2199,7 +2203,7 @@ var Controller = class extends Commands {
 		if (!favoritesRef) return;
 		await this.clearBreadCrumbs();
 		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
-		this.viewController.setView(Views.Browse);
+		this.viewController.setView(Pages.Browse);
 	}
 	showTempMessage(message, type) {
 		this.model.setTempMessage({
@@ -2308,15 +2312,15 @@ var PlayerBarView = class extends ComponentView {
 	showHideInfo() {
 		let currentTrack = this.state.getModel().getCurrentTrack();
 		let selectedTrack = this.state.getModel().getSelectedTrack();
-		let currentView = this.state.getModel().getView();
+		let currentView = this.state.getModel().getPage();
 		let show_info = false;
 		if (selectedTrack && currentTrack != selectedTrack) show_info = true;
-		if (currentView != Views.NowPlaying) show_info = true;
+		if (currentView != Pages.NowPlaying) show_info = true;
 		this.component.setAttribute("show_info", show_info.toString());
 	}
 	onButtonBarImgClicked() {
 		this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
-		this.state.getController().viewController.setView(Views.NowPlaying);
+		this.state.getController().viewController.setView(Pages.NowPlaying);
 	}
 	onActiveStreamLinesChanged() {
 		let lines = this.state.getModel().getActiveStreamLines();
@@ -3156,7 +3160,7 @@ var MainView = class extends View {
 			await this.onTrackListChanged();
 		});
 		this.state.getModel().addEboEventListener("viewChanged.eboplayer", async () => {
-			await this.setCurrentView();
+			await this.setCurrentPage();
 		});
 		this.state.getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
 			await this.onAlbumToViewChanged();
@@ -3194,7 +3198,7 @@ var MainView = class extends View {
 		});
 		let layout = document.getElementById("layout");
 		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
-			this.state.getController().viewController.setView(Views.Remembered);
+			this.state.getController().viewController.setView(Pages.Remembered);
 		});
 		addEboEventListener(layout, "genreSelected.eboplayer", (ev) => {
 			this.onGenreSelected(ev.detail.text);
@@ -3215,13 +3219,13 @@ var MainView = class extends View {
 	getListButtonStates(currentView) {
 		let states = ListButtonState_AllHidden();
 		switch (currentView) {
-			case Views.Album:
+			case Pages.Album:
 				states = this.showHideTrackAndAlbumButtons(states, "show");
 				states.new_playlist = "hide";
 				states.edit = "hide";
 				states.line_or_icon = "hide";
 				return states;
-			case Views.Radio:
+			case Pages.Radio:
 				states = this.showHideTrackAndAlbumButtons(states, "show");
 				states.new_playlist = "hide";
 				states.edit = "hide";
@@ -3239,31 +3243,31 @@ var MainView = class extends View {
 		return states;
 	}
 	onBrowseButtonClick() {
-		this.state.getController().viewController.setView(Views.Browse);
+		this.state.getController().viewController.setView(Pages.Browse);
 	}
 	onNowPlayingButtonClick() {
-		this.state.getController().viewController.setView(Views.NowPlaying);
+		this.state.getController().viewController.setView(Pages.NowPlaying);
 	}
-	async setCurrentView() {
-		let view = this.state.getModel().getView();
-		await this.showView(view);
+	async setCurrentPage() {
+		let page = this.state.getModel().getPage();
+		await this.showPage(page);
 	}
 	hashToViewId(hash) {
 		switch (hash) {
-			case Views.NowPlaying: return "timelineDetails";
-			case Views.Browse: return "browseView";
-			case Views.WhatsNew: return "browseView";
-			case Views.Remembered: return "rememberedView";
-			case Views.Album: return "bigAlbumView";
-			case Views.Settings: return "settingsView";
-			case Views.Genres: return "genresView";
-			case Views.Radio: return "bigRadioView";
+			case Pages.NowPlaying: return "timelineDetails";
+			case Pages.Browse: return "browseView";
+			case Pages.WhatsNew: return "browseView";
+			case Pages.Remembered: return "rememberedView";
+			case Pages.Album: return "bigAlbumView";
+			case Pages.Settings: return "settingsView";
+			case Pages.Genres: return "genresView";
+			case Pages.Radio: return "bigRadioView";
 			default: return unreachable(hash);
 		}
 	}
-	async showView(view) {
-		document.querySelectorAll(".fullView").forEach((v) => v.classList.remove("shownView"));
-		document.getElementById(this.hashToViewId(view)).classList.add("shownView");
+	async showPage(view) {
+		document.querySelectorAll(".page").forEach((v) => v.classList.remove("shownPage"));
+		document.getElementById(this.hashToViewId(view)).classList.add("shownPage");
 		let browseBtn = document.getElementById("headerSearchBtn");
 		let nowPlayingBtn = document.getElementById("headerNowPlayingBtn");
 		let layout = document.getElementById("layout");
@@ -3275,52 +3279,52 @@ var MainView = class extends View {
 		let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
 		layout.classList.remove("showFullView");
 		switch (view) {
-			case Views.WhatsNew:
+			case Pages.WhatsNew:
 				await this.state.getController().setWhatsNewFilter();
 				resultsDisplayMode = "icon";
 				layout.classList.add("showFullView");
-			case Views.Browse:
+			case Pages.Browse:
 				location.hash = view;
 				browseBtn.style.display = "none";
 				nowPlayingBtn.style.display = "block";
 				this.browseView.updateCompFromState(resultsDisplayMode);
 				layout.classList.add("showFullView");
 				break;
-			case Views.NowPlaying:
+			case Pages.NowPlaying:
 				location.hash = "";
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "none";
 				break;
-			case Views.Album:
-				location.hash = Views.Album;
+			case Pages.Album:
+				location.hash = Pages.Album;
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "block";
 				let albumComp = document.getElementById("bigAlbumView");
 				albumComp.btn_states = this.getListButtonStates(view);
 				layout.classList.add("showFullView");
 				break;
-			case Views.Radio:
-				location.hash = Views.Radio;
+			case Pages.Radio:
+				location.hash = Pages.Radio;
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "block";
 				let radioComp = document.getElementById("bigRadioView");
 				radioComp.btn_states = this.getListButtonStates(view);
 				layout.classList.add("showFullView");
 				break;
-			case Views.Settings:
-				location.hash = Views.Settings;
+			case Pages.Settings:
+				location.hash = Pages.Settings;
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "block";
 				layout.classList.add("showFullView");
 				break;
-			case Views.Remembered:
-				location.hash = Views.Remembered;
+			case Pages.Remembered:
+				location.hash = Pages.Remembered;
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "block";
 				layout.classList.add("showFullView");
 				break;
-			case Views.Genres:
-				location.hash = Views.Genres;
+			case Pages.Genres:
+				location.hash = Pages.Genres;
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "block";
 				layout.classList.add("showFullView");
@@ -3381,7 +3385,7 @@ var MainView = class extends View {
 		await this.state.getController().remember(lines.join("\n"));
 	}
 	async onSettingsButtonClick() {
-		await this.showView(Views.Settings);
+		await this.showPage(Pages.Settings);
 	}
 	onGenreSelected(genre) {
 		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
@@ -5253,6 +5257,11 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
                 <input id="txtExt" type="text"/>
                 <label id="writeConfigStatus"></label>
             </div>
+            <div class="flexRow">
+                <ebo-button id="getMixersBtn" class="roundBorder">Select audio mixer</ebo-button>
+                <select id="selectMixer" class="hidden"></select>
+                <label>Audio mixer:</label>
+            </div>
         </div>        
         `;
 	constructor() {
@@ -5294,6 +5303,9 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 		shadow.getElementById("txtExt").addEventListener("keypress", async (ev) => {
 			let label = shadow.getElementById("writeConfigStatus");
 			label.innerText = "";
+		});
+		shadow.getElementById("getMixersBtn").addEventListener("click", async (ev) => {
+			this.dispatchEboEvent("getMixers.eboplayer", {});
 		});
 	}
 	update(shadow) {

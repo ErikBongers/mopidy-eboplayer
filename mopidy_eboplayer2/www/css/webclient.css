@@ -46,7 +46,7 @@ button, input {
     margin-bottom: 1em;
 }
 
-.fullView {
+.page {
     width: 100%;
 }
 
@@ -54,10 +54,10 @@ button, input {
     flex: 1;
     display: flex;
     overflow: hidden;
-    & > .fullView {
+    & > .page {
         display: none;
     }
-    & > .fullView.shownView {
+    & > .page.shownPage {
         display: flex;
     }
 }
@@ -67,7 +67,7 @@ button, input {
     flex-flow: column;
     height: 100%;
 
-    &.showFullView
+    &.showPage
     {
         #stickyTop {
             height: 100vh;

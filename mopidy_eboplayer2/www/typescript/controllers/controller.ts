@@ -5,7 +5,7 @@ import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
 import {createAllRefs, Refs, RefType, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, isBreadCrumbForAlbum, LastViewed, MessageType, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Views} from "../modelTypes";
+import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, isBreadCrumbForAlbum, LastViewed, MessageType, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Pages} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
@@ -503,7 +503,7 @@ class Controller extends Commands {
             return;
         await this.clearBreadCrumbs();
         await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
-        this.viewController.setView(Views.Browse);
+        this.viewController.setView(Pages.Browse);
     }
 
     showTempMessage(message: string, type: MessageType) {

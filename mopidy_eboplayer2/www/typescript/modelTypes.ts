@@ -362,7 +362,7 @@ export const AlbumNone: AlbumDataNone = {
 
 export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
 
-export enum Views {
+export enum Pages {
     NowPlaying = "#NowPlaying",
     Browse = "#Browse",
     Album = "#Album",
@@ -397,6 +397,6 @@ export interface HistoryLineDef {
 export type PlaybackUserOptions = "justPlay" | "repeat" | "repeatSingle" | "single";
 
 export interface LastViewed {
-    view: Views,
+    view: Pages,
     uri: AllUris | null
 }

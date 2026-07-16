@@ -28,7 +28,7 @@ class ActionHandler(tornado.web.RequestHandler):
         self.set_header("Cache-Control", "no-cache, no-store, must-revalidate")
 
     def get(self, data_path: str):
-        if data_path in ["get_all_streamlines", "get_active_streamlines", "set_album_volume_down", "set_album_volume_up", "get_mopidy_config_file", "add_excluded_file_extension"]:
+        if data_path in ["get_all_streamlines", "get_active_streamlines", "set_album_volume_down", "set_album_volume_up", "get_mopidy_config_file", "add_excluded_file_extension", "get_mixers"]:
             func = getattr(self, data_path)
             func()
             return
@@ -92,6 +92,11 @@ class ActionHandler(tornado.web.RequestHandler):
         if backend_proxy:
             future = backend_proxy.add_excluded_file_extension(ext)
             future.get()
+
+    def get_mixers(self):
+        backend_proxy = self.get_backend_proxy()
+        if backend_proxy:
+            self.write(json.dumps(backend_proxy.get_mixers()))
 
     @staticmethod
     def setup():

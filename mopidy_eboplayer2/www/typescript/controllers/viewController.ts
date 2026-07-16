@@ -4,7 +4,7 @@ import {Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
-import {AlbumUri, LastViewed, StreamUri, TrackUri, Views} from "../modelTypes";
+import {AlbumUri, LastViewed, StreamUri, TrackUri, Pages} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {RefArgs} from "../events";
@@ -26,27 +26,27 @@ export class ViewController extends Commands {
     setInitialView () {
         let lastViewed = this.controller.localStorageProxy.getLastViewed();
         if (!lastViewed) {
-            this.setView(Views.NowPlaying);
+            this.setView(Pages.NowPlaying);
             return;
         }
         switch (lastViewed.view) {
-            case Views.Album:
-                if (location.hash == Views.Album) {
+            case Pages.Album:
+                if (location.hash == Pages.Album) {
                     this.gotoAlbum(lastViewed.uri as AlbumUri);
                     return;
                 }
                 break;
-            case Views.Radio:
-                if (location.hash == Views.Radio) {
+            case Pages.Radio:
+                if (location.hash == Pages.Radio) {
                     this.gotoRadio(lastViewed.uri as StreamUri);
                     return;
                 }
                 break;
             default:
-                this.setView((location.hash!="" ? location.hash : Views.NowPlaying) as Views);
+                this.setView((location.hash!="" ? location.hash : Pages.NowPlaying) as Pages);
                 return;
         }
-        this.setView(Views.NowPlaying);
+        this.setView(Pages.NowPlaying);
     }
 
     gotoAlbum(uri: AlbumUri) {
@@ -61,25 +61,25 @@ export class ViewController extends Commands {
         });
     }
 
-    setView(view: Views) {
-        this.model.setView(view);
+    setView(view: Pages) {
+        this.model.setPage(view);
     }
 
     showAlbum(albumUri: AlbumUri, selectedTrackUri: TrackUri | null) {
-        this.localStorageProxy.setLastViewed(Views.Album, albumUri);
+        this.localStorageProxy.setLastViewed(Pages.Album, albumUri);
         this.model.setAlbumToView(albumUri, selectedTrackUri);
-        this.model.setView(Views.Album);
+        this.model.setPage(Pages.Album);
     }
 
     showRadio(radioUri: StreamUri) {
-        this.localStorageProxy.setLastViewed(Views.Radio, radioUri);
+        this.localStorageProxy.setLastViewed(Pages.Radio, radioUri);
         this.model.setRadioToView(radioUri);
-        this.model.setView(Views.Radio);
+        this.model.setPage(Pages.Radio);
     }
 
     async browseToArtist(args: RefArgs) {
         await this.controller.clearBreadCrumbs();
         await this.controller.diveIntoBrowseResult(args.name, args.uri, args.type, false);
-        this.setView(Views.Browse);
+        this.setView(Pages.Browse);
     }
 }

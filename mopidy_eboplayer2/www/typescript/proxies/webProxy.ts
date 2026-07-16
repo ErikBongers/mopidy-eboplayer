@@ -185,4 +185,10 @@ export class WebProxy {
         let res = await fetch(url);
         return await res.text();
     }
+
+    async getMixers() {
+        let url = this.playerUrl(`get_mixers`);
+        let res = await fetch(url);
+        return await res.json() as string[];
+    }
 }

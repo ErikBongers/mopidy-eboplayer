@@ -1,5 +1,5 @@
 import {ComponentView} from "./view";
-import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaybackUserOptions, Views} from "../modelTypes";
+import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaybackUserOptions, Pages} from "../modelTypes";
 import {EboPlayerBar} from "../components/eboPlayerBar";
 import {State} from "../playerState";
 import {unreachable} from "../global";
@@ -112,18 +112,18 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
     private showHideInfo() {
         let currentTrack = this.state.getModel().getCurrentTrack();
         let selectedTrack = this.state.getModel().getSelectedTrack();
-        let currentView = this.state.getModel().getView();
+        let currentView = this.state.getModel().getPage();
         let show_info = false;
         if(selectedTrack && currentTrack != selectedTrack)
             show_info = true;
-        if(currentView != Views.NowPlaying)
+        if(currentView != Pages.NowPlaying)
             show_info = true;
         this.component.setAttribute("show_info", show_info.toString());
     }
 
     private onButtonBarImgClicked() {
         this.state.getController().setSelectedTrack(this.state.getModel().getCurrentTrack());
-        this.state.getController().viewController.setView(Views.NowPlaying);
+        this.state.getController().viewController.setView(Pages.NowPlaying);
     }
 
     private onActiveStreamLinesChanged() {

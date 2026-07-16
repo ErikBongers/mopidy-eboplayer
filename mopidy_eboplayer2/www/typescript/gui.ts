@@ -15,7 +15,7 @@ import {getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/album/eboBigAlbumComp";
 import {EboPlayerBar} from "./components/eboPlayerBar";
-import {Views} from "./modelTypes";
+import {Pages} from "./modelTypes";
 import {EboMenuButton} from "./components/general/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
 import {PlayController} from "./controllers/playController";

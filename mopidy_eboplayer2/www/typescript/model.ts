@@ -1,6 +1,6 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Views} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Pages} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
 import {EboEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
@@ -70,7 +70,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
 
     private allRefs: AllRefs | null = null;
     private currentRefs: Refs | null = null;
-    private view: Views = Views.NowPlaying;
+    private page: Pages = Pages.NowPlaying;
     private albumToView: AlbumToView | null = null;
     private remembers: RememberDef[] | null = null;
     private scanStatus: ScanStatus[] = [];
@@ -343,11 +343,11 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("currentRefsLoaded.eboplayer", {});
     }
 
-    setView(view: Views) {
-        this.view = view;
+    setPage(page: Pages) {
+        this.page = page;
         this.dispatchEboEvent("viewChanged.eboplayer", {});
     }
-    getView = () => this.view;
+    getPage = () => this.page;
 
     setAlbumToView(uri: AlbumUri, selectedTrackUri: TrackUri | null) {
         this.albumToView = {albumUri: uri, selectedTrackUri: selectedTrackUri};

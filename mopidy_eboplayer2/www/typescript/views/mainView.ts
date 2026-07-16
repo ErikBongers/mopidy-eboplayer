@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Views} from "../modelTypes";
+import {AlbumUri, AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Pages} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {unreachable} from "../global";
@@ -49,7 +49,7 @@ export class MainView extends View {
             await this.onTrackListChanged();
         });
         this.state.getModel().addEboEventListener("viewChanged.eboplayer", async () => {
-            await this.setCurrentView();
+            await this.setCurrentPage();
         });
         this.state.getModel().addEboEventListener("albumToViewChanged.eboplayer", async () => {
             await this.onAlbumToViewChanged();
@@ -89,7 +89,7 @@ export class MainView extends View {
 
         let layout = document.getElementById("layout") as HTMLElement;
         addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
-            this.state.getController().viewController.setView(Views.Remembered);
+            this.state.getController().viewController.setView(Pages.Remembered);
         });
 
         addEboEventListener(layout, "genreSelected.eboplayer", ev => {
@@ -110,16 +110,16 @@ export class MainView extends View {
 
     }
 
-    private getListButtonStates(currentView: Views) {
+    private getListButtonStates(currentView: Pages) {
         let states: ListButtonStates = ListButtonState_AllHidden();
         switch (currentView) {
-            case Views.Album:
+            case Pages.Album:
                 states = this.showHideTrackAndAlbumButtons(states, "show");
                 states.new_playlist = "hide";
                 states.edit = "hide";
                 states.line_or_icon = "hide";
                 return states;
-            case Views.Radio:
+            case Pages.Radio:
                 states = this.showHideTrackAndAlbumButtons(states, "show");
                 states.new_playlist = "hide";
                 states.edit = "hide";
@@ -140,46 +140,46 @@ export class MainView extends View {
     }
 
     private onBrowseButtonClick() {
-        this.state.getController().viewController.setView(Views.Browse);
+        this.state.getController().viewController.setView(Pages.Browse);
     }
 
     private onNowPlayingButtonClick() {
-        this.state.getController().viewController.setView(Views.NowPlaying);
+        this.state.getController().viewController.setView(Pages.NowPlaying);
     }
 
-    async setCurrentView() {
-        let view = this.state.getModel().getView();
-        await this.showView(view);
+    async setCurrentPage() {
+        let page = this.state.getModel().getPage();
+        await this.showPage(page);
     }
 
-    private hashToViewId(hash: Views): string {
+    private hashToViewId(hash: Pages): string {
         switch (hash) {
-            case Views.NowPlaying:
+            case Pages.NowPlaying:
                 return "timelineDetails";
-            case Views.Browse:
+            case Pages.Browse:
                 return "browseView";
-            case Views.WhatsNew:
+            case Pages.WhatsNew:
                 return "browseView"; //note this one!
-            case Views.Remembered:
+            case Pages.Remembered:
                 return "rememberedView";
-            case Views.Album:
+            case Pages.Album:
                 return "bigAlbumView";
-            case Views.Settings:
+            case Pages.Settings:
                 return "settingsView";
-            case Views.Genres:
+            case Pages.Genres:
                 return "genresView"
-            case Views.Radio:
+            case Pages.Radio:
                 return "bigRadioView";
             default:
                 return unreachable(hash);
         }
     }
 
-    private async showView(view: Views) {
-        let fullViews = document.querySelectorAll(".fullView");
-        fullViews.forEach(v => v.classList.remove("shownView"));
+    private async showPage(view: Pages) {
+        let fullViews = document.querySelectorAll(".page");
+        fullViews.forEach(v => v.classList.remove("shownPage"));
         let currentView = document.getElementById(this.hashToViewId(view)) as HTMLElement;
-        currentView.classList.add("shownView");
+        currentView.classList.add("shownPage");
         let browseBtn = document.getElementById("headerSearchBtn") as HTMLButtonElement;
         let nowPlayingBtn = document.getElementById("headerNowPlayingBtn") as HTMLButtonElement;
         let layout = document.getElementById("layout") as HTMLElement;
@@ -187,53 +187,53 @@ export class MainView extends View {
         let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
         layout.classList.remove("showFullView");
         switch (view) {
-            case Views.WhatsNew:
+            case Pages.WhatsNew:
                 await this.state.getController().setWhatsNewFilter();
                 resultsDisplayMode = "icon";
                 layout.classList.add("showFullView");
                 //fall through
-            case Views.Browse:
+            case Pages.Browse:
                 location.hash = view;
                 browseBtn.style.display = "none";
                 nowPlayingBtn.style.display = "block";
                 this.browseView.updateCompFromState(resultsDisplayMode);
                 layout.classList.add("showFullView");
                 break;
-            case Views.NowPlaying:
+            case Pages.NowPlaying:
                 location.hash = ""; //default = now playing
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "none";
                 break;
-            case Views.Album:
-                location.hash = Views.Album;
+            case Pages.Album:
+                location.hash = Pages.Album;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.btn_states = this.getListButtonStates(view);
                 layout.classList.add("showFullView");
                 break;
-            case Views.Radio:
-                location.hash = Views.Radio;
+            case Pages.Radio:
+                location.hash = Pages.Radio;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
                 let radioComp = document.getElementById("bigRadioView") as EboBigRadioComp;
                 radioComp.btn_states = this.getListButtonStates(view);
                 layout.classList.add("showFullView");
                 break;
-            case Views.Settings:
-                location.hash = Views.Settings;
+            case Pages.Settings:
+                location.hash = Pages.Settings;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
                 layout.classList.add("showFullView");
                 break;
-            case Views.Remembered:
-                location.hash = Views.Remembered;
+            case Pages.Remembered:
+                location.hash = Pages.Remembered;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
                 layout.classList.add("showFullView");
                 break;
-            case Views.Genres:
-                location.hash = Views.Genres;
+            case Pages.Genres:
+                location.hash = Pages.Genres;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
                 layout.classList.add("showFullView");
@@ -313,7 +313,7 @@ export class MainView extends View {
     }
 
     private async onSettingsButtonClick() {
-        await this.showView(Views.Settings);
+        await this.showPage(Pages.Settings);
     }
 
     private onGenreSelected(genre: string) {

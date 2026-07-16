@@ -1,3 +1,24 @@
+* How do components do lazy loading?
+  > Introduce pages/sections.
+  > Pages are inactive by default.
+  > Only one
+
+
+* Rename eboplayer2 to eboplayer?
+
+* Create a generic lazyObject<T>?
+  > set these in the components that may need data in rare cases?
+  > like the settings...
+
+* settings: mixer: dispatch the getMixers event.
+  > set the reply in model and dispatch a mixersChanged event.
+  > settings page initiall shows the Mixer from config, if any.
+    > should be loaded (lazily) when opening settings page.
+    > when clicking button, the full list of mixers is loaded and filled in the SELECT.
+    > when selection changes, eboback:config is changegd and eboback sens a mixerChanged event.
+  > perhaps the full config file, or at least the eboback and eboplayer(2) sections should be read (lazily)
+  > lazily: see cacheHandler.
+
 * adjust volume: test: backend says it adjusted but it keeps going from 5 to 4. Thus 4 is not being saved in db and/or meta file.
 
 * Test Frontend.handle_save_request()
