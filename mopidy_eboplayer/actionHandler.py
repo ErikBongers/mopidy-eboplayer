@@ -8,8 +8,8 @@ from mopidy.core import tracklist
 from mopidy.models import TlTrack, Track
 from pykka import ThreadingFuture
 
-from mopidy_eboplayer2.Storage import Storage
-from mopidy_eboplayer2.webSocketHandler import broadcast_to_websockets
+from mopidy_eboplayer.Storage import Storage
+from mopidy_eboplayer.webSocketHandler import broadcast_to_websockets
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class ActionHandler(tornado.web.RequestHandler):
         self.__path = path
         self.config = config
         self.core = core
-        self.storage = Storage(self.config['eboplayer2']['storage_dir'], core)
+        self.storage = Storage(self.config['eboplayer']['storage_dir'], core)
 
     def set_default_headers(self):
         self.set_header("Access-Control-Allow-Origin", "*") #todo: use allowed origins from config.

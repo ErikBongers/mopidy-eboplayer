@@ -9,7 +9,7 @@ export class WebProxy {
 
     constructor(hostAndPort: string) {
         this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
-        this.eboplayerBase = `http://${hostAndPort}/eboplayer2/action/`;
+        this.eboplayerBase = `http://${hostAndPort}/eboplayer/action/`;
     }
 
     playerUrl(relPath: string) {

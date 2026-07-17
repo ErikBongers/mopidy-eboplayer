@@ -3,7 +3,7 @@ import logging
 import json
 from pathlib import Path
 
-from mopidy_eboplayer2.tools import url_to_filename, tail
+from mopidy_eboplayer.tools import url_to_filename, tail
 
 logger = logging.getLogger(__name__)
 

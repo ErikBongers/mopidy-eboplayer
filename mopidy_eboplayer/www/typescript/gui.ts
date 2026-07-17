@@ -100,7 +100,7 @@ function setupStuff() {
     };
     let mopidy = new Mopidy(connectOptions);
     let hostAndPort = getHostAndPort();
-    let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer2/ws/`;
+    let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer/ws/`;
     let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1000, 64000);
 
     let wsBackEndUrl = `ws://${hostAndPort}/eboback/ws2/`;

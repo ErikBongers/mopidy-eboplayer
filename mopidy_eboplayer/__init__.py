@@ -4,14 +4,14 @@ import pkg_resources
 from mopidy import config, ext
 
 __version__ = pkg_resources.get_distribution(
-    "Mopidy-Eboplayer2"
+    "Mopidy-Eboplayer"
 ).version
 
 
 class Extension(ext.Extension):
 
-    dist_name = "Mopidy-Eboplayer2"
-    ext_name = "eboplayer2"
+    dist_name = "Mopidy-Eboplayer"
+    ext_name = "eboplayer"
     version = __version__
 
     def get_default_config(self):

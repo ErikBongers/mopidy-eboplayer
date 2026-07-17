@@ -1,10 +1,31 @@
+* Introduce pages.
+  > basic idea is simple: only show one page.
+  > but...the play bar is shared...
+    > how do you do this without having a copy on every page?
+      > ir is this such a bad thing to have a copy on every page?
+        > no...I think...
+  > so...a non-visible page is not in the dom?
+    > how to discard a page so it doesn't receive messages anymore?
+    > All listeners should be removed, but how?
+      > AI suggests useing "Smart events", using an event wrapper.
+        > since I already kind of have this with EboEvents, this is probably the best option.
+  
+
+* Use big round-cornerd blocks stacked. Do not use nested blocks as this becomes too small on a phone.
+
+* Give the playbar big round corners and a shadow (light?)
+  > expand the playbar upward to indicate that the shown album image is the currently playing (or paused) one.
+  > If a track is clicked, the playbar collapses again and the selected track is shown.
+
+* The history isn't used that often.
+  > And it's strange that if if a history item is selected, the details are not right above it, but the playbar is inbetween.
+  > Perhaps have the playbar on top?
+    > but this looks strange...
+
 * How do components do lazy loading?
   > Introduce pages/sections.
   > Pages are inactive by default.
   > Only one
-
-
-* Rename eboplayer2 to eboplayer?
 
 * Create a generic lazyObject<T>?
   > set these in the components that may need data in rare cases?

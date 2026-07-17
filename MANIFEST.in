@@ -22,4 +22,4 @@ include .csslintrc
 include .eslintrc
 include package.json
 
-recursive-include mopidy_eboplayer2/www *
+recursive-include mopidy_eboplayer/www *

@@ -3,8 +3,8 @@ import pykka
 import json
 from mopidy import core
 import urllib.request
-from mopidy_eboplayer2.Storage import Storage
-from mopidy_eboplayer2.webSocketHandler import broadcast_to_websockets
+from mopidy_eboplayer.Storage import Storage
+from mopidy_eboplayer.webSocketHandler import broadcast_to_websockets
 
 logger = logging.getLogger(__name__)
 
@@ -14,7 +14,7 @@ class EboPlayerFrontend(pykka.ThreadingActor, core.CoreListener):
         super(EboPlayerFrontend, self).__init__(config, core)
         self.core = core
         self.config = config
-        self.storage = Storage(self.config['eboplayer2']['storage_dir'], core)
+        self.storage = Storage(self.config['eboplayer']['storage_dir'], core)
         self.host = self.config['http']['hostname']
         self.port = self.config['http']['port']
         self.storage.setup()

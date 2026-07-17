@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 
 //ARGUMENTS
-let inputFile = "D:\\Documents\\Programming\\mopidy\\mopidy-eboplayer2\\scripts\\commands.json";
-let outputFileName = "D:\\Documents\\Programming\\mopidy\\mopidy-eboplayer2\\mopidy_eboplayer2\\www\\typescript\\commands.ts";
+let inputFile = "D:\\Documents\\Programming\\mopidy\\mopidy-eboplayer\\scripts\\commands.json";
+let outputFileName = "D:\\Documents\\Programming\\mopidy\\mopidy-eboplayer\\mopidy_eboplayer\\www\\typescript\\commands.ts";
 let includeComments: boolean = true;
 
 interface Module {

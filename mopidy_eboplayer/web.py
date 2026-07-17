@@ -5,7 +5,7 @@ import urllib.parse
 
 import tornado.web
 
-import mopidy_eboplayer2.webclient as mmw
+import mopidy_eboplayer.webclient as mmw
 
 logger = logging.getLogger(__name__)
 

@@ -5,7 +5,7 @@
       <entry url="file://$PROJECT_DIR$">
         <entryData>
           <resourceRoots>
-            <path value="file://$PROJECT_DIR$/mopidy_eboplayer2/www" />
+            <path value="file://$PROJECT_DIR$/mopidy_eboplayer/www" />
           </resourceRoots>
         </entryData>
       </entry>

@@ -1,8 +1,8 @@
 import * as fs from "node:fs";
 
 //ARGUMENTS
-let inputFile = String.raw`D:\Documents\Programming\mopidy\mopidy-eboplayer2\configFiles\musicGenres.md`;
-let outputFileName = String.raw`D:\Documents\Programming\mopidy\mopidy-eboplayer2\scripts\genres.sql`;
+let inputFile = String.raw`D:\Documents\Programming\mopidy\mopidy-eboplayer\configFiles\musicGenres.md`;
+let outputFileName = String.raw`D:\Documents\Programming\mopidy\mopidy-eboplayer\scripts\genres.sql`;
 
 class Writer {
     private outFile: fs.WriteStream;

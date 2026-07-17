@@ -2,7 +2,7 @@
 <module type="WEB_MODULE" version="4">
   <component name="FacetManager">
     <facet type="Python" name="Python facet">
-      <configuration sdkName="Python 3.12 (mopidy-eboplayer2)" />
+      <configuration sdkName="Python 3.12 (mopidy-eboplayer)" />
     </facet>
   </component>
   <component name="NewModuleRootManager">
@@ -15,8 +15,7 @@
       <excludeFolder url="file://$MODULE_DIR$/.venv" />
       <excludeFolder url="file://$MODULE_DIR$/.idea/httpRequests" />
     </content>
-    <orderEntry type="inheritedJdk" />
+    <orderEntry type="jdk" jdkName="D:\Documents\Programming\mopidy\mopidy-eboplayer\.venv" jdkType="Python SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" name="Python 3.12 (mopidy-eboplayer2) interpreter library" level="application" />
   </component>
 </module>
