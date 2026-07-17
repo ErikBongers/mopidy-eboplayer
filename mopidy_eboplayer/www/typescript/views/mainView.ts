@@ -185,19 +185,19 @@ export class MainView extends View {
         let layout = document.getElementById("layout") as HTMLElement;
         let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
         let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
-        layout.classList.remove("showFullView");
+        layout.classList.remove("showFullPage");
         switch (view) {
             case Pages.WhatsNew:
                 await this.state.getController().setWhatsNewFilter();
                 resultsDisplayMode = "icon";
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 //fall through
             case Pages.Browse:
                 location.hash = view;
                 browseBtn.style.display = "none";
                 nowPlayingBtn.style.display = "block";
                 this.browseView.updateCompFromState(resultsDisplayMode);
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 break;
             case Pages.NowPlaying:
                 location.hash = ""; //default = now playing
@@ -210,7 +210,7 @@ export class MainView extends View {
                 nowPlayingBtn.style.display = "block";
                 let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
                 albumComp.btn_states = this.getListButtonStates(view);
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 break;
             case Pages.Radio:
                 location.hash = Pages.Radio;
@@ -218,25 +218,25 @@ export class MainView extends View {
                 nowPlayingBtn.style.display = "block";
                 let radioComp = document.getElementById("bigRadioView") as EboBigRadioComp;
                 radioComp.btn_states = this.getListButtonStates(view);
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 break;
             case Pages.Settings:
                 location.hash = Pages.Settings;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 break;
             case Pages.Remembered:
                 location.hash = Pages.Remembered;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 break;
             case Pages.Genres:
                 location.hash = Pages.Genres;
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";
-                layout.classList.add("showFullView");
+                layout.classList.add("showFullPage");
                 break;
             default:
                 return unreachable(view);

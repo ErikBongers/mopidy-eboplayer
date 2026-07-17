@@ -67,7 +67,7 @@ button, input {
     flex-flow: column;
     height: 100%;
 
-    &.showPage
+    &.showFullPage
     {
         #stickyTop {
             height: 100vh;
