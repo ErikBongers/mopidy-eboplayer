@@ -1,4 +1,4 @@
-//#region mopidy_eboplayer2/www/typescript/eventEmitter.ts
+//#region mopidy_eboplayer/www/typescript/eventEmitter.ts
 var EventEmitter = class {
 	listeners = [];
 	supervisors = [];
@@ -39,7 +39,7 @@ var EventEmitter = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/jsonrpc.ts
+//#region mopidy_eboplayer/www/typescript/jsonrpc.ts
 let JsonRpc;
 (function(_JsonRpc) {
 	function isSuccess$1(response) {
@@ -65,7 +65,7 @@ let JsonRpc;
 })(JsonRpc || (JsonRpc = {}));
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/jsonRpcController.ts
+//#region mopidy_eboplayer/www/typescript/jsonRpcController.ts
 var isSuccess = JsonRpc.isSuccess;
 var isFailure = JsonRpc.isFailure;
 function snakeToCamel(name) {
@@ -247,7 +247,7 @@ var OtherError = class extends Error {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/js/mopidy.ts
+//#region mopidy_eboplayer/www/js/mopidy.ts
 var Mopidy = class {
 	_options;
 	rpcController;
@@ -308,7 +308,7 @@ var Mopidy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/global.ts
+//#region mopidy_eboplayer/www/typescript/global.ts
 function stretchLeft(x, min, max) {
 	return x * (max + min) / max - min;
 }
@@ -371,7 +371,7 @@ function searchImageOnGoogle(albumName) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/refs.ts
+//#region mopidy_eboplayer/www/typescript/refs.ts
 var SearchResultParent = class {
 	type;
 	item;
@@ -599,7 +599,7 @@ var SomeRefs = class extends Refs {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/util/idStack.ts
+//#region mopidy_eboplayer/www/typescript/util/idStack.ts
 var IdStack = class extends Array {
 	resetTo(id) {
 		let index = this.findIndex((breadCrumb, index$1, obj) => {
@@ -616,7 +616,7 @@ var IdStack = class extends Array {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/breadCrumb.ts
+//#region mopidy_eboplayer/www/typescript/breadCrumb.ts
 var BreadCrumb = class BreadCrumb {
 	id;
 	label;
@@ -633,7 +633,7 @@ var BreadCrumb = class BreadCrumb {
 var BreadCrumbStack = class extends IdStack {};
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/modelTypes.ts
+//#region mopidy_eboplayer/www/typescript/modelTypes.ts
 var BrowseFilterBreadCrumb = class extends BreadCrumb {
 	constructor(label, filter, type) {
 		super(label, filter, type);
@@ -834,7 +834,7 @@ let Pages = /* @__PURE__ */ function(Pages$1) {
 }({});
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/events.ts
+//#region mopidy_eboplayer/www/typescript/events.ts
 function createEvent(event, detail) {
 	return new CustomEvent(event, {
 		detail,
@@ -856,7 +856,7 @@ function addEboEventListener(target, type, listener, options) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/model.ts
+//#region mopidy_eboplayer/www/typescript/model.ts
 var BrowseFilterBreadCrumbStack = class extends BreadCrumbStack {};
 var Model = class extends EboEventTargetClass {
 	currentTrack = null;
@@ -1162,7 +1162,7 @@ var Model = class extends EboEventTargetClass {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/view.ts
+//#region mopidy_eboplayer/www/typescript/views/view.ts
 var View = class {
 	state;
 	_children = [];
@@ -1192,7 +1192,7 @@ var ComponentView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/headerView.ts
+//#region mopidy_eboplayer/www/typescript/views/headerView.ts
 var HeaderView = class extends View {
 	bind() {
 		this.state.getModel().addEboEventListener("messageChanged.eboplayer", () => {
@@ -1220,7 +1220,7 @@ var HeaderView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/commands.ts
+//#region mopidy_eboplayer/www/typescript/commands.ts
 var Commands = class {
 	mopidy;
 	core;
@@ -1501,7 +1501,7 @@ var Core_Tracklist = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/functionsvars.ts
+//#region mopidy_eboplayer/www/typescript/functionsvars.ts
 function jsonParse(data, defaultValue) {
 	try {
 		return JSON.parse(data);
@@ -1512,7 +1512,7 @@ function jsonParse(data, defaultValue) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/proxies/localStorageProxy.ts
+//#region mopidy_eboplayer/www/typescript/proxies/localStorageProxy.ts
 const CURRENT_BROWSE_FILTERS__KEY = "currentBrowseFilters";
 const BROWSE_FILTERS_BREADCRUMBS_KEY = "browseFiltersBreadCrumbs";
 var LocalStorageProxy = class {
@@ -1599,13 +1599,13 @@ var LocalStorageProxy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/proxies/webProxy.ts
+//#region mopidy_eboplayer/www/typescript/proxies/webProxy.ts
 var WebProxy = class {
 	ebobackBase;
 	eboplayerBase;
 	constructor(hostAndPort) {
 		this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
-		this.eboplayerBase = `http://${hostAndPort}/eboplayer2/action/`;
+		this.eboplayerBase = `http://${hostAndPort}/eboplayer/action/`;
 	}
 	playerUrl(relPath) {
 		return new URL(this.eboplayerBase + relPath);
@@ -1751,7 +1751,7 @@ var WebProxy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/controllers/viewController.ts
+//#region mopidy_eboplayer/www/typescript/controllers/viewController.ts
 var ViewController = class extends Commands {
 	model;
 	localStorageProxy;
@@ -1818,7 +1818,7 @@ var ViewController = class extends Commands {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/controllers/controller.ts
+//#region mopidy_eboplayer/www/typescript/controllers/controller.ts
 const LIBRARY_PROTOCOL = "eboback:";
 var Controller = class extends Commands {
 	model;
@@ -2215,7 +2215,7 @@ var Controller = class extends Commands {
 var controller_default = Controller;
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/playerBarView.ts
+//#region mopidy_eboplayer/www/typescript/views/playerBarView.ts
 var PlayerBarView = class extends ComponentView {
 	constructor(state, component) {
 		super(state, component);
@@ -2358,7 +2358,7 @@ var PlayerBarView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/Batching.ts
+//#region mopidy_eboplayer/www/typescript/Batching.ts
 var Batching = class {
 	constructor(task) {
 		this.task = task;
@@ -2377,7 +2377,7 @@ var Batching = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/EboComponent.ts
+//#region mopidy_eboplayer/www/typescript/components/EboComponent.ts
 var EboComponent = class EboComponent extends HTMLElement {
 	get isRendered() {
 		return this._isRendered;
@@ -2511,7 +2511,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboProgressBar.ts
+//#region mopidy_eboplayer/www/typescript/components/eboProgressBar.ts
 var EboProgressBar = class EboProgressBar extends EboComponent {
 	static tagName = "ebo-progressbar";
 	static observedAttributes = [
@@ -2603,7 +2603,7 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/timelineView.ts
+//#region mopidy_eboplayer/www/typescript/views/timelineView.ts
 var TimelineView = class extends View {
 	clickedRow = null;
 	constructor(state) {
@@ -2716,7 +2716,7 @@ var TimelineView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/timeLineDetailsView.ts
+//#region mopidy_eboplayer/www/typescript/views/timeLineDetailsView.ts
 var TimeLineDetailsView = class extends ComponentView {
 	streamLines = "";
 	programTitle = "";
@@ -2802,7 +2802,7 @@ var TimeLineDetailsView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/album/eboAlbumTracksComp.ts
+//#region mopidy_eboplayer/www/typescript/components/album/eboAlbumTracksComp.ts
 var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 	get selected_track_uris() {
 		return this._selected_track_uris;
@@ -2967,7 +2967,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboListButtonBar.ts
+//#region mopidy_eboplayer/www/typescript/components/eboListButtonBar.ts
 function ListButtonState_AllHidden() {
 	return {
 		add: "hide",
@@ -3126,7 +3126,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/mainView.ts
+//#region mopidy_eboplayer/www/typescript/views/mainView.ts
 var MainView = class extends View {
 	browseView;
 	albumView;
@@ -3404,7 +3404,7 @@ var MainView = class extends View {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/browse/eboBrowseComp.ts
+//#region mopidy_eboplayer/www/typescript/components/browse/eboBrowseComp.ts
 var EboBrowseComp = class EboBrowseComp extends EboComponent {
 	get hideInfoButton() {
 		return this._hideInfoButton;
@@ -3705,7 +3705,7 @@ var EboBrowseComp = class EboBrowseComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/MouseTimer.ts
+//#region mopidy_eboplayer/www/typescript/MouseTimer.ts
 const TIME_OUT_TIME = 500;
 var MouseTimer = class {
 	activeTimer = null;
@@ -3760,7 +3760,7 @@ var MouseTimer = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/general/eboButton.ts
+//#region mopidy_eboplayer/www/typescript/components/general/eboButton.ts
 var EboButton = class EboButton extends EboComponent {
 	static tagName = "ebo-button";
 	static observedAttributes = [
@@ -3874,7 +3874,7 @@ var EboButton = class EboButton extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/album/eboBigAlbumComp.ts
+//#region mopidy_eboplayer/www/typescript/components/album/eboBigAlbumComp.ts
 var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	static tagName = "ebo-big-album-view";
 	static observedAttributes = [
@@ -4091,7 +4091,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboPlayerBar.ts
+//#region mopidy_eboplayer/www/typescript/components/eboPlayerBar.ts
 var EboPlayerBar = class EboPlayerBar extends EboComponent {
 	get playMode() {
 		return this._playMode;
@@ -4314,7 +4314,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/general/eboMenuButton.ts
+//#region mopidy_eboplayer/www/typescript/components/general/eboMenuButton.ts
 var EboMenuButton = class EboMenuButton extends EboComponent {
 	static tagName = "ebo-menu-button";
 	static observedAttributes = [];
@@ -4379,7 +4379,7 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/controllers/playController.ts
+//#region mopidy_eboplayer/www/typescript/controllers/playController.ts
 var PlayController = class {
 	model;
 	mopidyProxy;
@@ -4408,7 +4408,7 @@ var PlayController = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/proxies/mopidyProxy.ts
+//#region mopidy_eboplayer/www/typescript/proxies/mopidyProxy.ts
 var MopidyProxy = class {
 	commands;
 	constructor(commands) {
@@ -4517,7 +4517,7 @@ var MopidyProxy = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboDialog.ts
+//#region mopidy_eboplayer/www/typescript/components/eboDialog.ts
 var EboDialog = class EboDialog extends EboComponent {
 	static tagName = "ebo-dialog";
 	static observedAttributes = ["ok_text"];
@@ -4579,7 +4579,7 @@ var EboDialog = class EboDialog extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/album/eboAlbumDetails.ts
+//#region mopidy_eboplayer/www/typescript/components/album/eboAlbumDetails.ts
 var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 	get albumInfo() {
 		return this._albumInfo;
@@ -4763,7 +4763,7 @@ function addDataRow(body, colText1, colText2) {
 }
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/radio/eboRadioHistoryComp.ts
+//#region mopidy_eboplayer/www/typescript/components/radio/eboRadioHistoryComp.ts
 var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 	static tagName = "ebo-radio-history";
 	static observedAttributes = ["img"];
@@ -4916,7 +4916,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/browse/eboBrowseFilterComp.ts
+//#region mopidy_eboplayer/www/typescript/components/browse/eboBrowseFilterComp.ts
 var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 	get availableRefTypes() {
 		return this._availableRefTypes;
@@ -5207,7 +5207,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboSettingsComp.ts
+//#region mopidy_eboplayer/www/typescript/components/eboSettingsComp.ts
 var EboSettingsComp = class EboSettingsComp extends EboComponent {
 	static tagName = "ebo-settings-view";
 	get scanStatus() {
@@ -5345,7 +5345,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboListItemComp.ts
+//#region mopidy_eboplayer/www/typescript/components/eboListItemComp.ts
 var EboListItemComp = class EboListItemComp extends EboComponent {
 	static tagName = "ebo-list-item";
 	static observedAttributes = [
@@ -5468,7 +5468,7 @@ var EboListItemComp = class EboListItemComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/browseView.ts
+//#region mopidy_eboplayer/www/typescript/views/browseView.ts
 var BrowseView = class extends ComponentView {
 	constructor(state, component) {
 		super(state, component);
@@ -5609,7 +5609,7 @@ var BrowseView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/albumView.ts
+//#region mopidy_eboplayer/www/typescript/views/albumView.ts
 var AlbumView = class extends ComponentView {
 	onDialogOkClickedCallback = () => true;
 	dialog;
@@ -5725,7 +5725,7 @@ var AlbumView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/playerState.ts
+//#region mopidy_eboplayer/www/typescript/playerState.ts
 var State = class {
 	mopidy;
 	play = false;
@@ -5749,7 +5749,7 @@ var State = class {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboRememberedComp.ts
+//#region mopidy_eboplayer/www/typescript/components/eboRememberedComp.ts
 var EboRememberedComp = class EboRememberedComp extends EboComponent {
 	static tagName = "ebo-remembered-view";
 	static observedAttributes = [""];
@@ -5832,7 +5832,7 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/rememberedView.ts
+//#region mopidy_eboplayer/www/typescript/views/rememberedView.ts
 var RememberedView = class extends ComponentView {
 	constructor(state, component) {
 		super(state, component);
@@ -5848,7 +5848,7 @@ var RememberedView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/controllers/cacheHandler.ts
+//#region mopidy_eboplayer/www/typescript/controllers/cacheHandler.ts
 var CacheHandler = class extends Commands {
 	model;
 	mopidyProxy;
@@ -6022,7 +6022,7 @@ var CacheHandler = class extends Commands {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/general/eboOption.ts
+//#region mopidy_eboplayer/www/typescript/components/general/eboOption.ts
 var EboOption = class EboOption extends EboComponent {
 	static tagName = "ebo-option";
 	static observedAttributes = ["value", "selected"];
@@ -6050,7 +6050,7 @@ var EboOption = class EboOption extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/general/eboIconDropdown.ts
+//#region mopidy_eboplayer/www/typescript/components/general/eboIconDropdown.ts
 const Directions = ["up", "down"];
 var EboIconDropdown = class EboIconDropdown extends EboComponent {
 	static tagName = "ebo-dropdown";
@@ -6156,7 +6156,7 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboGenresComp.ts
+//#region mopidy_eboplayer/www/typescript/components/eboGenresComp.ts
 var EboGenresComp = class EboGenresComp extends EboComponent {
 	static tagName = "ebo-genres-view";
 	static observedAttributes = [];
@@ -6337,7 +6337,7 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/genresView.ts
+//#region mopidy_eboplayer/www/typescript/views/genresView.ts
 var GenresView = class extends ComponentView {
 	constructor(state, component) {
 		super(state, component);
@@ -6358,7 +6358,7 @@ var GenresView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/radio/eboBigRadioComp.ts
+//#region mopidy_eboplayer/www/typescript/components/radio/eboBigRadioComp.ts
 var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 	static tagName = "ebo-big-radio-view";
 	static observedAttributes = [
@@ -6538,7 +6538,7 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/views/radioView.ts
+//#region mopidy_eboplayer/www/typescript/views/radioView.ts
 var RadioView = class extends ComponentView {
 	onDialogOkClickedCallback = () => true;
 	dialog;
@@ -6627,7 +6627,7 @@ var RadioView = class extends ComponentView {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/radio/eboRadioDetails.ts
+//#region mopidy_eboplayer/www/typescript/components/radio/eboRadioDetails.ts
 var EboRadioDetails = class EboRadioDetails extends EboComponent {
 	static tagName = "ebo-radio-details";
 	static observedAttributes = [];
@@ -6728,7 +6728,7 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/components/eboTimeLineDetailsComp.ts
+//#region mopidy_eboplayer/www/typescript/components/eboTimeLineDetailsComp.ts
 var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 	static tagName = "ebo-timeline-details";
 	static progressBarAttributes = [
@@ -6943,7 +6943,7 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer2/www/typescript/gui.ts
+//#region mopidy_eboplayer/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
 	if (webSocketUrl?.startsWith("{{")) webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
@@ -6984,7 +6984,7 @@ function setupStuff() {
 	};
 	let mopidy = new Mopidy(connectOptions);
 	let hostAndPort = getHostAndPort();
-	let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer2/ws/`;
+	let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer/ws/`;
 	let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1e3, 64e3);
 	let wsBackEndUrl = `ws://${hostAndPort}/eboback/ws2/`;
 	let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
