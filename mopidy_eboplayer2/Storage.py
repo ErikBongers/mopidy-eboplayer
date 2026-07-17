@@ -16,6 +16,7 @@ SEPARATOR_LINE = "---"
 class Storage:
     def __init__(self, storage_dir, core):
         self.storage_dir = storage_dir
+        logger.info(f"Storage_dir: {self.storage_dir}")
         self.stateFile = self.storage_dir + '/state.json'
         self.streamTitlesFile = ""
         self.current_track_uri = ""
