@@ -3,7 +3,7 @@ import {AlbumUri, ExpandedAlbumModel, ExpandedStreamModel, PlaylistUri, TrackUri
 import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {arrayToggle} from "../global";
-import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
+import {addEboEventListener, GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
@@ -26,6 +26,9 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     bind() {
+        this.component.on("genreSelected.eboplayer", async ev => {
+            await this.onGenreSelected(ev.detail.text);
+        });
         this.component.on("playTrackClicked.eboplayer", async (ev) => {
             await this.onPlayTrackClicked(ev.detail.uri);
         });
@@ -74,6 +77,13 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
             this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
         });
+    }
+
+    private async onGenreSelected(genre: string) {
+        let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited(); //todo: don't store this in localStorage. Every view should know which item (uri,...) it is representing.
+        if(!albumBeingEdited)
+            return;
+        await this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
     }
 
     private async onSelectedTrackChanged() {

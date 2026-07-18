@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, Goto, StreamUri} from "../modelTypes";
+import {AlbumUri, AllUris, Goto} from "../modelTypes";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {State} from "../playerState";
@@ -16,9 +16,6 @@ export class MainView extends View {
             await this.setCurrentPage();
         });
         let layout = document.getElementById("layout") as HTMLElement;
-        addEboEventListener(layout, "genreSelected.eboplayer", ev => {
-            this.onGenreSelected(ev.detail.text);
-        });
         addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
             await this.onToggleFavorite(ev.detail.uri);
         });
@@ -95,13 +92,6 @@ export class MainView extends View {
         let layout = document.getElementById("layout") as HTMLElement;
         location.hash = "#Genres";
         layout.classList.add("showFullPage");
-    }
-
-    private onGenreSelected(genre: string) {
-        let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
-        if(!albumBeingEdited)
-            return;
-        this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
     }
 
     private async onToggleFavorite(uri: AllUris) {

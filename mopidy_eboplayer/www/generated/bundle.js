@@ -3013,9 +3013,6 @@ var MainView = class MainView extends View {
 			await this.setCurrentPage();
 		});
 		let layout = document.getElementById("layout");
-		addEboEventListener(layout, "genreSelected.eboplayer", (ev) => {
-			this.onGenreSelected(ev.detail.text);
-		});
 		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
 			await this.onToggleFavorite(ev.detail.uri);
 		});
@@ -3076,11 +3073,6 @@ var MainView = class MainView extends View {
 		let layout = document.getElementById("layout");
 		location.hash = "#Genres";
 		layout.classList.add("showFullPage");
-	}
-	onGenreSelected(genre) {
-		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
-		if (!albumBeingEdited) return;
-		this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
 	}
 	async onToggleFavorite(uri) {
 		await this.state.getController().toggleFavorite(uri);
@@ -5331,6 +5323,9 @@ var AlbumView = class extends ComponentView {
 		});
 	}
 	bind() {
+		this.component.on("genreSelected.eboplayer", async (ev) => {
+			await this.onGenreSelected(ev.detail.text);
+		});
 		this.component.on("playTrackClicked.eboplayer", async (ev) => {
 			await this.onPlayTrackClicked(ev.detail.uri);
 		});
@@ -5379,6 +5374,11 @@ var AlbumView = class extends ComponentView {
 		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
 			this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
 		});
+	}
+	async onGenreSelected(genre) {
+		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
+		if (!albumBeingEdited) return;
+		await this.state.getController().saveAlbumGenre(albumBeingEdited, genre);
 	}
 	async onSelectedTrackChanged() {
 		let uri = this.state.getModel().getSelectedTrack();
