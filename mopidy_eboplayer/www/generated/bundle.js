@@ -6963,8 +6963,8 @@ var EboTopBar = class EboTopBar extends EboComponent {
                     <img id="img" src="images/default_cover.png" alt="Album cover"/>
                 </button>
             </li>
-            <li class="flexGrow">
-                <span id="contentHeadline">XXXInitializing...</span>
+            <li class="flexGrow textCenter">
+                <span id="contentHeadline">Initializing...</span>
             </li>
             <li>
                 <button id="settingsBtn"><i class="fa fa fa-ellipsis-v"></i></button>
