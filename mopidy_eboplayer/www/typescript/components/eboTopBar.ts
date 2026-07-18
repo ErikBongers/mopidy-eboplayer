@@ -134,7 +134,6 @@ export class EboTopBar extends EboComponent {
         let nowPlayingBtn = shadow.getElementById("headerNowPlayingBtn") as HTMLButtonElement;
         switch (this.page) {
             case "#WhatsNew":
-            //fall through
             case "#Browse":
             case "#Browse.Favorites":
                 browseBtn.style.display = "none";

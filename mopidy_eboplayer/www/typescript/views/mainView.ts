@@ -1,53 +1,26 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri, Pages, Goto} from "../modelTypes";
+import {AlbumUri, AllUris, Goto, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, Pages, StreamUri, TrackUri} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {EboSettingsComp} from "../components/eboSettingsComp";
-import {BrowseView} from "./browseView";
-import {DisplayMode} from "../components/eboListItemComp";
-import {AlbumView} from "./albumView";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
 import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
-import {RadioView} from "./radioView";
-import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
-import {TopBarView} from "./topBarView"
 
 export class MainView extends View {
-    private browseView: BrowseView;
-    private albumView: AlbumView;
-    private radioView: RadioView;
-    private topBarView: TopBarView;
 
-    constructor(state: State, browseView: BrowseView, albumView: AlbumView, radioView: RadioView, topBarView: TopBarView) {
+    constructor(state: State) {
         super(state);
-        this.browseView = browseView;
-        this.albumView = albumView;
-        this.radioView = radioView;
-        this.topBarView = topBarView;
     }
 
     bind() {
-        this.browseView.bind();
-        this.albumView.bind();
-        this.radioView.bind();
-        this.topBarView.bind();
-        this.state.getModel().on("selectedTrackChanged.eboplayer", async () => {
-            await this.onSelectedTrackChanged();
-        });
         this.state.getModel().on("trackListChanged.eboplayer", async () => {
             await this.onTrackListChanged();
         });
         this.state.getModel().on("viewChanged.eboplayer", async () => {
             await this.setCurrentPage();
-        });
-        this.state.getModel().on("albumToViewChanged.eboplayer", async () => {
-            await this.onAlbumToViewChanged();
-        });
-        this.state.getModel().on("currentRadioChanged.eboplayer", async () => {
-            await this.onRadioToViewChanged();
         });
         let timelineDetailsView = document.getElementById("timelineDetails") as EboBrowseComp;
         timelineDetailsView.on("bigTimelineImageClicked.eboplayer", async () => {
@@ -102,17 +75,17 @@ export class MainView extends View {
 
     }
 
-    private getListButtonStates(currentView: Pages) {
+    static getListButtonStates(page: Goto) {
         let states: ListButtonStates = ListButtonState_AllHidden();
-        switch (currentView) {
+        switch (page) {
             case "#Album":
-                states = this.showHideTrackAndAlbumButtons(states, "show");
+                states = MainView.showHideTrackAndAlbumButtons(states, "show");
                 states.new_playlist = "hide";
                 states.edit = "hide";
                 states.line_or_icon = "hide";
                 return states;
             case "#Radio":
-                states = this.showHideTrackAndAlbumButtons(states, "show");
+                states = MainView.showHideTrackAndAlbumButtons(states, "show");
                 states.new_playlist = "hide";
                 states.edit = "hide";
                 states.line_or_icon = "hide";
@@ -122,7 +95,7 @@ export class MainView extends View {
         return states;
     }
 
-    private showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState): ListButtonStates {
+    static showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState): ListButtonStates {
         states.add = state;
         states.replace = state;
         states.play = state;
@@ -166,19 +139,12 @@ export class MainView extends View {
         let currentView = document.getElementById(this.hashToViewId(gotoPage)) as HTMLElement;
         currentView.classList.add("shownPage");
         let layout = document.getElementById("layout") as HTMLElement;
-        let prevViewClass = [...layout.classList].filter(c => ["browse", "bigAlbum", "bigTrack"].includes(c))[0];
-        let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
         layout.classList.remove("showFullPage");
         switch (gotoPage) {
             case "#WhatsNew":
-                await this.state.getController().setWhatsNewFilter();
-                resultsDisplayMode = "icon";
-                layout.classList.add("showFullPage");
-                //fall through
             case "#Browse":
             case "#Browse.Favorites":
                 location.hash = gotoPage.replace(".Favorites", "");
-                this.browseView.updateCompFromState(resultsDisplayMode);
                 layout.classList.add("showFullPage");
                 break;
             case "#NowPlaying":
@@ -186,14 +152,10 @@ export class MainView extends View {
                 break;
             case "#Album":
                 location.hash = "#Album";
-                let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                albumComp.btn_states = this.getListButtonStates(gotoPage);
                 layout.classList.add("showFullPage");
                 break;
             case "#Radio":
                 location.hash = "#Radio";
-                let radioComp = document.getElementById("bigRadioView") as EboBigRadioComp;
-                radioComp.btn_states = this.getListButtonStates(gotoPage);
                 layout.classList.add("showFullPage");
                 break;
             case "#Settings":
@@ -237,45 +199,6 @@ export class MainView extends View {
             if(trackList.length > 0)
                 await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
         }
-    }
-
-    private async onSelectedTrackChanged() {
-        let uri = this.state.getModel().getSelectedTrack();
-        this.state.getController().cache.lookupTrackCached(uri)
-            .then(async track => {
-                if(track?.type == "file") {
-                    if(track.track.album) {
-                        let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
-                        this.albumView.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
-                    }
-                    //else: album view will not be shown when track has no album...but are we sure?
-                }
-                else if(track?.type == "stream") {
-                    let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
-                    let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
-                    albumComp.albumInfo = null;
-                    albumComp.setAttribute("img", streamModel.bigImageUrl);
-                    albumComp.setAttribute("name", streamModel.stream.name);
-                    let timelineDetails = document.getElementById("timelineDetails") as EboTimeLineDetailsComp;
-                    timelineDetails.streamInfo = streamModel;
-                }
-            });
-    }
-
-    private async onAlbumToViewChanged() {
-        let albumToView = this.state.getModel().getAlbumToView();
-        if(!albumToView)
-            return;
-        let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
-        this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
-    }
-
-    private async onRadioToViewChanged() {
-        let radioToView = this.state.getModel().getRadioToView();
-        if(!radioToView)
-            return;
-        let radioModel = await this.state.getController().getExpandedTrackModel(radioToView) as ExpandedStreamModel;
-        this.radioView.setStreamComponentData(radioModel);
     }
 
     private async rememberStreamLines(lines: string[]) {

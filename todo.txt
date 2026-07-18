@@ -1,5 +1,3 @@
-* Create header bar component.
-
 * Remove JS references from components by string (key) coupling.
 
 * Allow sharing of components in pages.

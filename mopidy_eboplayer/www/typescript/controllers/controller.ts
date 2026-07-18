@@ -489,7 +489,7 @@ class Controller extends Commands {
         return favorites.has(uri);
     }
 
-    async gotoFavorites() {
+    async setFavoritesFilter() {
         let favoritesName = await this.cache.getFavoritePlaylistName();
         let allRefs = await this.cache.getAllRefsCached();
         let favoritesRef = allRefs.playlists.find(res => res.item.name == favoritesName);
@@ -497,7 +497,6 @@ class Controller extends Commands {
             return;
         await this.clearBreadCrumbs();
         await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
-        this.viewController.setView("#Browse");
     }
 
     showTempMessage(message: string, type: MessageType) {

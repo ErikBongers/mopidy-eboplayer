@@ -2128,13 +2128,12 @@ var Controller = class extends Commands {
 		if (!uri) return false;
 		return (await this.cache.getFavorites()).has(uri);
 	}
-	async gotoFavorites() {
+	async setFavoritesFilter() {
 		let favoritesName = await this.cache.getFavoritePlaylistName();
 		let favoritesRef = (await this.cache.getAllRefsCached()).playlists.find((res) => res.item.name == favoritesName);
 		if (!favoritesRef) return;
 		await this.clearBreadCrumbs();
 		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
-		this.viewController.setView("#Browse");
 	}
 	showTempMessage(message, type) {
 		this.model.setTempMessage({
@@ -3088,37 +3087,16 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/views/mainView.ts
-var MainView = class extends View {
-	browseView;
-	albumView;
-	radioView;
-	topBarView;
-	constructor(state, browseView, albumView, radioView, topBarView) {
+var MainView = class MainView extends View {
+	constructor(state) {
 		super(state);
-		this.browseView = browseView;
-		this.albumView = albumView;
-		this.radioView = radioView;
-		this.topBarView = topBarView;
 	}
 	bind() {
-		this.browseView.bind();
-		this.albumView.bind();
-		this.radioView.bind();
-		this.topBarView.bind();
-		this.state.getModel().on("selectedTrackChanged.eboplayer", async () => {
-			await this.onSelectedTrackChanged();
-		});
 		this.state.getModel().on("trackListChanged.eboplayer", async () => {
 			await this.onTrackListChanged();
 		});
 		this.state.getModel().on("viewChanged.eboplayer", async () => {
 			await this.setCurrentPage();
-		});
-		this.state.getModel().on("albumToViewChanged.eboplayer", async () => {
-			await this.onAlbumToViewChanged();
-		});
-		this.state.getModel().on("currentRadioChanged.eboplayer", async () => {
-			await this.onRadioToViewChanged();
 		});
 		let timelineDetailsView = document.getElementById("timelineDetails");
 		timelineDetailsView.on("bigTimelineImageClicked.eboplayer", async () => {
@@ -3168,17 +3146,17 @@ var MainView = class extends View {
 			await this.rememberStreamLines(ev.detail.lines);
 		});
 	}
-	getListButtonStates(currentView) {
+	static getListButtonStates(page) {
 		let states = ListButtonState_AllHidden();
-		switch (currentView) {
+		switch (page) {
 			case "#Album":
-				states = this.showHideTrackAndAlbumButtons(states, "show");
+				states = MainView.showHideTrackAndAlbumButtons(states, "show");
 				states.new_playlist = "hide";
 				states.edit = "hide";
 				states.line_or_icon = "hide";
 				return states;
 			case "#Radio":
-				states = this.showHideTrackAndAlbumButtons(states, "show");
+				states = MainView.showHideTrackAndAlbumButtons(states, "show");
 				states.new_playlist = "hide";
 				states.edit = "hide";
 				states.line_or_icon = "hide";
@@ -3186,7 +3164,7 @@ var MainView = class extends View {
 		}
 		return states;
 	}
-	showHideTrackAndAlbumButtons(states, state) {
+	static showHideTrackAndAlbumButtons(states, state) {
 		states.add = state;
 		states.replace = state;
 		states.play = state;
@@ -3216,22 +3194,12 @@ var MainView = class extends View {
 		document.querySelectorAll(".page").forEach((v) => v.classList.remove("shownPage"));
 		document.getElementById(this.hashToViewId(gotoPage)).classList.add("shownPage");
 		let layout = document.getElementById("layout");
-		[...layout.classList].filter((c) => [
-			"browse",
-			"bigAlbum",
-			"bigTrack"
-		].includes(c))[0];
-		let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
 		layout.classList.remove("showFullPage");
 		switch (gotoPage) {
 			case "#WhatsNew":
-				await this.state.getController().setWhatsNewFilter();
-				resultsDisplayMode = "icon";
-				layout.classList.add("showFullPage");
 			case "#Browse":
 			case "#Browse.Favorites":
 				location.hash = gotoPage.replace(".Favorites", "");
-				this.browseView.updateCompFromState(resultsDisplayMode);
 				layout.classList.add("showFullPage");
 				break;
 			case "#NowPlaying":
@@ -3239,14 +3207,10 @@ var MainView = class extends View {
 				break;
 			case "#Album":
 				location.hash = "#Album";
-				let albumComp = document.getElementById("bigAlbumView");
-				albumComp.btn_states = this.getListButtonStates(gotoPage);
 				layout.classList.add("showFullPage");
 				break;
 			case "#Radio":
 				location.hash = "#Radio";
-				let radioComp = document.getElementById("bigRadioView");
-				radioComp.btn_states = this.getListButtonStates(gotoPage);
 				layout.classList.add("showFullPage");
 				break;
 			case "#Settings":
@@ -3281,37 +3245,6 @@ var MainView = class extends View {
 			let trackList = this.state.getModel().getTrackList();
 			if (trackList.length > 0) await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
 		}
-	}
-	async onSelectedTrackChanged() {
-		let uri = this.state.getModel().getSelectedTrack();
-		this.state.getController().cache.lookupTrackCached(uri).then(async (track) => {
-			if (track?.type == "file") {
-				if (track.track.album) {
-					let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
-					this.albumView.setAlbumComponentData(albumModel, track.track.uri);
-				}
-			} else if (track?.type == "stream") {
-				let albumComp = document.getElementById("bigAlbumView");
-				let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri);
-				albumComp.albumInfo = null;
-				albumComp.setAttribute("img", streamModel.bigImageUrl);
-				albumComp.setAttribute("name", streamModel.stream.name);
-				let timelineDetails = document.getElementById("timelineDetails");
-				timelineDetails.streamInfo = streamModel;
-			}
-		});
-	}
-	async onAlbumToViewChanged() {
-		let albumToView = this.state.getModel().getAlbumToView();
-		if (!albumToView) return;
-		let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
-		this.albumView.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
-	}
-	async onRadioToViewChanged() {
-		let radioToView = this.state.getModel().getRadioToView();
-		if (!radioToView) return;
-		let radioModel = await this.state.getController().getExpandedTrackModel(radioToView);
-		this.radioView.setStreamComponentData(radioModel);
 	}
 	async rememberStreamLines(lines) {
 		await this.state.getController().remember(lines.join("\n"));
@@ -5445,6 +5378,21 @@ var BrowseView = class extends ComponentView {
 		this.component.on("hideBrowseInfoButton.eboplayer", async (ev) => {
 			this.state.getController().localStorageProxy.setHideBrowseInfoButton(true);
 		});
+		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
+			let page = this.state.getModel().getPage();
+			if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#WhatsNew")) return;
+			let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+			switch (page) {
+				case "#WhatsNew":
+					resultsDisplayMode = "icon";
+					await this.state.getController().setWhatsNewFilter();
+					break;
+				case "#Browse.Favorites":
+					await this.state.getController().setFavoritesFilter();
+					break;
+			}
+			this.updateCompFromState(resultsDisplayMode);
+		});
 	}
 	async onGuiBrowseFilterChanged() {
 		await this.state.getController().setAndSaveBrowseFilter(this.component.browseFilter);
@@ -5595,9 +5543,41 @@ var AlbumView = class extends ComponentView {
 		this.state.getModel().on("volumeAdjustChanged.eboplayer", (ev) => {
 			this.component.updateVolumeAdjust();
 		});
+		this.state.getModel().on("selectedTrackChanged.eboplayer", async () => {
+			await this.onSelectedTrackChanged();
+		});
+		this.state.getModel().on("albumToViewChanged.eboplayer", async () => {
+			await this.onAlbumToViewChanged();
+		});
+		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
+			this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+		});
+	}
+	async onSelectedTrackChanged() {
+		let uri = this.state.getModel().getSelectedTrack();
+		this.state.getController().cache.lookupTrackCached(uri).then(async (track) => {
+			if (track?.type == "file") {
+				if (track.track.album) {
+					let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
+					this.setAlbumComponentData(albumModel, track.track.uri);
+				}
+			} else if (track?.type == "stream") {
+				let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri);
+				this.component.albumInfo = null;
+				this.component.setAttribute("img", streamModel.bigImageUrl);
+				this.component.setAttribute("name", streamModel.stream.name);
+				let timelineDetails = document.getElementById("timelineDetails");
+				timelineDetails.streamInfo = streamModel;
+			}
+		});
+	}
+	async onAlbumToViewChanged() {
+		let albumToView = this.state.getModel().getAlbumToView();
+		if (!albumToView) return;
+		let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
+		this.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
 	}
 	setAlbumComponentData(albumModel, selectedTrackUri) {
-		document.getElementById("bigAlbumView");
 		this.component.albumInfo = albumModel;
 		this.component.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
 		this.component.setAttribute("img", albumModel.bigImageUrl);
@@ -5621,7 +5601,6 @@ var AlbumView = class extends ComponentView {
 	}
 	async onAddTrackClicked(uri) {}
 	async getSelectedUriForAlbum() {
-		document.getElementById("bigAlbumView");
 		let trackUris = this.component.selected_track_uris;
 		if (trackUris.length != 0) return trackUris;
 		return [this.state.getModel().getAlbumToView().albumUri];
@@ -6502,6 +6481,18 @@ var RadioView = class extends ComponentView {
 		this.state.getModel().on("streamLinesHistoryChanged.eboplayer", async (ev) => {
 			await this.onStreamLineHistoryChanged();
 		});
+		this.state.getModel().on("currentRadioChanged.eboplayer", async () => {
+			await this.onRadioToViewChanged();
+		});
+		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
+			this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+		});
+	}
+	async onRadioToViewChanged() {
+		let radioToView = this.state.getModel().getRadioToView();
+		if (!radioToView) return;
+		let radioModel = await this.state.getController().getExpandedTrackModel(radioToView);
+		this.setStreamComponentData(radioModel);
 	}
 	setStreamComponentData(streamModel) {
 		document.getElementById("bigRadioView");
@@ -7125,7 +7116,7 @@ function setupStuff() {
 	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));
 	let radioView = new RadioView(state, document.getElementById("dialog"), document.getElementById("bigRadioView"));
 	let topbarView = new TopBarView(state, document.querySelector("ebo-top-bar"));
-	let mainView = new MainView(state, browseView, albumView, radioView, topbarView);
+	let mainView = new MainView(state);
 	let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails"));
 	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
 	let historyView = new TimelineView(state);
@@ -7137,7 +7128,11 @@ function setupStuff() {
 		buttonBarView,
 		historyView,
 		rememberedView,
-		genresView
+		genresView,
+		browseView,
+		albumView,
+		radioView,
+		topbarView
 	];
 	views.forEach((v) => v.bindRecursive());
 	controller.initialize(views);

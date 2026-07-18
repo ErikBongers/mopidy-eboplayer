@@ -1,12 +1,10 @@
 import {ComponentView} from "./view";
-import {StreamUri, ExpandedAlbumModel, PlaylistUri, TrackUri, ExpandedStreamModel} from "../modelTypes";
-import {EboBrowseComp} from "../components/browse/eboBrowseComp";
-import {arrayToggle} from "../global";
+import {ExpandedStreamModel, PlaylistUri, StreamUri} from "../modelTypes";
 import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
-import {AlbumToView} from "../model";
 import {State} from "../playerState";
 import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
+import {MainView} from "./mainView";
 
 export class RadioView extends ComponentView<EboBigRadioComp> {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -49,7 +47,20 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
         this.state.getModel().on("streamLinesHistoryChanged.eboplayer", async ev => {
             await this.onStreamLineHistoryChanged();
         });
+        this.state.getModel().on("currentRadioChanged.eboplayer", async () => {
+            await this.onRadioToViewChanged();
+        });
+        this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
+            this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+        });
+    }
 
+    private async onRadioToViewChanged() {
+        let radioToView = this.state.getModel().getRadioToView();
+        if(!radioToView)
+            return;
+        let radioModel = await this.state.getController().getExpandedTrackModel(radioToView) as ExpandedStreamModel;
+        this.setStreamComponentData(radioModel);
     }
 
     setStreamComponentData(streamModel: ExpandedStreamModel) {

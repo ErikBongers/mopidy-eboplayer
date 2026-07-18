@@ -1,5 +1,5 @@
 import {ComponentView} from "./view";
-import {AlbumUri, ExpandedAlbumModel, PlaylistUri, TrackUri} from "../modelTypes";
+import {AlbumUri, ExpandedAlbumModel, ExpandedStreamModel, PlaylistUri, TrackUri} from "../modelTypes";
 import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
 import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {arrayToggle} from "../global";
@@ -7,6 +7,8 @@ import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
+import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
+import {MainView} from "./mainView";
 
 export class AlbumView extends ComponentView<EboBigAlbumComp> {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -67,10 +69,48 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.state.getModel().on("volumeAdjustChanged.eboplayer", (ev) => {
             this.component.updateVolumeAdjust();
         })
+        this.state.getModel().on("selectedTrackChanged.eboplayer", async () => {
+            await this.onSelectedTrackChanged();
+        });
+        this.state.getModel().on("albumToViewChanged.eboplayer", async () => {
+            await this.onAlbumToViewChanged();
+        });
+        this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
+            this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+        });
+    }
+
+    private async onSelectedTrackChanged() {
+        let uri = this.state.getModel().getSelectedTrack();
+        this.state.getController().cache.lookupTrackCached(uri)
+            .then(async track => {
+                if(track?.type == "file") {
+                    if(track.track.album) {
+                        let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
+                        this.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
+                    }
+                    //else: album view will not be shown when track has no album...but are we sure?
+                }
+                else if(track?.type == "stream") {
+                    let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
+                    this.component.albumInfo = null;
+                    this.component.setAttribute("img", streamModel.bigImageUrl);
+                    this.component.setAttribute("name", streamModel.stream.name);
+                    let timelineDetails = document.getElementById("timelineDetails") as EboTimeLineDetailsComp;
+                    timelineDetails.streamInfo = streamModel;
+                }
+            });
+    }
+
+    private async onAlbumToViewChanged() {
+        let albumToView = this.state.getModel().getAlbumToView();
+        if(!albumToView)
+            return;
+        let albumModel = await this.state.getController().getExpandedAlbumModel(albumToView.albumUri);
+        this.setAlbumComponentData(albumModel, albumToView.selectedTrackUri);
     }
 
     setAlbumComponentData(albumModel: ExpandedAlbumModel, selectedTrackUri: TrackUri | null) {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         this.component.albumInfo = albumModel;
         this.component.selected_track_uris = selectedTrackUri ? [selectedTrackUri] : [];
         this.component.setAttribute("img", albumModel.bigImageUrl);
@@ -101,7 +141,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     private async getSelectedUriForAlbum() {
-        let albumComp = document.getElementById("bigAlbumView") as EboBigAlbumComp;
         let trackUris = this.component.selected_track_uris;
 
         if (trackUris.length != 0) {

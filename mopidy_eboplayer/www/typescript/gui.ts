@@ -120,14 +120,14 @@ function setupStuff() {
     let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp);
     let radioView = new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp);
     let topbarView = new TopBarView(state, document.querySelector("ebo-top-bar") as EboTopBar);
-    let mainView = new MainView(state, browseView, albumView, radioView, topbarView);
+    let mainView = new MainView(state, );
     let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails") as EboTimeLineDetailsComp);
     let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);
     let historyView = new TimelineView(state);
     let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);
     let genresView = new GenresView(state, document.getElementById("genresView") as EboGenresComp);
 
-    let views = [mainView, timelineDetailsView, buttonBarView, historyView, rememberedView, genresView]; //todo: these views are bind here, while the others are bind inside mainView. Is this ok? They may get bind twice.
+    let views = [mainView, timelineDetailsView, buttonBarView, historyView, rememberedView, genresView, browseView, albumView, radioView, topbarView];
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
 

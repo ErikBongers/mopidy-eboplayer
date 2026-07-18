@@ -54,6 +54,24 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.component.on("hideBrowseInfoButton.eboplayer", async (ev) => {
             this.state.getController().localStorageProxy.setHideBrowseInfoButton(true);
         });
+        this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
+            let page = this.state.getModel().getPage();
+            if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#WhatsNew"))
+                return;
+
+            let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+            switch (page) {
+                case "#WhatsNew":
+                    resultsDisplayMode = "icon";
+                    await this.state.getController().setWhatsNewFilter();
+                    break;
+                case "#Browse.Favorites":
+                    await this.state.getController().setFavoritesFilter();
+                    break;
+            }
+            this.updateCompFromState(resultsDisplayMode);
+        });
+
     }
 
     private async onGuiBrowseFilterChanged() {
