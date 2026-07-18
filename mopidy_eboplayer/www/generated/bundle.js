@@ -3016,12 +3016,6 @@ var MainView = class MainView extends View {
 		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
 			await this.onToggleFavorite(ev.detail.uri);
 		});
-		addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
-			await this.onAlbumVolumeDown(ev.detail.uri);
-		});
-		addEboEventListener(layout, "albumVolumeAdjustUp.eboplayer", async (ev) => {
-			await this.onAlbumVolumeUp(ev.detail.uri);
-		});
 	}
 	static getListButtonStates(page) {
 		let states = ListButtonState_AllHidden();
@@ -3076,12 +3070,6 @@ var MainView = class MainView extends View {
 	}
 	async onToggleFavorite(uri) {
 		await this.state.getController().toggleFavorite(uri);
-	}
-	async onAlbumVolumeDown(uri) {
-		await this.state.getController().setAlbumVolumeDown(uri);
-	}
-	async onAlbumVolumeUp(uri) {
-		await this.state.getController().setAlbumVolumeUp(uri);
 	}
 };
 
@@ -5323,6 +5311,12 @@ var AlbumView = class extends ComponentView {
 		});
 	}
 	bind() {
+		this.component.on("albumVolumeAdjustDown.eboplayer", async (ev) => {
+			await this.state.getController().setAlbumVolumeDown(ev.detail.uri);
+		});
+		this.component.on("albumVolumeAdjustUp.eboplayer", async (ev) => {
+			await this.state.getController().setAlbumVolumeUp(ev.detail.uri);
+		});
 		this.component.on("genreSelected.eboplayer", async (ev) => {
 			await this.onGenreSelected(ev.detail.text);
 		});

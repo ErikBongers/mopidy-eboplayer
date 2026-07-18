@@ -26,6 +26,12 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     bind() {
+        this.component.on("albumVolumeAdjustDown.eboplayer", async (ev) => {
+            await this.state.getController().setAlbumVolumeDown(ev.detail.uri);
+        });
+        this.component.on("albumVolumeAdjustUp.eboplayer", async (ev) => {
+            await this.state.getController().setAlbumVolumeUp(ev.detail.uri);
+        });
         this.component.on("genreSelected.eboplayer", async ev => {
             await this.onGenreSelected(ev.detail.text);
         });

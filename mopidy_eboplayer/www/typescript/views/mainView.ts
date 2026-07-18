@@ -19,12 +19,6 @@ export class MainView extends View {
         addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
             await this.onToggleFavorite(ev.detail.uri);
         });
-        addEboEventListener(layout, "albumVolumeAdjustDown.eboplayer", async (ev) => {
-            await this.onAlbumVolumeDown(ev.detail.uri as AlbumUri);
-        });
-        addEboEventListener(layout, "albumVolumeAdjustUp.eboplayer", async (ev) => {
-            await this.onAlbumVolumeUp(ev.detail.uri as AlbumUri);
-        });
     }
 
     static getListButtonStates(page: Goto) {
@@ -96,13 +90,5 @@ export class MainView extends View {
 
     private async onToggleFavorite(uri: AllUris) {
         await this.state.getController().toggleFavorite(uri);
-    }
-
-    private async onAlbumVolumeDown(uri: AlbumUri) {
-        await this.state.getController().setAlbumVolumeDown(uri);
-    }
-
-    private async onAlbumVolumeUp(uri: AlbumUri) {
-        await this.state.getController().setAlbumVolumeUp(uri);
     }
 }
