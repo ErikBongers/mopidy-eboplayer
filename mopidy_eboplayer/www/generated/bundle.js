@@ -6711,6 +6711,8 @@ var EboTopBar = class EboTopBar extends EboComponent {
         <style>
             #header {
                 padding-top: 8px;
+                font-size: 1.3rem;
+                column-gap: .5ch;            
             }
             ul#header {
                 background-color: var(--header-background);
@@ -6751,12 +6753,12 @@ var EboTopBar = class EboTopBar extends EboComponent {
         <ul id="header" class="nobullet title condensed">
             <li class="flexShrink">
                 <button id="headerFavoritesBtn" title="Search">
-                    <i class="fa fa-heart"></i>
+                    <i class="fa fa-heart op8"></i>
                 </button>
             </li>
             <li class="flexShrink">
                 <button id="headerSearchBtn" title="Search" data-goto="#Browse">
-                    <i class="fa fa-search"></i>
+                    <i class="fa fa-search op8"></i>
                 </button>
             </li>
             <li class="flexShrink">
@@ -6768,7 +6770,7 @@ var EboTopBar = class EboTopBar extends EboComponent {
                 <span id="contentHeadline">Initializing...</span>
             </li>
             <li>
-                <button id="settingsBtn"><i class="fa fa fa-ellipsis-v"></i></button>
+                <button id="settingsBtn"><i class="fa fa fa-gear op7"></i></button>
             </li>
         </ul>
         `;

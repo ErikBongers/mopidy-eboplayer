@@ -179,3 +179,10 @@ p, span {
 ebo-player-bar {
     margin-block-end: .5ch;
 }
+
+.op8 {
+    opacity: .8;
+}
+.op7 {
+    opacity: .7;
+}
