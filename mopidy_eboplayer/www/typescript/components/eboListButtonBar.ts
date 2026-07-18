@@ -114,7 +114,7 @@ export class EboListButtonBar extends EboComponent {
     override render(shadow:ShadowRoot) {
         this.addShadowEventListener("btnPlay", "click", () => {
             if(this.btn_states.play != "show") return;
-            this.dispatchEboEvent("playItemListClicked.eboplayer", {source: this.list_source});
+            this.dispatchEboEvent("playItemClicked.eboplayer", {source: this.list_source});
         });
         this.addShadowEventListener("btnAdd", "click", () => {
             if(this.btn_states.add != "show") return;
@@ -130,7 +130,7 @@ export class EboListButtonBar extends EboComponent {
         });
         this.addShadowEventListener("btnSave", "click", () => {
             if(this.btn_states.save != "show") return;
-            this.dispatchEboEvent("saveClicked.eboplayer", {source: this.list_source, uri: this.uri as AllUris});
+            this.dispatchEboEvent("saveToPlaylistClicked.eboplayer", {source: this.list_source, uri: this.uri as AllUris});
         });
         this.addShadowEventListener("btnNewPlaylist", "click", () => {
             if(this.btn_states.new_playlist != "show") return;

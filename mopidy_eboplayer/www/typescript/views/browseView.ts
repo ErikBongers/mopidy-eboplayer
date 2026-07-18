@@ -37,7 +37,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.state.getModel().on("modelBrowseFilterChanged.eboplayer", () => {
             this.onModelBrowseFilterChanged();
         });
-        this.on("playItemListClicked.eboplayer", async (ev) => {
+        this.on("playItemClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
         this.on("addItemListClicked.eboplayer", async (ev) => {

@@ -32,13 +32,13 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.component.on("addTrackClicked.eboplayer", async (ev) => {
             await this.onAddTrackClicked(ev.detail.uri);
         });
-        this.component.on("saveClicked.eboplayer", async (ev) => {
+        this.component.on("saveToPlaylistClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });
         this.component.on("trackClicked.eboplayer", (ev) => {
             this.component.selected_track_uris = arrayToggle<TrackUri>(this.component.selected_track_uris, ev.detail.uri as TrackUri);
         });
-        this.component.on("playItemListClicked.eboplayer", async (ev) => {
+        this.component.on("playItemClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
         this.component.on("addItemListClicked.eboplayer", async (ev) => {

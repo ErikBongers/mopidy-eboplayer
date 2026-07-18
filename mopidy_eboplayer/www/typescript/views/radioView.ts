@@ -22,10 +22,10 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     }
 
     bind() {
-        this.component.on("saveClicked.eboplayer", async (ev) => {
+        this.component.on("saveToPlaylistClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });
-        this.component.on("playItemListClicked.eboplayer", async (ev) => {
+        this.component.on("playItemClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
         this.component.on("addItemListClicked.eboplayer", async (ev) => {
@@ -64,7 +64,6 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     }
 
     setStreamComponentData(streamModel: ExpandedStreamModel) {
-        let albumComp = document.getElementById("bigRadioView") as EboBigRadioComp;
         this.component.streamInfo = streamModel;
         this.component.setAttribute("img", streamModel.bigImageUrl);
         this.component.setAttribute("name", streamModel.stream.name);
