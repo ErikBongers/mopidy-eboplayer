@@ -16,7 +16,7 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     constructor(state: State, dialog: EboDialog, component: EboBigRadioComp) {
         super(state, component);
         this.dialog = dialog;
-        this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+        this.dialog.on("dialogOkClicked.eboplayer", (ev) => {
             let innnerDialog = ev.detail.dialog;
             if(this.onDialogOkClickedCallback(innnerDialog))
                 innnerDialog.close();
@@ -24,29 +24,29 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     }
 
     bind() {
-        this.component.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+        this.component.on("saveClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });
-        this.component.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+        this.component.on("playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
-        this.component.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+        this.component.on("addItemListClicked.eboplayer", async (ev) => {
             await this.onAddItemListClick(ev.detail);
         });
-        this.component.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+        this.component.on("replaceItemListClicked.eboplayer", async (ev) => {
             await this.onReplaceItemListClick(ev.detail);
         });
         //todo
         // this.component.addEboEventListener("uploadAlbumImageClicked.eboplayer", async (ev) => {
         //     await this.state.getController().webProxy.uploadAlbumImages(ev.detail.streamUri, ev.detail.imageUrl);
         // });
-        this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
+        this.component.on("albumGenreEditRequested.eboplayer", (ev) => {
             this.onGenreEditRequested(ev.detail);
         });
-        this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", async ev => {
+        this.state.getModel().on("favoritesChanged.eboplayer", async ev => {
             await this.onFavoritesChanged();
         });
-        this.state.getModel().addEboEventListener("streamLinesHistoryChanged.eboplayer", async ev => {
+        this.state.getModel().on("streamLinesHistoryChanged.eboplayer", async ev => {
             await this.onStreamLineHistoryChanged();
         });
 

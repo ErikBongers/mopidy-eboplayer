@@ -8,13 +8,13 @@ export class GenresView extends ComponentView<EboGenresComp>{
     }
 
     bind(): void {
-        this.state.getModel().addEboEventListener("genreDefsChanged.eboplayer", async () => {
+        this.state.getModel().on("genreDefsChanged.eboplayer", async () => {
             let genreDefs = await this.state.getCache().getGenreDefs();
             let genreReplacements = await this.state.getCache().getGenreReplacementsCached();
             this.component.genreDefs = genreDefs.map(genreDef => {
                 return {genreDef, active: genreReplacements.has(genreDef.child ?? genreDef.name)};
             });
-            this.component.addEboEventListener("genreSelected.eboplayer", ev => {
+            this.component.on("genreSelected.eboplayer", ev => {
             });
         });
     }

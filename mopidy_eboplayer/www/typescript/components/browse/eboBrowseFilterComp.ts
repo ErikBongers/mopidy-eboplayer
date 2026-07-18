@@ -195,10 +195,10 @@ export class EboBrowseFilterComp extends EboComponent {
         });
         (shadow.querySelectorAll("ebo-button.filterButton") as NodeListOf<EboButton>)
             .forEach((btn: EboButton) => {
-                btn.addEboEventListener("pressedChange.eboplayer", async (ev) => {
+                btn.on("pressedChange.eboplayer", async (ev) => {
                     this.onFilterButtonPress(ev);
                 });
-                btn.addEboEventListener("longPress.eboplayer", (ev) => {
+                btn.on("longPress.eboplayer", (ev) => {
                     this.onFilterButtonLongPress(ev);
                 });
                 btn.addEventListener("dblclick", (ev) => {

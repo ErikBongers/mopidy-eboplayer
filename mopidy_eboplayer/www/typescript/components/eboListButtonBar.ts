@@ -137,7 +137,7 @@ export class EboListButtonBar extends EboComponent {
             this.dispatchEboEvent("newPlaylistClicked.eboplayer", {source: this.list_source});
         });
         let btnDisplayMode = this.shadow.getElementById("btnDisplayMode") as EboButton;
-        btnDisplayMode.addEboEventListener("pressedChange.eboplayer", (ev) => {
+        btnDisplayMode.on("pressedChange.eboplayer", (ev) => {
            this.dispatchEboEvent("displayModeChanged.eboplayer", {mode: ev.detail.pressed ? "icon" : "line"});
         });
         this.requestUpdate();

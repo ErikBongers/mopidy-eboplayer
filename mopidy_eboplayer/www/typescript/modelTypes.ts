@@ -362,16 +362,9 @@ export const AlbumNone: AlbumDataNone = {
 
 export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
 
-export enum Pages {
-    NowPlaying = "#NowPlaying",
-    Browse = "#Browse",
-    Album = "#Album",
-    Settings = "#Settings",
-    WhatsNew = "#WhatsNew",
-    Remembered = "#Remembered",
-    Genres = "#Genres",
-    Radio = "#Radio",
-}
+export type Pages = "#NowPlaying" | "#Browse" | "#Album" | "#Settings" | "#WhatsNew" | "#Remembered" | "#Genres" | "#Radio";
+
+export type Goto = Pages | "#Browse.Favorites";
 
 export interface GenreReplacement {
     ref: Ref<GenreUri>;

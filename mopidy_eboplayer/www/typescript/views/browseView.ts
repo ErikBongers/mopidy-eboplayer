@@ -25,16 +25,16 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         this.on("browseResultDblClick.eboplayer", async (ev) => {
             await this.onBrowseResultDblClick(ev.detail.uri as AllUris);
         });
-        this.state.getModel().addEboEventListener("genreReplacementsChanged.eboplayer", async () => {
+        this.state.getModel().on("genreReplacementsChanged.eboplayer", async () => {
             await this.onGenreReplacementChanged();
         });
-        this.state.getModel().addEboEventListener("refsFiltered.eboplayer", () => {
+        this.state.getModel().on("refsFiltered.eboplayer", () => {
             this.onRefsFiltered();
         });
-        this.state.getModel().addEboEventListener("breadCrumbsChanged.eboplayer", () => {
+        this.state.getModel().on("breadCrumbsChanged.eboplayer", () => {
             this.onBreadCrumbsChanged();
         });
-        this.state.getModel().addEboEventListener("modelBrowseFilterChanged.eboplayer", () => {
+        this.state.getModel().on("modelBrowseFilterChanged.eboplayer", () => {
             this.onModelBrowseFilterChanged();
         });
         this.on("playItemListClicked.eboplayer", async (ev) => {
@@ -51,7 +51,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
             this.state.getController().localStorageProxy.saveLineOrIconPreference(ev.detail.mode);
         });
         this.component.setAttribute("display_mode", this.state.getController().localStorageProxy.getLineOrIconPreference());
-        this.component.addEboEventListener("hideBrowseInfoButton.eboplayer", async (ev) => {
+        this.component.on("hideBrowseInfoButton.eboplayer", async (ev) => {
             this.state.getController().localStorageProxy.setHideBrowseInfoButton(true);
         });
     }

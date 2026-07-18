@@ -1,5 +1,5 @@
 import {Batching} from "../Batching";
-import EboEventTarget, {createEvent, EboEventHandlersEventMap, EboplayerEvent} from "../events";
+import {EboEventTarget, createEvent, EboEventHandlersEventMap, EboplayerEvent} from "../events";
 
 export interface HasName {
     tagName: string;
@@ -53,7 +53,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         });
     }
 
-    addEboEventListener<K extends keyof EboEventHandlersEventMap>(
+    on<K extends keyof EboEventHandlersEventMap>(
         type: K,
         listener: (this: EboEventTarget, ev: EboplayerEvent<K, EboEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void {
     // @ts-ignore

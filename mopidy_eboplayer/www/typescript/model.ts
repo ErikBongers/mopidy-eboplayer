@@ -1,14 +1,14 @@
 import models from "../js/mopidy";
 import {AllRefs, EmptySearchResults, ExpandedRef, Refs, SearchResults} from "./refs";
-import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Pages} from "./modelTypes";
+import {AlbumMetaData, AlbumModel, AlbumUri, AllUris, BreadCrumbHome, BrowseFilter, CachedAlbumMetaData, ConnectionState, ExpandedHistoryLineGroup, FileTrackModel, FilterBreadCrumb, FilterBreadCrumbTypeName, GenreDef, GenreReplacement, HistoryLineDef, Message, MessageType, PlaybackFlags, PlayState, RememberDef, StreamTitles, StreamTrackModel, StreamUri, TrackModel, TrackUri, Pages, Goto} from "./modelTypes";
 import {BreadCrumbStack} from "./breadCrumb";
-import {EboEventTargetClass} from "./events";
+import {EboEventTargetClass, EboModelEventTargetClass} from "./events";
 import TlTrack = models.TlTrack;
 
 
 export type OnlyGetMethods<T> = {
     [K in keyof T as
-        K extends `get${string}`| `addEboEventListener`
+        K extends `get${string}`| `on`
             ? T[K] extends (...args: any[]) => any
                 ? K
                 : never
@@ -32,7 +32,7 @@ export class BrowseFilterBreadCrumbStack extends BreadCrumbStack<FilterBreadCrum
 
 // Model contains the data to be viewed and informs the view of changes through events.
 // Views should not update the model directly. See ViewModel for that.
-export class Model extends EboEventTargetClass implements ReadOnlyModel {
+export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
     currentTrack: TrackUri | StreamUri | null = null;
     //note that selectedTrack is not part of the mopidy server.
     //don't set selectedTrack to currentTrack unless you want it displayed
@@ -70,7 +70,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
 
     private allRefs: AllRefs | null = null;
     private currentRefs: Refs | null = null;
-    private page: Pages = Pages.NowPlaying;
+    private page: Goto = "#NowPlaying";
     private albumToView: AlbumToView | null = null;
     private remembers: RememberDef[] | null = null;
     private scanStatus: ScanStatus[] = [];
@@ -343,7 +343,7 @@ export class Model extends EboEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("currentRefsLoaded.eboplayer", {});
     }
 
-    setPage(page: Pages) {
+    setPage(page: Goto) {
         this.page = page;
         this.dispatchEboEvent("viewChanged.eboplayer", {});
     }

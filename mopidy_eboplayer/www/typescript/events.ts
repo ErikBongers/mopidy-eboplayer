@@ -1,89 +1,101 @@
-import {AlbumUri, AllUris, PlaybackUserOptions, RememberId, TrackUri} from "./modelTypes";
+import {AlbumUri, AllUris, Goto, Pages, PlaybackUserOptions, RememberId, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
 import {RefType} from "./refs";
 import {ScanStatus} from "./model";
 
-export interface EboEventHandlersEventMap {
+export interface EboModelEventHandlersEventMap {
+    "streamLinesHistoryChanged.eboplayer"       : UriArgs,
+    "currentRadioChanged.eboplayer"             : VoidArgs,
+    "favoritesChanged.eboplayer"                : VoidArgs,
+    "scanStatusChanged.eboplayer"               : ScanStatusArgs,
+    "remembersChanged.eboplayer"                : VoidArgs,
+    "albumToViewChanged.eboplayer"              : VoidArgs,
+    "currentRefsLoaded.eboplayer"               : VoidArgs,
+    "trackListChanged.eboplayer"                : VoidArgs,
+    "viewChanged.eboplayer"                     : VoidArgs,
+    "messageChanged.eboplayer"                  : VoidArgs,
+    "tempMessageChanged.eboplayer"              : VoidArgs,
+    "scanFinished.eboplayer"                    : VoidArgs,
+    "volumeAdjustChanged.eboplayer"             : VolumeAdjustArgs,
+    "programTitleChanged.eboplayer"             : VoidArgs,
+    "genreReplacementsChanged.eboplayer"        : VoidArgs,
+    "breadCrumbsChanged.eboplayer"              : VoidArgs,
+    "refsFiltered.eboplayer"                    : VoidArgs,
+    "connectionChanged.eboplayer"               : VoidArgs,
+    "modelBrowseFilterChanged.eboplayer"        : VoidArgs,
+    "currentTrackChanged.eboplayer"             : VoidArgs,
+    "selectedTrackChanged.eboplayer"            : VoidArgs,
+    "volumeChanged.eboplayer"                   : VoidArgs,
+    "playbackModeChanged.eboplayer"             : VoidArgs,
+    "playbackStateChanged.eboplayer"            : VoidArgs,
     "activeStreamLinesChanged.eboplayer"        : VoidArgs,
+    "historyChanged.eboplayer"                  : VoidArgs,
+    "genreDefsChanged.eboplayer"                : VoidArgs,
+}
+
+export interface EboEventHandlersEventMap {
     "addItemListClicked.eboplayer"              : GuiSourceArgs,
     "genreSelected.eboplayer"                   : StringArgs,
     "addTrackClicked.eboplayer"                 : TrackUriArgs,
-    "albumToViewChanged.eboplayer"              : VoidArgs,
     "bigTimelineImageClicked.eboplayer"         : VoidArgs,
     "bigTrackAlbumSmallImgClicked.eboplayer"    : VoidArgs,
     "breadCrumbClick.eboplayer"                 : BreadcrumbArgs,
-    "breadCrumbsChanged.eboplayer"              : VoidArgs,
     "browseResultClick.eboplayer"               : BrowseResultClickArgs,
     "browseResultDblClick.eboplayer"            : UriArgs,
     "browseToArtist.eboplayer"                  : RefArgs,
     "buttonBarAlbumImgClicked.eboplayer"        : VoidArgs,
     "changingVolume.eboplayer"                  : VolumeEventArgs,
-    "connectionChanged.eboplayer"               : VoidArgs,
-    "currentRefsLoaded.eboplayer"               : VoidArgs,
-    "currentTrackChanged.eboplayer"             : VoidArgs,
     "deleteRemember.eboplayer"                  : RemeberIdArgs,
-    "genreDefsChanged.eboplayer"                : VoidArgs,
-    "favoritesChanged.eboplayer"                : VoidArgs,
     "albumGenreEditRequested.eboplayer"         : UriArgs,
-    "currentRadioChanged.eboplayer"             : VoidArgs,
     "albumVolumeAdjustDown.eboplayer"           : UriArgs,
     "albumVolumeAdjustUp.eboplayer"             : UriArgs,
-    "volumeAdjustChanged.eboplayer"             : VolumeAdjustArgs,
     "favoriteToggle.eboplayer"                  : UriArgs,
     "detailsAlbumImgClicked.eboplayer"          : VoidArgs,
     "detailsRadioImgClicked.eboplayer"          : VoidArgs,
     "dialogOkClicked.eboplayer"                 : DialogArgs,
     "displayModeChanged.eboplayer"              : DisplayModeArgs,
     "editClicked.eboplayer"                     : GuiSourceArgs,
-    "genreReplacementsChanged.eboplayer"        : VoidArgs,
     "guiBrowseFilterChanged.eboplayer"          : VoidArgs,
     "hideBrowseInfoButton.eboplayer"            : VoidArgs,
-    "historyChanged.eboplayer"                  : VoidArgs,
-    "streamLinesHistoryChanged.eboplayer"       : UriArgs,
     "longPress.eboplayer"                       : VoidArgs,
-    "messageChanged.eboplayer"                  : VoidArgs,
-    "tempMessageChanged.eboplayer"              : VoidArgs,
-    "modelBrowseFilterChanged.eboplayer"        : VoidArgs,
     "newPlaylistClicked.eboplayer"              : GuiSourceArgs,
     "optionSelected.eboplayer"                  : OptionArgs,
     "pausePressed.eboplayer"                    : VoidArgs,
     "playItemListClicked.eboplayer"             : GuiSourceArgs,
     "playPressed.eboplayer"                     : VoidArgs,
     "playTrackClicked.eboplayer"                : TrackUriArgs,
-    "playbackModeChanged.eboplayer"             : VoidArgs,
-    "playbackStateChanged.eboplayer"            : VoidArgs,
     "pressedChange.eboplayer"                   : PressedArgs,
-    "programTitleChanged.eboplayer"             : VoidArgs,
-    "refsFiltered.eboplayer"                    : VoidArgs,
     "rememberStreamLines.eboplayer"             : StreamLinesArgs,
     "rememberedRequested.eboplayer"             : VoidArgs,
     "mopidyConfigRequested.eboplayer"           : VoidArgs,
     "getMixers.eboplayer"                       : VoidArgs,
     "mopidyConfigAddExclExt.eboplayer"           : ExtArgs,
-    "remembersChanged.eboplayer"                : VoidArgs,
     "replaceItemListClicked.eboplayer"          : GuiSourceArgs,
     "saveClicked.eboplayer"                     : SaveUriArgs,
-    "scanFinished.eboplayer"                    : VoidArgs,
     "scanRequested.eboplayer"                   : VoidArgs,
-    "scanStatusChanged.eboplayer"               : ScanStatusArgs,
-    "selectedTrackChanged.eboplayer"            : VoidArgs,
     "stopPressed.eboplayer"                     : VoidArgs,
     "trackClicked.eboplayer"                    : UriArgs,
-    "trackListChanged.eboplayer"                : VoidArgs,
     "updateAlbumData.eboplayer"                 : UriArgs,
     "uploadAlbumImageClicked.eboplayer"         : AlbumImageUrlArgs,
-    "viewChanged.eboplayer"                     : VoidArgs,
-    "volumeChanged.eboplayer"                   : VoidArgs,
+    "gotoPage.eboplayer"                        : GotoArgs,
     "whatsNewRequested.eboplayer"               : VoidArgs,
 }
 
-export default interface EboEventTarget {
-    addEboEventListener<K extends keyof EboEventHandlersEventMap>(
+export interface EboEventTarget {
+    on<K extends keyof EboEventHandlersEventMap>(
         type: K,
         listener: (this: EboEventTarget, ev: EboplayerEvent<K, EboEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
 
     dispatchEboEvent<K extends keyof EboEventHandlersEventMap>(key: K, args: EboEventHandlersEventMap[K]): boolean;
+}
+
+export interface EboModelEventTarget {
+    on<K extends keyof EboModelEventHandlersEventMap>(
+        type: K,
+        listener: (this: EboModelEventTarget, ev: EboplayerModelEvent<K, EboModelEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void;
+
+    dispatchEboEvent<K extends keyof EboModelEventHandlersEventMap>(key: K, args: EboModelEventHandlersEventMap[K]): boolean;
 }
 
 export class EboplayerEvent<K extends keyof EboEventHandlersEventMap, T extends EboEventArgs> extends CustomEvent<T> {
@@ -92,7 +104,17 @@ export class EboplayerEvent<K extends keyof EboEventHandlersEventMap, T extends 
     }
 }
 
+export class EboplayerModelEvent<K extends keyof EboModelEventHandlersEventMap, T extends EboEventArgs> extends CustomEvent<T> {
+    protected constructor(event: K, detail?: T) {
+        super(event, {detail, bubbles: true, composed: true, cancelable: true});
+    }
+}
+
 export function createEvent<K extends keyof EboEventHandlersEventMap>(event: K, detail?: EboEventHandlersEventMap[K]) {
+    return new CustomEvent(event, {detail, bubbles: true, composed: true, cancelable: true});
+}
+
+export function createModelEvent<K extends keyof EboModelEventHandlersEventMap>(event: K, detail?: EboModelEventHandlersEventMap[K]) {
     return new CustomEvent(event, {detail, bubbles: true, composed: true, cancelable: true});
 }
 
@@ -107,6 +129,10 @@ export type VoidArgs = {
 
 export interface StreamLinesArgs extends EboEventArgs {
     lines: string[]
+}
+
+export interface GotoArgs extends EboEventArgs {
+    page: Goto
 }
 
 export interface RemeberIdArgs extends EboEventArgs {
@@ -195,9 +221,22 @@ export class EboEventTargetClass extends EventTarget implements EboEventTarget {
         return super.dispatchEvent(createEvent(key, args));
     }
 
-    addEboEventListener<K extends keyof EboEventHandlersEventMap>(
+    on<K extends keyof EboEventHandlersEventMap>(
         type: K,
         listener: (this: EboEventTarget, ev: EboplayerEvent<K, EboEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void {
+        // @ts-ignore
+        super.addEventListener(type, listener, options);
+    }
+}
+
+export class EboModelEventTargetClass extends EventTarget implements EboModelEventTarget {
+    dispatchEboEvent<K extends keyof EboModelEventHandlersEventMap>(key: K, args: EboModelEventHandlersEventMap[K]): boolean {
+        return super.dispatchEvent(createModelEvent(key, args));
+    }
+
+    on<K extends keyof EboModelEventHandlersEventMap>(
+        type: K,
+        listener: (this: EboModelEventTarget, ev: EboplayerModelEvent<K, EboModelEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions): void {
         // @ts-ignore
         super.addEventListener(type, listener, options);
     }

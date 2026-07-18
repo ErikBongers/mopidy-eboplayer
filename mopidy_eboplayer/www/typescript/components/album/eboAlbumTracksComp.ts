@@ -150,7 +150,7 @@ export class EboAlbumTracksComp extends EboComponent {
                     this.dispatchEboEvent("trackClicked.eboplayer", {uri: tr.dataset.uri as TrackUri});
                 });
                 let heartButton = tdHeart.querySelector("ebo-button.heartButton") as EboButton;
-                heartButton.addEboEventListener("pressedChange.eboplayer", (ev) => {
+                heartButton.on("pressedChange.eboplayer", (ev) => {
                     this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": track.track.uri});
                 });
             });

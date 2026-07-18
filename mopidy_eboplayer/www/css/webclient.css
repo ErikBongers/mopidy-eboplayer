@@ -14,17 +14,6 @@ body * {
     user-select: none;
 }
 
-.title.condensed  {
-    font-family: "Sofia Sans", sans-serif;
-    font-optical-sizing: auto;
-    font-weight: 400;
-}
-
-p {
-    padding: 0;
-    margin: 0;
-}
-
 button, input {
     background: rgba(255,255,255,.07);
     color: inherit;
@@ -87,20 +76,6 @@ button, input {
         overflow: scroll;
         scrollbar-width: none;
     }
-    #headerNowPlayingBtn {
-        img {
-            width: 18px;
-            height: 18px;
-            corner-shape: squircle;
-            border-radius: 50%;
-        }
-    }
-    ul#header li {
-        margin-inline: .1rem;
-    }
-    #contentHeadline {
-        justify-self: center;
-    }
 }
 
 .flex_wrap_content {
@@ -118,11 +93,6 @@ button, input {
 h3#modalname a{
     background-color: transparent;
 }
-.nobullet {
-    list-style-type: none;
-    margin: 0;
-    padding: 0;
-}
 
 #timelineDetails {
     flex: 1;
@@ -134,10 +104,6 @@ h3#modalname a{
     width: 100%;
 }
 
-#header {
-    padding-top: 8px;
-}
-
 .info {
     font-size: .5em;
 }
@@ -145,21 +111,6 @@ h3#modalname a{
 
 a {
     color: white;
-}
-
-ul#header {
-    background-color: var(--header-background);
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    li {
-        display: inline;
-    }
-    p {
-        padding: .2em 1em;
-        font-size: .7em;
-        margin-top: .2em;
-    }
 }
 
 p.warning  {

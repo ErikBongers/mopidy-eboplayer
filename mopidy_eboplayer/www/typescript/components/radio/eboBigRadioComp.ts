@@ -156,7 +156,7 @@ export class EboBigRadioComp extends EboComponent {
             wrapper.classList.toggle("front");
             wrapper.classList.toggle("back");
         });
-        this.addEboEventListener("detailsRadioImgClicked.eboplayer", () => {
+        this.on("detailsRadioImgClicked.eboplayer", () => {
             let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
             wrapper.classList.add("front");
             wrapper.classList.remove("back");

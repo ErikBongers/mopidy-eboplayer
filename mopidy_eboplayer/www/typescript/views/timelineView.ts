@@ -11,16 +11,16 @@ export class TimelineView extends View {
     }
 
     bind() {
-        this.state.getModel().addEboEventListener("historyChanged.eboplayer", () => {
+        this.state.getModel().on("historyChanged.eboplayer", () => {
             this.rebuildTimeline().then(r => {});
         });
-        this.state.getModel().addEboEventListener("trackListChanged.eboplayer", () => {
+        this.state.getModel().on("trackListChanged.eboplayer", () => {
             this.rebuildTimeline().then(r => {});
         });
-        this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", () => {
+        this.state.getModel().on("currentTrackChanged.eboplayer", () => {
             this.onCurrentTrackChanged();
         });
-        this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", () => {
+        this.state.getModel().on("selectedTrackChanged.eboplayer", () => {
             this.onSelectedTrackChanged();
         });
     }

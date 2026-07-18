@@ -178,13 +178,13 @@ export class EboBigAlbumComp extends EboComponent {
             wrapper.classList.toggle("front");
             wrapper.classList.toggle("back");
         });
-        this.addEboEventListener("detailsAlbumImgClicked.eboplayer", () => {
+        this.on("detailsAlbumImgClicked.eboplayer", () => {
             let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
             wrapper.classList.add("front");
             wrapper.classList.remove("back");
         });
         let heartButton = shadow.getElementById("btnFavorite") as EboButton;
-        heartButton.addEboEventListener("pressedChange.eboplayer", (ev) => {
+        heartButton.on("pressedChange.eboplayer", (ev) => {
             this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": this.albumInfo?.album.ref.uri as AlbumUri});
         });
     }

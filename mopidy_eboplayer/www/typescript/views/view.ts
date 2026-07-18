@@ -1,5 +1,5 @@
 import {EboComponent} from "../components/EboComponent";
-import EboEventTarget, {EboEventHandlersEventMap, EboplayerEvent} from "../events";
+import {EboEventTarget, EboEventHandlersEventMap, EboplayerEvent} from "../events";
 import { State } from "../playerState";
 
 export interface Parent<Child> {
@@ -44,7 +44,7 @@ export abstract class ComponentView<T extends EboComponent> extends View {
         type: K,
         listener: (this: EboEventTarget, ev: EboplayerEvent<K, EboEventHandlersEventMap[K]>) => any, options?: boolean | AddEventListenerOptions
     ): void {
-        this.component.addEboEventListener(type, listener, options);
+        this.component.on(type, listener, options);
     }
 
 }

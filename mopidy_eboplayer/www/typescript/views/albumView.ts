@@ -16,7 +16,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     constructor(state: State, dialog: EboDialog, component: EboBigAlbumComp) {
         super(state, component);
         this.dialog = dialog;
-        this.dialog.addEboEventListener("dialogOkClicked.eboplayer", (ev) => {
+        this.dialog.on("dialogOkClicked.eboplayer", (ev) => {
             let innnerDialog = ev.detail.dialog;
             if(this.onDialogOkClickedCallback(innnerDialog))
                 innnerDialog.close();
@@ -25,46 +25,46 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
 
     bind() {
         let timelineDetailsComponent = document.getElementById("timelineDetails") as EboBrowseComp;
-        timelineDetailsComponent.addEboEventListener("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+        timelineDetailsComponent.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
             timelineDetailsComponent.setAttribute("show_back", "false");
         });
-        this.component.addEboEventListener("playTrackClicked.eboplayer", async (ev) => {
+        this.component.on("playTrackClicked.eboplayer", async (ev) => {
             await this.onPlayTrackClicked(ev.detail.uri);
         });
-        this.component.addEboEventListener("addTrackClicked.eboplayer", async (ev) => {
+        this.component.on("addTrackClicked.eboplayer", async (ev) => {
             await this.onAddTrackClicked(ev.detail.uri);
         });
-        this.component.addEboEventListener("saveClicked.eboplayer", async (ev) => {
+        this.component.on("saveClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });
-        this.component.addEboEventListener("trackClicked.eboplayer", (ev) => {
+        this.component.on("trackClicked.eboplayer", (ev) => {
             this.component.selected_track_uris = arrayToggle<TrackUri>(this.component.selected_track_uris, ev.detail.uri as TrackUri);
         });
-        this.component.addEboEventListener("playItemListClicked.eboplayer", async (ev) => {
+        this.component.on("playItemListClicked.eboplayer", async (ev) => {
             await this.onPlayItemListClick(ev.detail);
         });
-        this.component.addEboEventListener("addItemListClicked.eboplayer", async (ev) => {
+        this.component.on("addItemListClicked.eboplayer", async (ev) => {
             await this.onAddItemListClick(ev.detail);
         });
-        this.component.addEboEventListener("replaceItemListClicked.eboplayer", async (ev) => {
+        this.component.on("replaceItemListClicked.eboplayer", async (ev) => {
             await this.onReplaceItemListClick(ev.detail);
         });
-        this.component.addEboEventListener("updateAlbumData.eboplayer", async (ev) => {
+        this.component.on("updateAlbumData.eboplayer", async (ev) => {
             await this.state.getController().webProxy.updateAlbumData(ev.detail.uri as AlbumUri);
         });
-        this.component.addEboEventListener("uploadAlbumImageClicked.eboplayer", async (ev) => {
+        this.component.on("uploadAlbumImageClicked.eboplayer", async (ev) => {
             await this.state.getController().webProxy.uploadAlbumImages(ev.detail.albumUri, ev.detail.imageUrl);
         });
-        this.component.addEboEventListener("browseToArtist.eboplayer", async (ev) => {
+        this.component.on("browseToArtist.eboplayer", async (ev) => {
             await this.state.getController().viewController.browseToArtist(ev.detail);
         });
-        this.component.addEboEventListener("albumGenreEditRequested.eboplayer", (ev) => {
+        this.component.on("albumGenreEditRequested.eboplayer", (ev) => {
             this.onGenreEditRequested(ev.detail);
         });
-        this.state.getModel().addEboEventListener("favoritesChanged.eboplayer", ev => {
+        this.state.getModel().on("favoritesChanged.eboplayer", ev => {
             this.component.updateFavorite();
         });
-        this.state.getModel().addEboEventListener("volumeAdjustChanged.eboplayer", (ev) => {
+        this.state.getModel().on("volumeAdjustChanged.eboplayer", (ev) => {
             this.component.updateVolumeAdjust();
         })
     }

@@ -15,16 +15,16 @@ export class TimeLineDetailsView extends ComponentView<EboTimeLineDetailsComp> {
     }
 
     bind() {
-        this.state.getModel().addEboEventListener("currentTrackChanged.eboplayer", async () => {
+        this.state.getModel().on("currentTrackChanged.eboplayer", async () => {
             await this.onCurrentOrSelectedChanged();
         });
-        this.state.getModel().addEboEventListener("selectedTrackChanged.eboplayer", async () => {
+        this.state.getModel().on("selectedTrackChanged.eboplayer", async () => {
             await this.onCurrentOrSelectedChanged();
         });
-        this.state.getModel().addEboEventListener("activeStreamLinesChanged.eboplayer", (ev) => {
+        this.state.getModel().on("activeStreamLinesChanged.eboplayer", (ev) => {
             this.onStreamLinesChanged();
         });
-        this.state.getModel().addEboEventListener("programTitleChanged.eboplayer", (ev) => {
+        this.state.getModel().on("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
         });
     }

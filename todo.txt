@@ -1,3 +1,41 @@
+* Create header bar component.
+
+* Remove JS references from components by string (key) coupling.
+
+* Allow sharing of components in pages.
+  > Inject them in subclasses of Page class.
+    > Put them in other place in DOM when a Page is shown.
+    > Try this with the header bar.
+
+Multi-layout
+=============
+
+- A layout has many components that can be re-ordered and hidden.
+  > most of them can therefore be visible at the same time.
+  > if they are always filled and up-to-date, showing them takes no time.
+- Some components are almost never accessed: backend config.
+  > Don't pre-load certain components: allow them to be deactivated.
+    > Deactivated means they don't execute the update function.
+      > Better performance.
+    > Activating them forces an update.
+      > This only works is updates are NOT incremental.
+        > E.g. the Scan status is incremental, but a blocking of update would not cause loss of data.
+
+
+Components & Views
+===================
+I have Lit-like web components. I have a model with cached (lazy) data.
+How do I connect the 2?
+The model informs registered listerers of data changes.
+The components are currently NOT listening, but Views are, and those views set properties of the components.
+The components may have properties for complex data structures from the model.
+
+Should components listen to data change events?
+  > Currently components react to their properties being changed and the views listen to data events. Do we keep this strategy?
+
+The general components only use attributes to display data.
+  > The more of these, the better because they are easily garbage collected.
+
 Pages
 =======
   > Never discard: they are difficult to GC.

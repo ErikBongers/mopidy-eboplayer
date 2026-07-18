@@ -497,7 +497,7 @@ class Controller extends Commands {
             return;
         await this.clearBreadCrumbs();
         await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
-        this.viewController.setView(Pages.Browse);
+        this.viewController.setView("#Browse");
     }
 
     showTempMessage(message: string, type: MessageType) {

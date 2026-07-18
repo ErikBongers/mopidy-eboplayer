@@ -1,6 +1,5 @@
 import {Mopidy, Options} from "../js/mopidy";
 import {Model} from "./model";
-import {HeaderView} from "./views/headerView";
 import Controller from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
@@ -41,6 +40,8 @@ import {EboBigRadioComp} from "./components/radio/eboBigRadioComp";
 import {RadioView} from "./views/radioView";
 import {EboRadioDetails} from "./components/radio/eboRadioDetails";
 import {EboTimeLineDetailsComp} from "./components/eboTimeLineDetailsComp";
+import {EboTopBar} from "./components/eboTopBar";
+import {TopBarView} from "./views/topBarView";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -81,6 +82,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboRadioDetails);
             EboComponent.define(EboRadioHistoryComp);
             EboComponent.define(EboBigRadioComp);
+            EboComponent.define(EboTopBar);
 
             setupStuff();
         });
@@ -117,15 +119,15 @@ function setupStuff() {
     let browseView = new BrowseView(state, document.getElementById("browseView") as EboBrowseComp);
     let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp);
     let radioView = new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp);
-    let mainView = new MainView(state, browseView, albumView, radioView);
-    let headerView = new HeaderView(state);
+    let topbarView = new TopBarView(state, document.querySelector("ebo-top-bar") as EboTopBar);
+    let mainView = new MainView(state, browseView, albumView, radioView, topbarView);
     let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails") as EboTimeLineDetailsComp);
     let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);
     let historyView = new TimelineView(state);
     let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);
     let genresView = new GenresView(state, document.getElementById("genresView") as EboGenresComp);
 
-    let views = [mainView, headerView, timelineDetailsView, buttonBarView, historyView, rememberedView, genresView];
+    let views = [mainView, timelineDetailsView, buttonBarView, historyView, rememberedView, genresView]; //todo: these views are bind here, while the others are bind inside mainView. Is this ok? They may get bind twice.
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
 
