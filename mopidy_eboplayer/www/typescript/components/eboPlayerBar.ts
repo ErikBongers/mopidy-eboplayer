@@ -47,8 +47,6 @@ export class EboPlayerBar extends EboComponent {
                 box-sizing: border-box;
                 width: 100%;
                 padding-block: 1ch;
-                background-color: darkgray;
-                border-radius: 50vh;
                 
                 & button {
                     padding-left: .5ch;
@@ -100,6 +98,7 @@ export class EboPlayerBar extends EboComponent {
                 align-items: center;
                 padding-top: .5em;
                 padding-bottom: .5em;
+                border-radius: 50vh;
             }
             #text {
                 font-size: .7em;

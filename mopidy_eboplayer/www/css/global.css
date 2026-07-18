@@ -175,3 +175,7 @@ p, span {
 .textCenter {
     text-align: center;
 }
+
+ebo-player-bar {
+    margin-block-end: .5ch;
+}
