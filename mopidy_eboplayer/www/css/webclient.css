@@ -56,25 +56,10 @@ button, input {
     flex-flow: column;
     height: 100%;
 
-    &.showFullPage
-    {
-        #stickyTop {
-            height: 100vh;
-        }
-        #tableWrapper {
-            height: 0;
-        }
-    }
     #stickyTop {
-        height: 50vh;
+        height: 100vh;
         display: flex;
         flex-direction: column;
-    }
-
-    #tableWrapper {
-        height: 50vh;
-        overflow: scroll;
-        scrollbar-width: none;
     }
 }
 

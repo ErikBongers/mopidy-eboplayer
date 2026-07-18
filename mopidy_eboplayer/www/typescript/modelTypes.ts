@@ -362,9 +362,9 @@ export const AlbumNone: AlbumDataNone = {
 
 export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
 
-export type Pages = "#NowPlaying" | "#Browse" | "#Album" | "#Settings" | "#WhatsNew" | "#Remembered" | "#Genres" | "#Radio";
+export type Pages = "#NowPlaying" | "#Browse" | "#Album" | "#Settings" | "#Remembered" | "#Genres" | "#Radio";
 
-export type Goto = Pages | "#Browse.Favorites";
+export type Goto = Pages | "#Browse.Favorites" | "#Browse.WhatsNew";
 
 export interface GenreReplacement {
     ref: Ref<GenreUri>;

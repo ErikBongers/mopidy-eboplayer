@@ -2563,119 +2563,6 @@ var EboProgressBar = class EboProgressBar extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer/www/typescript/views/timelineView.ts
-var TimelineView = class extends View {
-	clickedRow = null;
-	constructor(state) {
-		super(state);
-	}
-	bind() {
-		this.state.getModel().on("historyChanged.eboplayer", () => {
-			this.rebuildTimeline().then((r) => {});
-		});
-		this.state.getModel().on("trackListChanged.eboplayer", () => {
-			this.rebuildTimeline().then((r) => {});
-		});
-		this.state.getModel().on("currentTrackChanged.eboplayer", () => {
-			this.onCurrentTrackChanged();
-		});
-		this.state.getModel().on("selectedTrackChanged.eboplayer", () => {
-			this.onSelectedTrackChanged();
-		});
-	}
-	async rebuildTimeline() {
-		let history = this.state.getModel().getHistory() ?? [];
-		let trackList = this.state.getModel().getTrackList() ?? [];
-		let body = document.getElementById("timelineTable").tBodies[0];
-		body.innerHTML = "";
-		if (history.length > 0 && trackList.length > 0 && history[0].uri == trackList[0].track.uri) history.shift();
-		for (let i = history.length - 1; i >= 0; i--) this.insertHistoryLine(history[i], body);
-		for (let track of trackList) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, body, [], track.tlid);
-		let uris = trackList.map((tl) => tl.track.uri);
-		uris = [...new Set(uris)];
-		await this.setCurrentTrack();
-		body.querySelectorAll("tr").forEach((tr) => {
-			tr.addEventListener("dblclick", (ev) => {
-				this.onRowDoubleClicked(ev);
-			});
-			tr.addEventListener("click", (ev) => {
-				this.onRowClicked(ev);
-			});
-		});
-	}
-	onRowClicked(ev) {
-		let row = ev.currentTarget;
-		this.setRowsClass(row, ["clicked"]);
-		this.state.getController().setSelectedTrack(row.dataset.uri);
-	}
-	async onRowDoubleClicked(ev) {
-		this.clickedRow = ev.currentTarget;
-		if (this.clickedRow.dataset.tlid) await this.state.getPlayer().play(parseInt(this.clickedRow.dataset.tlid));
-		else await this.state.getPlayer().clearAndPlay([this.clickedRow.dataset.uri]);
-	}
-	setRowsClass(rowOrSelector, classes) {
-		document.getElementById("timelineTable").querySelectorAll(`tr`).forEach((tr) => tr.classList.remove(...classes));
-		if (rowOrSelector instanceof HTMLTableRowElement) rowOrSelector.classList.add(...classes);
-		else document.getElementById("timelineTable").querySelectorAll(rowOrSelector).forEach((tr) => tr.classList.add(...classes));
-	}
-	setSelectedTrack() {
-		let selectedTrackUri = this.state.getModel().getSelectedTrack();
-		this.setRowsClass(`tr[data-uri="${selectedTrackUri}"]`, ["selected"]);
-	}
-	async setCurrentTrack() {
-		let timelineTable = document.getElementById("timelineTable");
-		let focusTrack = await this.state.getController().cache.lookupTrackCached(this.state.getModel().getCurrentTrack());
-		if (!focusTrack) {
-			focusTrack = await this.state.getController().cache.lookupTrackCached(this.state.getModel().getSelectedTrack());
-			if (!focusTrack) return;
-		}
-		let currentUri = focusTrack.track.uri;
-		let trs = [...timelineTable.querySelectorAll(`tr[data-uri="${currentUri}"]`)];
-		if (trs.length == 0) return;
-		let tr = trs[trs.length - 1];
-		if (this.clickedRow?.dataset?.uri != focusTrack.track.uri) tr.scrollIntoView({ block: "nearest" });
-		timelineTable.querySelectorAll("tr").forEach((tr$1) => tr$1.classList.remove("current", "textGlow"));
-		tr.classList.add("current", "textGlow");
-	}
-	insertHistoryLine(line, body) {
-		this.insertTrackLine(line.name, line.uri, body, ["historyLine"], void 0, line.album, line.artist);
-	}
-	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
-		let tr = document.createElement("tr");
-		body.appendChild(tr);
-		tr.classList.add("trackLine", ...classes);
-		if (!uri.startsWith("eboback")) tr.classList.add("italic");
-		tr.dataset.uri = uri;
-		if (tlid) tr.dataset.tlid = tlid.toString();
-		this.setTrackLineContent(tr, title, artist, album);
-		body.insertAdjacentHTML("beforeend", `
-<tr>
-    <td colspan="2">
-        <div class="progressBar"></div>
-    </td>
-</tr>
-            `);
-	}
-	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
-		tr.innerHTML = `
-    <td>
-        <h1>${title}</h1>
-        <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
-    </td>
-    <td>
-        <button><i class="fa fa fa-ellipsis-v"></i></button>
-    </td>
-            `;
-	}
-	onCurrentTrackChanged() {
-		this.setCurrentTrack();
-	}
-	onSelectedTrackChanged() {
-		this.setSelectedTrack();
-	}
-};
-
-//#endregion
 //#region mopidy_eboplayer/www/typescript/views/timeLineDetailsView.ts
 var TimeLineDetailsView = class extends ComponentView {
 	streamLines = "";
@@ -3098,33 +2985,12 @@ var MainView = class MainView extends View {
 		this.state.getModel().on("viewChanged.eboplayer", async () => {
 			await this.setCurrentPage();
 		});
-		let timelineDetailsView = document.getElementById("timelineDetails");
-		timelineDetailsView.on("bigTimelineImageClicked.eboplayer", async () => {
+		let nowPlayingView = document.getElementById("timelineDetails");
+		nowPlayingView.on("bigTimelineImageClicked.eboplayer", async () => {
 			await this.onTimelineBigImgClick();
 		});
-		timelineDetailsView.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-			timelineDetailsView.setAttribute("show_back", "false");
-		});
-		this.state.getModel().on("scanStatusChanged.eboplayer", (ev) => {
-			let settingsComp$1 = document.getElementById("settingsView");
-			settingsComp$1.scanStatus = ev.detail.status;
-		});
-		this.state.getModel().on("scanFinished.eboplayer", () => {
-			document.getElementById("settingsView").setAttribute("show_whats_new", "");
-		});
-		let settingsComp = document.getElementById("settingsView");
-		settingsComp.on("scanRequested.eboplayer", async () => {
-			await this.state.getController().startScan();
-		});
-		settingsComp.on("whatsNewRequested.eboplayer", () => {
-			window.location.hash = "#WhatsNew";
-			window.location.reload();
-		});
-		settingsComp.on("mopidyConfigRequested.eboplayer", async () => {
-			await this.state.getController().readMopidyConfig();
-		});
-		settingsComp.on("mopidyConfigAddExclExt.eboplayer", async (ev) => {
-			await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
+		nowPlayingView.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+			nowPlayingView.setAttribute("show_back", "false");
 		});
 		let layout = document.getElementById("layout");
 		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
@@ -3180,8 +3046,8 @@ var MainView = class MainView extends View {
 		switch (hash) {
 			case "#NowPlaying": return "timelineDetails";
 			case "#Browse":
+			case "#Browse.WhatsNew":
 			case "#Browse.Favorites": return "browseView";
-			case "#WhatsNew": return "browseView";
 			case "#Remembered": return "rememberedView";
 			case "#Album": return "bigAlbumView";
 			case "#Settings": return "settingsView";
@@ -3194,39 +3060,8 @@ var MainView = class MainView extends View {
 		document.querySelectorAll(".page").forEach((v) => v.classList.remove("shownPage"));
 		document.getElementById(this.hashToViewId(gotoPage)).classList.add("shownPage");
 		let layout = document.getElementById("layout");
-		layout.classList.remove("showFullPage");
-		switch (gotoPage) {
-			case "#WhatsNew":
-			case "#Browse":
-			case "#Browse.Favorites":
-				location.hash = gotoPage.replace(".Favorites", "");
-				layout.classList.add("showFullPage");
-				break;
-			case "#NowPlaying":
-				location.hash = "";
-				break;
-			case "#Album":
-				location.hash = "#Album";
-				layout.classList.add("showFullPage");
-				break;
-			case "#Radio":
-				location.hash = "#Radio";
-				layout.classList.add("showFullPage");
-				break;
-			case "#Settings":
-				location.hash = "#Settings";
-				layout.classList.add("showFullPage");
-				break;
-			case "#Remembered":
-				location.hash = "#Remembered";
-				layout.classList.add("showFullPage");
-				break;
-			case "#Genres":
-				location.hash = "#Genres";
-				layout.classList.add("showFullPage");
-				break;
-			default: return unreachable(gotoPage);
-		}
+		location.hash = "#Genres";
+		layout.classList.add("showFullPage");
 	}
 	async onTimelineBigImgClick() {
 		let selectedTrack = this.state.getModel().getSelectedTrack();
@@ -5380,10 +5215,10 @@ var BrowseView = class extends ComponentView {
 		});
 		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
 			let page = this.state.getModel().getPage();
-			if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#WhatsNew")) return;
+			if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#Browse.WhatsNew")) return;
 			let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
 			switch (page) {
-				case "#WhatsNew":
+				case "#Browse.WhatsNew":
 					resultsDisplayMode = "icon";
 					await this.state.getController().setWhatsNewFilter();
 					break;
@@ -6648,9 +6483,9 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer/www/typescript/components/eboTimeLineDetailsComp.ts
-var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
-	static tagName = "ebo-timeline-details";
+//#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
+var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
+	static tagName = "ebo-now-playing";
 	static progressBarAttributes = [
 		"position",
 		"min",
@@ -6665,7 +6500,7 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 		"img",
 		"disabled",
 		"show_back",
-		...EboTimeLineDetailsComp.progressBarAttributes
+		...EboNowPlayingComp.progressBarAttributes
 	];
 	get albumInfo() {
 		return this._albumInfo;
@@ -6792,10 +6627,10 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
             </div>        
         `;
 	constructor() {
-		super(EboTimeLineDetailsComp.styleText, EboTimeLineDetailsComp.htmlText);
+		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		if (EboTimeLineDetailsComp.progressBarAttributes.includes(name)) {
+		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
 			this.updateStringProperty(name, newValue);
 			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
 			return;
@@ -6832,7 +6667,7 @@ var EboTimeLineDetailsComp = class EboTimeLineDetailsComp extends EboComponent {
 			shadow.getElementById(attName).innerHTML = this[attName];
 		});
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
-		EboTimeLineDetailsComp.progressBarAttributes.forEach((attName) => {
+		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
 		let img = shadow.getElementById("bigImage");
@@ -6986,8 +6821,8 @@ var EboTopBar = class EboTopBar extends EboComponent {
 		let browseBtn = shadow.getElementById("headerSearchBtn");
 		let nowPlayingBtn = shadow.getElementById("headerNowPlayingBtn");
 		switch (this.page) {
-			case "#WhatsNew":
 			case "#Browse":
+			case "#Browse.WhatsNew":
 			case "#Browse.Favorites":
 				browseBtn.style.display = "none";
 				nowPlayingBtn.style.display = "block";
@@ -6997,21 +6832,9 @@ var EboTopBar = class EboTopBar extends EboComponent {
 				nowPlayingBtn.style.display = "none";
 				break;
 			case "#Album":
-				browseBtn.style.display = "block";
-				nowPlayingBtn.style.display = "block";
-				break;
 			case "#Radio":
-				browseBtn.style.display = "block";
-				nowPlayingBtn.style.display = "block";
-				break;
 			case "#Settings":
-				browseBtn.style.display = "block";
-				nowPlayingBtn.style.display = "block";
-				break;
 			case "#Remembered":
-				browseBtn.style.display = "block";
-				nowPlayingBtn.style.display = "block";
-				break;
 			case "#Genres":
 				browseBtn.style.display = "block";
 				nowPlayingBtn.style.display = "block";
@@ -7060,6 +6883,35 @@ var TopBarView = class extends ComponentView {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/views/settingsView.ts
+var SettingsView = class extends ComponentView {
+	constructor(state, component) {
+		super(state, component);
+	}
+	bind() {
+		this.state.getModel().on("scanStatusChanged.eboplayer", (ev) => {
+			this.component.scanStatus = ev.detail.status;
+		});
+		this.state.getModel().on("scanFinished.eboplayer", () => {
+			this.component.setAttribute("show_whats_new", "");
+		});
+		this.component.on("scanRequested.eboplayer", async () => {
+			await this.state.getController().startScan();
+		});
+		this.component.on("whatsNewRequested.eboplayer", () => {
+			window.location.hash = "#Browse.WhatsNew";
+			window.location.reload();
+		});
+		this.component.on("mopidyConfigRequested.eboplayer", async () => {
+			await this.state.getController().readMopidyConfig();
+		});
+		this.component.on("mopidyConfigAddExclExt.eboplayer", async (ev) => {
+			await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
+		});
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -7071,7 +6923,7 @@ document.addEventListener("DOMContentLoaded", function() {
 	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((texts) => {
 		EboComponent.setGlobalCss(texts);
 		EboComponent.define(EboProgressBar);
-		EboComponent.define(EboTimeLineDetailsComp);
+		EboComponent.define(EboNowPlayingComp);
 		EboComponent.define(EboAlbumTracksComp);
 		EboComponent.define(EboBrowseComp);
 		EboComponent.define(EboButton);
@@ -7112,27 +6964,17 @@ function setupStuff() {
 	let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
 	let controller = new controller_default(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
 	let state = new State(mopidy, model, controller, player, cacheHandler);
-	let browseView = new BrowseView(state, document.getElementById("browseView"));
-	let albumView = new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView"));
-	let radioView = new RadioView(state, document.getElementById("dialog"), document.getElementById("bigRadioView"));
-	let topbarView = new TopBarView(state, document.querySelector("ebo-top-bar"));
-	let mainView = new MainView(state);
-	let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails"));
-	let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar"));
-	let historyView = new TimelineView(state);
-	let rememberedView = new RememberedView(state, document.getElementById("rememberedView"));
-	let genresView = new GenresView(state, document.getElementById("genresView"));
 	let views = [
-		mainView,
-		timelineDetailsView,
-		buttonBarView,
-		historyView,
-		rememberedView,
-		genresView,
-		browseView,
-		albumView,
-		radioView,
-		topbarView
+		new BrowseView(state, document.getElementById("browseView")),
+		new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView")),
+		new RadioView(state, document.getElementById("dialog"), document.getElementById("bigRadioView")),
+		new TopBarView(state, document.querySelector("ebo-top-bar")),
+		new MainView(state),
+		new TimeLineDetailsView(state, document.getElementById("timelineDetails")),
+		new SettingsView(state, document.getElementById("settingsView")),
+		new PlayerBarView(state, document.getElementById("buttonBar")),
+		new RememberedView(state, document.getElementById("rememberedView")),
+		new GenresView(state, document.getElementById("genresView"))
 	];
 	views.forEach((v) => v.bindRecursive());
 	controller.initialize(views);

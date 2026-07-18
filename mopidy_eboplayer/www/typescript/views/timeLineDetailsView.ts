@@ -2,15 +2,15 @@ import {AllUris, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpand
 import {State} from "../playerState";
 import {ComponentView} from "./view";
 import {console_yellow} from "../global";
-import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
+import {EboNowPlayingComp} from "../components/eboNowPlayingComp";
 
-export class TimeLineDetailsView extends ComponentView<EboTimeLineDetailsComp> {
+export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
     private streamLines: string = "";
     private programTitle: string = "";
     private uri: string | null = null;
     private track: ExpandedStreamModel | ExpandedFileTrackModel | null = null;
 
-    constructor(state: State, component: EboTimeLineDetailsComp) {
+    constructor(state: State, component: EboNowPlayingComp) {
         super(state, component);
     }
 

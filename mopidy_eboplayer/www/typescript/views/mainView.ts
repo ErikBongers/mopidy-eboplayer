@@ -1,13 +1,10 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, Goto, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, Pages, StreamUri, TrackUri} from "../modelTypes";
-import {EboBigAlbumComp} from "../components/album/eboBigAlbumComp";
+import {AlbumUri, AllUris, Goto, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri} from "../modelTypes";
 import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
-import {EboSettingsComp} from "../components/eboSettingsComp";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
-import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
 
 export class MainView extends View {
 
@@ -22,34 +19,12 @@ export class MainView extends View {
         this.state.getModel().on("viewChanged.eboplayer", async () => {
             await this.setCurrentPage();
         });
-        let timelineDetailsView = document.getElementById("timelineDetails") as EboBrowseComp;
-        timelineDetailsView.on("bigTimelineImageClicked.eboplayer", async () => {
+        let nowPlayingView = document.getElementById("timelineDetails") as EboBrowseComp;
+        nowPlayingView.on("bigTimelineImageClicked.eboplayer", async () => {
             await this.onTimelineBigImgClick();
         });
-        timelineDetailsView.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-            timelineDetailsView.setAttribute("show_back", "false");
-        });
-        this.state.getModel().on("scanStatusChanged.eboplayer", (ev) => {
-            let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
-            settingsComp.scanStatus = ev.detail.status;
-        });
-        this.state.getModel().on("scanFinished.eboplayer", () => {
-            let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
-            settingsComp.setAttribute("show_whats_new", "");
-        });
-        let settingsComp = document.getElementById("settingsView") as EboSettingsComp;
-        settingsComp.on("scanRequested.eboplayer", async () => {
-            await this.state.getController().startScan();
-        });
-        settingsComp.on("whatsNewRequested.eboplayer", () => {
-            window.location.hash = "#WhatsNew";
-            window.location.reload();
-        });
-        settingsComp.on("mopidyConfigRequested.eboplayer", async () => {
-            await this.state.getController().readMopidyConfig();
-        });
-        settingsComp.on("mopidyConfigAddExclExt.eboplayer", async (ev) => {
-            await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
+        nowPlayingView.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+            nowPlayingView.setAttribute("show_back", "false");
         });
 
         let layout = document.getElementById("layout") as HTMLElement;
@@ -114,10 +89,9 @@ export class MainView extends View {
             case "#NowPlaying":
                 return "timelineDetails";
             case "#Browse":
+            case "#Browse.WhatsNew":
             case "#Browse.Favorites":
                 return "browseView";
-            case "#WhatsNew":
-                return "browseView"; //note this one!
             case "#Remembered":
                 return "rememberedView";
             case "#Album":
@@ -139,40 +113,8 @@ export class MainView extends View {
         let currentView = document.getElementById(this.hashToViewId(gotoPage)) as HTMLElement;
         currentView.classList.add("shownPage");
         let layout = document.getElementById("layout") as HTMLElement;
-        layout.classList.remove("showFullPage");
-        switch (gotoPage) {
-            case "#WhatsNew":
-            case "#Browse":
-            case "#Browse.Favorites":
-                location.hash = gotoPage.replace(".Favorites", "");
-                layout.classList.add("showFullPage");
-                break;
-            case "#NowPlaying":
-                location.hash = ""; //default = now playing
-                break;
-            case "#Album":
-                location.hash = "#Album";
-                layout.classList.add("showFullPage");
-                break;
-            case "#Radio":
-                location.hash = "#Radio";
-                layout.classList.add("showFullPage");
-                break;
-            case "#Settings":
-                location.hash = "#Settings";
-                layout.classList.add("showFullPage");
-                break;
-            case "#Remembered":
-                location.hash = "#Remembered";
-                layout.classList.add("showFullPage");
-                break;
-            case "#Genres":
-                location.hash = "#Genres";
-                layout.classList.add("showFullPage");
-                break;
-            default:
-                return unreachable(gotoPage);
-        }
+        location.hash = "#Genres";
+        layout.classList.add("showFullPage");
     }
 
     private async onTimelineBigImgClick() {

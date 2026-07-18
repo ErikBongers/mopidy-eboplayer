@@ -56,12 +56,12 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
         });
         this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
             let page = this.state.getModel().getPage();
-            if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#WhatsNew"))
+            if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#Browse.WhatsNew"))
                 return;
 
             let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
             switch (page) {
-                case "#WhatsNew":
+                case "#Browse.WhatsNew":
                     resultsDisplayMode = "icon";
                     await this.state.getController().setWhatsNewFilter();
                     break;

@@ -2,13 +2,13 @@ import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 
-export class EboTimeLineDetailsComp extends EboComponent {
-    static override readonly tagName=  "ebo-timeline-details";
+export class EboNowPlayingComp extends EboComponent {
+    static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
         "name", "stream_lines", "extra", "img", "disabled", "show_back",
-        ...EboTimeLineDetailsComp.progressBarAttributes
+        ...EboNowPlayingComp.progressBarAttributes
     ];
     get albumInfo(): AlbumData {
         return this._albumInfo;
@@ -144,12 +144,12 @@ export class EboTimeLineDetailsComp extends EboComponent {
         `;
 
     constructor() {
-        super(EboTimeLineDetailsComp.styleText, EboTimeLineDetailsComp.htmlText);
+        super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
     }
 
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        if(EboTimeLineDetailsComp.progressBarAttributes.includes(name)) {
+        if(EboNowPlayingComp.progressBarAttributes.includes(name)) {
             this.updateStringProperty(name, newValue);
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
@@ -186,7 +186,7 @@ export class EboTimeLineDetailsComp extends EboComponent {
             shadow.getElementById(attName).innerHTML = this[attName];
         });
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
-        EboTimeLineDetailsComp.progressBarAttributes.forEach(attName => {
+        EboNowPlayingComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });

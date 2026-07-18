@@ -3,7 +3,6 @@ import {Model} from "./model";
 import Controller from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
-import {TimelineView} from "./views/timelineView";
 import {TimeLineDetailsView} from "./views/timeLineDetailsView";
 import {EboAlbumTracksComp} from "./components/album/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
@@ -14,7 +13,6 @@ import {getHostAndPort} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/album/eboBigAlbumComp";
 import {EboPlayerBar} from "./components/eboPlayerBar";
-import {Pages} from "./modelTypes";
 import {EboMenuButton} from "./components/general/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
 import {PlayController} from "./controllers/playController";
@@ -39,9 +37,11 @@ import {GenresView} from "./views/genresView";
 import {EboBigRadioComp} from "./components/radio/eboBigRadioComp";
 import {RadioView} from "./views/radioView";
 import {EboRadioDetails} from "./components/radio/eboRadioDetails";
-import {EboTimeLineDetailsComp} from "./components/eboTimeLineDetailsComp";
+import {EboNowPlayingComp} from "./components/eboNowPlayingComp";
 import {EboTopBar} from "./components/eboTopBar";
 import {TopBarView} from "./views/topBarView";
+import {SettingsView} from "./views/settingsView";
+import {View} from "./views/view";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.setGlobalCss(texts);
 
             EboComponent.define(EboProgressBar);
-            EboComponent.define(EboTimeLineDetailsComp);
+            EboComponent.define(EboNowPlayingComp);
             EboComponent.define(EboAlbumTracksComp);
             EboComponent.define(EboBrowseComp);
             EboComponent.define(EboButton);
@@ -116,18 +116,18 @@ function setupStuff() {
 
     let state = new State(mopidy, model, controller, player, cacheHandler);
 
-    let browseView = new BrowseView(state, document.getElementById("browseView") as EboBrowseComp);
-    let albumView = new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp);
-    let radioView = new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp);
-    let topbarView = new TopBarView(state, document.querySelector("ebo-top-bar") as EboTopBar);
-    let mainView = new MainView(state, );
-    let timelineDetailsView = new TimeLineDetailsView(state, document.getElementById("timelineDetails") as EboTimeLineDetailsComp);
-    let buttonBarView = new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar);
-    let historyView = new TimelineView(state);
-    let rememberedView = new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp);
-    let genresView = new GenresView(state, document.getElementById("genresView") as EboGenresComp);
-
-    let views = [mainView, timelineDetailsView, buttonBarView, historyView, rememberedView, genresView, browseView, albumView, radioView, topbarView];
+    let views: View [] = [
+        new BrowseView(state, document.getElementById("browseView") as EboBrowseComp),
+        new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp),
+        new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp),
+        new TopBarView(state, document.querySelector("ebo-top-bar") as EboTopBar),
+        new MainView(state),
+        new TimeLineDetailsView(state, document.getElementById("timelineDetails") as EboNowPlayingComp),
+        new SettingsView(state, document.getElementById("settingsView") as EboSettingsComp),
+        new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar),
+        new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp),
+        new GenresView(state, document.getElementById("genresView") as EboGenresComp),
+    ];
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
 

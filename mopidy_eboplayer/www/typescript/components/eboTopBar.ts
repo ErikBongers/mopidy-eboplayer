@@ -133,8 +133,8 @@ export class EboTopBar extends EboComponent {
         let browseBtn = shadow.getElementById("headerSearchBtn") as HTMLButtonElement;
         let nowPlayingBtn = shadow.getElementById("headerNowPlayingBtn") as HTMLButtonElement;
         switch (this.page) {
-            case "#WhatsNew":
             case "#Browse":
+            case "#Browse.WhatsNew":
             case "#Browse.Favorites":
                 browseBtn.style.display = "none";
                 nowPlayingBtn.style.display = "block";
@@ -144,21 +144,9 @@ export class EboTopBar extends EboComponent {
                 nowPlayingBtn.style.display = "none";
                 break;
             case "#Album":
-                browseBtn.style.display = "block";
-                nowPlayingBtn.style.display = "block";
-                break;
             case "#Radio":
-                browseBtn.style.display = "block";
-                nowPlayingBtn.style.display = "block";
-                break;
             case "#Settings":
-                browseBtn.style.display = "block";
-                nowPlayingBtn.style.display = "block";
-                break;
             case "#Remembered":
-                browseBtn.style.display = "block";
-                nowPlayingBtn.style.display = "block";
-                break;
             case "#Genres":
                 browseBtn.style.display = "block";
                 nowPlayingBtn.style.display = "block";

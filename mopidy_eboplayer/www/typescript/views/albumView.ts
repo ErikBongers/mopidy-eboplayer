@@ -7,7 +7,7 @@ import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
 import {State} from "../playerState";
-import {EboTimeLineDetailsComp} from "../components/eboTimeLineDetailsComp";
+import {EboNowPlayingComp} from "../components/eboNowPlayingComp";
 import {MainView} from "./mainView";
 
 export class AlbumView extends ComponentView<EboBigAlbumComp> {
@@ -96,7 +96,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
                     this.component.albumInfo = null;
                     this.component.setAttribute("img", streamModel.bigImageUrl);
                     this.component.setAttribute("name", streamModel.stream.name);
-                    let timelineDetails = document.getElementById("timelineDetails") as EboTimeLineDetailsComp;
+                    let timelineDetails = document.getElementById("timelineDetails") as EboNowPlayingComp;
                     timelineDetails.streamInfo = streamModel;
                 }
             });

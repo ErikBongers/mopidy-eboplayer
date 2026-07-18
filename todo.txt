@@ -1,3 +1,17 @@
+* Remove history from nowplaying.
+  > Add progress line. (or give it more space)
+  > Not urgent:
+    > The repeat button should be grayed out with the repeat sign when no repeat.
+      > when clicking open, the menu has 2 options: repeat and shuffle.
+        > clicking on the selected option puts it back in no repeat.
+
+
+* Playbar always at bottom.
+  > History in it's own view.
+    > Leave history out for now.
+
+
+
 * Remove JS references from components by string (key) coupling.
 
 * Allow sharing of components in pages.
