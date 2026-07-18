@@ -117,16 +117,16 @@ function setupStuff() {
     let state = new State(mopidy, model, controller, player, cacheHandler);
 
     let views: View [] = [
-        new BrowseView(state, document.getElementById("browseView") as EboBrowseComp),
-        new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigAlbumView") as EboBigAlbumComp),
-        new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp),
+        new BrowseView(state, document.getElementById("Browse") as EboBrowseComp),
+        new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("Album") as EboBigAlbumComp),
+        new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("Radio") as EboBigRadioComp),
         new TopBarView(state, document.querySelector("ebo-top-bar") as EboTopBar),
         new MainView(state),
-        new NowPlayingView(state, document.getElementById("nowPlayingView") as EboNowPlayingComp),
-        new SettingsView(state, document.getElementById("settingsView") as EboSettingsComp),
+        new NowPlayingView(state, document.getElementById("NowPlaying") as EboNowPlayingComp),
+        new SettingsView(state, document.getElementById("Settings") as EboSettingsComp),
         new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar),
-        new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp),
-        new GenresView(state, document.getElementById("genresView") as EboGenresComp),
+        new RememberedView(state, document.getElementById("Remembered") as EboRememberedComp),
+        new GenresView(state, document.getElementById("Genres") as EboGenresComp),
     ];
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);

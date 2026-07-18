@@ -1,7 +1,5 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, Goto} from "../modelTypes";
-import {unreachable} from "../global";
-import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
+import {AllUris, Goto} from "../modelTypes";
 import {State} from "../playerState";
 import {addEboEventListener} from "../events";
 
@@ -21,61 +19,16 @@ export class MainView extends View {
         });
     }
 
-    static getListButtonStates(page: Goto) {
-        let states: ListButtonStates = ListButtonState_AllHidden();
-        switch (page) {
-            case "#Album":
-                states = MainView.showHideTrackAndAlbumButtons(states, "show");
-                states.new_playlist = "hide";
-                states.edit = "hide";
-                states.line_or_icon = "hide";
-                return states;
-            case "#Radio":
-                states = MainView.showHideTrackAndAlbumButtons(states, "show");
-                states.new_playlist = "hide";
-                states.edit = "hide";
-                states.line_or_icon = "hide";
-                return states;
-
-        }
-        return states;
-    }
-
-    static showHideTrackAndAlbumButtons(states: ListButtonStates, state: ListButtonState): ListButtonStates {
-        states.add = state;
-        states.replace = state;
-        states.play = state;
-        states.save = state;
-        states.edit = state;
-        return states;
-    }
-
     async setCurrentPage() {
         let page = this.state.getModel().getPage();
         await this.showPage(page);
     }
 
     private hashToViewId(hash: Goto): string {
-        switch (hash) {
-            case "#NowPlaying":
-                return "nowPlayingView";
-            case "#Browse":
-            case "#Browse.WhatsNew":
-            case "#Browse.Favorites":
-                return "browseView";
-            case "#Remembered":
-                return "rememberedView";
-            case "#Album":
-                return "bigAlbumView";
-            case "#Settings":
-                return "settingsView";
-            case "#Genres":
-                return "genresView"
-            case "#Radio":
-                return "bigRadioView";
-            default:
-                return unreachable(hash);
-        }
+        return hash
+            .replace("#", "")
+            .replace(".Favorites", "")
+            .replace(".WhatsNew", "");
     }
 
     private async showPage(gotoPage: Goto) {
@@ -83,9 +36,6 @@ export class MainView extends View {
         fullViews.forEach(v => v.classList.remove("shownPage"));
         let currentView = document.getElementById(this.hashToViewId(gotoPage)) as HTMLElement;
         currentView.classList.add("shownPage");
-        let layout = document.getElementById("layout") as HTMLElement;
-        location.hash = "#Genres";
-        layout.classList.add("showFullPage");
     }
 
     private async onToggleFavorite(uri: AllUris) {

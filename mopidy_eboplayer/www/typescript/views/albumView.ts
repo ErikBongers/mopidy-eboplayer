@@ -9,6 +9,7 @@ import {AlbumToView} from "../model";
 import {State} from "../playerState";
 import {EboNowPlayingComp} from "../components/eboNowPlayingComp";
 import {MainView} from "./mainView";
+import {getDefaultListButtonsState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 
 export class AlbumView extends ComponentView<EboBigAlbumComp> {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -81,8 +82,17 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
             await this.onAlbumToViewChanged();
         });
         this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
-            this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+            this.component.btn_states = AlbumView.getAlbumAndRadioListButtonsState();
         });
+    }
+
+    static getAlbumAndRadioListButtonsState() {
+        let states: ListButtonStates = ListButtonState_AllHidden();
+        states = getDefaultListButtonsState(states, "show");
+        states.new_playlist = "hide";
+        states.edit = "hide";
+        states.line_or_icon = "hide";
+        return states;
     }
 
     private async onGenreSelected(genre: string) {

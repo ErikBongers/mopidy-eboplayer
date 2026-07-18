@@ -1,6 +1,6 @@
 import {EboComponent} from "./EboComponent";
 import {GuiSource} from "../events";
-import {AllUris} from "../modelTypes";
+import {AllUris, Goto} from "../modelTypes";
 import {EboButton} from "./general/eboButton";
 
 export type ListButtonState = "show" | "hide" | "disabled";
@@ -13,6 +13,17 @@ export type ListButtonStates = {
     new_playlist: ListButtonState;
     line_or_icon: ListButtonState;
 }
+
+export function getDefaultListButtonsState(states: ListButtonStates, defaultState: ListButtonState): ListButtonStates {
+    states.add = defaultState;
+    states.replace = defaultState;
+    states.play = defaultState;
+    states.save = defaultState;
+    states.edit = defaultState;
+    return states;
+}
+
+
 export type ListButtonName = keyof ListButtonStates;
 export function ListButtonState_AllHidden(): ListButtonStates {
     return {

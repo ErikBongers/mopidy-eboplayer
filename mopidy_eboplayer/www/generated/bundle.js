@@ -2844,6 +2844,45 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/views/mainView.ts
+var MainView = class extends View {
+	constructor(state) {
+		super(state);
+	}
+	bind() {
+		this.state.getModel().on("viewChanged.eboplayer", async () => {
+			await this.setCurrentPage();
+		});
+		let layout = document.getElementById("layout");
+		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
+			await this.onToggleFavorite(ev.detail.uri);
+		});
+	}
+	static showHideTrackAndAlbumButtons(states, state) {
+		states.add = state;
+		states.replace = state;
+		states.play = state;
+		states.save = state;
+		states.edit = state;
+		return states;
+	}
+	async setCurrentPage() {
+		let page = this.state.getModel().getPage();
+		await this.showPage(page);
+	}
+	hashToViewId(hash) {
+		return hash.replace("#", "").replace(".Favorites", "").replace(".WhatsNew", "");
+	}
+	async showPage(gotoPage) {
+		document.querySelectorAll(".page").forEach((v) => v.classList.remove("shownPage"));
+		document.getElementById(this.hashToViewId(gotoPage)).classList.add("shownPage");
+	}
+	async onToggleFavorite(uri) {
+		await this.state.getController().toggleFavorite(uri);
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboListButtonBar.ts
 function ListButtonState_AllHidden() {
 	return {
@@ -2999,77 +3038,6 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 				break;
 			default: break;
 		}
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer/www/typescript/views/mainView.ts
-var MainView = class MainView extends View {
-	constructor(state) {
-		super(state);
-	}
-	bind() {
-		this.state.getModel().on("viewChanged.eboplayer", async () => {
-			await this.setCurrentPage();
-		});
-		let layout = document.getElementById("layout");
-		addEboEventListener(layout, "favoriteToggle.eboplayer", async (ev) => {
-			await this.onToggleFavorite(ev.detail.uri);
-		});
-	}
-	static getListButtonStates(page) {
-		let states = ListButtonState_AllHidden();
-		switch (page) {
-			case "#Album":
-				states = MainView.showHideTrackAndAlbumButtons(states, "show");
-				states.new_playlist = "hide";
-				states.edit = "hide";
-				states.line_or_icon = "hide";
-				return states;
-			case "#Radio":
-				states = MainView.showHideTrackAndAlbumButtons(states, "show");
-				states.new_playlist = "hide";
-				states.edit = "hide";
-				states.line_or_icon = "hide";
-				return states;
-		}
-		return states;
-	}
-	static showHideTrackAndAlbumButtons(states, state) {
-		states.add = state;
-		states.replace = state;
-		states.play = state;
-		states.save = state;
-		states.edit = state;
-		return states;
-	}
-	async setCurrentPage() {
-		let page = this.state.getModel().getPage();
-		await this.showPage(page);
-	}
-	hashToViewId(hash) {
-		switch (hash) {
-			case "#NowPlaying": return "nowPlayingView";
-			case "#Browse":
-			case "#Browse.WhatsNew":
-			case "#Browse.Favorites": return "browseView";
-			case "#Remembered": return "rememberedView";
-			case "#Album": return "bigAlbumView";
-			case "#Settings": return "settingsView";
-			case "#Genres": return "genresView";
-			case "#Radio": return "bigRadioView";
-			default: return unreachable(hash);
-		}
-	}
-	async showPage(gotoPage) {
-		document.querySelectorAll(".page").forEach((v) => v.classList.remove("shownPage"));
-		document.getElementById(this.hashToViewId(gotoPage)).classList.add("shownPage");
-		let layout = document.getElementById("layout");
-		location.hash = "#Genres";
-		layout.classList.add("showFullPage");
-	}
-	async onToggleFavorite(uri) {
-		await this.state.getController().toggleFavorite(uri);
 	}
 };
 
@@ -5298,7 +5266,7 @@ var BrowseView = class extends ComponentView {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/views/albumView.ts
-var AlbumView = class extends ComponentView {
+var AlbumView = class AlbumView extends ComponentView {
 	onDialogOkClickedCallback = () => true;
 	dialog;
 	albumBeingEdited = null;
@@ -5366,8 +5334,16 @@ var AlbumView = class extends ComponentView {
 			await this.onAlbumToViewChanged();
 		});
 		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
-			this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+			this.component.btn_states = AlbumView.getAlbumAndRadioListButtonsState();
 		});
+	}
+	static getAlbumAndRadioListButtonsState() {
+		let states = ListButtonState_AllHidden();
+		states = MainView.showHideTrackAndAlbumButtons(states, "show");
+		states.new_playlist = "hide";
+		states.edit = "hide";
+		states.line_or_icon = "hide";
+		return states;
 	}
 	async onGenreSelected(genre) {
 		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
@@ -6309,7 +6285,7 @@ var RadioView = class extends ComponentView {
 			await this.onRadioToViewChanged();
 		});
 		this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
-			this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+			this.component.btn_states = AlbumView.getAlbumAndRadioListButtonsState();
 		});
 	}
 	async onRadioToViewChanged() {
@@ -6953,16 +6929,16 @@ function setupStuff() {
 	let controller = new controller_default(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
 	let state = new State(mopidy, model, controller, player, cacheHandler);
 	let views = [
-		new BrowseView(state, document.getElementById("browseView")),
-		new AlbumView(state, document.getElementById("dialog"), document.getElementById("bigAlbumView")),
-		new RadioView(state, document.getElementById("dialog"), document.getElementById("bigRadioView")),
+		new BrowseView(state, document.getElementById("Browse")),
+		new AlbumView(state, document.getElementById("dialog"), document.getElementById("Album")),
+		new RadioView(state, document.getElementById("dialog"), document.getElementById("Radio")),
 		new TopBarView(state, document.querySelector("ebo-top-bar")),
 		new MainView(state),
-		new NowPlayingView(state, document.getElementById("nowPlayingView")),
-		new SettingsView(state, document.getElementById("settingsView")),
+		new NowPlayingView(state, document.getElementById("NowPlaying")),
+		new SettingsView(state, document.getElementById("Settings")),
 		new PlayerBarView(state, document.getElementById("buttonBar")),
-		new RememberedView(state, document.getElementById("rememberedView")),
-		new GenresView(state, document.getElementById("genresView"))
+		new RememberedView(state, document.getElementById("Remembered")),
+		new GenresView(state, document.getElementById("Genres"))
 	];
 	views.forEach((v) => v.bindRecursive());
 	controller.initialize(views);

@@ -5,6 +5,8 @@ import {EboDialog} from "../components/eboDialog";
 import {State} from "../playerState";
 import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
 import {MainView} from "./mainView";
+import {ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
+import {AlbumView} from "./albumView";
 
 export class RadioView extends ComponentView<EboBigRadioComp> {
     private onDialogOkClickedCallback: (dialog: EboDialog) => boolean | Promise<boolean> = () => true;
@@ -57,7 +59,7 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
             await this.onRadioToViewChanged();
         });
         this.state.getModel().on("viewChanged.eboplayer", async (ev) => {
-            this.component.btn_states = MainView.getListButtonStates(this.state.getModel().getPage());
+            this.component.btn_states = AlbumView.getAlbumAndRadioListButtonsState();
         });
     }
 
