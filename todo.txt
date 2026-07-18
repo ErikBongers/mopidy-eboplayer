@@ -1,6 +1,9 @@
-* Introduce pages.
+Pages
+=======
+  > Never discard: they are difficult to GC.
+
   > basic idea is simple: only show one page.
-  > but...the play bar is shared...
+  > but...the play bar is shared...so is the top bar...
     > how do you do this without having a copy on every page?
       > ir is this such a bad thing to have a copy on every page?
         > no...I think...
@@ -9,7 +12,43 @@
     > All listeners should be removed, but how?
       > AI suggests useing "Smart events", using an event wrapper.
         > since I already kind of have this with EboEvents, this is probably the best option.
-  
+
+
+
+Playlist and history
+=====================
+* Group history by album and don't repeat.
+  > this changes the timeline item: an album is best presented by it's cover.
+* Don't display history by default.
+* The timeline should only show the current tracklist.
+  > A time line is not that important: is shows the chronology, the order, but that's not very interesting.
+  > this allows for shuffle, etc,...
+  > Name it Queue? Like spotify? Use same icon?
+  > the "Now Playing" screen should literaly show that, plus what's playing next
+
+> Other music players are confusing too: I can't immediately tell what I'm looking at.
+  > Lists or tracks should be recognizable as either the queue or album tracks or a playlist.
+
+Now Playing
+============
+
+- Top section shows ACTIVE track, never the selected track.
+  > The selected track has a highlight color and can be opened with a double click (also via a dot menu?)
+- A regognizable playbar (round corners, an ON and OFF bkg color,...)
+- Playbar can be expanded into a vertical "slide rule" of, say 2 prevous and next tracks.
+  > Visually it should be clear that this an active piano roll, slide rule, ...whatever visual hint for this.
+    > gradients, see css mask-image!!! for a gradient mask.
+  > Queue is NOT a history.
+    > What if user wants to see previously played tracks?
+      > Perhaps HISTORY is a separate page?
+        > Note that radios also have a history, that is not part of the general history.
+        > History lists previous albums (not tracks).
+          > User isn't trying to remember a specific track.
+        > Sort chrono or most played: labels?
+          - Recent (although this goes back forever)
+          - Most played
+
+
 
 * Use big round-cornerd blocks stacked. Do not use nested blocks as this becomes too small on a phone.
 
