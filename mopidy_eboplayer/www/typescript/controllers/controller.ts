@@ -142,7 +142,6 @@ class Controller extends Commands {
                 if (data.length && data[0] == "event:streamTitleChanged")
                     return;
             }
-            console.log(data);
         });
         this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
             let streamTitles: StreamTitles = data.stream_titles;
@@ -153,7 +152,6 @@ class Controller extends Commands {
             this.model.setCurrentProgramTitle(data.program_title);
         });
         this.eboWsBackCtrl.on((data: any) => {
-            console.log(data);
         });
         this.eboWsBackCtrl.on("event:scanStarted", (data: any) => {
             this.model.setScanStatus({type: data.type, message: data.message});
@@ -171,7 +169,6 @@ class Controller extends Commands {
     }
 
     async onVolumeAdjustChanged(uri: AllUris, volumeAdjust: number) {
-        console.log(`volumeAdjustChanged: ${volumeAdjust} for ${uri}`);
         let album = await this.cache.getMetaDataCached(uri); //todo: this could be a track uri!!!
         if(album) {
             album.volumeAdjust = volumeAdjust;
@@ -448,7 +445,6 @@ class Controller extends Commands {
 
     async readMopidyConfig() {
         let config = await this.webProxy.getMopidyConfigFile();
-        console.log(config);
     }
 
     async addExclExtToMopidyConfig(ext: string) {
@@ -496,9 +492,7 @@ class Controller extends Commands {
     async gotoFavorites() {
         let favoritesName = await this.cache.getFavoritePlaylistName();
         let allRefs = await this.cache.getAllRefsCached();
-        console.log(allRefs);
         let favoritesRef = allRefs.playlists.find(res => res.item.name == favoritesName);
-        console.log(favoritesRef);
         if(!favoritesRef)
             return;
         await this.clearBreadCrumbs();

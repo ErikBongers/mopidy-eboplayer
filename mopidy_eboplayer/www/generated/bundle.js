@@ -1906,7 +1906,6 @@ var Controller = class extends Commands {
 			if (data instanceof Array) {
 				if (data.length && data[0] == "event:streamTitleChanged") return;
 			}
-			console.log(data);
 		});
 		this.eboWsFrontCtrl.on("event:streamHistoryChanged", (data) => {
 			let streamTitles = data.stream_titles;
@@ -1916,9 +1915,7 @@ var Controller = class extends Commands {
 		this.eboWsFrontCtrl.on("event:programTitleChanged", (data) => {
 			this.model.setCurrentProgramTitle(data.program_title);
 		});
-		this.eboWsBackCtrl.on((data) => {
-			console.log(data);
-		});
+		this.eboWsBackCtrl.on((data) => {});
 		this.eboWsBackCtrl.on("event:scanStarted", (data) => {
 			this.model.setScanStatus({
 				type: data.type,
@@ -1943,7 +1940,6 @@ var Controller = class extends Commands {
 		});
 	}
 	async onVolumeAdjustChanged(uri, volumeAdjust) {
-		console.log(`volumeAdjustChanged: ${volumeAdjust} for ${uri}`);
 		let album = await this.cache.getMetaDataCached(uri);
 		if (album) {
 			album.volumeAdjust = volumeAdjust;
@@ -2160,8 +2156,7 @@ var Controller = class extends Commands {
 		await this.eboWsBackCtrl.send({ method: "start_scan" }, "fireAndForget");
 	}
 	async readMopidyConfig() {
-		let config = await this.webProxy.getMopidyConfigFile();
-		console.log(config);
+		await this.webProxy.getMopidyConfigFile();
 	}
 	async addExclExtToMopidyConfig(ext) {
 		await this.webProxy.addExclExtToMopidyConfigFile(ext);
@@ -2196,10 +2191,7 @@ var Controller = class extends Commands {
 	}
 	async gotoFavorites() {
 		let favoritesName = await this.cache.getFavoritePlaylistName();
-		let allRefs = await this.cache.getAllRefsCached();
-		console.log(allRefs);
-		let favoritesRef = allRefs.playlists.find((res) => res.item.name == favoritesName);
-		console.log(favoritesRef);
+		let favoritesRef = (await this.cache.getAllRefsCached()).playlists.find((res) => res.item.name == favoritesName);
 		if (!favoritesRef) return;
 		await this.clearBreadCrumbs();
 		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);

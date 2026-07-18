@@ -1,7 +1,6 @@
 import {EboComponent} from "../EboComponent";
-import {ExpandedStreamModel, StreamUri} from "../../modelTypes";
-import {EboButton} from "../general/eboButton";
-import {console_yellow, searchOnGoogle} from "../../global";
+import {ExpandedStreamModel} from "../../modelTypes";
+import {searchOnGoogle} from "../../global";
 
 export class EboRadioHistoryComp extends EboComponent {
     static override readonly tagName=  "ebo-radio-history";
