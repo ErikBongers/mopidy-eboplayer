@@ -87,14 +87,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
                     }
                     //else: album view will not be shown when track has no album...but are we sure?
                 }
-                else if(track?.type == "stream") {
-                    let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri) as ExpandedStreamModel;
-                    this.component.albumInfo = null;
-                    this.component.setAttribute("img", streamModel.bigImageUrl);
-                    this.component.setAttribute("name", streamModel.stream.name);
-                    let timelineDetails = document.getElementById("timelineDetails") as EboNowPlayingComp;
-                    timelineDetails.streamInfo = streamModel;
-                }
             });
     }
 

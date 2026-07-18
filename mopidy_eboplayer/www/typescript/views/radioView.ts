@@ -1,6 +1,6 @@
 import {ComponentView} from "./view";
 import {ExpandedStreamModel, PlaylistUri, StreamUri} from "../modelTypes";
-import {GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
+import {addEboEventListener, GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {State} from "../playerState";
 import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
@@ -22,6 +22,12 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     }
 
     bind() {
+        this.component.on( "rememberedRequested.eboplayer", () => {
+            this.state.getController().viewController.setView("#Remembered");
+        });
+        this.component.on( "rememberStreamLines.eboplayer", async (ev) => {
+            await this.state.getController().remember(ev.detail.streamUri, ev.detail.lines.join("\n"));
+        });
         this.component.on("saveToPlaylistClicked.eboplayer", async (ev) => {
             await this.onSaveClicked(ev.detail);
         });

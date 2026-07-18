@@ -2086,9 +2086,16 @@ var Controller = class extends Commands {
 	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
 		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
 	}
-	async remember(s) {
-		await this.webProxy.remember(s);
+	async remember(streamUri, lines) {
+		await this.webProxy.remember(lines);
 		this.model.setRemembers(null);
+		this.model.setStreamLinesHistory(streamUri, null);
+	}
+	async deleteRemember(id) {
+		await this.webProxy.deleteRemember(id);
+		this.model.setRemembers(null);
+		let streamUri = this.model.getRadioToView();
+		if (streamUri) this.model.setStreamLinesHistory(streamUri, null);
 	}
 	async startScan() {
 		this.model.clearScanStatus();
@@ -2099,10 +2106,6 @@ var Controller = class extends Commands {
 	}
 	async addExclExtToMopidyConfig(ext) {
 		await this.webProxy.addExclExtToMopidyConfigFile(ext);
-	}
-	async deleteRemember(id) {
-		await this.webProxy.deleteRemember(id);
-		this.model.setRemembers(null);
 	}
 	async setRepeat(repeat) {
 		await this.mopidyProxy.setRepeat(repeat);
@@ -2939,7 +2942,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 	render(shadow) {
 		this.addShadowEventListener("btnPlay", "click", () => {
 			if (this.btn_states.play != "show") return;
-			this.dispatchEboEvent("playItemListClicked.eboplayer", { source: this.list_source });
+			this.dispatchEboEvent("playItemClicked.eboplayer", { source: this.list_source });
 		});
 		this.addShadowEventListener("btnAdd", "click", () => {
 			if (this.btn_states.add != "show") return;
@@ -2955,7 +2958,7 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		});
 		this.addShadowEventListener("btnSave", "click", () => {
 			if (this.btn_states.save != "show") return;
-			this.dispatchEboEvent("saveClicked.eboplayer", {
+			this.dispatchEboEvent("saveToPlaylistClicked.eboplayer", {
 				source: this.list_source,
 				uri: this.uri
 			});
@@ -3010,9 +3013,6 @@ var MainView = class MainView extends View {
 			await this.setCurrentPage();
 		});
 		let layout = document.getElementById("layout");
-		addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
-			this.state.getController().viewController.setView("#Remembered");
-		});
 		addEboEventListener(layout, "genreSelected.eboplayer", (ev) => {
 			this.onGenreSelected(ev.detail.text);
 		});
@@ -3024,9 +3024,6 @@ var MainView = class MainView extends View {
 		});
 		addEboEventListener(layout, "albumVolumeAdjustUp.eboplayer", async (ev) => {
 			await this.onAlbumVolumeUp(ev.detail.uri);
-		});
-		addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
-			await this.rememberStreamLines(ev.detail.lines);
 		});
 	}
 	static getListButtonStates(page) {
@@ -3079,9 +3076,6 @@ var MainView = class MainView extends View {
 		let layout = document.getElementById("layout");
 		location.hash = "#Genres";
 		layout.classList.add("showFullPage");
-	}
-	async rememberStreamLines(lines) {
-		await this.state.getController().remember(lines.join("\n"));
 	}
 	onGenreSelected(genre) {
 		let albumBeingEdited = this.state.getController().localStorageProxy.getAlbumBeingEdited();
@@ -4589,7 +4583,10 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 			console.error("No text found");
 			return;
 		}
-		this.dispatchEboEvent("rememberStreamLines.eboplayer", { lines });
+		this.dispatchEboEvent("rememberStreamLines.eboplayer", {
+			lines,
+			streamUri: this._streamInfo.stream.ref.uri
+		});
 	}
 	getLinesForBlock(target) {
 		let tr = target.closest("tr");
@@ -5195,7 +5192,7 @@ var BrowseView = class extends ComponentView {
 		this.state.getModel().on("modelBrowseFilterChanged.eboplayer", () => {
 			this.onModelBrowseFilterChanged();
 		});
-		this.on("playItemListClicked.eboplayer", async (ev) => {
+		this.on("playItemClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
 		this.on("addItemListClicked.eboplayer", async (ev) => {
@@ -5340,13 +5337,13 @@ var AlbumView = class extends ComponentView {
 		this.component.on("addTrackClicked.eboplayer", async (ev) => {
 			await this.onAddTrackClicked(ev.detail.uri);
 		});
-		this.component.on("saveClicked.eboplayer", async (ev) => {
+		this.component.on("saveToPlaylistClicked.eboplayer", async (ev) => {
 			await this.onSaveClicked(ev.detail);
 		});
 		this.component.on("trackClicked.eboplayer", (ev) => {
 			this.component.selected_track_uris = arrayToggle(this.component.selected_track_uris, ev.detail.uri);
 		});
-		this.component.on("playItemListClicked.eboplayer", async (ev) => {
+		this.component.on("playItemClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
 		this.component.on("addItemListClicked.eboplayer", async (ev) => {
@@ -5391,13 +5388,6 @@ var AlbumView = class extends ComponentView {
 					let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
 					this.setAlbumComponentData(albumModel, track.track.uri);
 				}
-			} else if (track?.type == "stream") {
-				let streamModel = await this.state.getController().getExpandedTrackModel(track.track.uri);
-				this.component.albumInfo = null;
-				this.component.setAttribute("img", streamModel.bigImageUrl);
-				this.component.setAttribute("name", streamModel.stream.name);
-				let timelineDetails = document.getElementById("timelineDetails");
-				timelineDetails.streamInfo = streamModel;
 			}
 		});
 	}
@@ -5493,6 +5483,10 @@ var EboRememberedComp = class EboRememberedComp extends EboComponent {
 	static observedAttributes = [""];
 	static styleText = `
         <style>
+        #rememberedTable {
+            overflow: scroll;
+            display: flex;
+        }
         #rememberedTable tr {
             background-color: #ffffff25;
         }
@@ -6290,10 +6284,16 @@ var RadioView = class extends ComponentView {
 		});
 	}
 	bind() {
-		this.component.on("saveClicked.eboplayer", async (ev) => {
+		this.component.on("rememberedRequested.eboplayer", () => {
+			this.state.getController().viewController.setView("#Remembered");
+		});
+		this.component.on("rememberStreamLines.eboplayer", async (ev) => {
+			await this.state.getController().remember(ev.detail.streamUri, ev.detail.lines.join("\n"));
+		});
+		this.component.on("saveToPlaylistClicked.eboplayer", async (ev) => {
 			await this.onSaveClicked(ev.detail);
 		});
-		this.component.on("playItemListClicked.eboplayer", async (ev) => {
+		this.component.on("playItemClicked.eboplayer", async (ev) => {
 			await this.onPlayItemListClick(ev.detail);
 		});
 		this.component.on("addItemListClicked.eboplayer", async (ev) => {
@@ -6325,7 +6325,6 @@ var RadioView = class extends ComponentView {
 		this.setStreamComponentData(radioModel);
 	}
 	setStreamComponentData(streamModel) {
-		document.getElementById("bigRadioView");
 		this.component.streamInfo = streamModel;
 		this.component.setAttribute("img", streamModel.bigImageUrl);
 		this.component.setAttribute("name", streamModel.stream.name);

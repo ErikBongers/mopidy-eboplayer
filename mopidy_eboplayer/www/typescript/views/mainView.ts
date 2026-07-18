@@ -1,5 +1,5 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, Goto} from "../modelTypes";
+import {AlbumUri, AllUris, Goto, StreamUri} from "../modelTypes";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {State} from "../playerState";
@@ -16,10 +16,6 @@ export class MainView extends View {
             await this.setCurrentPage();
         });
         let layout = document.getElementById("layout") as HTMLElement;
-        addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
-            this.state.getController().viewController.setView("#Remembered");
-        });
-
         addEboEventListener(layout, "genreSelected.eboplayer", ev => {
             this.onGenreSelected(ev.detail.text);
         });
@@ -32,10 +28,6 @@ export class MainView extends View {
         addEboEventListener(layout, "albumVolumeAdjustUp.eboplayer", async (ev) => {
             await this.onAlbumVolumeUp(ev.detail.uri as AlbumUri);
         });
-        addEboEventListener(layout, "rememberStreamLines.eboplayer", async (ev) => {
-            await this.rememberStreamLines(ev.detail.lines);
-        });
-
     }
 
     static getListButtonStates(page: Goto) {
@@ -103,10 +95,6 @@ export class MainView extends View {
         let layout = document.getElementById("layout") as HTMLElement;
         location.hash = "#Genres";
         layout.classList.add("showFullPage");
-    }
-
-    private async rememberStreamLines(lines: string[]) {
-        await this.state.getController().remember(lines.join("\n"));
     }
 
     private onGenreSelected(genre: string) {

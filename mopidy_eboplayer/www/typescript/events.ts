@@ -1,4 +1,4 @@
-import {AlbumUri, AllUris, Goto, Pages, PlaybackUserOptions, RememberId, TrackUri} from "./modelTypes";
+import {AlbumUri, AllUris, Goto, Pages, PlaybackUserOptions, RememberId, StreamUri, TrackUri} from "./modelTypes";
 import {EboDialog} from "./components/eboDialog";
 import {DisplayMode} from "./components/eboListItemComp";
 import {RefType} from "./refs";
@@ -128,6 +128,7 @@ export type VoidArgs = {
 }
 
 export interface StreamLinesArgs extends EboEventArgs {
+    streamUri: StreamUri,
     lines: string[]
 }
 

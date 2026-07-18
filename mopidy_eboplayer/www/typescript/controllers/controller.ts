@@ -433,9 +433,18 @@ class Controller extends Commands {
         return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
     }
 
-    async remember(s: string) {
-        let _status = await this.webProxy.remember(s);
+    async remember(streamUri: StreamUri, lines: string) {
+        let _status = await this.webProxy.remember(lines);
         this.model.setRemembers(null);
+        this.model.setStreamLinesHistory(streamUri, null);
+    }
+
+    async deleteRemember(id: RememberId) {
+        await this.webProxy.deleteRemember(id);
+        this.model.setRemembers(null);
+        let streamUri = this.model.getRadioToView();
+        if(streamUri)
+            this.model.setStreamLinesHistory(streamUri, null);
     }
 
     async startScan() {
@@ -449,11 +458,6 @@ class Controller extends Commands {
 
     async addExclExtToMopidyConfig(ext: string) {
         await this.webProxy.addExclExtToMopidyConfigFile(ext)
-    }
-
-    async deleteRemember(id: RememberId) {
-        await this.webProxy.deleteRemember(id);
-        this.model.setRemembers(null);
     }
 
     async setRepeat(repeat: boolean) {

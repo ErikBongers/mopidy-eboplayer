@@ -152,7 +152,7 @@ export class EboRadioHistoryComp extends EboComponent {
             console.error("No text found");
             return;
         }
-        this.dispatchEboEvent("rememberStreamLines.eboplayer", {lines});
+        this.dispatchEboEvent("rememberStreamLines.eboplayer", {lines, streamUri: this._streamInfo!.stream.ref.uri}); //! stream should be filled.
     }
 
     private getLinesForBlock(target: HTMLElement) {

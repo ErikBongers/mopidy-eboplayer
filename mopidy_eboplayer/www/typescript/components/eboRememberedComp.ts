@@ -8,6 +8,10 @@ export class EboRememberedComp extends EboComponent {
     static observedAttributes: string[] = [""];
     static styleText= `
         <style>
+        #rememberedTable {
+            overflow: scroll;
+            display: flex;
+        }
         #rememberedTable tr {
             background-color: #ffffff25;
         }

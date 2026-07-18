@@ -1,3 +1,5 @@
+* Remembered track does not immediately highlight. Only after refresh.
+
 * Remove history from nowplaying.
   > Add progress line. (or give it more space)
   > Not urgent:
