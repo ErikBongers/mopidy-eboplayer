@@ -79,7 +79,7 @@ h3#modalname a{
     background-color: transparent;
 }
 
-#timelineDetails {
+#nowPlayingView {
     flex: 1;
     display: flex;
     overflow: hidden;

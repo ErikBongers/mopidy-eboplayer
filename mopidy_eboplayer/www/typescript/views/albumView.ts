@@ -26,10 +26,6 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     }
 
     bind() {
-        let timelineDetailsComponent = document.getElementById("timelineDetails") as EboBrowseComp;
-        timelineDetailsComponent.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-            timelineDetailsComponent.setAttribute("show_back", "false");
-        });
         this.component.on("playTrackClicked.eboplayer", async (ev) => {
             await this.onPlayTrackClicked(ev.detail.uri);
         });

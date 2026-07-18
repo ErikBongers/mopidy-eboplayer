@@ -3,7 +3,7 @@ import {Model} from "./model";
 import Controller from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
 import {EboProgressBar} from "./components/eboProgressBar";
-import {TimeLineDetailsView} from "./views/timeLineDetailsView";
+import {NowPlayingView} from "./views/nowPlayingView";
 import {EboAlbumTracksComp} from "./components/album/eboAlbumTracksComp";
 import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
@@ -122,7 +122,7 @@ function setupStuff() {
         new RadioView(state, document.getElementById("dialog") as EboDialog, document.getElementById("bigRadioView") as EboBigRadioComp),
         new TopBarView(state, document.querySelector("ebo-top-bar") as EboTopBar),
         new MainView(state),
-        new TimeLineDetailsView(state, document.getElementById("timelineDetails") as EboNowPlayingComp),
+        new NowPlayingView(state, document.getElementById("nowPlayingView") as EboNowPlayingComp),
         new SettingsView(state, document.getElementById("settingsView") as EboSettingsComp),
         new PlayerBarView(state, document.getElementById("buttonBar") as EboPlayerBar),
         new RememberedView(state, document.getElementById("rememberedView") as EboRememberedComp),

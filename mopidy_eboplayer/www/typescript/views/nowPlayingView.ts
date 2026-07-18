@@ -1,10 +1,9 @@
-import {AllUris, ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, StreamUri, TrackUri} from "../modelTypes";
+import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri} from "../modelTypes";
 import {State} from "../playerState";
 import {ComponentView} from "./view";
-import {console_yellow} from "../global";
 import {EboNowPlayingComp} from "../components/eboNowPlayingComp";
 
-export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
+export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
     private streamLines: string = "";
     private programTitle: string = "";
     private uri: string | null = null;
@@ -27,6 +26,17 @@ export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
         this.state.getModel().on("programTitleChanged.eboplayer", (ev) => {
             this.onProgramTitleChanged();
         });
+        this.state.getModel().on("trackListChanged.eboplayer", async () => {
+            await this.onTrackListChanged();
+        });
+
+        this.component.on("bigTimelineImageClicked.eboplayer", async () => {
+            await this.onTimelineBigImgClick();
+        });
+        this.component.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
+            this.component.setAttribute("show_back", "false");
+        });
+
     }
 
     private async onCurrentOrSelectedChanged() {
@@ -39,7 +49,7 @@ export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
         let selectedTrackUri = this.state.getModel().getSelectedTrack();
         let currentTrackUri = this.state.getModel().getCurrentTrack();
         this.streamLines = "";
-        if(selectedTrackUri == currentTrackUri) {
+        if (selectedTrackUri == currentTrackUri) {
             let linesObject = this.state.getModel().getActiveStreamLines();
             if (this.uri && linesObject?.uri == this.uri)
                 this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
@@ -59,7 +69,7 @@ export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
         let position: string;
         let button: string;
         let imageUrl: string;
-        if(!this.track) {
+        if (!this.track) {
             name = "no current track";
             info = "";
             position = "0";
@@ -73,9 +83,9 @@ export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
                 imageUrl = this.track.bigImageUrl;
             } else {
                 name = this.track.track.title;
-                if(this.programTitle)
+                if (this.programTitle)
                     name = this.programTitle + " -  " + name;
-                info = this.track.album?.albumInfo?.name?? "--no name--";
+                info = this.track.album?.albumInfo?.name ?? "--no name--";
                 position = "60"; //todo: just a test
                 button = "true";
                 imageUrl = this.track.bigImageUrl;
@@ -98,5 +108,31 @@ export class TimeLineDetailsView extends ComponentView<EboNowPlayingComp> {
     private onProgramTitleChanged() {
         this.programTitle = this.state.getModel().getCurrentProgramTitle();
         this.setComponentData();
+    }
+
+    private async onTrackListChanged() {
+        if (!this.state.getModel().getCurrentTrack()) {
+            let trackList = this.state.getModel().getTrackList();
+            if (trackList.length > 0)
+                await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
+        }
+    }
+
+    private async onTimelineBigImgClick() {
+        let selectedTrack = this.state.getModel().getSelectedTrack();
+        if (!selectedTrack) return;
+        let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
+        if (!expandedTrackInfo) return;
+        if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
+            if (expandedTrackInfo.album?.albumInfo)
+                this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
+            else { //orphaned track (no album)
+                this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
+            }
+            return;
+        }
+        if (isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
+            this.state.getController().viewController.showRadio(expandedTrackInfo.stream.ref.uri as StreamUri);
+        }
     }
 }

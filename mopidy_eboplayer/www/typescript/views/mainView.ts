@@ -1,6 +1,5 @@
 import {View} from "./view";
-import {AlbumUri, AllUris, Goto, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri} from "../modelTypes";
-import {EboBrowseComp} from "../components/browse/eboBrowseComp";
+import {AlbumUri, AllUris, Goto} from "../modelTypes";
 import {unreachable} from "../global";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {State} from "../playerState";
@@ -13,20 +12,9 @@ export class MainView extends View {
     }
 
     bind() {
-        this.state.getModel().on("trackListChanged.eboplayer", async () => {
-            await this.onTrackListChanged();
-        });
         this.state.getModel().on("viewChanged.eboplayer", async () => {
             await this.setCurrentPage();
         });
-        let nowPlayingView = document.getElementById("timelineDetails") as EboBrowseComp;
-        nowPlayingView.on("bigTimelineImageClicked.eboplayer", async () => {
-            await this.onTimelineBigImgClick();
-        });
-        nowPlayingView.on("bigTrackAlbumSmallImgClicked.eboplayer", async () => {
-            nowPlayingView.setAttribute("show_back", "false");
-        });
-
         let layout = document.getElementById("layout") as HTMLElement;
         addEboEventListener(layout, "rememberedRequested.eboplayer", () => {
             this.state.getController().viewController.setView("#Remembered");
@@ -87,7 +75,7 @@ export class MainView extends View {
     private hashToViewId(hash: Goto): string {
         switch (hash) {
             case "#NowPlaying":
-                return "timelineDetails";
+                return "nowPlayingView";
             case "#Browse":
             case "#Browse.WhatsNew":
             case "#Browse.Favorites":
@@ -115,32 +103,6 @@ export class MainView extends View {
         let layout = document.getElementById("layout") as HTMLElement;
         location.hash = "#Genres";
         layout.classList.add("showFullPage");
-    }
-
-    private async onTimelineBigImgClick() {
-        let selectedTrack = this.state.getModel().getSelectedTrack();
-        if (!selectedTrack) return;
-        let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
-        if (!expandedTrackInfo) return;
-        if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-            if(expandedTrackInfo.album?.albumInfo)
-                this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
-            else { //orphaned track (no album)
-                this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
-            }
-            return;
-        }
-        if(isInstanceOfExpandedStreamModel(expandedTrackInfo)) {
-            this.state.getController().viewController.showRadio(expandedTrackInfo.stream.ref.uri as StreamUri);
-        }
-    }
-
-    private async onTrackListChanged() {
-        if(!this.state.getModel().getCurrentTrack()) {
-            let trackList = this.state.getModel().getTrackList();
-            if(trackList.length > 0)
-                await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
-        }
     }
 
     private async rememberStreamLines(lines: string[]) {
