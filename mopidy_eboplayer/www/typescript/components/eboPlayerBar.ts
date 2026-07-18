@@ -32,28 +32,40 @@ export class EboPlayerBar extends EboComponent {
             img {
                 width: 2em;
                 height: 2em;
-                margin-right: 1em;
             }
         
             .playing {
                 background-color: var(--playing-background);
             }
-            #buttonBar  {
+            #playBar  {
                 display: flex;
-                justify-content: center;
+                justify-content: space-evenly;
                 flex-wrap: wrap;
                 align-items: center;
                 align-content: center;
-            
+                padding-inline: 3ch;
+                box-sizing: border-box;
+                width: 100%;
+                padding-block: 1ch;
+                background-color: darkgray;
+                border-radius: 50vh;
+                
                 & button {
                     padding-left: .5ch;
                     padding-right: .5ch;
                 }
-            }
-            #buttonBar {
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                & #buttonBar {
+                    justify-content: space-evenly;
+                    flex-grow: 1;
+                    font-size: 1.4rem;
+                    align-items: center;
+                    & #btnPlay {
+                        font-size: 1.8rem;
+                    }
+                    & #btnRepeat {
+                        font-size: 1.2rem;
+                    }
+                }
             }
             #volumeSlider {
                 width: 100px;
@@ -62,7 +74,7 @@ export class EboPlayerBar extends EboComponent {
                 & {
                     margin: 10px 5px;
                     height: 2px;
-                    background-color: gray;
+                    background: linear-gradient(90deg, rgba(255,255,255,0.3), white);
                     -webkit-appearance: none;
                 }
             
@@ -80,7 +92,7 @@ export class EboPlayerBar extends EboComponent {
                     border-radius: 7px;
                 }
             }
-            #wrapper {
+            #wrapper { /* todo unused? */
                 width: 100%;
                 display: flex;
                 flex-direction: column;
@@ -102,9 +114,9 @@ export class EboPlayerBar extends EboComponent {
             <div id="info">
                 <span id="text" class="selectable">sdfsdf sdfsdf </span>
             </div>
-            <div id="buttonBar">
+            <div id="playBar">
                 <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
-                <div id="buttonBar">
+                <div id="buttonBar" class="flexRow">
                     <button id="btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
                     <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>

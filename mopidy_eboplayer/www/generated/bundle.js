@@ -2858,14 +2858,6 @@ var MainView = class extends View {
 			await this.onToggleFavorite(ev.detail.uri);
 		});
 	}
-	static showHideTrackAndAlbumButtons(states, state) {
-		states.add = state;
-		states.replace = state;
-		states.play = state;
-		states.save = state;
-		states.edit = state;
-		return states;
-	}
 	async setCurrentPage() {
 		let page = this.state.getModel().getPage();
 		await this.showPage(page);
@@ -2884,6 +2876,14 @@ var MainView = class extends View {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboListButtonBar.ts
+function getDefaultListButtonsState(states, defaultState) {
+	states.add = defaultState;
+	states.replace = defaultState;
+	states.play = defaultState;
+	states.save = defaultState;
+	states.edit = defaultState;
+	return states;
+}
 function ListButtonState_AllHidden() {
 	return {
 		add: "hide",
@@ -3766,28 +3766,40 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
             img {
                 width: 2em;
                 height: 2em;
-                margin-right: 1em;
             }
         
             .playing {
                 background-color: var(--playing-background);
             }
-            #buttonBar  {
+            #playBar  {
                 display: flex;
-                justify-content: center;
+                justify-content: space-evenly;
                 flex-wrap: wrap;
                 align-items: center;
                 align-content: center;
-            
+                padding-inline: 3ch;
+                box-sizing: border-box;
+                width: 100%;
+                padding-block: 1ch;
+                background-color: darkgray;
+                border-radius: 50vh;
+                
                 & button {
                     padding-left: .5ch;
                     padding-right: .5ch;
                 }
-            }
-            #buttonBar {
-                display: flex;
-                justify-content: center;
-                align-items: center;
+                & #buttonBar {
+                    justify-content: space-evenly;
+                    flex-grow: 1;
+                    font-size: 1.4rem;
+                    align-items: center;
+                    & #btnPlay {
+                        font-size: 1.8rem;
+                    }
+                    & #btnRepeat {
+                        font-size: 1.2rem;
+                    }
+                }
             }
             #volumeSlider {
                 width: 100px;
@@ -3796,7 +3808,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                 & {
                     margin: 10px 5px;
                     height: 2px;
-                    background-color: gray;
+                    background: linear-gradient(90deg, rgba(255,255,255,0.3), white);
                     -webkit-appearance: none;
                 }
             
@@ -3814,7 +3826,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     border-radius: 7px;
                 }
             }
-            #wrapper {
+            #wrapper { /* todo unused? */
                 width: 100%;
                 display: flex;
                 flex-direction: column;
@@ -3835,9 +3847,9 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
             <div id="info">
                 <span id="text" class="selectable">sdfsdf sdfsdf </span>
             </div>
-            <div id="buttonBar">
+            <div id="playBar">
                 <img id="buttonBarImg" src="images/default_cover.png" alt="Album cover"/>
-                <div id="buttonBar">
+                <div id="buttonBar" class="flexRow">
                     <button id="btnPrev" title="Previous"><i class="fa fa-fast-backward"></i></button>
                     <button id="btnPlay" title="Play"><i class="fa fa-play"></i></button>
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
@@ -5339,7 +5351,7 @@ var AlbumView = class AlbumView extends ComponentView {
 	}
 	static getAlbumAndRadioListButtonsState() {
 		let states = ListButtonState_AllHidden();
-		states = MainView.showHideTrackAndAlbumButtons(states, "show");
+		states = getDefaultListButtonsState(states, "show");
 		states.new_playlist = "hide";
 		states.edit = "hide";
 		states.line_or_icon = "hide";
