@@ -29,6 +29,17 @@ export class EboPlayerBar extends EboComponent {
     // noinspection CssUnresolvedCustomProperty
     static styleText = `
         <style>
+            #wrapper {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding-top: .5em;
+                padding-bottom: .5em;
+                border-radius: 50vh;
+                box-shadow: 0px 0px 53px 0px rgba(0,0,0, .5);
+            }
             img {
                 width: 2em;
                 height: 2em;
@@ -90,16 +101,7 @@ export class EboPlayerBar extends EboComponent {
                     border-radius: 7px;
                 }
             }
-            #wrapper { /* todo unused? */
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                padding-top: .5em;
-                padding-bottom: .5em;
-                border-radius: 50vh;
-            }
+            
             #text {
                 font-size: .7em;
                 text-align: center;
