@@ -55,6 +55,12 @@ export class EboRadioHistoryComp extends EboComponent {
                 tr.remembered {
                     background-color: var(--highlight-background);
                 }
+                ebo-menu-button {
+                    & button.roundBorder {
+                        margin: 0;
+                        margin-inline: 0;
+                    }
+                }
             </style>
         `;
         static htmlText = `
@@ -107,7 +113,7 @@ export class EboRadioHistoryComp extends EboComponent {
                     let td2 = tr.appendChild(document.createElement("td"));
                     td2.innerHTML = `
                         <ebo-menu-button>
-                            <div class="flexColumn">
+                            <div class="flexColumn" style="gap: .5ch">
                                 <button id="rememberTrack" class="roundBorder">Remember track</button>
                                 <button id="excludeLine" class="roundBorder">Exclude line</button>
                                 <button id="isProgramTitle" class="roundBorder">Line is program title</button>

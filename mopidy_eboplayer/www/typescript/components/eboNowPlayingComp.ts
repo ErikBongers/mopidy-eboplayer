@@ -105,6 +105,12 @@ export class EboNowPlayingComp extends EboComponent {
                 .info {
                     font-size: .7em;
                 }
+                #info {
+                    font-size: 1.2rem;
+                    & * {
+                        text-align: center;
+                    }
+                }
                 ebo-radio-details-view {
                     height: 100%;
                 }

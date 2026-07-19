@@ -17,8 +17,10 @@ export class EboMenuButton extends EboComponent {
             }
             
             .popupMenu {
-                border: solid white 1px;
-                border-radius: 20px 20px 0px 20px;
+                box-shadow: 0 0 40px rgba(255,255,255, .3);
+                padding: .7ch;
+                border: none;
+                border-radius: 15px 15px 0px 15px;
                 position-anchor: --popup-button;
                 margin: 0;
                 inset: auto;

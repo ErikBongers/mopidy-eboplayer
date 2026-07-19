@@ -3855,9 +3855,9 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     <button id="btnNext" title="Next"><i class="fa fa-fast-forward"></i></button>
                     <input id="volumeSlider" data-highlight="true" name="volumeSlider" data-mini="true" type="range" min="0" value="0" max="100"/>
                     <ebo-dropdown id="btnRepeat" style="margin-left: 1em;" direction="up">
-                        <ebo-option value="justPlay"><i class="fa fa-ellipsis-h"></i></ebo-option>
-                        <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
-                        <ebo-option value="repeatSingle" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage" style="margin-block-start: .2rem;"></ebo-option>
+                        <ebo-option value="justPlay"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage op2 middle" style="margin-block-start: -.2rem;"></ebo-option>
+                        <ebo-option value="repeat"><img src="images/icons/Repeat.svg" alt="Repeat" class="whiteIcon dropDownImage middle" style="margin-block-start: -.2rem;"></ebo-option>
+                        <ebo-option value="repeatSingle" ><img src="images/icons/RepeatOne.svg" alt="Repeat one" class="whiteIcon dropDownImage middle" style="margin-block-start: -.2rem;"></ebo-option>
                     </ebo-dropdown>
                 </div>
             </div>
@@ -3979,8 +3979,10 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
             }
             
             .popupMenu {
-                border: solid white 1px;
-                border-radius: 20px 20px 0px 20px;
+                box-shadow: 0 0 40px rgba(255,255,255, .3);
+                padding: .7ch;
+                border: none;
+                border-radius: 15px 15px 0px 15px;
                 position-anchor: --popup-button;
                 margin: 0;
                 inset: auto;
@@ -4460,6 +4462,12 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
                 tr.remembered {
                     background-color: var(--highlight-background);
                 }
+                ebo-menu-button {
+                    & button.roundBorder {
+                        margin: 0;
+                        margin-inline: 0;
+                    }
+                }
             </style>
         `;
 	static htmlText = `
@@ -4505,7 +4513,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
 					let td2 = tr.appendChild(document.createElement("td"));
 					td2.innerHTML = `
                         <ebo-menu-button>
-                            <div class="flexColumn">
+                            <div class="flexColumn" style="gap: .5ch">
                                 <button id="rememberTrack" class="roundBorder">Remember track</button>
                                 <button id="excludeLine" class="roundBorder">Exclude line</button>
                                 <button id="isProgramTitle" class="roundBorder">Line is program title</button>
@@ -6159,6 +6167,11 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
             #back {
                 min-height: 40vh;
             }
+            #info {
+                & * {
+                    text-align: center;
+                }
+            }
         </style>
         `;
 	static list_source = "albumView";
@@ -6565,6 +6578,12 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                 }
                 .info {
                     font-size: .7em;
+                }
+                #info {
+                    font-size: 1.2rem;
+                    & * {
+                        text-align: center;
+                    }
                 }
                 ebo-radio-details-view {
                     height: 100%;

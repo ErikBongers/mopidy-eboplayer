@@ -94,6 +94,11 @@ export class EboBigRadioComp extends EboComponent {
             #back {
                 min-height: 40vh;
             }
+            #info {
+                & * {
+                    text-align: center;
+                }
+            }
         </style>
         `;
 

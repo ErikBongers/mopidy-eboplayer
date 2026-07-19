@@ -67,17 +67,13 @@ button {
 }
 
 .roundBorder {
-    border-style: solid;
-    border-width: 1px;
-    border-radius: 05rem;
+    border:none;
+    background-color: rgba(255,255,255, .2);
+    border-radius: 50vh;
     padding-block: .2rem;
     padding-inline: .7rem;
     margin-inline: .2em;
     margin-block-start: .2em;
-    & i.fa {
-        position: relative;
-        top: .1rem;
-    }
 }
 .iconButton {
     padding-inline: .5rem;
@@ -189,4 +185,24 @@ ebo-player-bar {
 }
 .op7 {
     opacity: .7;
+}
+.op5 {
+    opacity: .5;
+}
+.op3 {
+    opacity: .3;
+}
+.op2 {
+    opacity: .2;
+}
+.op1 {
+    opacity: .1;
+}
+
+.fa {
+    vertical-align: middle;
+}
+
+.middle {
+    vertical-align: middle;
 }
