@@ -1,5 +1,9 @@
+.sweet-background {
+    --body-background: rgb(184 134 11 / 0.53);
+}
+
 * {
-    --body-background: #323;
+    --body-background: #171c23;
     --header-background: #2a1c2a;
     --panel-background: black;
     --panel-button-background: transparent;

@@ -3582,7 +3582,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 max-width: 90vw;
                 height: 45vh;
                 object-fit: contain;
-                background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
             }
             ebo-progressbar {
                 margin-top: .5em;
@@ -3763,6 +3762,17 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 	_playMode = "justPlay";
 	static styleText = `
         <style>
+            #wrapper {
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                justify-content: center;
+                align-items: center;
+                padding-top: .5em;
+                padding-bottom: .5em;
+                border-radius: 50vh;
+                box-shadow: 0px 0px 53px 0px rgba(0,0,0, .5);
+            }
             img {
                 width: 2em;
                 height: 2em;
@@ -3824,16 +3834,7 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                     border-radius: 7px;
                 }
             }
-            #wrapper { /* todo unused? */
-                width: 100%;
-                display: flex;
-                flex-direction: column;
-                justify-content: center;
-                align-items: center;
-                padding-top: .5em;
-                padding-bottom: .5em;
-                border-radius: 50vh;
-            }
+            
             #text {
                 font-size: .7em;
                 text-align: center;
@@ -6117,7 +6118,6 @@ var EboBigRadioComp = class EboBigRadioComp extends EboComponent {
                 max-width: 90vw;
                 height: 45vh;
                 object-fit: contain;
-                background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
             }
             ebo-progressbar {
                 margin-top: .5em;
@@ -6518,6 +6518,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     flex-direction: column;
                     /*align-content: center;*/
                     overflow: hidden;
+                    padding: 2ch;
                 }
                 img#bigImage {
                     width: 100%;
@@ -6525,7 +6526,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     object-fit: contain;
                     min-width: 200px;
                     min-height: 200px;
-                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 img#smallImage {
                     width: 2.1rem;
@@ -6715,7 +6715,7 @@ var EboTopBar = class EboTopBar extends EboComponent {
                 column-gap: .5ch;            
             }
             ul#header {
-                background-color: var(--header-background);
+                background-color: transparent;
                 width: 100%;
                 display: flex;
                 justify-content: space-between;

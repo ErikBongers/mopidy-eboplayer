@@ -73,7 +73,6 @@ export class EboBigAlbumComp extends EboComponent {
                 max-width: 90vw;
                 height: 45vh;
                 object-fit: contain;
-                background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
             }
             ebo-progressbar {
                 margin-top: .5em;

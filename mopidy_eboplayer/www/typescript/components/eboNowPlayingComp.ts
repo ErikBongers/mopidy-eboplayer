@@ -57,6 +57,7 @@ export class EboNowPlayingComp extends EboComponent {
                     flex-direction: column;
                     /*align-content: center;*/
                     overflow: hidden;
+                    padding: 2ch;
                 }
                 img#bigImage {
                     width: 100%;
@@ -64,7 +65,6 @@ export class EboNowPlayingComp extends EboComponent {
                     object-fit: contain;
                     min-width: 200px;
                     min-height: 200px;
-                    background-image: radial-gradient(circle, rgba(255,255,255, .5) 0%, transparent 100%);
                 }
                 img#smallImage {
                     width: 2.1rem;

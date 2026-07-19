@@ -46,7 +46,7 @@ export class EboTopBar extends EboComponent {
                 column-gap: .5ch;            
             }
             ul#header {
-                background-color: var(--header-background);
+                background-color: transparent;
                 width: 100%;
                 display: flex;
                 justify-content: space-between;
