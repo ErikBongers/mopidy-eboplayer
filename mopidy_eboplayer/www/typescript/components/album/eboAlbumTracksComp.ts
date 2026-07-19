@@ -66,7 +66,7 @@ export class EboAlbumTracksComp extends EboComponent {
                     width: 100%;
                     border-collapse: collapse;
                     tr {
-                        border-bottom: 1px solid #ffffff80;
+                        border-bottom: 1px solid rgba(255,255,255, .2);
                     }
                 }
                 .selected {

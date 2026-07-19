@@ -39,13 +39,14 @@ export class EboPlayerBar extends EboComponent {
                 padding-bottom: .5em;
                 border-radius: 50vh;
                 box-shadow: 0px 0px 53px 0px rgba(0,0,0, .5);
+                background-color: rgba(255,255,255, .1);
             }
             img {
                 width: 2em;
                 height: 2em;
             }
         
-            .playing {
+            .playing, #wrapper.playing {
                 background-color: var(--playing-background);
             }
             #playBar  {

@@ -4,7 +4,7 @@ body {
     background-color: var(--body-background);
     color: white;
     &.backlight {
-        background-image: radial-gradient(circle 50vw at 50vw 50vw, rgba(255,255,255, .5) 0%, transparent 100%);
+        background-image: radial-gradient(circle 50vh at 50vw 50vw, rgba(255,255,255, .2) 0%, transparent 100%);
     }
 }
 
