@@ -13,8 +13,8 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     static cssCache: Map<string, CSSStyleSheet> = new Map();
     // @ts-ignore
     protected shadow: ShadowRoot;
-    protected styleTemplate?: HTMLTemplateElement;
-    protected divTemplate?: HTMLTemplateElement;
+    protected styleText: string;
+    protected divText: string;
     private connected = false;
     private _isRendered = false;
     private static readonly NO_TAG_NAME: string = "todo: override in subclass";
@@ -25,14 +25,9 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
 
     protected constructor(styleText: string, htmlText: string) {
         super();
-        if(styleText) {
-            this.styleTemplate = document.createElement("template");
-            this.styleTemplate.innerHTML = styleText;
-        }
-        if(htmlText) {
-            this.divTemplate = document.createElement("template");
-            this.divTemplate.innerHTML = htmlText;
-        }
+        this.styleText = styleText;
+        this.divText = htmlText;
+
         this.renderBatching = new Batching(this.doRender.bind(this));
         this.updateBatching = new Batching(this.doUpdate.bind(this));
     }
@@ -119,11 +114,16 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         let css = [...EboComponent.globalCss];
         css = css.concat(this.cssNeeded.map(name => EboComponent.cssCache.get(name)!));
         this.shadow.adoptedStyleSheets = css;
-        if(this.styleTemplate)
-            this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-        if(this.divTemplate)
-            this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
-
+        if(this.styleText) {
+            let template = document.createElement("template");
+            template.innerHTML = this.styleText.trim();
+            this.shadow.append(...template.content.childNodes);
+        }
+        if(this.divText) {
+            let template = document.createElement("template");
+            template.innerHTML = this.divText.trim();
+            this.shadow.append(...template.content.childNodes);
+        }
         this.render(this.shadow);
         this._isRendered = true;
     }

@@ -1,11 +1,14 @@
 * Remembered track does not immediately highlight. Only after refresh.
 
-* Remove history from nowplaying.
-  > Add progress line. (or give it more space)
-  > Not urgent:
-    > The repeat button should be grayed out with the repeat sign when no repeat.
-      > when clicking open, the menu has 2 options: repeat and shuffle.
-        > clicking on the selected option puts it back in no repeat.
+* Make history lazy loading.
+  > Only load when history is shown.
+  > The view fetches it and passes it to the component.
+  > So, views should be aware when they are active/shown.
+  >
+
+* Create a history page.
+  > use the timeline view.
+
 
 
 * Playbar always at bottom.

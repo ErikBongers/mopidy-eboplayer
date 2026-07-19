@@ -2348,8 +2348,8 @@ var EboComponent = class EboComponent extends HTMLElement {
 	static globalCss = [];
 	static cssCache = /* @__PURE__ */ new Map();
 	shadow;
-	styleTemplate;
-	divTemplate;
+	styleText;
+	divText;
 	connected = false;
 	_isRendered = false;
 	static NO_TAG_NAME = "todo: override in subclass";
@@ -2359,14 +2359,8 @@ var EboComponent = class EboComponent extends HTMLElement {
 	cssNeeded = [];
 	constructor(styleText, htmlText) {
 		super();
-		if (styleText) {
-			this.styleTemplate = document.createElement("template");
-			this.styleTemplate.innerHTML = styleText;
-		}
-		if (htmlText) {
-			this.divTemplate = document.createElement("template");
-			this.divTemplate.innerHTML = htmlText;
-		}
+		this.styleText = styleText;
+		this.divText = htmlText;
 		this.renderBatching = new Batching(this.doRender.bind(this));
 		this.updateBatching = new Batching(this.doUpdate.bind(this));
 	}
@@ -2425,8 +2419,16 @@ var EboComponent = class EboComponent extends HTMLElement {
 		let css = [...EboComponent.globalCss];
 		css = css.concat(this.cssNeeded.map((name) => EboComponent.cssCache.get(name)));
 		this.shadow.adoptedStyleSheets = css;
-		if (this.styleTemplate) this.shadow.appendChild(this.styleTemplate.content.cloneNode(true));
-		if (this.divTemplate) this.shadow.appendChild(this.divTemplate.content.cloneNode(true));
+		if (this.styleText) {
+			let template = document.createElement("template");
+			template.innerHTML = this.styleText.trim();
+			this.shadow.append(...template.content.childNodes);
+		}
+		if (this.divText) {
+			let template = document.createElement("template");
+			template.innerHTML = this.divText.trim();
+			this.shadow.append(...template.content.childNodes);
+		}
 		this.render(this.shadow);
 		this._isRendered = true;
 	}
@@ -2735,7 +2737,7 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                     width: 100%;
                     border-collapse: collapse;
                     tr {
-                        border-bottom: 1px solid #ffffff80;
+                        border-bottom: 1px solid rgba(255,255,255, .2);
                     }
                 }
                 .selected {
@@ -3772,13 +3774,14 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                 padding-bottom: .5em;
                 border-radius: 50vh;
                 box-shadow: 0px 0px 53px 0px rgba(0,0,0, .5);
+                background-color: rgba(255,255,255, .1);
             }
             img {
                 width: 2em;
                 height: 2em;
             }
         
-            .playing {
+            .playing, #wrapper.playing {
                 background-color: var(--playing-background);
             }
             #playBar  {
