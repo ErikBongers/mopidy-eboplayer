@@ -63,10 +63,10 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
             switch (page) {
                 case "#Browse.WhatsNew":
                     resultsDisplayMode = "icon";
-                    await this.state.getController().setWhatsNewFilter();
+                    await this.state.getController().browseController.setWhatsNewFilter();
                     break;
                 case "#Browse.Favorites":
-                    await this.state.getController().setFavoritesFilter();
+                    await this.state.getController().browseController.setFavoritesFilter();
                     break;
             }
             this.updateCompFromState(resultsDisplayMode);
@@ -75,7 +75,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private async onGuiBrowseFilterChanged() {
-        await this.state.getController().setAndSaveBrowseFilter(this.component.browseFilter);
+        await this.state.getController().browseController.setAndSaveBrowseFilter(this.component.browseFilter);
     }
 
     private onRefsFiltered() {
@@ -184,11 +184,11 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private async onBrowseResultClick(label: string, uri: AllUris, type: string) {
-        await this.state.getController().diveIntoBrowseResult(label, uri, type, true);
+        await this.state.getController().browseController.diveIntoBrowseResult(label, uri, type, true);
     }
 
     private async onBreadcrumbClick(breadcrumbId: number) {
-        await this.state.getController().resetToBreadCrumb(breadcrumbId);
+        await this.state.getController().browseController.resetToBreadCrumb(breadcrumbId);
     }
 
     private async onGenreReplacementChanged() {

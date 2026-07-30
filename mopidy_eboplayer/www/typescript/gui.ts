@@ -42,6 +42,7 @@ import {EboTopBar} from "./components/eboTopBar";
 import {TopBarView} from "./views/topBarView";
 import {SettingsView} from "./views/settingsView";
 import {View} from "./views/view";
+import {BrowseController} from "./controllers/browseController";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;

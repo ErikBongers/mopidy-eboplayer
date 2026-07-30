@@ -4,14 +4,32 @@ import models, {core, Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
-import {createAllRefs, Refs, RefType, SomeRefs} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, BreadCrumbBrowseFilter, BreadCrumbHome, BreadCrumbRef, BrowseFilter, ConnectionState, ExpandedAlbumModel, ExpandedFileTrackModel, ExpandedStreamModel, isBreadCrumbForAlbum, LastViewed, MessageType, NoStreamTitles, PlaylistUri, PlayState, RememberId, StreamTitles, StreamUri, TrackNone, TrackUri, Pages} from "../modelTypes";
+import {createAllRefs, RefType} from "../refs";
+import {
+    AlbumModel,
+    AlbumUri,
+    AllUris,
+    ConnectionState,
+    ExpandedAlbumModel,
+    ExpandedFileTrackModel,
+    ExpandedStreamModel,
+    MessageType,
+    NoStreamTitles,
+    PlaylistUri,
+    PlayState,
+    RememberId,
+    StreamTitles,
+    StreamUri,
+    TrackNone,
+    TrackUri
+} from "../modelTypes";
 import {JsonRpcController} from "../jsonRpcController";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {View} from "../views/view";
 import {CacheHandler} from "./cacheHandler";
 import {ViewController} from "./viewController";
+import {BrowseController} from "./browseController";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
@@ -32,6 +50,7 @@ class Controller extends Commands {
     protected player: PlayController;
     cache: CacheHandler;
     viewController: ViewController;
+    browseController: BrowseController;
 
     constructor(model: Model, mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController, cache: CacheHandler) {
         super(mopidy);
@@ -44,6 +63,7 @@ class Controller extends Commands {
         this.eboWsFrontCtrl = eboWsFrontCtrl;
         this.eboWsBackCtrl = eboWsBackCtrl;
         this.viewController = new ViewController(model, mopidy, this);
+        this.browseController = new BrowseController(this, model);
     }
 
     async getInitialData(views: View[])  {
@@ -55,8 +75,8 @@ class Controller extends Commands {
         await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
         this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-        await this.fetchRefsForCurrentBreadCrumbs();
-        await this.filterBrowseResults();
+        await this.browseController.fetchRefsForCurrentBreadCrumbs();
+        await this.browseController.filterBrowseResults();
         await this.cache.getGenreReplacementsCached();
         await this.cache.getRemembersCached();
         await this.cache.getGenreDefs();
@@ -223,114 +243,6 @@ class Controller extends Commands {
         }
     }
 
-    async setAndSaveBrowseFilter(filter: BrowseFilter, applyFilter: "apply" | "dontApply" = "apply") {
-        this.localStorageProxy.saveCurrentBrowseFilter(filter);
-        this.model.setCurrentBrowseFilter(filter);
-        if(applyFilter == "apply")
-            await this.filterBrowseResults();
-    }
-
-    async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
-        if(type == "track") {
-            let track = await this.getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
-            if(track.album?.albumInfo?.uri)
-                this.viewController.showAlbum(track.album?.albumInfo?.uri, uri as TrackUri);
-            //else: don't dive
-            return; //don't change the breadcrumb and filter.
-        }
-
-        if(type == "album") {
-            this.viewController.gotoAlbum(uri as AlbumUri);
-        }
-
-        if(type  == "radio") {
-            this.getExpandedTrackModel(uri as StreamUri).then(() => { //fetch before changing view, to avoid flicker.
-                this.viewController.showRadio(uri as StreamUri);
-            });
-        }
-
-        // set 2 new breadCrumbs and a new browseFilter.
-        // > setting the browseFilter should only trigger a view update. NOT a re-filter!!!
-        if(addTextFilterBreadcrumb) {
-            let browseFilter = this.model.getCurrentBrowseFilter();
-            if(! browseFilter.isEmpty()) {
-                let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-                this.model.pushBreadCrumb(breadCrumb1, "noDispatch");
-            }
-        }
-        let ref: Ref<AllUris> = {type: type as models.ModelType, name: label, uri};
-        let breadCrumb2 = new BreadCrumbRef(label, ref);
-        this.model.pushBreadCrumb(breadCrumb2);
-
-        this.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
-
-        let newBrowseFilter = new BrowseFilter();
-        //for each type, we dive into the next level of type. E.g., artist -> album -> track.
-        switch (type) {
-            case "artist": newBrowseFilter.album = true; break;
-            case "genre":
-                newBrowseFilter.radio = true;
-                newBrowseFilter.playlist = true;
-                newBrowseFilter.artist = true;
-                newBrowseFilter.album = true;
-                newBrowseFilter.track = true;
-                newBrowseFilter.genre = true;
-                break;
-            case "playlist":
-                newBrowseFilter.playlist = true;
-                newBrowseFilter.artist = true;
-                newBrowseFilter.album = true;
-                newBrowseFilter.track = true;
-                newBrowseFilter.radio = true;
-                break;
-        }
-        await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
-
-        await this.fetchRefsForCurrentBreadCrumbs()
-        await this.filterBrowseResults();
-    }
-
-    async setWhatsNewFilter() {
-        await this.clearBreadCrumbs();
-        let browseFilter = new BrowseFilter();
-        browseFilter.addedSince = 1;
-        this.localStorageProxy.saveCurrentBrowseFilter(browseFilter);
-        this.model.setCurrentBrowseFilter(browseFilter);
-    }
-
-    async clearBreadCrumbs() {
-        this.model.resetBreadCrumbsTo(this.model.getBreadCrumbs()[0].id);
-    }
-
-    async resetToBreadCrumb(id: number) {
-        let breadCrumb = this.model.getBreadCrumbs().get(id);
-        let breadCrumbs = this.model.getBreadCrumbs();
-
-        //if the breadCrumb is a browseFilter, reset to the previous breadCrumb and set the current browseFilter to the one in the breadCrumb.
-        if(breadCrumb instanceof BreadCrumbBrowseFilter) {
-            this.model.resetBreadCrumbsTo(id);
-            let browseFilter = this.model.popBreadCrumb()?.data as BrowseFilter;
-            await this.setAndSaveBrowseFilter(browseFilter);
-            this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-            await this.fetchRefsForCurrentBreadCrumbs()
-            await this.filterBrowseResults();
-        } else if(breadCrumb instanceof BreadCrumbRef) {
-            if(isBreadCrumbForAlbum(breadCrumb)) {
-                this.viewController.showAlbum(breadCrumb.data.uri, null);
-                return;
-            }
-            this.model.resetBreadCrumbsTo(id);
-            this.model.popBreadCrumb(); // remove the current breadCrumb as it will be added again below.
-            await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
-        } else if (breadCrumb instanceof BreadCrumbHome) {
-            this.model.resetBreadCrumbsTo(id);
-            await this.setAndSaveBrowseFilter(new BrowseFilter());
-            this.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-            await this.fetchRefsForCurrentBreadCrumbs()
-            await this.filterBrowseResults();
-        }
-    }
-
     async getExpandedTrackModel(trackUri: TrackUri | StreamUri | null): Promise<ExpandedStreamModel | ExpandedFileTrackModel | null>{
         if(!trackUri)
             return null;
@@ -368,55 +280,7 @@ class Controller extends Commands {
         return createAllRefs(this.cache, allRefs);
     }
 
-    async filterBrowseResults() {
-        await this.model.filterCurrentRefs();
-    }
-
-    async fetchRefsForCurrentBreadCrumbs() {
-        let breadCrumbs = this.model.getBreadCrumbs();
-        let lastCrumb = breadCrumbs.getLast();
-        if(!lastCrumb) {
-            await this.setAllRefsAsCurrent();
-            return;
-        }
-
-        if(lastCrumb instanceof BreadCrumbHome) {
-            await this.setAllRefsAsCurrent();
-            return;
-        }
-
-        if(lastCrumb instanceof BreadCrumbBrowseFilter) {
-            await this.setAllRefsAsCurrent();
-            return;
-        }
-
-        if(lastCrumb instanceof BreadCrumbRef) {
-            if(lastCrumb.data.type == "playlist") {
-                let playlistItems = await this.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
-                playlistItems.forEach(ref => {
-                    //"local:track:Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma"
-
-                    if(!ref.name || ref.name == "") {
-                        ref.name = ref.uri
-                            .replace(LIBRARY_PROTOCOL + "track:", "")
-                            .replaceAll("%20", " ");
-                        //remove the last part of the uri, which is the file extension.
-                        ref.name = ref.name.split(".").slice(0, -1).join(".");
-                    }
-                });
-                let results = await Refs.transformRefsToSearchResults(this.cache, playlistItems);
-                this.model.setCurrentRefs(new SomeRefs(results));
-                return;
-            }
-
-            let refs = await this.mopidyProxy.browse(lastCrumb.data.uri);
-            let results = await Refs.transformRefsToSearchResults(this.cache, refs);
-            this.model.setCurrentRefs(new SomeRefs(results));
-            return;
-        }
-    }
-
-    private async setAllRefsAsCurrent() {
+    async setAllRefsAsCurrent() {
         this.model.setCurrentRefs(await this.cache.getAllRefsCached());
     }
 
@@ -491,16 +355,6 @@ class Controller extends Commands {
             return false;
         let favorites = await this.cache.getFavorites();
         return favorites.has(uri);
-    }
-
-    async setFavoritesFilter() {
-        let favoritesName = await this.cache.getFavoritePlaylistName();
-        let allRefs = await this.cache.getAllRefsCached();
-        let favoritesRef = allRefs.playlists.find(res => res.item.name == favoritesName);
-        if(!favoritesRef)
-            return;
-        await this.clearBreadCrumbs();
-        await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
     }
 
     showTempMessage(message: string, type: MessageType) {

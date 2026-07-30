@@ -1,3 +1,19 @@
+* BrowseComp has properties
+  - availableRefTypes
+  - BrowseFilter
+  > It combines these 2 to show the filter buttons.
+    > But that's some business logic inside a visual component.
+    > Some combinations may be invalid, like if album is selected but there are no albums for this browseFilter.
+
+* Move streamline history to eboback.
+  > Eboback should have read/write access to /var/lib/eboplayer(or eboback)
+  > This should be checked during
+    - a command `init`
+    - from client
+      > when?
+        > a warning triangle next to the gear icon top right?
+        > what if user does not provide the read/write access?
+          > streamlines won't be remembered...but can still be used live.
 * Remembered track does not immediately highlight. Only after refresh.
 
 * Make history lazy loading.

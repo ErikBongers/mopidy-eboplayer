@@ -78,8 +78,8 @@ export class ViewController extends Commands {
     }
 
     async browseToArtist(args: RefArgs) {
-        await this.controller.clearBreadCrumbs();
-        await this.controller.diveIntoBrowseResult(args.name, args.uri, args.type, false);
+        await this.controller.browseController.clearBreadCrumbs();
+        await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false);
         this.setView("#Browse");
     }
 }
