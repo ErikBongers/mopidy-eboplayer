@@ -123,7 +123,9 @@ export class BrowseController {
             await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
         } else if (breadCrumb instanceof BreadCrumbHome) {
             this.model.resetBreadCrumbsTo(id);
-            await this.setAndSaveBrowseFilter(new BrowseFilter());
+            let browseFilter = new BrowseFilter();
+            browseFilter.album = true;
+            await this.setAndSaveBrowseFilter(browseFilter);
             this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
             await this.fetchRefsForCurrentBreadCrumbs()
             await this.filterBrowseResults();
