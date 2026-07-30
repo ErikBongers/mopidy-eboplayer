@@ -53,6 +53,11 @@ Should components listen to data change events?
 The general components only use attributes to display data.
   > The more of these, the better because they are easily garbage collected.
 
+* Move the genre defs to eboback.
+  > have them pre-installed during database setup.
+
+* Check if remembored streamlines are loaded.
+
 Pages
 =======
   > Never discard: they are difficult to GC.

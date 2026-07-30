@@ -112,7 +112,7 @@ export class EboBrowseFilterComp extends EboComponent {
 <div id="wrapper">
     <div id="filterBox">
         <div id="searchBox" class="flexRow">
-            <button id="headerSearchBtn"><img src="../../../images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
+            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
             <input id="searchText" type="text" autofocus>
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
         </div>

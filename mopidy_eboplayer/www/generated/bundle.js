@@ -4294,7 +4294,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
-                            <img src="../../../images/icons/Google_Favicon_2025.svg" 
+                            <img src="images/icons/Google_Favicon_2025.svg" 
                                 alt="Search" 
                                 style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
                             Image
@@ -4523,7 +4523,7 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
                                 <button id="googleSearchBtn" 
                                     class="roundBorder" 
                                     style="padding-inline-start: .7rem;">
-                                    <img src="../../../images/icons/Google_Favicon_2025.svg" 
+                                    <img src="images/icons/Google_Favicon_2025.svg" 
                                         alt="Search" 
                                         style="height: .6rem; width: .6rem; position: relative; top: .15rem;margin-right: .1rem;">
                                     Search
@@ -4677,7 +4677,7 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 <div id="wrapper">
     <div id="filterBox">
         <div id="searchBox" class="flexRow">
-            <button id="headerSearchBtn"><img src="../../../images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
+            <button id="headerSearchBtn"><img src="images/icons/Magnifier.svg" alt="" class="filterButton whiteIcon"></button>
             <input id="searchText" type="text" autofocus>
             <button id="expandFilterBtn"><i class="fa fa-angle-down"></i></button>
         </div>
@@ -6426,7 +6426,7 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
                         <button id="btnSearchImage" 
                             class="roundBorder" 
                             style="padding-inline-start: .7rem;">
-                            <img src="../../../images/icons/Google_Favicon_2025.svg" 
+                            <img src="images/icons/Google_Favicon_2025.svg" 
                                 alt="Search" 
                                 style="height: .9rem; width: .9rem; position: relative; top: .15rem;margin-right: .1rem;">
                             Image
