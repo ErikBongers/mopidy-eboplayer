@@ -1,10 +1,3 @@
-* BrowseComp has properties
-  - availableRefTypes
-  - BrowseFilter
-  > It combines these 2 to show the filter buttons.
-    > But that's some business logic inside a visual component.
-    > Some combinations may be invalid, like if album is selected but there are no albums for this browseFilter.
-
 * Move streamline history to eboback.
   > Eboback should have read/write access to /var/lib/eboplayer(or eboback)
   > This should be checked during
