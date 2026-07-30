@@ -1,3 +1,8 @@
+* Move the genre defs to eboback.
+  > have them pre-installed during database setup.
+  
+* Check if remembored streamlines are loaded.
+
 Pages
 =======
   > Never discard: they are difficult to GC.

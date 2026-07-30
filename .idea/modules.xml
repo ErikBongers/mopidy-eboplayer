@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
+      <module fileurl="file://$PROJECT_DIR$/.idea/Mopidy-Eboplayer.iml" filepath="$PROJECT_DIR$/.idea/Mopidy-Eboplayer.iml" />
       <module fileurl="file://$PROJECT_DIR$/.idea/mopidy-eboplayer.iml" filepath="$PROJECT_DIR$/.idea/mopidy-eboplayer.iml" />
     </modules>
   </component>

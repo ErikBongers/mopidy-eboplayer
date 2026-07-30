@@ -1,3 +1,4 @@
+import errno
 import os
 import logging
 import json
@@ -24,7 +25,12 @@ class Storage:
 
     def setup(self):
         if not os.path.exists(self.storage_dir):
-            os.makedirs(self.storage_dir)
+            try:
+                os.makedirs(self.storage_dir)
+            except OSError as exc:
+                msg = f"Failed to create storage directory: {self.storage_dir}\n Original error: {exc}"
+                raise OSError(msg)
+
 
     def get_all_titles(self):
         if self.streamTitlesFile == "":

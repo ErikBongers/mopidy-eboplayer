@@ -1,13 +1,9 @@
 import json
 import logging
-import typing
 
 import pykka
 import tornado.web
-from mopidy.core import tracklist
-from mopidy.models import TlTrack, Track
-from pykka import ThreadingFuture
-
+from mopidy.models import Track
 from mopidy_eboplayer.Storage import Storage
 from mopidy_eboplayer.webSocketHandler import broadcast_to_websockets
 
@@ -72,7 +68,7 @@ class ActionHandler(tornado.web.RequestHandler):
 
             if current_tl_track is not None:
                 track: Track = current_tl_track.track
-                logger.info(f"Now playing (or selected): {track.name}")
+                logger.info(f"Now playing (or selected): {track.name or "-- no name --"}")
                 logger.info(f"TLID: {current_tl_track.tlid}")
                 #todo: change the volume!!!
                 future = backend_proxy.set_volume_from_track(track.uri)
