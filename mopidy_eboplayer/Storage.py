@@ -132,4 +132,4 @@ class Storage:
         self.streamTitlesFile = self.streamTitlesFile.replace("http://", "")
         self.streamTitlesFile = url_to_filename(self.streamTitlesFile)
         self.streamTitlesFile = self.storage_dir + "/" + self.streamTitlesFile + ".txt"
-        Path(self.streamTitlesFile, exist_ok=True).touch()
+        Path(self.streamTitlesFile).touch()
