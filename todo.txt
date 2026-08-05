@@ -1,13 +1,34 @@
-* Move streamline history to eboback.
-  > Eboback should have read/write access to /var/lib/eboplayer(or eboback)
+* What a favorite in Favorites is no longer valid (e.g. renamed),
+  it defaults to a generic track URI based on the path.
+  > How to fix it via UI?
+    > Perhaps mark it as "Not found"
+    > Allow to relink it?
+    > Allow to delete it.
+    > Allow to delete all invalids.
+
+* Add volume_adjust to streams.
+
+* Store stream lines via backend in metadata.
+    > Filename? Location?
+      > in RadioStreams folder.
+        > is probably a config setting.
+        > add option to streams.eboplayer.playlist
+            : max_titles / max_lines: 10000 (default)
+            > lines is less confusing than titles.
+        > use stream_name.eboplayer.lines
+          > Risk for duplicates?
+            > Ok for now, as unlikely.
+            > For future, check for unique names and thus also allow for renaming a stream + it's metadata.
+
+* Eboback should check if it has all the privs it needs.
   > This should be checked during
-    - a command `init`
-    - from client
-      > when?
-        > a warning triangle next to the gear icon top right?
-        > what if user does not provide the read/write access?
-          > streamlines won't be remembered...but can still be used live.
-* Remembered track does not immediately highlight. Only after refresh.
+    - at the start of a scan.
+      > if no privs, just refuse to start up. Easiest.
+  > /var/lib/eboplayer
+    > so...it's not eboback but eboplayer that should check..
+    > unless we move all data storage to eboback.
+
+* Remembered track does not immediately highlighti Only after refresh.
 
 * Make history lazy loading.
   > Only load when history is shown.
