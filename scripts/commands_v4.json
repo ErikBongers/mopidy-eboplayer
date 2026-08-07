@@ -239,6 +239,14 @@
         {
           "name": "tracks",
           "default": null
+        },
+        {
+          "name": "at_position",
+          "default": "at_position"
+        },
+        {
+          "name": "uris",
+          "default": "uris"
         }
       ]
     },
