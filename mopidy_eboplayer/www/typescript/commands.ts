@@ -10,6 +10,24 @@ import Playlist = models.Playlist;
 import Ref = models.Ref;
 import FilterCriteria = core.FilterCriteria;
 
+type FieldName = "uri" |
+"track_name" |
+"album" |
+"artist" |
+"albumartist" |
+"composer" |
+"performer" |
+"track_no" |
+"genre" |
+"date" |
+"comment" |
+"disc_no" |
+"musicbrainz_albumid" |
+"musicbrainz_artistid" |
+"musicbrainz_trackid";
+
+type Query = Object; //todo: make more specific.;
+
 export class Commands {
     protected mopidy: Mopidy;
     core: Core;
@@ -39,11 +57,11 @@ class Core {
         this.tracklist = new Core_Tracklist(mopidy);
     }
 
-    //Get list of URI schemes we can handle
+    //Get list of URI schemes we can handle.
     getUriSchemes(): Promise<any> {
         return this.mopidy.send("core.get_uri_schemes") as Promise<any>;
     }
-    //Get version of the Mopidy core API
+    //Get version of the Mopidy core API.
     getVersion(): Promise<any> {
         return this.mopidy.send("core.get_version") as Promise<any>;
     }
@@ -58,17 +76,12 @@ class Core_History {
 
     //Get the track history.
     //
+    //Returns a list of two-tuples with timestamp and a reference to the track.
     //The timestamps are milliseconds since epoch.
-    //
-    //:returns: the track history
-    //:rtype: list of (timestamp, :class:`mopidy.models.Ref`) tuples
     getHistory(): Promise<any> {
         return this.mopidy.send("core.history.get_history") as Promise<any>;
     }
     //Get the number of tracks in the history.
-    //
-    //:returns: the history length
-    //:rtype: int
     getLength(): Promise<any> {
         return this.mopidy.send("core.history.get_length") as Promise<any>;
     }
@@ -81,38 +94,40 @@ class Core_Library {
         this.mopidy = mopidy;
     }
 
-    //Browse directories and tracks at the given ``uri``.
+    //Browse directories and tracks at the given `uri`.
     //
-    //``uri`` is a string which represents some directory belonging to a
-    //backend. To get the intial root directories for backends pass
-    //:class:`None` as the URI.
+    //`uri` is a string which represents some directory belonging to a
+    //backend. To get the initial root directories for backends pass `None`
+    //as the URI.
     //
-    //Returns a list of :class:`mopidy.models.Ref` objects for the
-    //directories and tracks at the given ``uri``.
+    //Returns a list of [Ref][mopidy.models.Ref] objects for the
+    //directories and tracks at the given `uri`.
     //
-    //The :class:`~mopidy.models.Ref` objects representing tracks keep the
-    //track's original URI. A matching pair of objects can look like this::
+    //The [Ref][] objects representing tracks keep the track's original URI.
+    //A matching pair of objects can look like this:
     //
-    //    Track(uri='dummy:/foo.mp3', name='foo', artists=..., album=...)
-    //    Ref.track(uri='dummy:/foo.mp3', name='foo')
+    //```
+    //Track(uri='dummy:/foo.mp3', name='foo', artists=..., album=...)
+    //Ref.track(uri='dummy:/foo.mp3', name='foo')
+    //```
     //
-    //The :class:`~mopidy.models.Ref` objects representing directories have
-    //backend specific URIs. These are opaque values, so no one but the
-    //backend that created them should try and derive any meaning from them.
-    //The only valid exception to this is checking the scheme, as it is used
-    //to route browse requests to the correct backend.
+    //The [Ref][] objects representing directories have backend specific
+    //URIs. These are opaque values, so no one but the backend that created
+    //them should try and derive any meaning from them. The only valid
+    //exception to this is checking the scheme, as it is used to route
+    //browse requests to the correct backend.
     //
-    //For example, the dummy library's ``/bar`` directory could be returned
-    //like this::
+    //For example, the dummy library's `/bar` directory could be returned
+    //like this:
     //
-    //    Ref.directory(uri='dummy:directory:/bar', name='bar')
+    //```
+    //Ref.directory(uri='dummy:directory:/bar', name='bar')
+    //```
     //
-    //:param string uri: URI to browse
-    //:rtype: list of :class:`mopidy.models.Ref`
-    //
-    //.. versionadded:: 0.18
-    browse(uri: string | null ): Promise<Ref<AllUris>[]> {
-        return this.mopidy.send("core.library.browse", {uri}) as Promise<Ref<AllUris>[]>;
+    //Args:
+    //    uri: URI to browse.
+    browse(uri: string | null ): Promise<any> {
+        return this.mopidy.send("core.library.browse", {uri}) as Promise<any>;
     }
     //List distinct values for a given field from the library.
     //
@@ -120,20 +135,19 @@ class Core_Library {
     //protocol supports in a more sane fashion. Other frontends are not
     //recommended to use this method.
     //
-    //:param string field: Any one of ``uri``, ``track_name``, ``album``,
-    //    ``artist``, ``albumartist``, ``composer``, ``performer``,
-    //    ``track_no``, ``genre``, ``date``, ``comment``, ``disc_no``,
-    //    ``musicbrainz_albumid``, ``musicbrainz_artistid``, or
-    //    ``musicbrainz_trackid``.
-    //:param dict query: Query to use for limiting results, see
-    //    :meth:`search` for details about the query format.
-    //:rtype: set of values corresponding to the requested field type.
+    //Returns set of values corresponding to the requested field type.
     //
-    //.. versionadded:: 1.0
-    getDistinct(field: string, query: Object): Promise<any> {
+    //Args:
+    //    field: Any one of `uri`, `track_name`, `album`, `artist`,
+    //        `albumartist`, `composer`, `performer`, `track_no`, `genre`,
+    //        `date`, `comment`, `disc_no`, `musicbrainz_albumid`,
+    //        `musicbrainz_artistid`, or `musicbrainz_trackid`.
+    //    query: Query to use for limiting results, see [search][] for
+    //        details about the query format.
+    getDistinct(field: FieldName, query: Query): Promise<any> {
         return this.mopidy.send("core.library.get_distinct", {field, query}) as Promise<any>;
     }
-    //Lookup the images for the given URIs
+    //Lookup the images for the given URIs.
     //
     //Backends can use this to return image URIs for any URI they know about
     //be it tracks, albums, playlists. The lookup result is a dictionary
@@ -142,11 +156,8 @@ class Core_Library {
     //Unknown URIs or URIs the corresponding backend couldn't find anything
     //for will simply return an empty list for that URI.
     //
-    //:param uris: list of URIs to find images for
-    //:type uris: list of string
-    //:rtype: {uri: tuple of :class:`mopidy.models.Image`}
-    //
-    //.. versionadded:: 1.0
+    //Args:
+    //    uris: List of URIs to find images for.
     getImages(uris: string[]): Promise<any> {
         return this.mopidy.send("core.library.get_images", {uris}) as Promise<any>;
     }
@@ -155,32 +166,26 @@ class Core_Library {
     //If the URI expands to multiple tracks, the returned list will contain
     //them all.
     //
-    //:param uris: track URIs
-    //:type uris: list of string
-    //:rtype: {uri: list of :class:`mopidy.models.Track`}
-    lookup(uris: string[]): Promise<LibraryDict> {
-        return this.mopidy.send("core.library.lookup", {uris}) as Promise<LibraryDict>;
+    //Args:
+    //    uris: Track URIs.
+    lookup(uris: string[]): Promise<any> {
+        return this.mopidy.send("core.library.lookup", {uris}) as Promise<any>;
     }
     //Refresh library. Limit to URI and below if an URI is given.
     //
-    //:param uri: directory or track URI
-    //:type uri: string
+    //Args:
+    //    uri: Directory or track URI.
     refresh(uri: string): Promise<any> {
         return this.mopidy.send("core.library.refresh", {uri}) as Promise<any>;
     }
-    //Search the library for tracks where ``field`` contains ``values``.
+    //Search the library for tracks where `field` contains `values`.
     //
-    //``field`` can be one of ``uri``, ``track_name``, ``album``, ``artist``,
-    //``albumartist``, ``composer``, ``performer``, ``track_no``, ``genre``,
-    //``date``, ``comment``, ``disc_no``, ``musicbrainz_albumid``,
-    //``musicbrainz_artistid``, ``musicbrainz_trackid`` or ``any``.
-    //
-    //If ``uris`` is given, the search is limited to results from within the
-    //URI roots. For example passing ``uris=['file:']`` will limit the search
+    //If `uris` is given, the search is limited to results from within the
+    //URI roots. For example passing `uris=['file:']` will limit the search
     //to the local backend.
     //
-    //Examples::
-    //
+    //Examples:
+    //    ```python
     //    # Returns results matching 'a' in any backend
     //    search({'any': ['a']})
     //
@@ -197,19 +202,14 @@ class Core_Library {
     //
     //    # Returns results matching artist 'xyz' and 'abc' in any backend
     //    search({'artist': ['xyz', 'abc']})
+    //    ```
     //
-    //:param query: one or more queries to search for
-    //:type query: dict
-    //:param uris: zero or more URI roots to limit the search to
-    //:type uris: list of string or :class:`None`
-    //:param exact: if the search should use exact matching
-    //:type exact: :class:`bool`
-    //:rtype: list of :class:`mopidy.models.SearchResult`
-    //
-    //.. versionadded:: 1.0
-    //    The ``exact`` keyword argument.
-    search(query: Object, uris?: string[], exact: boolean = false): Promise<SearchResult[]> {
-        return this.mopidy.send("core.library.search", {query, uris, exact}) as Promise<SearchResult[]>;
+    //Args:
+    //    query: One or more queries to search for.
+    //    uris: Zero or more URI roots to limit the search to.
+    //    exact: If the search should use exact matching.
+    search(query: Query, uris: string[], exact: boolean = false): Promise<any> {
+        return this.mopidy.send("core.library.search", {query, uris, exact}) as Promise<any>;
     }
 }
 
@@ -222,14 +222,13 @@ class Core_Mixer {
 
     //Get mute state.
     //
-    //:class:`True` if muted, :class:`False` unmuted, :class:`None` if
-    //unknown.
+    //`True` if muted, `False` if unmuted, `None` if unknown.
     getMute(): Promise<any> {
         return this.mopidy.send("core.mixer.get_mute") as Promise<any>;
     }
     //Get the volume.
     //
-    //Integer in range [0..100] or :class:`None` if unknown.
+    //Integer in range [0..100] or `None` if unknown.
     //
     //The volume scale is linear.
     getVolume(): Promise<any> {
@@ -237,9 +236,9 @@ class Core_Mixer {
     }
     //Set mute state.
     //
-    //:class:`True` to mute, :class:`False` to unmute.
+    //`True` to mute, `False` to unmute.
     //
-    //Returns :class:`True` if call is successful, otherwise :class:`False`.
+    //Returns `True` if call is successful, otherwise `False`.
     setMute(mute: boolean): Promise<any> {
         return this.mopidy.send("core.mixer.set_mute", {mute}) as Promise<any>;
     }
@@ -249,7 +248,7 @@ class Core_Mixer {
     //
     //The volume scale is linear.
     //
-    //Returns :class:`True` if call is successful, otherwise :class:`False`.
+    //Returns `True` if call is successful, otherwise `False`.
     setVolume(volume: number): Promise<any> {
         return this.mopidy.send("core.mixer.set_volume", {volume}) as Promise<any>;
     }
@@ -264,25 +263,21 @@ class Core_Playback {
 
     //Get the currently playing or selected track.
     //
-    //Returns a :class:`mopidy.models.TlTrack` or :class:`None`.
+    //Returns a [TlTrack][mopidy.models.TlTrack] or `None`.
     getCurrentTlTrack(): Promise<any> {
         return this.mopidy.send("core.playback.get_current_tl_track") as Promise<any>;
     }
-    //Get the currently playing or selected TLID.
+    //Get the currently playing or selected tracklist ID.
     //
-    //Extracted from :meth:`get_current_tl_track` for convenience.
-    //
-    //Returns a :class:`int` or :class:`None`.
-    //
-    //.. versionadded:: 1.1
+    //Extracted from [get_current_tl_track][] for convenience.
     getCurrentTlid(): Promise<any> {
         return this.mopidy.send("core.playback.get_current_tlid") as Promise<any>;
     }
     //Get the currently playing or selected track.
     //
-    //Extracted from :meth:`get_current_tl_track` for convenience.
+    //Extracted from [get_current_tl_track][] for convenience.
     //
-    //Returns a :class:`mopidy.models.Track` or :class:`None`.
+    //Returns a [Track][mopidy.models.Track] or `None`.
     getCurrentTrack(): Promise<any> {
         return this.mopidy.send("core.playback.get_current_track") as Promise<any>;
     }
@@ -290,7 +285,7 @@ class Core_Playback {
     getState(): Promise<any> {
         return this.mopidy.send("core.playback.get_state") as Promise<any>;
     }
-    //Get the current stream title or :class:`None`.
+    //Get the current stream title or `None`.
     getStreamTitle(): Promise<any> {
         return this.mopidy.send("core.playback.get_stream_title") as Promise<any>;
     }
@@ -309,20 +304,17 @@ class Core_Playback {
     pause(): Promise<any> {
         return this.mopidy.send("core.playback.pause") as Promise<any>;
     }
-    //Play the given track, or if the given tl_track and tlid is
-    //:class:`None`, play the currently active track.
+    //Play a track from the tracklist, specified by the tracklist ID.
     //
-    //Note that the track **must** already be in the tracklist.
+    //Note that the track must already be in the tracklist.
     //
-    //.. deprecated:: 3.0
-    //    The ``tl_track`` argument. Use ``tlid`` instead.
+    //If no tracklist ID is provided, resume playback of the currently
+    //active track.
     //
-    //:param tl_track: track to play
-    //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-    //:param tlid: TLID of the track to play
-    //:type tlid: :class:`int` or :class:`None`
-    play(tl_track?: null, tlid?: number): Promise<any> {
-        return this.mopidy.send("core.playback.play", {tl_track, tlid}) as Promise<any>;
+    //Args:
+    //    tlid: Tracklist ID of the track to play.
+    play(tlid: number): Promise<any> {
+        return this.mopidy.send("core.playback.play", {tlid}) as Promise<any>;
     }
     //Change to the previous track.
     //
@@ -337,27 +329,40 @@ class Core_Playback {
     }
     //Seeks to time position given in milliseconds.
     //
-    //:param time_position: time position in milliseconds
-    //:type time_position: int
-    //:rtype: :class:`True` if successful, else :class:`False`
-    seek(time_position: number): Promise<boolean> {
-        return this.mopidy.send("core.playback.seek", {time_position}) as Promise<boolean>;
+    //Returns `True` if successful, else `False`.
+    //
+    //Args:
+    //    time_position: Time position in milliseconds.
+    seek(time_position: number): Promise<any> {
+        return this.mopidy.send("core.playback.seek", {time_position}) as Promise<any>;
     }
     //Set the playback state.
     //
-    //Must be :attr:`PLAYING`, :attr:`PAUSED`, or :attr:`STOPPED`.
+    ///// warning | Internal API
+    //This method is only for use by Mopidy itself and extension's test suites
+    //if it cannot be avoided.
+    //
+    //Frontends and clients must use the [`play()`][play], [`pause()`][pause],
+    //[`resume()`][resume], and [`stop()`][stop] methods to change the
+    //playback state.
+    /////
+    //
+    //This method only maintains core's playback state and emits
+    //`playback_state_changed` events. It has no effect on the underlying
+    //backend or audio layers.
     //
     //Possible states and transitions:
     //
-    //.. digraph:: state_transitions
-    //
-    //    "STOPPED" -> "PLAYING" [ label="play" ]
-    //    "STOPPED" -> "PAUSED" [ label="pause" ]
-    //    "PLAYING" -> "STOPPED" [ label="stop" ]
-    //    "PLAYING" -> "PAUSED" [ label="pause" ]
-    //    "PLAYING" -> "PLAYING" [ label="play" ]
-    //    "PAUSED" -> "PLAYING" [ label="resume" ]
-    //    "PAUSED" -> "STOPPED" [ label="stop" ]
+    //``` mermaid
+    //graph LR
+    //    STOPPED -->|play| PLAYING;
+    //    STOPPED -->|pause| PAUSED;
+    //    PLAYING -->|stop| STOPPED;
+    //    PLAYING -->|pause| PAUSED;
+    //    PLAYING -->|play| PLAYING;
+    //    PAUSED -->|resume| PLAYING;
+    //    PAUSED -->|stop| STOPPED;
+    //```
     setState(new_state: PlaybackState): Promise<any> {
         return this.mopidy.send("core.playback.set_state", {new_state}) as Promise<any>;
     }
@@ -376,31 +381,25 @@ class Core_Playlists {
 
     //Get a list of the currently available playlists.
     //
-    //Returns a list of :class:`~mopidy.models.Ref` objects referring to the
+    //Returns a list of [Ref][mopidy.models.Ref] objects referring to the
     //playlists. In other words, no information about the playlists' content
     //is given.
-    //
-    //:rtype: list of :class:`mopidy.models.Ref`
-    //
-    //.. versionadded:: 1.0
-    asList(): Promise<Ref<AllUris>[]> {
-        return this.mopidy.send("core.playlists.as_list") as Promise<Ref<AllUris>[]>;
+    asList(): Promise<any> {
+        return this.mopidy.send("core.playlists.as_list") as Promise<any>;
     }
     //Create a new playlist.
     //
-    //If ``uri_scheme`` matches an URI scheme handled by a current backend,
-    //that backend is asked to create the playlist. If ``uri_scheme`` is
-    //:class:`None` or doesn't match a current backend, the first backend is
-    //asked to create the playlist.
+    //If `uri_scheme` matches an URI scheme handled by a current backend,
+    //that backend is asked to create the playlist. If `uri_scheme` is
+    //`None` or doesn't match a current backend, the first backend is asked
+    //to create the playlist.
     //
     //All new playlists must be created by calling this method, and **not**
-    //by creating new instances of :class:`mopidy.models.Playlist`.
+    //by creating new instances of [Playlist][mopidy.models.Playlist].
     //
-    //:param name: name of the new playlist
-    //:type name: string
-    //:param uri_scheme: use the backend matching the URI scheme
-    //:type uri_scheme: string
-    //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
+    //Args:
+    //    name: Name of the new playlist.
+    //    uri_scheme: Use the backend matching the URI scheme.
     create(name: string, uri_scheme: string): Promise<Playlist> {
         return this.mopidy.send("core.playlists.create", {name, uri_scheme}) as Promise<Playlist>;
     }
@@ -409,66 +408,54 @@ class Core_Playlists {
     //If the URI doesn't match the URI schemes handled by the current
     //backends, nothing happens.
     //
-    //Returns :class:`True` if deleted, :class:`False` otherwise.
+    //Returns `True` if deleted, `False` otherwise.
     //
-    //:param uri: URI of the playlist to delete
-    //:type uri: string
-    //:rtype: :class:`bool`
-    //
-    //.. versionchanged:: 2.2
-    //    Return type defined.
-    delete(uri: string): Promise<boolean> {
-        return this.mopidy.send("core.playlists.delete", {uri}) as Promise<boolean>;
+    //Args:
+    //    uri: URI of the playlist to delete.
+    delete(uri: string): Promise<any> {
+        return this.mopidy.send("core.playlists.delete", {uri}) as Promise<any>;
     }
-    //Get the items in a playlist specified by ``uri``.
+    //Get the items in a playlist specified by `uri`.
     //
-    //Returns a list of :class:`~mopidy.models.Ref` objects referring to the
+    //Returns a list of [Ref][mopidy.models.Ref] objects referring to the
     //playlist's items.
     //
-    //If a playlist with the given ``uri`` doesn't exist, it returns
-    //:class:`None`.
-    //
-    //:rtype: list of :class:`mopidy.models.Ref`, or :class:`None`
-    //
-    //.. versionadded:: 1.0
-    getItems(uri: string): Promise<Ref<AllUris>[]> {
-        return this.mopidy.send("core.playlists.get_items", {uri}) as Promise<Ref<AllUris>[]>;
+    //If a playlist with the given `uri` doesn't exist, it returns `None`.
+    getItems(uri: string): Promise<any> {
+        return this.mopidy.send("core.playlists.get_items", {uri}) as Promise<any>;
     }
     //Get the list of URI schemes that support playlists.
-    //
-    //:rtype: list of string
-    //
-    //.. versionadded:: 2.0
-    getUriSchemes(): Promise<string[]> {
-        return this.mopidy.send("core.playlists.get_uri_schemes") as Promise<string[]>;
+    getUriSchemes(): Promise<any> {
+        return this.mopidy.send("core.playlists.get_uri_schemes") as Promise<any>;
     }
-    //Lookup playlist with given URI in both the set of playlists and in any
-    //other playlist sources. Returns :class:`None` if not found.
+    //Lookup playlist with given URI.
     //
-    //:param uri: playlist URI
-    //:type uri: string
-    //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-    lookup(uri: string): Promise<Playlist> {
-        return this.mopidy.send("core.playlists.lookup", {uri}) as Promise<Playlist>;
+    //Searches both the set of playlists and any other playlist sources.
+    //Returns `None` if not found.
+    //
+    //Args:
+    //    uri: Playlist URI.
+    lookup(uri: string): Promise<any> {
+        return this.mopidy.send("core.playlists.lookup", {uri}) as Promise<any>;
     }
-    //Refresh the playlists in :attr:`playlists`.
+    //Refresh the playlists.
     //
-    //If ``uri_scheme`` is :class:`None`, all backends are asked to refresh.
-    //If ``uri_scheme`` is an URI scheme handled by a backend, only that
-    //backend is asked to refresh. If ``uri_scheme`` doesn't match any
+    //If `uri_scheme` is `None`, all backends are asked to refresh.
+    //If `uri_scheme` is an URI scheme handled by a backend, only that
+    //backend is asked to refresh. If `uri_scheme` doesn't match any
     //current backend, nothing happens.
     //
-    //:param uri_scheme: limit to the backend matching the URI scheme
-    //:type uri_scheme: string
+    //Args:
+    //    uri_scheme: Limit to the backend matching the URI scheme.
     refresh(uri_scheme: string): Promise<any> {
         return this.mopidy.send("core.playlists.refresh", {uri_scheme}) as Promise<any>;
     }
     //Save the playlist.
     //
-    //For a playlist to be saveable, it must have the ``uri`` attribute set.
-    //You must not set the ``uri`` atribute yourself, but use playlist
-    //objects returned by :meth:`create` or retrieved from :attr:`playlists`,
-    //which will always give you saveable playlists.
+    //For a playlist to be saveable, it must have the `uri` attribute set.
+    //You must not set the `uri` attribute yourself, but use playlist
+    //objects returned by [create][] or retrieved from playlists, which will
+    //always give you saveable playlists.
     //
     //The method returns the saved playlist. The return playlist may differ
     //from the saved playlist. E.g. if the playlist name was changed, the
@@ -477,13 +464,12 @@ class Core_Playlists {
     //returned playlist instead.
     //
     //If the playlist's URI isn't set or doesn't match the URI scheme of a
-    //current backend, nothing is done and :class:`None` is returned.
+    //current backend, nothing is done and `None` is returned.
     //
-    //:param playlist: the playlist
-    //:type playlist: :class:`mopidy.models.Playlist`
-    //:rtype: :class:`mopidy.models.Playlist` or :class:`None`
-    save(playlist: Playlist): Promise<Playlist> {
-        return this.mopidy.send("core.playlists.save", {playlist}) as Promise<Playlist>;
+    //Args:
+    //    playlist: The playlist.
+    save(playlist: Playlist): Promise<any> {
+        return this.mopidy.send("core.playlists.save", {playlist}) as Promise<any>;
     }
 }
 
@@ -496,50 +482,41 @@ class Core_Tracklist {
 
     //Add tracks to the tracklist.
     //
-    //If ``uris`` is given instead of ``tracks``, the URIs are
+    //If `uris` is given instead of `tracks`, the URIs are
     //looked up in the library and the resulting tracks are added to the
     //tracklist.
     //
-    //If ``at_position`` is given, the tracks are inserted at the given
-    //position in the tracklist. If ``at_position`` is not given, the tracks
+    //If `at_position` is given, the tracks are inserted at the given
+    //position in the tracklist. If `at_position` is not given, the tracks
     //are appended to the end of the tracklist.
     //
-    //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
+    //Triggers the
+    //[tracklist_changed][mopidy.core.CoreListener.tracklist_changed] event.
     //
-    //:param tracks: tracks to add
-    //:type tracks: list of :class:`mopidy.models.Track` or :class:`None`
-    //:param at_position: position in tracklist to add tracks
-    //:type at_position: int or :class:`None`
-    //:param uris: list of URIs for tracks to add
-    //:type uris: list of string or :class:`None`
-    //:rtype: list of :class:`mopidy.models.TlTrack`
-    //
-    //.. versionadded:: 1.0
-    //    The ``uris`` argument.
-    //
-    //.. deprecated:: 1.0
-    //    The ``tracks`` argument. Use ``uris``.
-    add(tracks?: undefined, at_position?: number, uris?: string[]): Promise<TlTrack[]> {
-        return this.mopidy.send("core.tracklist.add", {tracks, at_position, uris}) as Promise<TlTrack[]>;
+    //Args:
+    //    tracks: Tracks to add.
+    //    at_position: Position in tracklist to add tracks.
+    //    uris: List of URIs for tracks to add.
+    add(tracks: string[]): Promise<TlTrack[]> {
+        return this.mopidy.send("core.tracklist.add", {tracks}) as Promise<TlTrack[]>;
     }
     //Clear the tracklist.
     //
-    //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
+    //Triggers the
+    //[tracklist_changed][mopidy.core.CoreListener.tracklist_changed] event.
     clear(): Promise<any> {
         return this.mopidy.send("core.tracklist.clear") as Promise<any>;
     }
     //The track that will be played after the given track.
     //
-    //Not necessarily the same track as :meth:`next_track`.
+    //Not necessarily the same track as [next_track][].
     //
-    //.. deprecated:: 3.0
-    //    Use :meth:`get_eot_tlid` instead.
+    //Deprecated: Use [get_eot_tlid][] instead.
     //
-    //:param tl_track: the reference track
-    //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-    //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-    eotTrack(tl_track?: TlTrack): Promise<TlTrack> {
-        return this.mopidy.send("core.tracklist.eot_track", {tl_track}) as Promise<TlTrack>;
+    //Args:
+    //    tl_track: The reference track.
+    eotTrack(args: TODO, kwargs: TODO): Promise<any> {
+        return this.mopidy.send("core.tracklist.eot_track", {args, kwargs}) as Promise<any>;
     }
     //Filter the tracklist by the given criteria.
     //
@@ -549,8 +526,8 @@ class Core_Tracklist {
     //
     //Only tracks that match all the given criteria are returned.
     //
-    //Examples::
-    //
+    //Examples:
+    //    ```python
     //    # Returns tracks with TLIDs 1, 2, 3, or 4 (tracklist ID)
     //    filter({'tlid': [1, 2, 3, 4]})
     //
@@ -560,95 +537,87 @@ class Core_Tracklist {
     //    # Returns track with a matching TLIDs (1, 3 or 6) and a
     //    # matching URI ('xyz' or 'abc')
     //    filter({'tlid': [1, 3, 6], 'uri': ['xyz', 'abc']})
+    //    ```
     //
-    //:param criteria: one or more rules to match by
-    //:type criteria: dict, of (string, list) pairs
-    //:rtype: list of :class:`mopidy.models.TlTrack`
-    filter(criteria: FilterCriteria): Promise<TlTrack[]> {
-        return this.mopidy.send("core.tracklist.filter", {criteria}) as Promise<TlTrack[]>;
+    //Args:
+    //    criteria: One or more rules to match by.
+    filter(criteria: FilterCriteria): Promise<any> {
+        return this.mopidy.send("core.tracklist.filter", {criteria}) as Promise<any>;
     }
     //Get consume mode.
     //
-    //:class:`True`
+    //`True`
     //    Tracks are removed from the tracklist when they have been played.
-    //:class:`False`
+    //`False`
     //    Tracks are not removed from the tracklist.
     getConsume(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_consume") as Promise<any>;
     }
     //The TLID of the track that will be played after the current track.
     //
-    //Not necessarily the same TLID as returned by :meth:`get_next_tlid`.
-    //
-    //:rtype: :class:`int` or :class:`None`
-    //
-    //.. versionadded:: 1.1
-    getEotTlid(): Promise<number> {
-        return this.mopidy.send("core.tracklist.get_eot_tlid") as Promise<number>;
+    //Not necessarily the same TLID as returned by [get_next_tlid][].
+    getEotTlid(): Promise<any> {
+        return this.mopidy.send("core.tracklist.get_eot_tlid") as Promise<any>;
     }
     //Get length of the tracklist.
     getLength(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_length") as Promise<any>;
     }
-    //The tlid of the track that will be played if calling
-    //:meth:`mopidy.core.PlaybackController.next()`.
+    //The TLID of the next track.
+    //
+    //The track that will be played if calling
+    //[PlaybackController.next][mopidy.core.PlaybackController.next].
     //
     //For normal playback this is the next track in the tracklist. If repeat
     //is enabled the next track can loop around the tracklist. When random is
     //enabled this should be a random track, all tracks should be played once
     //before the tracklist repeats.
-    //
-    //:rtype: :class:`int` or :class:`None`
-    //
-    //.. versionadded:: 1.1
-    getNextTlid(): Promise<number> {
-        return this.mopidy.send("core.tracklist.get_next_tlid") as Promise<number>;
+    getNextTlid(): Promise<any> {
+        return this.mopidy.send("core.tracklist.get_next_tlid") as Promise<any>;
     }
-    //Returns the TLID of the track that will be played if calling
-    //:meth:`mopidy.core.PlaybackController.previous()`.
+    //Returns the TLID of the previous track.
+    //
+    //The track that will be played if calling
+    //[PlaybackController.previous][mopidy.core.PlaybackController.previous].
     //
     //For normal playback this is the previous track in the tracklist. If
     //random and/or consume is enabled it should return the current track
     //instead.
-    //
-    //:rtype: :class:`int` or :class:`None`
-    //
-    //.. versionadded:: 1.1
-    getPreviousTlid(): Promise<number> {
-        return this.mopidy.send("core.tracklist.get_previous_tlid") as Promise<number>;
+    getPreviousTlid(): Promise<any> {
+        return this.mopidy.send("core.tracklist.get_previous_tlid") as Promise<any>;
     }
     //Get random mode.
     //
-    //:class:`True`
+    //`True`
     //    Tracks are selected at random from the tracklist.
-    //:class:`False`
+    //`False`
     //    Tracks are played in the order of the tracklist.
     getRandom(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_random") as Promise<any>;
     }
     //Get repeat mode.
     //
-    //:class:`True`
+    //`True`
     //    The tracklist is played repeatedly.
-    //:class:`False`
+    //`False`
     //    The tracklist is played once.
     getRepeat(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_repeat") as Promise<any>;
     }
     //Get single mode.
     //
-    //:class:`True`
-    //    Playback is stopped after current song, unless in ``repeat`` mode.
-    //:class:`False`
+    //`True`
+    //    Playback is stopped after current song, unless in `repeat` mode.
+    //`False`
     //    Playback continues after current song.
     getSingle(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_single") as Promise<any>;
     }
-    //Get tracklist as list of :class:`mopidy.models.TlTrack`.
+    //Get tracklist as list of [TlTrack][mopidy.models.TlTrack].
     getTlTracks(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_tl_tracks") as Promise<any>;
     }
-    //Get tracklist as list of :class:`mopidy.models.Track`.
+    //Get tracklist as list of [Track][mopidy.models.Track].
     getTracks(): Promise<any> {
         return this.mopidy.send("core.tracklist.get_tracks") as Promise<any>;
     }
@@ -664,135 +633,129 @@ class Core_Tracklist {
     //If neither *tl_track* or *tlid* is given we return the index of
     //the currently playing track.
     //
-    //:param tl_track: the track to find the index of
-    //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-    //:param tlid: TLID of the track to find the index of
-    //:type tlid: :class:`int` or :class:`None`
-    //:rtype: :class:`int` or :class:`None`
-    //
-    //.. versionadded:: 1.1
-    //    The *tlid* parameter
-    index(tl_track?: TlTrack, tlid?: number): Promise<number> {
-        return this.mopidy.send("core.tracklist.index", {tl_track, tlid}) as Promise<number>;
+    //Args:
+    //    tl_track: The track to find the index of.
+    //    tlid: TLID of the track to find the index of.
+    index(tl_track: TODO, tlid: number): Promise<any> {
+        return this.mopidy.send("core.tracklist.index", {tl_track, tlid}) as Promise<any>;
     }
-    //Move the tracks in the slice ``[start:end]`` to ``to_position``.
+    //Move the tracks in the slice `[start:end]` to `to_position`.
     //
-    //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
+    //Triggers the
+    //[tracklist_changed][mopidy.core.CoreListener.tracklist_changed] event.
     //
-    //:param start: position of first track to move
-    //:type start: int
-    //:param end: position after last track to move
-    //:type end: int
-    //:param to_position: new position for the tracks
-    //:type to_position: int
-    move(start: number, end: number, to_position: number): Promise<any> {
+    //Args:
+    //    start: Position of first track to move.
+    //    end: Position after last track to move.
+    //    to_position: New position for the tracks.
+    move(start: TODO, end: TODO, to_position: TODO): Promise<any> {
         return this.mopidy.send("core.tracklist.move", {start, end, to_position}) as Promise<any>;
     }
-    //The track that will be played if calling
-    //:meth:`mopidy.core.PlaybackController.next()`.
+    //The track that will be played if calling next.
+    //
+    //Calls [PlaybackController.next][mopidy.core.PlaybackController.next].
     //
     //For normal playback this is the next track in the tracklist. If repeat
     //is enabled the next track can loop around the tracklist. When random is
     //enabled this should be a random track, all tracks should be played once
     //before the tracklist repeats.
     //
-    //.. deprecated:: 3.0
-    //    Use :meth:`get_next_tlid` instead.
+    //Deprecated: Use [get_next_tlid][] instead.
     //
-    //:param tl_track: the reference track
-    //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-    //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-    nextTrack(tl_track?: TlTrack): Promise<TlTrack> {
-        return this.mopidy.send("core.tracklist.next_track", {tl_track}) as Promise<TlTrack>;
+    //Args:
+    //    tl_track: The reference track.
+    nextTrack(args: TODO, kwargs: TODO): Promise<any> {
+        return this.mopidy.send("core.tracklist.next_track", {args, kwargs}) as Promise<any>;
     }
-    //Returns the track that will be played if calling
-    //:meth:`mopidy.core.PlaybackController.previous()`.
+    //Returns the track that will be played if calling previous.
+    //
+    //Calls [PlaybackController.previous][mopidy.core.PlaybackController.previous].
     //
     //For normal playback this is the previous track in the tracklist. If
     //random and/or consume is enabled it should return the current track
     //instead.
     //
-    //.. deprecated:: 3.0
-    //    Use :meth:`get_previous_tlid` instead.
+    //Deprecated: Use [get_previous_tlid][] instead.
     //
-    //:param tl_track: the reference track
-    //:type tl_track: :class:`mopidy.models.TlTrack` or :class:`None`
-    //:rtype: :class:`mopidy.models.TlTrack` or :class:`None`
-    previousTrack(tl_track?: TlTrack): Promise<TlTrack> {
-        return this.mopidy.send("core.tracklist.previous_track", {tl_track}) as Promise<TlTrack>;
+    //Args:
+    //    tl_track: The reference track.
+    previousTrack(args: TODO, kwargs: TODO): Promise<any> {
+        return this.mopidy.send("core.tracklist.previous_track", {args, kwargs}) as Promise<any>;
     }
     //Remove the matching tracks from the tracklist.
     //
-    //Uses :meth:`filter()` to lookup the tracks to remove.
+    //Uses [filter][] to lookup the tracks to remove.
     //
-    //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
+    //Triggers the
+    //[tracklist_changed][mopidy.core.CoreListener.tracklist_changed] event.
     //
-    //:param criteria: one or more rules to match by
-    //:type criteria: dict, of (string, list) pairs
-    //:rtype: list of :class:`mopidy.models.TlTrack` that were removed
-    remove(criteria: FilterCriteria): Promise<TlTrack[]> {
-        return this.mopidy.send("core.tracklist.remove", {criteria}) as Promise<TlTrack[]>;
+    //Returns the removed tracks.
+    //
+    //Args:
+    //    criteria: One or more rules to match by.
+    remove(criteria: FilterCriteria): Promise<any> {
+        return this.mopidy.send("core.tracklist.remove", {criteria}) as Promise<any>;
     }
     //Set consume mode.
     //
-    //:class:`True`
+    //`True`
     //    Tracks are removed from the tracklist when they have been played.
-    //:class:`False`
+    //`False`
     //    Tracks are not removed from the tracklist.
     setConsume(value: boolean): Promise<any> {
         return this.mopidy.send("core.tracklist.set_consume", {value}) as Promise<any>;
     }
     //Set random mode.
     //
-    //:class:`True`
+    //`True`
     //    Tracks are selected at random from the tracklist.
-    //:class:`False`
+    //`False`
     //    Tracks are played in the order of the tracklist.
     setRandom(value: boolean): Promise<any> {
         return this.mopidy.send("core.tracklist.set_random", {value}) as Promise<any>;
     }
     //Set repeat mode.
     //
-    //To repeat a single track, set both ``repeat`` and ``single``.
+    //To repeat a single track, set both `repeat` and `single`.
     //
-    //:class:`True`
+    //`True`
     //    The tracklist is played repeatedly.
-    //:class:`False`
+    //`False`
     //    The tracklist is played once.
     setRepeat(value: boolean): Promise<any> {
         return this.mopidy.send("core.tracklist.set_repeat", {value}) as Promise<any>;
     }
     //Set single mode.
     //
-    //:class:`True`
-    //    Playback is stopped after current song, unless in ``repeat`` mode.
-    //:class:`False`
+    //`True`
+    //    Playback is stopped after current song, unless in `repeat` mode.
+    //`False`
     //    Playback continues after current song.
     setSingle(value: boolean): Promise<any> {
         return this.mopidy.send("core.tracklist.set_single", {value}) as Promise<any>;
     }
-    //Shuffles the entire tracklist. If ``start`` and ``end`` is given only
-    //shuffles the slice ``[start:end]``.
+    //Shuffle the entire tracklist, or a slice.
     //
-    //Triggers the :meth:`mopidy.core.CoreListener.tracklist_changed` event.
+    //If `start` and `end` is given only shuffles the slice `[start:end]`.
     //
-    //:param start: position of first track to shuffle
-    //:type start: int or :class:`None`
-    //:param end: position after last track to shuffle
-    //:type end: int or :class:`None`
-    shuffle(start?: number, end?: number): Promise<any> {
+    //Triggers the
+    //[tracklist_changed][mopidy.core.CoreListener.tracklist_changed] event.
+    //
+    //Args:
+    //    start: Position of first track to shuffle.
+    //    end: Position after last track to shuffle.
+    shuffle(start: TODO, end: TODO): Promise<any> {
         return this.mopidy.send("core.tracklist.shuffle", {start, end}) as Promise<any>;
     }
-    //Returns a slice of the tracklist, limited by the given start and end
-    //positions.
+    //Returns a slice of the tracklist.
     //
-    //:param start: position of first track to include in slice
-    //:type start: int
-    //:param end: position after last track to include in slice
-    //:type end: int
-    //:rtype: :class:`mopidy.models.TlTrack`
-    slice(start: number, end: number): Promise<TlTrack> {
-        return this.mopidy.send("core.tracklist.slice", {start, end}) as Promise<TlTrack>;
+    //Limited by the given start and end positions.
+    //
+    //Args:
+    //    start: Position of first track to include in slice.
+    //    end: Position after last track to include in slice.
+    slice(start: TODO, end: TODO): Promise<any> {
+        return this.mopidy.send("core.tracklist.slice", {start, end}) as Promise<any>;
     }
 }
 

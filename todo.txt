@@ -1,3 +1,5 @@
+* use core.describe to load the new commands api.
+
 * What a favorite in Favorites is no longer valid (e.g. renamed),
   it defaults to a generic track URI based on the path.
   > How to fix it via UI?

@@ -13,6 +13,10 @@ export class MopidyProxy {
         this.commands = commands;
     }
 
+    async describe(): Promise<string> {
+        return await this.commands.describe();
+    }
+
     async fetchRootDirs() {
         return this.browse(null);
     }
