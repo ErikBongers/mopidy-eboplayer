@@ -354,29 +354,6 @@ function stripOrNoneAndModuleName(type: string) {
     return type.replace("mopidy.models.", "");
 }
 
-function parseGetDistinctFieldParam(descLines: string[]): TypeSpec {
-    console.log(descLines)
-    let argLines = descLines.slice(
-        descLines.findIndex(txt => /\s*Args\s*:\s*/.test(txt)) + 1,
-        descLines.findIndex(txt => /\s*query\s*:\s*/.test(txt))
-        );
-    let args = argLines.join(" ")
-    console.log(args);
-    let values = args
-        .split("`")
-        .slice(1)
-        .map(v => v
-            .replaceAll(", or", "")
-            .replaceAll(",", "")
-            .replaceAll(".", "")
-            .trim()
-        )
-        .filter(value => value != "");
-    console.log(values);
-
-    return {typeName: "FieldName", typeDef: { type_or_interface: "type", name: "FieldName", def: `${values.map(v => '"' + v + '"').join(" |\n")}`}};
-}
-
 function convertPythonToTypescript(python: string) {
     return convertPythonToTypescriptPhase1(python)
         .replaceAll("text", "string")
