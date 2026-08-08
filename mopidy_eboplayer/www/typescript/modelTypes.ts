@@ -324,6 +324,9 @@ export interface MopidyHistoryLine {
 export type LibraryItem = models.Track[];
 export type LibraryDict = { [index: string]: LibraryItem };
 
+export type TrackListItem = models.TlTrack[];
+export type TracklistDict = { [index: string]: TrackListItem };
+
 export const NoStreamTitles: StreamTitles = {uri: "", active_titles: []};
 
 export interface StreamTitles {

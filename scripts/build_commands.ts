@@ -19,6 +19,7 @@ interface Param {
 
 interface FuncDef {
     module: Module;
+    orgName: string;
     name: string;
     key: string;
     description: string;
@@ -102,11 +103,12 @@ function main() {
         let module = getOrCreateModule(parts.slice(0, -1), rootModule);
         let funcDefJson = obj.result[key];
         let functionName = parts.pop() as string;
-        functionName = snakeToCamel(functionName);
+        let name = snakeToCamel(functionName);
 
-        let funcDef = {
+        let funcDef: FuncDef = {
             module: module,
-            name: functionName,
+            orgName: functionName,
+            name,
             key,
             description: funcDefJson.description,
             params: funcDefJson.params
@@ -129,6 +131,7 @@ import Playlist = models.Playlist;
 import Ref = models.Ref;
 import FilterCriteria = core.FilterCriteria;
 `;
+    writer.addType({type_or_interface: "type", name: "UriScheme", def: "string"});
 
     for(let module of treeIterator(rootModule)) {
         writeModule(writer, module);
@@ -205,17 +208,14 @@ function writeComments(writer: Writer, funcDef: FuncDef, indent: number) {
 }
 
 function guessFunctionType(funcDef: FuncDef): Result<string, undefined> {
-    if(funcDef.module.name == "playlists" && funcDef.name == "create")
-        return Success("Promise<Playlist>");
-    if(funcDef.module.name == "tracklist" && funcDef.name == "add")
-        return Success("Promise<TlTrack[]>");
-    return Failure(undefined);
+    return Success(`Promise<${guessReturnType(funcDef)}>`);
 }
 
 function extractReturnType(funcDef: FuncDef) {
     let res = guessFunctionType(funcDef);
     if(res.success)
         return res.value;
+    console("NEVER");
     let rxReturnType = /\s*:rtype:(.*)/gm;
     let typeLine = rxReturnType.exec(funcDef.description)?.[1] ?? "";
     if (typeLine) {
@@ -419,6 +419,10 @@ function guessParamType(funcDef: FuncDef, param: Param): TypeSpec {
     switch (param.name) {
         case "tlid":
         case "time_position":
+        case "at_position":
+        case "start":
+        case "end":
+        case "to_position":
             return {typeName: "number"};
         case "uri_scheme":
         case "uri":
@@ -438,12 +442,130 @@ function guessParamType(funcDef: FuncDef, param: Param): TypeSpec {
             return {typeName: "Playlist"};
         case "criteria":
             return {typeName: "FilterCriteria"};
+        case "tl_track":
+            return {typeName: "TlTrack"};
         case "query":
             return {typeName: "Query", typeDef: {type_or_interface: "type", name: "Query", def:"Object; //todo: make more specific."}};
+        case "args":
+        case "kwargs":
+            return {typeName: "undefined"}; //probably deprecated functions that have been wrapped with a decorator.
         default:
             return {typeName: "TODO"};
     }
 
+}
+
+function guessReturnType(funcDef: FuncDef) {
+    let pythonReturnType = getPythonReturnType(funcDef);
+    pythonReturnType = pythonReturnType.replaceAll("None", "null");
+    switch (pythonReturnType) {
+        case "str": return "string";
+        case "int": return "number";
+        case "bool": return "boolean";
+        case "None": return "void";
+    }
+    if(pythonReturnType.startsWith("list[")) {
+        console.log(`LIST: ${pythonReturnType}`);
+        let parts = pythonReturnType.split(/[\[\]]/);
+        console.log(`PART: ${parts[1]}`);
+        let partOne = parts[1];
+        if(partOne == "Ref")
+            partOne = "Ref<AllUris>";
+        return partOne + "[]";
+    }
+    if(pythonReturnType.startsWith("dict[")) {
+        return "todo";
+    }
+    return pythonReturnType;
+}
+
+function getPythonReturnType(funcDef: FuncDef) {
+    if(funcDef.module.name == "tracklist")
+        switch(funcDef.orgName) {
+            //tracklist
+            case "get_tl_tracks": return "list[TlTrack]";
+            case "get_tracks": return "list[Track]";
+            case "get_length": return "int";
+            case "get_version": return "int";
+            case "get_consume": return "bool";
+            case "set_consume": return "None";
+            case "get_random": return "bool";
+            case "set_random": return "None";
+            case "get_repeat": return "bool";
+            case "set_repeat": return "None";
+            case "get_single": return "bool";
+            case "set_single": return "None";
+            case "index": return "int | None";
+            case "get_eot_tlid": return "TracklistId | None";
+            case "eot_track": return "TlTrack | None";
+            case "get_next_tlid": return "TracklistId | None";
+            case "next_track": return "TlTrack | None";
+            case "get_previous_tlid": return "TracklistId | None";
+            case 'previous_track': return "TlTrack | None";
+            case 'add': return "list[TlTrack]";
+            case "clear": return "None";
+            case "filter": return "list[TlTrack]";
+            case "move": return "None";
+            case "remove": return "list[TlTrack]";
+            case "shuffle": return "None";
+            case "slice": return "list[TlTrack]";
+        }
+    if(funcDef.module.name == "history")
+        switch(funcDef.orgName) {
+            case "get_length": return "int";
+            case "get_history": return "History";
+        }
+    if(funcDef.module.name == "library")
+        switch(funcDef.orgName) {
+            case "browse": return "list[Ref]";
+            case "get_distinct": return "set[Any]";
+            case "get_images": return "dict[Uri, tuple[Image, ...]]";
+            case "lookup": return "dict[Uri, list[Track]]";
+            case "refresh": return "None";
+            case "search": return "list[SearchResult]";
+        }
+    if(funcDef.module.name == "mixer")
+        switch(funcDef.orgName) {
+            case "get_volume": return "Percentage | None";
+            case "set_volume": return "bool";
+            case "get_mute": return "bool | None";
+            case "set_mute": return "bool";
+
+        }
+    if(funcDef.module.name == "playback")
+        switch(funcDef.orgName) {
+            case "get_current_tl_track": return "TlTrack | None";
+            case "get_current_track": return "Track | None";
+            case "get_current_tlid": return "TracklistId | None";
+            case "get_stream_title": return "str | None";
+            case "get_state": return "PlaybackState";
+            case "set_state": return "None";
+            case "get_time_position": return "DurationMs";
+            case "next": return "None";
+            case "pause": return "None";
+            case "play": return "None";
+            case "previous": return "None";
+            case "resume": return "None";
+            case "seek": return "bool";
+            case "stop": return "None";
+        }
+    if(funcDef.module.name == "playlists")
+        switch(funcDef.orgName) {
+            case "get_uri_schemes": return "list[UriScheme]";
+            case "as_list": return "list[Ref]";
+            case "get_items": return "list[Ref] | None";
+            case "create": return "Playlist | None";
+            case "delete": return "bool";
+            case "lookup": return "Playlist | None";
+            case "refresh": return "None";
+            case "save": return "Playlist | None";
+        }
+    if(funcDef.module.name == "core")
+        switch (funcDef.orgName) {
+            case "get_version": return "str";
+            case "get_uri_schemes": return "list[UriScheme]";
+        }
+    return "todo";
 }
 
 function findTypeExceptions(funcDef: FuncDef, param: Param): Result<string, undefined> {
