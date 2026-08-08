@@ -3789,7 +3789,9 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
 	static styleText = `
         <style>
             #wrapper {
+                box-sizing: border-box;
                 width: 100%;
+                padding-inline: 3ch;
                 display: flex;
                 flex-direction: column;
                 justify-content: center;
@@ -3814,7 +3816,6 @@ var EboPlayerBar = class EboPlayerBar extends EboComponent {
                 flex-wrap: wrap;
                 align-items: center;
                 align-content: center;
-                padding-inline: 3ch;
                 box-sizing: border-box;
                 width: 100%;
                 padding-block: 1ch;
