@@ -4,8 +4,12 @@
     > For a nested component/view (note how I'm linking them here, as if they are ONE!),
       The parent component/view must first create the component and use that to create the view.
 
-* Show tracklist in Now playing.
-  > start with a rough view for now.
+* tracklist highlight playing track.
+  > animated gif?
+  > Bkg color? Maybe not as this looks like a selection.
+  > Glow? Let's try something else...
+  > progress bar? Later...
+
 
 * Make Inspector2 description a eboback command like scan and clear.
   > or perhaps via a __main__ entry function immediately invokable?
