@@ -1,3 +1,9 @@
+* What can I build to bypass core.describe?
+  > without altering the mopidy project?
+  > do the extensions have access to the mopidy code?
+    > that may not be needed.
+      > a little project could INCLUDE mopidy (dependency)
+        > and then access the code to extract info?
 * use core.describe to load the new commands api.
 
 * What a favorite in Favorites is no longer valid (e.g. renamed),

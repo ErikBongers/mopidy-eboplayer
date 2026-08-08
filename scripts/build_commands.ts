@@ -208,14 +208,21 @@ function writeComments(writer: Writer, funcDef: FuncDef, indent: number) {
 }
 
 function guessFunctionType(funcDef: FuncDef): Result<string, undefined> {
-    return Success(`Promise<${guessReturnType(funcDef)}>`);
+    let returnType = guessReturnType(funcDef);
+    if (returnType == "null")
+        returnType = "void";
+    else if (returnType == "todo")
+        returnType = "any";
+    else if (returnType == "set[Any]") //todo: move this elsewhere.
+        returnType = "any";
+    return Success(`Promise<${returnType}>`);
 }
 
 function extractReturnType(funcDef: FuncDef) {
     let res = guessFunctionType(funcDef);
     if(res.success)
         return res.value;
-    console("NEVER");
+    console.log("NEVER");
     let rxReturnType = /\s*:rtype:(.*)/gm;
     let typeLine = rxReturnType.exec(funcDef.description)?.[1] ?? "";
     if (typeLine) {
@@ -463,6 +470,7 @@ function guessReturnType(funcDef: FuncDef) {
         case "int": return "number";
         case "bool": return "boolean";
         case "None": return "void";
+        case "dict[Uri, list[Track]]": return "LibraryDict";
     }
     if(pythonReturnType.startsWith("list[")) {
         console.log(`LIST: ${pythonReturnType}`);
