@@ -3,7 +3,7 @@
 
 import models, {core, Mopidy} from "../js/mopidy";
 import {SearchResult} from "./refs";
-import {AllUris, LibraryDict} from "./modelTypes";
+import {AllUris, LibraryDict, Uri} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
@@ -12,23 +12,25 @@ import FilterCriteria = core.FilterCriteria;
 
 type UriScheme = string;
 
-type FieldName = "uri" |
-"track_name" |
-"album" |
-"artist" |
-"albumartist" |
-"composer" |
-"performer" |
-"track_no" |
-"genre" |
-"date" |
-"comment" |
-"disc_no" |
-"musicbrainz_albumid" |
-"musicbrainz_artistid" |
-"musicbrainz_trackid";
-
 type Query = Object; //todo: make more specific.;
+
+type DistinctField =  "uri" |
+ "track_name" |
+ "album" |
+ "artist" |
+ "albumartist" |
+ "composer" |
+ "performer" |
+ "track_no" |
+ "genre" |
+ "date" |
+ "comment" |
+ "disc_no" |
+ "musicbrainz_albumid" |
+ "musicbrainz_artistid" |
+ "musicbrainz_trackid";
+
+type SearchField = DistinctField | "any";
 
 export class Commands {
     protected mopidy: Mopidy;
@@ -128,7 +130,7 @@ class Core_Library {
     //
     //Args:
     //    uri: URI to browse.
-    browse(uri: string | null ): Promise<Ref<AllUris>[]> {
+    browse(uri: Uri | null): Promise<Ref<AllUris>[]> {
         return this.mopidy.send("core.library.browse", {uri}) as Promise<Ref<AllUris>[]>;
     }
     //List distinct values for a given field from the library.
@@ -146,8 +148,8 @@ class Core_Library {
     //        `musicbrainz_artistid`, or `musicbrainz_trackid`.
     //    query: Query to use for limiting results, see [search][] for
     //        details about the query format.
-    getDistinct(field: FieldName, query: Query): Promise<any> {
-        return this.mopidy.send("core.library.get_distinct", {field, query}) as Promise<any>;
+    getDistinct(field: DistinctField, query: any /*dict[SearchField] | null*/): Promise<any /*set[Any]*/> {
+        return this.mopidy.send("core.library.get_distinct", {field, query}) as Promise<any/*set[Any]*/>;
     }
     //Lookup the images for the given URIs.
     //
@@ -160,8 +162,8 @@ class Core_Library {
     //
     //Args:
     //    uris: List of URIs to find images for.
-    getImages(uris: string[]): Promise<any> {
-        return this.mopidy.send("core.library.get_images", {uris}) as Promise<any>;
+    getImages(uris: Uri[]): Promise<any /*dict[Uri, tuple[Image, ...]]*/> {
+        return this.mopidy.send("core.library.get_images", {uris}) as Promise<any/*dict[Uri,tuple[Image,...]]*/>;
     }
     //Lookup the given URIs.
     //
@@ -170,14 +172,14 @@ class Core_Library {
     //
     //Args:
     //    uris: Track URIs.
-    lookup(uris: string[]): Promise<LibraryDict> {
+    lookup(uris: Uri[]): Promise<LibraryDict> {
         return this.mopidy.send("core.library.lookup", {uris}) as Promise<LibraryDict>;
     }
     //Refresh library. Limit to URI and below if an URI is given.
     //
     //Args:
     //    uri: Directory or track URI.
-    refresh(uri: string): Promise<void> {
+    refresh(uri: Uri | null): Promise<void> {
         return this.mopidy.send("core.library.refresh", {uri}) as Promise<void>;
     }
     //Search the library for tracks where `field` contains `values`.
@@ -210,7 +212,7 @@ class Core_Library {
     //    query: One or more queries to search for.
     //    uris: Zero or more URI roots to limit the search to.
     //    exact: If the search should use exact matching.
-    search(query: Query, uris: string[], exact: boolean = false): Promise<SearchResult[]> {
+    search(query: any /*dict[SearchField]*/, uris: Uri[], exact: boolean): Promise<SearchResult[]> {
         return this.mopidy.send("core.library.search", {query, uris, exact}) as Promise<SearchResult[]>;
     }
 }
@@ -251,7 +253,7 @@ class Core_Mixer {
     //The volume scale is linear.
     //
     //Returns `True` if call is successful, otherwise `False`.
-    setVolume(volume: number): Promise<boolean> {
+    setVolume(volume: Percentage): Promise<boolean> {
         return this.mopidy.send("core.mixer.set_volume", {volume}) as Promise<boolean>;
     }
 }
@@ -315,7 +317,7 @@ class Core_Playback {
     //
     //Args:
     //    tlid: Tracklist ID of the track to play.
-    play(tlid: number): Promise<void> {
+    play(tlid: TracklistId | null): Promise<void> {
         return this.mopidy.send("core.playback.play", {tlid}) as Promise<void>;
     }
     //Change to the previous track.
@@ -335,7 +337,7 @@ class Core_Playback {
     //
     //Args:
     //    time_position: Time position in milliseconds.
-    seek(time_position: number): Promise<boolean> {
+    seek(time_position: DurationMs): Promise<boolean> {
         return this.mopidy.send("core.playback.seek", {time_position}) as Promise<boolean>;
     }
     //Set the playback state.
@@ -402,7 +404,7 @@ class Core_Playlists {
     //Args:
     //    name: Name of the new playlist.
     //    uri_scheme: Use the backend matching the URI scheme.
-    create(name: string, uri_scheme: string): Promise<Playlist | null> {
+    create(name: string, uri_scheme: UriScheme | null): Promise<Playlist | null> {
         return this.mopidy.send("core.playlists.create", {name, uri_scheme}) as Promise<Playlist|null>;
     }
     //Delete playlist identified by the URI.
@@ -414,7 +416,7 @@ class Core_Playlists {
     //
     //Args:
     //    uri: URI of the playlist to delete.
-    delete(uri: string): Promise<boolean> {
+    delete(uri: Uri): Promise<boolean> {
         return this.mopidy.send("core.playlists.delete", {uri}) as Promise<boolean>;
     }
     //Get the items in a playlist specified by `uri`.
@@ -423,7 +425,7 @@ class Core_Playlists {
     //playlist's items.
     //
     //If a playlist with the given `uri` doesn't exist, it returns `None`.
-    getItems(uri: string): Promise<Ref<AllUris>[]> {
+    getItems(uri: Uri): Promise<Ref<AllUris>[]> {
         return this.mopidy.send("core.playlists.get_items", {uri}) as Promise<Ref<AllUris>[]>;
     }
     //Get the list of URI schemes that support playlists.
@@ -437,7 +439,7 @@ class Core_Playlists {
     //
     //Args:
     //    uri: Playlist URI.
-    lookup(uri: string): Promise<Playlist | null> {
+    lookup(uri: Uri): Promise<Playlist | null> {
         return this.mopidy.send("core.playlists.lookup", {uri}) as Promise<Playlist|null>;
     }
     //Refresh the playlists.
@@ -449,7 +451,7 @@ class Core_Playlists {
     //
     //Args:
     //    uri_scheme: Limit to the backend matching the URI scheme.
-    refresh(uri_scheme: string): Promise<void> {
+    refresh(uri_scheme: UriScheme | null): Promise<void> {
         return this.mopidy.send("core.playlists.refresh", {uri_scheme}) as Promise<void>;
     }
     //Save the playlist.
@@ -499,7 +501,7 @@ class Core_Tracklist {
     //    tracks: Tracks to add.
     //    at_position: Position in tracklist to add tracks.
     //    uris: List of URIs for tracks to add.
-    add(tracks: string[], at_position: number, uris: string[]): Promise<TlTrack[]> {
+    add(tracks: Track[], at_position: int | null, uris: Uri[]): Promise<TlTrack[]> {
         return this.mopidy.send("core.tracklist.add", {tracks, at_position, uris}) as Promise<TlTrack[]>;
     }
     //Clear the tracklist.
@@ -517,7 +519,7 @@ class Core_Tracklist {
     //
     //Args:
     //    tl_track: The reference track.
-    eotTrack(args: undefined, kwargs: undefined): Promise<TlTrack | null> {
+    eotTrack(args: any, kwargs: any): Promise<TlTrack | null> {
         return this.mopidy.send("core.tracklist.eot_track", {args, kwargs}) as Promise<TlTrack|null>;
     }
     //Filter the tracklist by the given criteria.
@@ -543,7 +545,7 @@ class Core_Tracklist {
     //
     //Args:
     //    criteria: One or more rules to match by.
-    filter(criteria: FilterCriteria): Promise<TlTrack[]> {
+    filter(criteria: any /*dict[TracklistField]*/): Promise<TlTrack[]> {
         return this.mopidy.send("core.tracklist.filter", {criteria}) as Promise<TlTrack[]>;
     }
     //Get consume mode.
@@ -638,7 +640,7 @@ class Core_Tracklist {
     //Args:
     //    tl_track: The track to find the index of.
     //    tlid: TLID of the track to find the index of.
-    index(tl_track: TlTrack, tlid: number): Promise<int | null> {
+    index(tl_track: TlTrack | null, tlid: TracklistId | null): Promise<int | null> {
         return this.mopidy.send("core.tracklist.index", {tl_track, tlid}) as Promise<int|null>;
     }
     //Move the tracks in the slice `[start:end]` to `to_position`.
@@ -666,7 +668,7 @@ class Core_Tracklist {
     //
     //Args:
     //    tl_track: The reference track.
-    nextTrack(args: undefined, kwargs: undefined): Promise<TlTrack | null> {
+    nextTrack(args: any, kwargs: any): Promise<TlTrack | null> {
         return this.mopidy.send("core.tracklist.next_track", {args, kwargs}) as Promise<TlTrack|null>;
     }
     //Returns the track that will be played if calling previous.
@@ -681,7 +683,7 @@ class Core_Tracklist {
     //
     //Args:
     //    tl_track: The reference track.
-    previousTrack(args: undefined, kwargs: undefined): Promise<TlTrack | null> {
+    previousTrack(args: any, kwargs: any): Promise<TlTrack | null> {
         return this.mopidy.send("core.tracklist.previous_track", {args, kwargs}) as Promise<TlTrack|null>;
     }
     //Remove the matching tracks from the tracklist.
@@ -695,7 +697,7 @@ class Core_Tracklist {
     //
     //Args:
     //    criteria: One or more rules to match by.
-    remove(criteria: FilterCriteria): Promise<TlTrack[]> {
+    remove(criteria: any /*dict[TracklistField]*/): Promise<TlTrack[]> {
         return this.mopidy.send("core.tracklist.remove", {criteria}) as Promise<TlTrack[]>;
     }
     //Set consume mode.
@@ -746,7 +748,7 @@ class Core_Tracklist {
     //Args:
     //    start: Position of first track to shuffle.
     //    end: Position after last track to shuffle.
-    shuffle(start: number, end: number): Promise<void> {
+    shuffle(start: int | null, end: int | null): Promise<void> {
         return this.mopidy.send("core.tracklist.shuffle", {start, end}) as Promise<void>;
     }
     //Returns a slice of the tracklist.

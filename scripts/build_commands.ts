@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 
 //ARGUMENTS
-let inputFile = "./scripts/commands_v4.json";
+let inputFile = "./scripts/commands_v4v2.json";
 let outputFileName = "./mopidy_eboplayer/www/typescript/commands.ts";
 let includeComments: boolean = true;
 
@@ -14,7 +14,8 @@ interface Module {
 
 interface Param {
     name: string,
-    default?: string | null
+    default?: string | null,
+    annotations?: string | null,
 }
 
 interface FuncDef {
@@ -23,7 +24,8 @@ interface FuncDef {
     name: string;
     key: string;
     description: string;
-    params: Param[] 
+    params: Param[];
+    annotations: string
 }
 
 interface TypeSpec {
@@ -98,10 +100,14 @@ function main() {
     let obj = JSON.parse(fs.readFileSync(inputFile, 'utf8'));
     let rootModule: Module = {parent: null, name: "", funcDefs: new Set(), children: []};
 
-    for(let key in obj.result) {
+    let methods: any = obj;
+    if (obj.result)
+        methods = obj.result;
+
+    for(let key in methods) {
         let parts = key.split(".");
         let module = getOrCreateModule(parts.slice(0, -1), rootModule);
-        let funcDefJson = obj.result[key];
+        let funcDefJson = methods[key];
         let functionName = parts.pop() as string;
         let name = snakeToCamel(functionName);
 
@@ -111,7 +117,8 @@ function main() {
             name,
             key,
             description: funcDefJson.description,
-            params: funcDefJson.params
+            params: funcDefJson.params,
+            annotations: funcDefJson.annotations,
         };
 
         module.funcDefs.add(funcDef);
@@ -124,7 +131,7 @@ function main() {
 
 import models, {core, Mopidy} from "../js/mopidy";
 import {SearchResult} from "./refs";
-import {AllUris, LibraryDict} from "./modelTypes";
+import {AllUris, LibraryDict, Uri} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
@@ -132,6 +139,25 @@ import Ref = models.Ref;
 import FilterCriteria = core.FilterCriteria;
 `;
     writer.addType({type_or_interface: "type", name: "UriScheme", def: "string"});
+    writer.addType({type_or_interface: "type", name: "Query", def:"Object; //todo: make more specific."});
+    writer.addType({type_or_interface: "type", name: "DistinctField", def:"" +
+            ` "uri" |\n` +
+            ` "track_name" |\n` +
+            ` "album" |\n` +
+            ` "artist" |\n` +
+            ` "albumartist" |\n` +
+            ` "composer" |\n` +
+            ` "performer" |\n` +
+            ` "track_no" |\n` +
+            ` "genre" |\n` +
+            ` "date" |\n` +
+            ` "comment" |\n` +
+            ` "disc_no" |\n` +
+            ` "musicbrainz_albumid" |\n` +
+            ` "musicbrainz_artistid" |\n` +
+            ` "musicbrainz_trackid"` +
+            ``});
+    writer.addType({type_or_interface: "type", name: "SearchField", def: `DistinctField | "any"`});
 
     for(let module of treeIterator(rootModule)) {
         writeModule(writer, module);
@@ -208,13 +234,13 @@ function writeComments(writer: Writer, funcDef: FuncDef, indent: number) {
 }
 
 function guessFunctionType(funcDef: FuncDef): Result<string, undefined> {
-    let returnType = guessReturnType(funcDef);
+    let returnType = convertPythonToTypescript(funcDef.annotations);
     if (returnType == "null")
         returnType = "void";
     else if (returnType == "todo")
         returnType = "any";
     else if (returnType == "set[Any]") //todo: move this elsewhere.
-        returnType = "any";
+        returnType = `any /*${returnType}*/`;
     return Success(`Promise<${returnType}>`);
 }
 
@@ -303,32 +329,15 @@ function writeParams(writer: Writer, funcDef: FuncDef, indent: number) {
         .map((param) => {
             let optional = "";
             let defaultValue = "";
-            let type = guessParamType(funcDef, param);
-            if(type.typeName != "Object") {
-                if (param.default == null) {
-                    //optional = "?"; //this makes way too many params optional.
-                } else {
-                    defaultValue = ` = ${param.default}`;
-                }
-            }
-            if(parseSphinxFields(param.name, funcDef.description).optional)
-                optional = "?";
-            // return `${param.name}${optional}${typeName}${defaultValue}`;
+            let type = convertPythonToTypescript(param.annotations?? "any");
             return {name: param.name, optional, type, defaultValue};
         });
     let paramString = paramList
         .map(p => {
-            let typeName = p.type.typeName;
-            if(p.type.typeName)
-                typeName = `: ${p.type.typeName}`;
-            return `${p.name}${p.optional}${typeName}${p.defaultValue}`
+            return `${p.name}${p.optional}: ${p.type}${p.defaultValue}`
         })
         .join(", ");
     writer.write(paramString);
-    paramList
-        .map(p => p.type.typeDef)
-        .filter(def => def != undefined)
-        .forEach(def => writer.addType(def));
 }
 
 type Result<T, E> = { success: true, value: T } | { success: false, error: E };
@@ -363,233 +372,37 @@ function parseGetDistinctFieldParam(descLines: string[]): TypeSpec {
     return {typeName: "FieldName", typeDef: { type_or_interface: "type", name: "FieldName", def: `${values.map(v => '"' + v + '"').join(" |\n")}`}};
 }
 
-function findParamTypeInDescription(funcDef: FuncDef, param: Param): Result<TypeSpec, undefined> {
-    let result = findTypeExceptions(funcDef, param);
-    if(result.success)
-        return Success({typeName: result.value});
-
-    // e.g.  //:type query: dict
-    let descLines = funcDef.description.split("\n");
-    let paramLine = descLines.find(line => line.includes(`:type ${param.name}:`));
-    let type = "";
-    if(funcDef.name == "getDistinct" && param.name == "field") {
-        return Success(parseGetDistinctFieldParam(descLines));
-    }
-    if (paramLine) {
-        type = paramLine.replace(`:type ${param.name}: `, "");
-        type = stripOrNoneAndModuleName(type);
-        let rxClass = new RegExp(":class:`(.*?)`", "gm");
-        type = rxClass.exec(type)?.[1] ?? type;
-    } else {
-        //2d try for pattern: ":param dict query:..."
-        descLines.find(line => {
-            let rxParamLine = new RegExp(`:param (\\S+) ${param.name}:`, "gm");
-            let res = rxParamLine.exec(line);
-            type = res?.[1] ?? type;
-            return type != "";
-        });
-        if (type == "")
-            return Failure(undefined);
-    }
-    if(type.includes("dict, of (string, list) pairs")) {
-        return Success({typeName: "FilterCriteria"});
-    }
-    switch (type) {
-        case "dict": return Success({typeName: "Object"});
-        case "list of string": return Success({typeName: "string[]"});
-        case "bool":
-        case "True":
-        case "False":
-            return Success({typeName: "boolean"});
-        case "int": return Success({typeName: "number"});
-        default: return Success({typeName: type});
-    }
+function convertPythonToTypescript(python: string) {
+    return convertPythonToTypescriptPhase1(python)
+        .replaceAll("text", "string")
+        .replaceAll("trueFalse", "boolean");
 }
 
-function guessParamType(funcDef: FuncDef, param: Param): TypeSpec {
-    if(funcDef.name == "add" && param.name == "tracks")
-        return {typeName: "string[]"};
-    if(funcDef.name == "play" && param.name == "tl_track")
-        return {typeName: "null"};
-    if(funcDef.name == "browse")
-        return {typeName: "string | null "};
-    let result = findParamTypeInDescription(funcDef, param);
-    if(result.success) {
-        let type = result.value;
-        switch (param.name) {
-            case "tracks":
-                return {typeName: "undefined"};
-        }
-        return type;
-    }
-
-    switch (param.name) {
-        case "tlid":
-        case "time_position":
-        case "at_position":
-        case "start":
-        case "end":
-        case "to_position":
-            return {typeName: "number"};
-        case "uri_scheme":
-        case "uri":
-        case "name":
-            return {typeName: "string"};
-        case "uris":
-            return {typeName: "string[]"};
-        case "mute":
-        case "exact":
-        case "value":
-            return {typeName: "boolean"}
-        case "volume":
-            return {typeName: "number"};
-        case "new_state":
-            return {typeName: "PlaybackState"};
-        case "playlist":
-            return {typeName: "Playlist"};
-        case "criteria":
-            return {typeName: "FilterCriteria"};
-        case "tl_track":
-            return {typeName: "TlTrack"};
-        case "query":
-            return {typeName: "Query", typeDef: {type_or_interface: "type", name: "Query", def:"Object; //todo: make more specific."}};
-        case "args":
-        case "kwargs":
-            return {typeName: "undefined"}; //probably deprecated functions that have been wrapped with a decorator.
-        default:
-            return {typeName: "TODO"};
-    }
-
-}
-
-function guessReturnType(funcDef: FuncDef) {
-    let pythonReturnType = getPythonReturnType(funcDef);
-    pythonReturnType = pythonReturnType.replaceAll("None", "null");
-    switch (pythonReturnType) {
-        case "str": return "string";
+function convertPythonToTypescriptPhase1(python: string) {
+    python = python.replaceAll("None", "null");
+    switch (python) {
+        case "str": return convertPythonToTypescriptPhase1(python.replace("str", "text"));
         case "int": return "number";
-        case "bool": return "boolean";
+        case "bool": return convertPythonToTypescriptPhase1(python.replace("bool", "trueFalse"));
         case "None": return "void";
         case "dict[Uri, list[Track]]": return "LibraryDict";
     }
-    if(pythonReturnType.startsWith("list[")) {
-        console.log(`LIST: ${pythonReturnType}`);
-        let parts = pythonReturnType.split(/[\[\]]/);
-        console.log(`PART: ${parts[1]}`);
+    if(python.startsWith("list[")) {
+        let parts = python.split(/[\[\]]/);
         let partOne = parts[1];
         if(partOne == "Ref")
             partOne = "Ref<AllUris>";
         return partOne + "[]";
     }
-    if(pythonReturnType.startsWith("dict[")) {
-        return "todo";
+    if(python.startsWith("dict[")) {
+        return `any /*${python}*/`;
     }
-    return pythonReturnType;
-}
-
-function getPythonReturnType(funcDef: FuncDef) {
-    if(funcDef.module.name == "tracklist")
-        switch(funcDef.orgName) {
-            //tracklist
-            case "get_tl_tracks": return "list[TlTrack]";
-            case "get_tracks": return "list[Track]";
-            case "get_length": return "int";
-            case "get_version": return "int";
-            case "get_consume": return "bool";
-            case "set_consume": return "None";
-            case "get_random": return "bool";
-            case "set_random": return "None";
-            case "get_repeat": return "bool";
-            case "set_repeat": return "None";
-            case "get_single": return "bool";
-            case "set_single": return "None";
-            case "index": return "int | None";
-            case "get_eot_tlid": return "TracklistId | None";
-            case "eot_track": return "TlTrack | None";
-            case "get_next_tlid": return "TracklistId | None";
-            case "next_track": return "TlTrack | None";
-            case "get_previous_tlid": return "TracklistId | None";
-            case 'previous_track': return "TlTrack | None";
-            case 'add': return "list[TlTrack]";
-            case "clear": return "None";
-            case "filter": return "list[TlTrack]";
-            case "move": return "None";
-            case "remove": return "list[TlTrack]";
-            case "shuffle": return "None";
-            case "slice": return "list[TlTrack]";
-        }
-    if(funcDef.module.name == "history")
-        switch(funcDef.orgName) {
-            case "get_length": return "int";
-            case "get_history": return "History";
-        }
-    if(funcDef.module.name == "library")
-        switch(funcDef.orgName) {
-            case "browse": return "list[Ref]";
-            case "get_distinct": return "set[Any]";
-            case "get_images": return "dict[Uri, tuple[Image, ...]]";
-            case "lookup": return "dict[Uri, list[Track]]";
-            case "refresh": return "None";
-            case "search": return "list[SearchResult]";
-        }
-    if(funcDef.module.name == "mixer")
-        switch(funcDef.orgName) {
-            case "get_volume": return "Percentage | None";
-            case "set_volume": return "bool";
-            case "get_mute": return "bool | None";
-            case "set_mute": return "bool";
-
-        }
-    if(funcDef.module.name == "playback")
-        switch(funcDef.orgName) {
-            case "get_current_tl_track": return "TlTrack | None";
-            case "get_current_track": return "Track | None";
-            case "get_current_tlid": return "TracklistId | None";
-            case "get_stream_title": return "str | None";
-            case "get_state": return "PlaybackState";
-            case "set_state": return "None";
-            case "get_time_position": return "DurationMs";
-            case "next": return "None";
-            case "pause": return "None";
-            case "play": return "None";
-            case "previous": return "None";
-            case "resume": return "None";
-            case "seek": return "bool";
-            case "stop": return "None";
-        }
-    if(funcDef.module.name == "playlists")
-        switch(funcDef.orgName) {
-            case "get_uri_schemes": return "list[UriScheme]";
-            case "as_list": return "list[Ref]";
-            case "get_items": return "list[Ref] | None";
-            case "create": return "Playlist | None";
-            case "delete": return "bool";
-            case "lookup": return "Playlist | None";
-            case "refresh": return "None";
-            case "save": return "Playlist | None";
-        }
-    if(funcDef.module.name == "core")
-        switch (funcDef.orgName) {
-            case "get_version": return "str";
-            case "get_uri_schemes": return "list[UriScheme]";
-        }
-    return "todo";
-}
-
-function findTypeExceptions(funcDef: FuncDef, param: Param): Result<string, undefined> {
-    switch (funcDef.key) {
-        default:
-            return Failure(undefined);
+    if(python.startsWith("Query[")) {
+        return convertPythonToTypescriptPhase1(python.replace("Query[","dict["));
     }
-}
+    if(python.startsWith("Iterable[")) {
+        return convertPythonToTypescriptPhase1(python.replace("Iterable[","list["));
+    }
+    return python;
 
-interface SphinxParamDef {
-    optional: boolean,
-    //type: string,,  //we currently don't care about other Sphinx definitions.
-}
-function parseSphinxFields(paramName: string, commentLines: string): SphinxParamDef {
-    let rxTypeFollowedByNone = new RegExp(`.*:type.* ${paramName}:.+:class:\`None\``, "gm");
-    return {
-        optional: rxTypeFollowedByNone.test(commentLines)
-    };
 }
