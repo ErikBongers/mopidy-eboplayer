@@ -103,6 +103,7 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
         this.component.setAttribute("button", button);
         this.component.setAttribute("img", imageUrl);
         this.onStreamLinesChanged();
+        this.component.tracklist = this.state.getModel().getTrackList();
     }
 
     private onProgramTitleChanged() {
@@ -111,6 +112,7 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
     }
 
     private async onTrackListChanged() {
+        this.component.tracklist = this.state.getModel().getTrackList();
         if (!this.state.getModel().getCurrentTrack()) {
             let trackList = this.state.getModel().getTrackList();
             if (trackList.length > 0)

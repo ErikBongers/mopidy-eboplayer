@@ -210,9 +210,12 @@ export class EboNowPlayingComp extends EboComponent {
         this.requestUpdate();
     }
 
+    getTracklistComp(): EboTracklistComp {
+        return this.getShadow().querySelector("ebo-tracklist-view") as EboTracklistComp;
+    }
+
     override update(shadow:ShadowRoot) {
-        let tracklistComp = shadow.querySelector("ebo-tracklist-view") as EboTracklistComp;
-        tracklistComp.tracklist = this.tracklist;
+        this.getTracklistComp().tracklist = this.tracklist;
         ["name", "stream_lines", "extra"].forEach(attName => {
             // @ts-ignore
             shadow.getElementById(attName).innerHTML = this[attName];

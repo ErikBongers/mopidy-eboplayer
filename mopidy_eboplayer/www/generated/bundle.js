@@ -2677,12 +2677,14 @@ var NowPlayingView = class extends ComponentView {
 		this.component.setAttribute("button", button);
 		this.component.setAttribute("img", imageUrl);
 		this.onStreamLinesChanged();
+		this.component.tracklist = this.state.getModel().getTrackList();
 	}
 	onProgramTitleChanged() {
 		this.programTitle = this.state.getModel().getCurrentProgramTitle();
 		this.setComponentData();
 	}
 	async onTrackListChanged() {
+		this.component.tracklist = this.state.getModel().getTrackList();
 		if (!this.state.getModel().getCurrentTrack()) {
 			let trackList = this.state.getModel().getTrackList();
 			if (trackList.length > 0) await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);
@@ -6696,9 +6698,11 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		});
 		this.requestUpdate();
 	}
+	getTracklistComp() {
+		return this.getShadow().querySelector("ebo-tracklist-view");
+	}
 	update(shadow) {
-		let tracklistComp = shadow.querySelector("ebo-tracklist-view");
-		tracklistComp.tracklist = this.tracklist;
+		this.getTracklistComp().tracklist = this.tracklist;
 		[
 			"name",
 			"stream_lines",

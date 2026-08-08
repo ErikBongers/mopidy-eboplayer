@@ -1,3 +1,9 @@
+* A view component can only be created if the actual dom element already exists.
+  BIG problem for components that are NOT part of index.html.
+  > A view can only be created if the component already exists.
+    > For a nested component/view (note how I'm linking them here, as if they are ONE!),
+      The parent component/view must first create the component and use that to create the view.
+
 * Show tracklist in Now playing.
   > start with a rough view for now.
 
