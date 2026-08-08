@@ -43,6 +43,7 @@ import {TopBarView} from "./views/topBarView";
 import {SettingsView} from "./views/settingsView";
 import {View} from "./views/view";
 import {BrowseController} from "./controllers/browseController";
+import {EboTracklistComp} from "./components/eboTracklistComp";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -84,6 +85,7 @@ document.addEventListener("DOMContentLoaded",function () {
             EboComponent.define(EboRadioHistoryComp);
             EboComponent.define(EboBigRadioComp);
             EboComponent.define(EboTopBar);
+            EboComponent.define(EboTracklistComp);
 
             setupStuff();
         });

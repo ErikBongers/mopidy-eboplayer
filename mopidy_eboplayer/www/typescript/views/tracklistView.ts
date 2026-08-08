@@ -2,7 +2,7 @@ import {ComponentView} from "./view";
 import {State} from "../playerState";
 import {EboTracklistComp} from "../components/eboTracklistComp";
 
-export class TracklistView extends ComponentView<EboTracklistComp> {
+export class EboTracklistView extends ComponentView<EboTracklistComp> {
     private clickedRow: HTMLTableRowElement | null = null;
 
     constructor(state: State, component: EboTracklistComp) {

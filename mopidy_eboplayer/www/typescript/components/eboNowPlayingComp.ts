@@ -1,6 +1,9 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
+import models from "../../js/mopidy";
+import {EboTracklistComp} from "./eboTracklistComp";
+import TlTrack = models.TlTrack;
 
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
@@ -25,6 +28,16 @@ export class EboNowPlayingComp extends EboComponent {
     }
     set streamInfo(value: ExpandedStreamModel | null) {
         this._streamInfo = value;
+        this.requestUpdate();
+    }
+
+    private _tracklist: TlTrack[] = [];
+    get tracklist(): models.TlTrack[] {
+        return this._tracklist;
+    }
+
+    set tracklist(value: models.TlTrack[]) {
+        this._tracklist = value;
         this.requestUpdate();
     }
 
@@ -80,6 +93,12 @@ export class EboNowPlayingComp extends EboComponent {
                     flex-direction: row;
                     height: 100%;
                     width: 100%;
+                }
+                #hero {
+                    display: flex;
+                    flex-direction: row;
+                    height: 100%;
+                    width: 100%;
                     #front {
                         display: flex;
                         flex-direction: column;
@@ -91,12 +110,12 @@ export class EboNowPlayingComp extends EboComponent {
                         padding: 1rem;
                     }
                 }
-                #wrapper.front {
+                #hero.front {
                     #back {
                         display: none;
                     }                
                 }
-                #wrapper.back {
+                #hero.back {
                     #front {
                         position: absolute;
                         display: none;
@@ -123,7 +142,8 @@ export class EboNowPlayingComp extends EboComponent {
 
     // noinspection HtmlUnknownTarget
     static htmlText = `
-            <div id="wrapper" class="front">
+        <div id="wrapper">
+            <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
                         <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
@@ -146,7 +166,11 @@ export class EboNowPlayingComp extends EboComponent {
                         <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
                     </div>
                 </div>
-            </div>        
+            </div>
+            <div id="tracklist">
+                <ebo-tracklist-view></ebo-tracklist-view>            
+            </div>  
+        </div>
         `;
 
     constructor() {
@@ -187,6 +211,8 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
+        let tracklistComp = shadow.querySelector("ebo-tracklist-view") as EboTracklistComp;
+        tracklistComp.tracklist = this.tracklist;
         ["name", "stream_lines", "extra"].forEach(attName => {
             // @ts-ignore
             shadow.getElementById(attName).innerHTML = this[attName];

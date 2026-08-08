@@ -6530,6 +6530,14 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this._streamInfo = value;
 		this.requestUpdate();
 	}
+	_tracklist = [];
+	get tracklist() {
+		return this._tracklist;
+	}
+	set tracklist(value) {
+		this._tracklist = value;
+		this.requestUpdate();
+	}
 	name = "";
 	stream_lines = "";
 	extra = "";
@@ -6579,6 +6587,12 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     flex-direction: row;
                     height: 100%;
                     width: 100%;
+                }
+                #hero {
+                    display: flex;
+                    flex-direction: row;
+                    height: 100%;
+                    width: 100%;
                     #front {
                         display: flex;
                         flex-direction: column;
@@ -6590,12 +6604,12 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                         padding: 1rem;
                     }
                 }
-                #wrapper.front {
+                #hero.front {
                     #back {
                         display: none;
                     }                
                 }
-                #wrapper.back {
+                #hero.back {
                     #front {
                         position: absolute;
                         display: none;
@@ -6620,7 +6634,8 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
             </style>
         `;
 	static htmlText = `
-            <div id="wrapper" class="front">
+        <div id="wrapper">
+            <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
                         <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
@@ -6643,7 +6658,11 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                         <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
                     </div>
                 </div>
-            </div>        
+            </div>
+            <div id="tracklist">
+                <ebo-tracklist-view></ebo-tracklist-view>            
+            </div>  
+        </div>
         `;
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
@@ -6678,6 +6697,8 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this.requestUpdate();
 	}
 	update(shadow) {
+		let tracklistComp = shadow.querySelector("ebo-tracklist-view");
+		tracklistComp.tracklist = this.tracklist;
 		[
 			"name",
 			"stream_lines",
@@ -6933,6 +6954,71 @@ var SettingsView = class extends ComponentView {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/components/eboTracklistComp.ts
+var EboTracklistComp = class EboTracklistComp extends EboComponent {
+	static tagName = "ebo-tracklist-view";
+	static observedAttributes = [];
+	_tracklist = [];
+	get tracklist() {
+		return this._tracklist;
+	}
+	set tracklist(value) {
+		this._tracklist = value;
+		this.requestUpdate();
+	}
+	static styleText = `
+        <style>
+        </style>
+        `;
+	static htmlText = `
+        <div id="wrapper">
+            <table id="tracklist">
+                <tbody></tbody>
+            </table>
+        </div>        
+        `;
+	constructor() {
+		super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {}
+	update(shadow) {
+		let tBody = shadow.querySelector("tbody");
+		tBody.innerHTML = "";
+		for (let track of this.tracklist) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, tBody, [], track.tlid);
+	}
+	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
+		let tr = document.createElement("tr");
+		body.appendChild(tr);
+		tr.classList.add("trackLine", ...classes);
+		if (!uri.startsWith("eboback")) tr.classList.add("italic");
+		tr.dataset.uri = uri;
+		if (tlid) tr.dataset.tlid = tlid.toString();
+		this.setTrackLineContent(tr, title, artist, album);
+		body.insertAdjacentHTML("beforeend", `
+            <tr>
+                <td colspan="2">
+                    <div class="progressBar"></div>
+                </td>
+            </tr>
+            `);
+	}
+	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
+		tr.innerHTML = `
+            <td>
+                <h1>${title}</h1>
+                <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
+            </td>
+            <td>
+                <button><i class="fa fa fa-ellipsis-v"></i></button>
+            </td>
+            `;
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -6965,6 +7051,7 @@ document.addEventListener("DOMContentLoaded", function() {
 		EboComponent.define(EboRadioHistoryComp);
 		EboComponent.define(EboBigRadioComp);
 		EboComponent.define(EboTopBar);
+		EboComponent.define(EboTracklistComp);
 		setupStuff();
 	});
 });
