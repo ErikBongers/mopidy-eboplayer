@@ -1,7 +1,7 @@
 import * as fs from "node:fs";
 
 //ARGUMENTS
-let inputFile = "./scripts/commands_v4v2.json";
+let inputFile = "./scripts/commands_v4.json";
 let outputFileName = "./mopidy_eboplayer/www/typescript/commands.ts";
 let includeComments: boolean = true;
 
@@ -131,14 +131,18 @@ function main() {
 
 import models, {core, Mopidy} from "../js/mopidy";
 import {SearchResult} from "./refs";
-import {AllUris, LibraryDict, Uri} from "./modelTypes";
+import {AllUris, HistoryRef, LibraryDict, Uri} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
 import Ref = models.Ref;
 import FilterCriteria = core.FilterCriteria;
+import Track = models.Track;
 `;
     writer.addType({type_or_interface: "type", name: "UriScheme", def: "string"});
+    writer.addType({type_or_interface: "type", name: "Percentage", def:"number"});
+    writer.addType({type_or_interface: "type", name: "TracklistId", def:"number"});
+    writer.addType({type_or_interface: "type", name: "DurationMs", def:"number"});
     writer.addType({type_or_interface: "type", name: "Query", def:"Object; //todo: make more specific."});
     writer.addType({type_or_interface: "type", name: "DistinctField", def:"" +
             ` "uri" |\n` +
@@ -158,6 +162,7 @@ import FilterCriteria = core.FilterCriteria;
             ` "musicbrainz_trackid"` +
             ``});
     writer.addType({type_or_interface: "type", name: "SearchField", def: `DistinctField | "any"`});
+    writer.addType({type_or_interface: "type", name: "History", def: `[number, HistoryRef][]`});
 
     for(let module of treeIterator(rootModule)) {
         writeModule(writer, module);
@@ -380,19 +385,18 @@ function convertPythonToTypescript(python: string) {
 
 function convertPythonToTypescriptPhase1(python: string) {
     python = python.replaceAll("None", "null");
-    switch (python) {
-        case "str": return convertPythonToTypescriptPhase1(python.replace("str", "text"));
-        case "int": return "number";
-        case "bool": return convertPythonToTypescriptPhase1(python.replace("bool", "trueFalse"));
-        case "None": return "void";
-        case "dict[Uri, list[Track]]": return "LibraryDict";
-    }
+    python = python
+        .replaceAll("str", "text")
+        .replaceAll("int",  "number")
+        .replaceAll("bool",  "trueFalse")
+        .replaceAll("None",  "void_or_null") //todo: NOT CORRECT!!!
+        .replaceAll("dict[Uri, list[Track]]",  "LibraryDict");
     if(python.startsWith("list[")) {
         let parts = python.split(/[\[\]]/);
         let partOne = parts[1];
         if(partOne == "Ref")
             partOne = "Ref<AllUris>";
-        return partOne + "[]";
+        return partOne + "[]" + parts[2];
     }
     if(python.startsWith("dict[")) {
         return `any /*${python}*/`;

@@ -163,6 +163,9 @@ export class BrowseController {
         if(lastCrumb instanceof BreadCrumbRef) {
             if(lastCrumb.data.type == "playlist") {
                 let playlistItems = await this.controller.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
+                if(!playlistItems) {
+                    throw new Error("Could not fetch playlist items. Got `null` instead.");
+                }
                 playlistItems.forEach(ref => {
                     //"local:track:Air/Moon%20Safari/01%20La%20Femme%20d%27Argent.wma"
 

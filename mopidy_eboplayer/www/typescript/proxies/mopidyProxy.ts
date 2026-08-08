@@ -13,20 +13,16 @@ export class MopidyProxy {
         this.commands = commands;
     }
 
-    async describe(): Promise<string> {
-        return await this.commands.describe();
-    }
-
     async fetchRootDirs() {
         return this.browse(null);
     }
 
     async playTracklistItem(tlid: number) {
-        await this.commands.core.playback.play(null, tlid);
+        await this.commands.core.playback.play(tlid);
     }
 
     async addTracksToTracklist(uris: AllUris[]) {
-        return await this.commands.core.tracklist.add(undefined, undefined, uris);
+        return await this.commands.core.tracklist.add(null, null, uris);
     }
 
     async clearTrackList() {
@@ -50,7 +46,7 @@ export class MopidyProxy {
     }
 
     async sendPlay() {
-        return this.commands.core.playback.play();
+        return this.commands.core.playback.play(null);
     }
 
     async search(uri: string) {

@@ -1227,7 +1227,7 @@ var Core_Library = class {
 	refresh(uri) {
 		return this.mopidy.send("core.library.refresh", { uri });
 	}
-	search(query, uris, exact = false) {
+	search(query, uris, exact) {
 		return this.mopidy.send("core.library.search", {
 			query,
 			uris,
@@ -1282,11 +1282,8 @@ var Core_Playback = class {
 	pause() {
 		return this.mopidy.send("core.playback.pause");
 	}
-	play(tl_track, tlid) {
-		return this.mopidy.send("core.playback.play", {
-			tl_track,
-			tlid
-		});
+	play(tlid) {
+		return this.mopidy.send("core.playback.play", { tlid });
 	}
 	previous() {
 		return this.mopidy.send("core.playback.previous");
@@ -1352,8 +1349,11 @@ var Core_Tracklist = class {
 	clear() {
 		return this.mopidy.send("core.tracklist.clear");
 	}
-	eotTrack(tl_track) {
-		return this.mopidy.send("core.tracklist.eot_track", { tl_track });
+	eotTrack(args, kwargs) {
+		return this.mopidy.send("core.tracklist.eot_track", {
+			args,
+			kwargs
+		});
 	}
 	filter(criteria) {
 		return this.mopidy.send("core.tracklist.filter", { criteria });
@@ -1404,11 +1404,17 @@ var Core_Tracklist = class {
 			to_position
 		});
 	}
-	nextTrack(tl_track) {
-		return this.mopidy.send("core.tracklist.next_track", { tl_track });
+	nextTrack(args, kwargs) {
+		return this.mopidy.send("core.tracklist.next_track", {
+			args,
+			kwargs
+		});
 	}
-	previousTrack(tl_track) {
-		return this.mopidy.send("core.tracklist.previous_track", { tl_track });
+	previousTrack(args, kwargs) {
+		return this.mopidy.send("core.tracklist.previous_track", {
+			args,
+			kwargs
+		});
 	}
 	remove(criteria) {
 		return this.mopidy.send("core.tracklist.remove", { criteria });
@@ -1881,6 +1887,7 @@ var BrowseController = class {
 		if (lastCrumb instanceof BreadCrumbRef) {
 			if (lastCrumb.data.type == "playlist") {
 				let playlistItems = await this.controller.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
+				if (!playlistItems) throw new Error("Could not fetch playlist items. Got `null` instead.");
 				playlistItems.forEach((ref) => {
 					if (!ref.name || ref.name == "") {
 						ref.name = ref.uri.replace(LIBRARY_PROTOCOL + "track:", "").replaceAll("%20", " ");
@@ -4088,10 +4095,10 @@ var MopidyProxy = class {
 		return this.browse(null);
 	}
 	async playTracklistItem(tlid) {
-		await this.commands.core.playback.play(null, tlid);
+		await this.commands.core.playback.play(tlid);
 	}
 	async addTracksToTracklist(uris) {
-		return await this.commands.core.tracklist.add(void 0, void 0, uris);
+		return await this.commands.core.tracklist.add(null, null, uris);
 	}
 	async clearTrackList() {
 		await this.commands.core.tracklist.clear();
@@ -4109,7 +4116,7 @@ var MopidyProxy = class {
 		return this.commands.core.playback.pause();
 	}
 	async sendPlay() {
-		return this.commands.core.playback.play();
+		return this.commands.core.playback.play(null);
 	}
 	async search(uri) {
 		return await this.commands.core.library.search({ uri }, [], true);

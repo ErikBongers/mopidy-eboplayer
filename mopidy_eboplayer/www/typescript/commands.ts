@@ -3,14 +3,21 @@
 
 import models, {core, Mopidy} from "../js/mopidy";
 import {SearchResult} from "./refs";
-import {AllUris, LibraryDict, Uri} from "./modelTypes";
+import {AllUris, HistoryRef, LibraryDict, Uri} from "./modelTypes";
 import TlTrack = models.TlTrack;
 import PlaybackState = core.PlaybackState;
 import Playlist = models.Playlist;
 import Ref = models.Ref;
 import FilterCriteria = core.FilterCriteria;
+import Track = models.Track;
 
 type UriScheme = string;
+
+type Percentage = number;
+
+type TracklistId = number;
+
+type DurationMs = number;
 
 type Query = Object; //todo: make more specific.;
 
@@ -31,6 +38,8 @@ type DistinctField =  "uri" |
  "musicbrainz_trackid";
 
 type SearchField = DistinctField | "any";
+
+type History = [number, HistoryRef][];
 
 export class Commands {
     protected mopidy: Mopidy;
@@ -212,7 +221,7 @@ class Core_Library {
     //    query: One or more queries to search for.
     //    uris: Zero or more URI roots to limit the search to.
     //    exact: If the search should use exact matching.
-    search(query: any /*dict[SearchField]*/, uris: Uri[], exact: boolean): Promise<SearchResult[]> {
+    search(query: any /*dict[SearchField]*/, uris: Uri[] | null, exact: boolean): Promise<SearchResult[]> {
         return this.mopidy.send("core.library.search", {query, uris, exact}) as Promise<SearchResult[]>;
     }
 }
@@ -227,8 +236,8 @@ class Core_Mixer {
     //Get mute state.
     //
     //`True` if muted, `False` if unmuted, `None` if unknown.
-    getMute(): Promise<bool | null> {
-        return this.mopidy.send("core.mixer.get_mute") as Promise<bool|null>;
+    getMute(): Promise<boolean | null> {
+        return this.mopidy.send("core.mixer.get_mute") as Promise<boolean|null>;
     }
     //Get the volume.
     //
@@ -290,8 +299,8 @@ class Core_Playback {
         return this.mopidy.send("core.playback.get_state") as Promise<PlaybackState>;
     }
     //Get the current stream title or `None`.
-    getStreamTitle(): Promise<str | null> {
-        return this.mopidy.send("core.playback.get_stream_title") as Promise<str|null>;
+    getStreamTitle(): Promise<string | null> {
+        return this.mopidy.send("core.playback.get_stream_title") as Promise<string|null>;
     }
     //Get time position in milliseconds.
     getTimePosition(): Promise<DurationMs> {
@@ -425,8 +434,8 @@ class Core_Playlists {
     //playlist's items.
     //
     //If a playlist with the given `uri` doesn't exist, it returns `None`.
-    getItems(uri: Uri): Promise<Ref<AllUris>[]> {
-        return this.mopidy.send("core.playlists.get_items", {uri}) as Promise<Ref<AllUris>[]>;
+    getItems(uri: Uri): Promise<Ref<AllUris>[] | null> {
+        return this.mopidy.send("core.playlists.get_items", {uri}) as Promise<Ref<AllUris>[]|null>;
     }
     //Get the list of URI schemes that support playlists.
     getUriSchemes(): Promise<UriScheme[]> {
@@ -501,7 +510,7 @@ class Core_Tracklist {
     //    tracks: Tracks to add.
     //    at_position: Position in tracklist to add tracks.
     //    uris: List of URIs for tracks to add.
-    add(tracks: Track[], at_position: int | null, uris: Uri[]): Promise<TlTrack[]> {
+    add(tracks: Track[] | null, at_position: number | null, uris: Uri[] | null): Promise<TlTrack[]> {
         return this.mopidy.send("core.tracklist.add", {tracks, at_position, uris}) as Promise<TlTrack[]>;
     }
     //Clear the tracklist.
@@ -640,8 +649,8 @@ class Core_Tracklist {
     //Args:
     //    tl_track: The track to find the index of.
     //    tlid: TLID of the track to find the index of.
-    index(tl_track: TlTrack | null, tlid: TracklistId | null): Promise<int | null> {
-        return this.mopidy.send("core.tracklist.index", {tl_track, tlid}) as Promise<int|null>;
+    index(tl_track: TlTrack | null, tlid: TracklistId | null): Promise<number | null> {
+        return this.mopidy.send("core.tracklist.index", {tl_track, tlid}) as Promise<number|null>;
     }
     //Move the tracks in the slice `[start:end]` to `to_position`.
     //
@@ -748,7 +757,7 @@ class Core_Tracklist {
     //Args:
     //    start: Position of first track to shuffle.
     //    end: Position after last track to shuffle.
-    shuffle(start: int | null, end: int | null): Promise<void> {
+    shuffle(start: number | null, end: number | null): Promise<void> {
         return this.mopidy.send("core.tracklist.shuffle", {start, end}) as Promise<void>;
     }
     //Returns a slice of the tracklist.
