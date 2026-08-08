@@ -90,7 +90,7 @@ export class EboNowPlayingComp extends EboComponent {
                 }
                 #wrapper {
                     display: flex;
-                    flex-direction: row;
+                    flex-direction: column;
                     height: 100%;
                     width: 100%;
                 }
@@ -167,7 +167,7 @@ export class EboNowPlayingComp extends EboComponent {
                     </div>
                 </div>
             </div>
-            <div id="tracklist">
+            <div id="tracklist" class="flex scroll">
                 <ebo-tracklist-view></ebo-tracklist-view>            
             </div>  
         </div>

@@ -206,3 +206,21 @@ ebo-player-bar {
 .middle {
     vertical-align: middle;
 }
+.trackLine {
+    h1 {
+        font-size: .8rem;
+        color: white;
+        margin: 0;
+    }
+    small {
+        --textColor: white;
+        font-size: .6rem;
+        color: rgb(from var(--textColor) r g b / 50%);
+    }
+}
+.flex {
+    display: flex;
+}
+.scroll {
+    overflow-y: auto;
+}

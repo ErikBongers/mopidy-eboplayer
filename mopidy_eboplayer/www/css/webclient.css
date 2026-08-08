@@ -280,19 +280,6 @@ ebo-timeline-details {
     }
 }
 
-.trackLine {
-    h1 {
-        font-size: .8rem;
-        color: white;
-        margin: 0;
-    }
-    small {
-        --textColor: white;
-        font-size: .6rem;
-        color: rgb(from var(--textColor) r g b / 50%);
-    }
-}
-
 .historyLine {
     td:first-child {
         opacity: .6;
