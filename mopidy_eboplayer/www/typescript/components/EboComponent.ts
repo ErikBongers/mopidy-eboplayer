@@ -1,9 +1,21 @@
 import {Batching} from "../Batching";
 import {EboEventTarget, createEvent, EboEventHandlersEventMap, EboplayerEvent} from "../events";
+import {unreachable} from "../global";
 
 export interface HasName {
     tagName: string;
 }
+
+export type AttType = "string" | "hide";
+export type ElementId = string;
+export interface AttDef {
+    type: AttType;
+    value: unknown;
+    updater: Updater | ElementId[] | null;
+}
+
+export type Updater = (shadow: ShadowRoot, el: HTMLElement, value: unknown) => void;
+
 
 export abstract class EboComponent extends HTMLElement implements HasName, EboEventTarget {
     get isRendered(): boolean {
@@ -22,6 +34,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     private renderBatching: Batching;
     private updateBatching: Batching;
     protected cssNeeded: string[] = [];
+    private attDefs: Map<string, AttDef> = new Map();
 
     protected constructor(styleText: string, htmlText: string) {
         super();
@@ -96,6 +109,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             return;
         if (!this._isRendered)
             return;
+        this.updateHtmlFromAtts();
         this.update(this.shadow);
     }
 
@@ -134,6 +148,63 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
 
     getShadow(){
         return this.shadow;
+    }
+
+    protected defineAtt(name: string, type: AttType, value: any, updater: Updater | ElementId[] | null = null) {
+        this.attDefs.set(name, {type: type, value, updater});
+    }
+
+    getAtt = (name: string) => this.attDefs.get(name);
+
+    updateAtts(name: string, _oldValue: string, newValue: string): boolean {
+        let attDef = this.getAtt(name);
+        if(attDef == undefined)
+            return false;
+
+        switch (attDef.type) {
+            case "string":
+                attDef.value = newValue;
+                return true;
+            case "hide":
+                attDef.value = newValue;
+                return true;
+            default:
+                unreachable(attDef.type);
+        }
+    }
+
+    updateHtmlFromAtts(shadow: ShadowRoot = this.getShadow()) {
+        this.attDefs
+            .forEach((attDef, attName) => {
+                if (typeof attDef.updater == "function") {
+                    let el = this.shadow.getElementById(attName) as HTMLElement;
+                    attDef.updater(shadow, el, attDef.value);
+                } else if (attDef.updater instanceof Array) {
+                    attDef.updater.forEach(elementId => {
+                        this.updateHtmlFromAtt(elementId, attDef);
+                    });
+                } else {
+                    this.updateHtmlFromAtt(attName, attDef);
+                }
+            });
+    }
+
+    private updateHtmlFromAtt(elementId: string, attDef: AttDef) {
+        let el = this.shadow.getElementById(elementId) as HTMLElement
+        if (el == null) {
+            console.error("Element with id " + elementId + " not found");
+            return;
+        }
+        switch (attDef.type) {
+            case "string":
+                el.innerHTML = attDef.value as string;
+                break;
+            case "hide":
+                el.style.display = attDef.value == "true" ? "none" : "";
+                break;
+            default:
+                unreachable(attDef.type);
+        }
     }
 
     setClassFromBoolAttribute(el: HTMLElement, attName: string) {

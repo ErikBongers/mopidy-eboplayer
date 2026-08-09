@@ -4,13 +4,7 @@ import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
 import TlTrack = models.TlTrack;
-import {unreachable} from "../global";
 
-export type AttType = "string" | "boolean";
-export interface AttDef {
-    type: AttType;
-    value: unknown;
-}
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -47,13 +41,6 @@ export class EboNowPlayingComp extends EboComponent {
         this.requestUpdate();
     }
 
-    private attDefs: Map<string, AttDef> = new Map();
-    private defineAtt(name: string, type: AttType, value: any) {
-        this.attDefs.set(name, {type: type, value});
-    }
-    private name: string = "";
-    private stream_lines: string = "";
-    private extra: string = "";
     private enabled: boolean = false;
     private show_back: boolean = false;
     //for progressBar
@@ -63,7 +50,6 @@ export class EboNowPlayingComp extends EboComponent {
     private button: string = "false";
     private active: string = "true";
 
-    private img: string  = "";
     private _albumInfo: AlbumData = AlbumNone;
 
     static styleText= `
@@ -82,7 +68,7 @@ export class EboNowPlayingComp extends EboComponent {
                     overflow: hidden;
                     padding: 2ch;
                 }
-                img#bigImage {
+                img#img {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
@@ -156,7 +142,7 @@ export class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
+                        <img id="img" style="visibility: hidden" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -185,25 +171,25 @@ export class EboNowPlayingComp extends EboComponent {
 
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-        this.defineAtt("hide_tracklist", "boolean", false);
+        this.defineAtt("hide_tracklist", "hide", false, ["tracklist"]);
+        this.defineAtt("name", "string", "", ["name", "title"]);
+        this.defineAtt("extra", "string", "");
+        this.defineAtt("stream_lines", "string", "");
+        this.defineAtt("img", "string", "", (shadow, el, value) => {
+            let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
+            if(value != "") {
+                el.style.visibility = "";
+                smallImg.style.visibility = "";
+                (el as HTMLImageElement).src = value as string;
+                smallImg.src = value as string;
+            }
+            else {
+                (el as HTMLImageElement).style.visibility = "hidden";
+                smallImg.style.visibility = "hidden";
+            }
+        });
     }
 
-    updateAtts(name: string, _oldValue: string, newValue: string): boolean {
-        let attDef = this.attDefs.get(name);
-        if(attDef == undefined) {
-            return false;
-        }
-        switch (attDef.type) {
-            case "boolean":
-                attDef.value = newValue == "true";
-                return true;
-            case "string":
-                attDef.value = newValue;
-                return true;
-            default:
-                unreachable(attDef.type);
-        }
-    }
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboNowPlayingComp.progressBarAttributes.includes(name)) {
@@ -217,12 +203,6 @@ export class EboNowPlayingComp extends EboComponent {
         }
 
         switch (name) {
-            case "name":
-            case "stream_lines":
-            case "extra":
-            case "img":
-                this[name] = newValue;
-                break;
             case "enabled":
             case "show_back":
                 this.updateBoolProperty(name, newValue);
@@ -232,7 +212,7 @@ export class EboNowPlayingComp extends EboComponent {
         }
 
     override render(shadow:ShadowRoot) {
-        this.addShadowEventListener("bigImage","click", (ev) => {
+        this.addShadowEventListener("img","click", (ev) => {
             this.dispatchEboEvent("bigTimelineImageClicked.eboplayer", {});
         });
         let smallImage = shadow.getElementById("smallImage") as HTMLImageElement;
@@ -248,17 +228,11 @@ export class EboNowPlayingComp extends EboComponent {
 
     override update(shadow:ShadowRoot) {
         this.getTracklistComp().tracklist = this.tracklist;
-        ["name", "stream_lines", "extra"].forEach(attName => {
-            // @ts-ignore
-            shadow.getElementById(attName).innerHTML = this[attName];
-        });
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboNowPlayingComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });
-        let img = shadow.getElementById("bigImage") as HTMLImageElement;
-        img.src = this.img;
         this.switchFrontBackNoRender();
         if(this.albumInfo.type == AlbumDataType.Loaded) {
             // @ts-ignore
@@ -266,22 +240,6 @@ export class EboNowPlayingComp extends EboComponent {
         }
         let redioDetailsComp = shadow.querySelector("ebo-radio-details-view") as EboRadioHistoryComp;
         redioDetailsComp.streamInfo = this.streamInfo;
-        let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
-        if(this.img != "") {
-            img.style.visibility = "";
-            smallImg.style.visibility = "";
-            img.src = this.img;
-            smallImg.src = this.img;
-        }
-        else {
-            img.style.visibility = "hidden";
-            smallImg.style.visibility = "hidden";
-        }
-        let title = shadow.getElementById("title") as HTMLElement;
-        title.textContent = this.name;
-        let hideTracklist = this.attDefs.get("hide_tracklist")?.value as boolean;
-        let tracklistComp = shadow.getElementById("tracklist") as EboTracklistComp;
-        tracklistComp.style.display = hideTracklist ? "none" : "";
     }
 
     private switchFrontBackNoRender() {

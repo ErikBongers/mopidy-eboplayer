@@ -2379,6 +2379,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	renderBatching;
 	updateBatching;
 	cssNeeded = [];
+	attDefs = /* @__PURE__ */ new Map();
 	constructor(styleText, htmlText) {
 		super();
 		this.styleText = styleText;
@@ -2429,6 +2430,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	doUpdate() {
 		if (!this.connected) return;
 		if (!this._isRendered) return;
+		this.updateHtmlFromAtts();
 		this.update(this.shadow);
 	}
 	update(shadow) {}
@@ -2459,6 +2461,54 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	getShadow() {
 		return this.shadow;
+	}
+	defineAtt(name, type, value, updater = null) {
+		this.attDefs.set(name, {
+			type,
+			value,
+			updater
+		});
+	}
+	getAtt = (name) => this.attDefs.get(name);
+	updateAtts(name, _oldValue, newValue) {
+		let attDef = this.getAtt(name);
+		if (attDef == void 0) return false;
+		switch (attDef.type) {
+			case "string":
+				attDef.value = newValue;
+				return true;
+			case "hide":
+				attDef.value = newValue;
+				return true;
+			default: unreachable(attDef.type);
+		}
+	}
+	updateHtmlFromAtts(shadow = this.getShadow()) {
+		this.attDefs.forEach((attDef, attName) => {
+			if (typeof attDef.updater == "function") {
+				let el = this.shadow.getElementById(attName);
+				attDef.updater(shadow, el, attDef.value);
+			} else if (attDef.updater instanceof Array) attDef.updater.forEach((elementId) => {
+				this.updateHtmlFromAtt(elementId, attDef);
+			});
+			else this.updateHtmlFromAtt(attName, attDef);
+		});
+	}
+	updateHtmlFromAtt(elementId, attDef) {
+		let el = this.shadow.getElementById(elementId);
+		if (el == null) {
+			console.error("Element with id " + elementId + " not found");
+			return;
+		}
+		switch (attDef.type) {
+			case "string":
+				el.innerHTML = attDef.value;
+				break;
+			case "hide":
+				el.style.display = attDef.value == "true" ? "none" : "";
+				break;
+			default: unreachable(attDef.type);
+		}
 	}
 	setClassFromBoolAttribute(el, attName) {
 		if (this[attName] == true) el.classList.add(attName);
@@ -6543,16 +6593,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this._tracklist = value;
 		this.requestUpdate();
 	}
-	attDefs = /* @__PURE__ */ new Map();
-	defineAtt(name, type, value) {
-		this.attDefs.set(name, {
-			type,
-			value
-		});
-	}
-	name = "";
-	stream_lines = "";
-	extra = "";
 	enabled = false;
 	show_back = false;
 	position = "40";
@@ -6560,7 +6600,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	max = "100";
 	button = "false";
 	active = "true";
-	img = "";
 	_albumInfo = AlbumNone;
 	static styleText = `
             <style>
@@ -6578,7 +6617,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     overflow: hidden;
                     padding: 2ch;
                 }
-                img#bigImage {
+                img#img {
                     width: 100%;
                     height: 100%;
                     object-fit: contain;
@@ -6650,7 +6689,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="bigImage" style="visibility: hidden" src="" alt="Album cover"/>
+                        <img id="img" style="visibility: hidden" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -6678,20 +6717,22 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
         `;
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-		this.defineAtt("hide_tracklist", "boolean", false);
-	}
-	updateAtts(name, _oldValue, newValue) {
-		let attDef = this.attDefs.get(name);
-		if (attDef == void 0) return false;
-		switch (attDef.type) {
-			case "boolean":
-				attDef.value = newValue == "true";
-				return true;
-			case "string":
-				attDef.value = newValue;
-				return true;
-			default: unreachable(attDef.type);
-		}
+		this.defineAtt("hide_tracklist", "hide", false, ["tracklist"]);
+		this.defineAtt("name", "string", "", ["name", "title"]);
+		this.defineAtt("extra", "string", "");
+		this.defineAtt("stream_lines", "string", "");
+		this.defineAtt("img", "string", "", (shadow, el, value) => {
+			let smallImg = shadow.getElementById("smallImage");
+			if (value != "") {
+				el.style.visibility = "";
+				smallImg.style.visibility = "";
+				el.src = value;
+				smallImg.src = value;
+			} else {
+				el.style.visibility = "hidden";
+				smallImg.style.visibility = "hidden";
+			}
+		});
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
@@ -6704,12 +6745,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 			return;
 		}
 		switch (name) {
-			case "name":
-			case "stream_lines":
-			case "extra":
-			case "img":
-				this[name] = newValue;
-				break;
 			case "enabled":
 			case "show_back":
 				this.updateBoolProperty(name, newValue);
@@ -6718,7 +6753,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		this.addShadowEventListener("bigImage", "click", (ev) => {
+		this.addShadowEventListener("img", "click", (ev) => {
 			this.dispatchEboEvent("bigTimelineImageClicked.eboplayer", {});
 		});
 		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
@@ -6731,38 +6766,14 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	update(shadow) {
 		this.getTracklistComp().tracklist = this.tracklist;
-		[
-			"name",
-			"stream_lines",
-			"extra"
-		].forEach((attName) => {
-			shadow.getElementById(attName).innerHTML = this[attName];
-		});
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
-		let img = shadow.getElementById("bigImage");
-		img.src = this.img;
 		this.switchFrontBackNoRender();
 		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
 		let redioDetailsComp = shadow.querySelector("ebo-radio-details-view");
 		redioDetailsComp.streamInfo = this.streamInfo;
-		let smallImg = shadow.getElementById("smallImage");
-		if (this.img != "") {
-			img.style.visibility = "";
-			smallImg.style.visibility = "";
-			img.src = this.img;
-			smallImg.src = this.img;
-		} else {
-			img.style.visibility = "hidden";
-			smallImg.style.visibility = "hidden";
-		}
-		let title = shadow.getElementById("title");
-		title.textContent = this.name;
-		let hideTracklist = this.attDefs.get("hide_tracklist")?.value;
-		let tracklistComp = shadow.getElementById("tracklist");
-		tracklistComp.style.display = hideTracklist ? "none" : "";
 	}
 	switchFrontBackNoRender() {
 		let wrapper = this.shadow.getElementById("wrapper");
