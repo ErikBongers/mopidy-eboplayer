@@ -104,6 +104,7 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
         this.component.setAttribute("img", imageUrl);
         this.onStreamLinesChanged();
         this.component.tracklist = this.state.getModel().getTrackList();
+        this.component.setAttribute("hide_tracklist", this.state.getModel().getTrackList().length < 2 ? "true" : "false");
     }
 
     private onProgramTitleChanged() {

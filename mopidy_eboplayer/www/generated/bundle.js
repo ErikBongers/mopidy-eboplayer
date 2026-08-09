@@ -2678,6 +2678,7 @@ var NowPlayingView = class extends ComponentView {
 		this.component.setAttribute("img", imageUrl);
 		this.onStreamLinesChanged();
 		this.component.tracklist = this.state.getModel().getTrackList();
+		this.component.setAttribute("hide_tracklist", this.state.getModel().getTrackList().length < 2 ? "true" : "false");
 	}
 	onProgramTitleChanged() {
 		this.programTitle = this.state.getModel().getCurrentProgramTitle();
@@ -6516,6 +6517,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		"img",
 		"disabled",
 		"show_back",
+		"hide_tracklist",
 		...EboNowPlayingComp.progressBarAttributes
 	];
 	get albumInfo() {
@@ -6540,6 +6542,13 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	set tracklist(value) {
 		this._tracklist = value;
 		this.requestUpdate();
+	}
+	attDefs = /* @__PURE__ */ new Map();
+	defineAtt(name, type, value) {
+		this.attDefs.set(name, {
+			type,
+			value
+		});
 	}
 	name = "";
 	stream_lines = "";
@@ -6669,11 +6678,29 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
         `;
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
+		this.defineAtt("hide_tracklist", "boolean", false);
+	}
+	updateAtts(name, _oldValue, newValue) {
+		let attDef = this.attDefs.get(name);
+		if (attDef == void 0) return false;
+		switch (attDef.type) {
+			case "boolean":
+				attDef.value = newValue == "true";
+				return true;
+			case "string":
+				attDef.value = newValue;
+				return true;
+			default: unreachable(attDef.type);
+		}
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
 			this.updateStringProperty(name, newValue);
 			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
+			return;
+		}
+		if (this.updateAtts(name, _oldValue, newValue)) {
+			this.requestUpdate();
 			return;
 		}
 		switch (name) {
@@ -6733,6 +6760,9 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		}
 		let title = shadow.getElementById("title");
 		title.textContent = this.name;
+		let hideTracklist = this.attDefs.get("hide_tracklist")?.value;
+		let tracklistComp = shadow.getElementById("tracklist");
+		tracklistComp.style.display = hideTracklist ? "none" : "";
 	}
 	switchFrontBackNoRender() {
 		let wrapper = this.shadow.getElementById("wrapper");

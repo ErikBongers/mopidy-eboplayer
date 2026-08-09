@@ -4,13 +4,19 @@ import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
 import TlTrack = models.TlTrack;
+import {unreachable} from "../global";
 
+export type AttType = "string" | "boolean";
+export interface AttDef {
+    type: AttType;
+    value: unknown;
+}
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "show_back",
+        "name", "stream_lines", "extra", "img", "disabled", "show_back", "hide_tracklist",
         ...EboNowPlayingComp.progressBarAttributes
     ];
     get albumInfo(): AlbumData {
@@ -41,6 +47,10 @@ export class EboNowPlayingComp extends EboComponent {
         this.requestUpdate();
     }
 
+    private attDefs: Map<string, AttDef> = new Map();
+    private defineAtt(name: string, type: AttType, value: any) {
+        this.attDefs.set(name, {type: type, value});
+    }
     private name: string = "";
     private stream_lines: string = "";
     private extra: string = "";
@@ -175,8 +185,25 @@ export class EboNowPlayingComp extends EboComponent {
 
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
+        this.defineAtt("hide_tracklist", "boolean", false);
     }
 
+    updateAtts(name: string, _oldValue: string, newValue: string): boolean {
+        let attDef = this.attDefs.get(name);
+        if(attDef == undefined) {
+            return false;
+        }
+        switch (attDef.type) {
+            case "boolean":
+                attDef.value = newValue == "true";
+                return true;
+            case "string":
+                attDef.value = newValue;
+                return true;
+            default:
+                unreachable(attDef.type);
+        }
+    }
     // noinspection JSUnusedGlobalSymbols
     attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboNowPlayingComp.progressBarAttributes.includes(name)) {
@@ -184,6 +211,11 @@ export class EboNowPlayingComp extends EboComponent {
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
         }
+        if(this.updateAtts(name, _oldValue, newValue)){
+            this.requestUpdate();
+            return;
+        }
+
         switch (name) {
             case "name":
             case "stream_lines":
@@ -247,6 +279,9 @@ export class EboNowPlayingComp extends EboComponent {
         }
         let title = shadow.getElementById("title") as HTMLElement;
         title.textContent = this.name;
+        let hideTracklist = this.attDefs.get("hide_tracklist")?.value as boolean;
+        let tracklistComp = shadow.getElementById("tracklist") as EboTracklistComp;
+        tracklistComp.style.display = hideTracklist ? "none" : "";
     }
 
     private switchFrontBackNoRender() {
