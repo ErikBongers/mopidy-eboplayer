@@ -6767,8 +6767,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	switchFrontBackNoRender() {
 		let wrapper = this.shadow.getElementById("wrapper");
 		wrapper.classList.remove("front", "back");
-		if (this.show_back) wrapper.classList.add("back");
-		else wrapper.classList.add("front");
+		wrapper.classList.add(this.show_back ? "back" : "front");
 	}
 };
 

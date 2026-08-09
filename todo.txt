@@ -1,5 +1,3 @@
-* When one track only, hide timeline.
-
 * A view component can only be created if the actual dom element already exists.
   BIG problem for components that are NOT part of index.html.
   > A view can only be created if the component already exists.
