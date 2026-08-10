@@ -4,6 +4,10 @@ import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
 import TlTrack = models.TlTrack;
+import {Parser} from "../lib/HtmlParserTs/parser";
+import {PeekingTokenizer} from "../lib/HtmlParserTs/PeekingTokenizer";
+import {HtmlTokenizer} from "../lib/HtmlParserTs/HtmlTokenizer";
+import {generateAllPlaceHolders} from "./placeholders";
 
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
@@ -188,6 +192,14 @@ export class EboNowPlayingComp extends EboComponent {
                 smallImg.style.visibility = "hidden";
             }
         });
+
+        //PLACEHOLDER TEST
+        let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(EboTracklistComp.htmlText)));
+        let elements = parser.parse();
+        console.log(JSON.stringify(elements, null, 2));
+
+        let placeholders = generateAllPlaceHolders(elements);
+        console.log(JSON.stringify(placeholders, null, 2));
     }
 
     // noinspection JSUnusedGlobalSymbols

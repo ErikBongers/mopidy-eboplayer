@@ -6550,6 +6550,479 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/components/eboTracklistComp.ts
+var EboTracklistComp = class EboTracklistComp extends EboComponent {
+	static tagName = "ebo-tracklist-view";
+	static observedAttributes = [];
+	_tracklist = [];
+	get tracklist() {
+		return this._tracklist;
+	}
+	set tracklist(value) {
+		this._tracklist = value;
+		this.requestUpdate();
+	}
+	static styleText = `
+        <style>
+        </style>
+        `;
+	static htmlText = `
+        <div id="wrapper">
+            <table id="tracklist">
+                <tbody></tbody>
+            </table>
+        </div>        
+        `;
+	constructor() {
+		super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {}
+	update(shadow) {
+		let tBody = shadow.querySelector("tbody");
+		tBody.innerHTML = "";
+		for (let track of this.tracklist) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, tBody, [], track.tlid);
+	}
+	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
+		let tr = document.createElement("tr");
+		body.appendChild(tr);
+		tr.classList.add("trackLine", ...classes);
+		if (!uri.startsWith("eboback")) tr.classList.add("italic");
+		tr.dataset.uri = uri;
+		if (tlid) tr.dataset.tlid = tlid.toString();
+		this.setTrackLineContent(tr, title, artist, album);
+		body.insertAdjacentHTML("beforeend", `
+            <tr>
+                <td colspan="2">
+                    <div class="progressBar"></div>
+                </td>
+            </tr>
+            `);
+	}
+	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
+		tr.innerHTML = `
+            <td>
+                <h1>${title}</h1>
+                <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
+            </td>
+            <td>
+                <button><i class="fa fa fa-ellipsis-v"></i></button>
+            </td>
+            `;
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/lib/HtmlParserTs/parser.ts
+var Parser = class {
+	tok;
+	constructor(tok) {
+		this.tok = tok;
+	}
+	parse() {
+		let elements = [];
+		while (true) {
+			let element = this.parseElement();
+			if (element == null) break;
+			elements.push(element);
+		}
+		let next = this.tok.next();
+		if (next) this.throwAt(`Unexpected token: ${next.type}`, next);
+		return elements;
+	}
+	parseElement() {
+		let t = this.tok.next();
+		if (t == null) return null;
+		if (t.type == "<") {
+			t = this.match("IDENT");
+			if (t == null) this.throwAt("Expected IDENT", t);
+			let name = t.cursor.getText(t.pos, t.length);
+			let attributes = this.parseAttributes();
+			t = this.tok.next();
+			if (t == null) this.throwAt("Unexpected EOF", null);
+			if (this.match("/>")) return {
+				tag: name,
+				nodes: [],
+				attributes
+			};
+			if (t.type != ">") this.throwAt("Expected > or />", t);
+			let content = this.parseElementContent();
+			this.parseClosingTag(t, name);
+			return {
+				tag: name,
+				nodes: content,
+				attributes
+			};
+		}
+		return null;
+	}
+	parseClosingTag(t, name) {
+		if (this.match("</")) {
+			let t$1 = this.match("IDENT");
+			let closeName = t$1?.cursor.getText(t$1.pos, t$1.length);
+			if (closeName == null) this.throwAt("Expected IDENT", t$1);
+			if (closeName != name) this.throwAt(`Expected </${name}>`, t$1);
+			if (this.match(">")) return;
+			this.throwAt("Expected >", t$1);
+		}
+		return t;
+	}
+	parseElementContent() {
+		let content = [];
+		while (true) {
+			let t = this.tok.peek();
+			if (t == null) this.throwAt("Unexpected EOF", null);
+			if (t.type == "<") {
+				let child = this.parseElement();
+				if (child == null) break;
+				content.push(child);
+			} else if (t.type == "</") break;
+			else {
+				let text = this.tok.next().cursor.getText(t.pos, t.length);
+				content.push(text);
+			}
+		}
+		return content;
+	}
+	parseAttributes() {
+		let attrs = /* @__PURE__ */ new Map();
+		while (true) {
+			let t = this.tok.peek();
+			if (t == null) this.throwAt("Unexpected EOF", null);
+			if (t.type == ">" || t.type == "/>") break;
+			if (t.type == "IDENT") {
+				let attrName = this.match("IDENT").cursor.getText(t.pos, t.length);
+				if (this.match("=") == null) this.throwAt("Expected =", t);
+				t = this.match("STRING");
+				if (t == null) this.throwAt("Expected STRING", t);
+				let attrValue = t.cursor.getText(t.pos, t.length);
+				if (attrValue == null) this.throwAt("Expected =", t);
+				attrs.set(attrName, this.stripStringDelimiters(attrValue));
+				continue;
+			}
+			this.throwAt("Expected IDENT", t);
+		}
+		return attrs;
+	}
+	match(expected) {
+		if (this.tok.peek()?.type == expected) return this.tok.next();
+		return null;
+	}
+	stripStringDelimiters(text) {
+		if (text[0] === "'" || text[0] === "\"") return text.substring(1, text.length - 1);
+		return text;
+	}
+	printLocation(token) {
+		let { line, col } = token.cursor.getLocation(token.pos);
+		return `line ${line}, col ${col}\n${token.cursor.getLine(token.pos)}\n${" ".repeat(col - 1)}^`;
+	}
+	throwAt(message, token) {
+		if (token) throw new Error(`${message}\n  at ${this.printLocation(token)}`);
+		else throw new Error(`${message}\n  at EOF`);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/lib/HtmlParserTs/PeekingTokenizer.ts
+var PeekingTokenizer = class {
+	tokenizer;
+	constructor(tokenizer) {
+		this.tokenizer = tokenizer;
+	}
+	next() {
+		return this.tokenizer.next();
+	}
+	peek() {
+		return this.tokenizer.clone().next();
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/lib/HtmlParserTs/cursor.ts
+var Cursor = class Cursor {
+	text;
+	currentPos;
+	length;
+	constructor(text) {
+		this.text = text;
+		this.length = this.text.length;
+		this.currentPos = -1;
+	}
+	static copy(cursor) {
+		let newCursor = new Cursor(cursor.text);
+		newCursor.currentPos = cursor.currentPos;
+		return newCursor;
+	}
+	eat(char) {
+		if (this.currentPos >= this.length) return false;
+		if (this.text[this.currentPos] == char) {
+			this.currentPos++;
+			return true;
+		}
+		return false;
+	}
+	get pos() {
+		return this.currentPos;
+	}
+	get current() {
+		if (this.currentPos >= this.length) return "";
+		return this.text[this.currentPos];
+	}
+	next() {
+		if (this.currentPos >= this.length) return "";
+		this.currentPos++;
+		return this.current;
+	}
+	peek() {
+		if (this.currentPos + 1 >= this.length) return "";
+		return this.text[this.currentPos + 1];
+	}
+	getText(pos, length) {
+		return this.text.substring(pos, pos + length);
+	}
+	getUpTo(endChar) {
+		let start = this.currentPos + 1;
+		let end = start;
+		while (end < this.length && this.text[end] != endChar) end++;
+		if (end == this.length) return null;
+		let length = end - start;
+		this.currentPos += length;
+		return {
+			start,
+			length
+		};
+	}
+	getTo(endChar) {
+		let result = this.getUpTo(endChar);
+		if (result) {
+			this.currentPos++;
+			result.length++;
+		}
+		return result;
+	}
+	getToNot(notChar) {
+		let start = this.currentPos + 1;
+		let end = start;
+		while (end < this.length && this.text[end] == notChar) end++;
+		if (end == this.length) return null;
+		if (end == start) return null;
+		this.currentPos = end - 1;
+		return {
+			start,
+			length: this.currentPos - start + 1
+		};
+	}
+	getLocation(pos) {
+		let line = 1;
+		let col = 1;
+		for (let i = 0; i < pos; i++) if (this.text[i] == "\n") {
+			line++;
+			col = 1;
+		} else col++;
+		return {
+			line,
+			col
+		};
+	}
+	getLine(pos) {
+		let loc = this.getLocation(pos);
+		let start = 0;
+		let end = this.length;
+		for (let i = 0; i < this.length; i++) if (this.text[i] == "\n") if (loc.line > 1) {
+			start = i + 1;
+			loc.line--;
+		} else {
+			end = i;
+			break;
+		}
+		return this.text.substring(start, end);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/lib/HtmlParserTs/HtmlTokenizer.ts
+var HtmlTokenizer = class HtmlTokenizer {
+	cursor;
+	outside_tag = true;
+	constructor(text) {
+		this.cursor = new Cursor(text);
+	}
+	setCursor(cursor) {
+		this.cursor = cursor;
+	}
+	cloneCursor() {
+		return Cursor.copy(this.cursor);
+	}
+	clone() {
+		let theClone = new HtmlTokenizer("");
+		theClone.setCursor(this.cloneCursor());
+		theClone.outside_tag = this.outside_tag;
+		return theClone;
+	}
+	next() {
+		if (this.outside_tag) {
+			let t = this.nextTokenOutsideTag();
+			if (t?.length == 0) return this.nextTokenInsideTag();
+			return t;
+		} else return this.nextTokenInsideTag();
+	}
+	nextTokenInsideTag() {
+		this.skipWhiteSpace();
+		let char = this.cursor.next();
+		let found;
+		let id = this.eatId(char);
+		if (id) return id;
+		switch (char) {
+			case "": return null;
+			case "<":
+				this.outside_tag = false;
+				if (this.cursor.peek() == "/") {
+					this.cursor.next();
+					return {
+						type: "</",
+						cursor: this.cursor,
+						pos: this.cursor.pos - 1,
+						length: 2
+					};
+				} else return {
+					type: "<",
+					cursor: this.cursor,
+					pos: this.cursor.pos,
+					length: 1
+				};
+			case ">": this.outside_tag = true;
+			case "=": return {
+				type: char,
+				cursor: this.cursor,
+				pos: this.cursor.pos,
+				length: 1
+			};
+			case "/": if (this.cursor.peek() == ">") {
+				this.outside_tag = true;
+				this.cursor.next();
+				return {
+					type: "/>",
+					cursor: this.cursor,
+					pos: this.cursor.pos - 1,
+					length: 2
+				};
+			} else return {
+				type: "UNKNOWN",
+				cursor: this.cursor,
+				pos: this.cursor.pos,
+				length: 1
+			};
+			case "\"":
+				found = this.cursor.getTo("\"");
+				if (found) return {
+					type: "STRING",
+					cursor: this.cursor,
+					pos: found.start,
+					length: found.length - 1
+				};
+				return {
+					type: "UNKNOWN",
+					cursor: this.cursor,
+					pos: this.cursor.pos,
+					length: 1
+				};
+			case "'":
+				found = this.cursor.getTo("'");
+				if (found) return {
+					type: "STRING",
+					cursor: this.cursor,
+					pos: found.start,
+					length: found.length - 1
+				};
+				return {
+					type: "UNKNOWN",
+					cursor: this.cursor,
+					pos: this.cursor.pos,
+					length: 1
+				};
+			default: return {
+				type: "UNKNOWN",
+				cursor: this.cursor,
+				pos: this.cursor.pos,
+				length: 1
+			};
+		}
+	}
+	nextTokenOutsideTag() {
+		let found;
+		found = this.cursor.getUpTo("<");
+		if (found) {
+			this.outside_tag = false;
+			return {
+				type: "STRING",
+				cursor: this.cursor,
+				pos: found.start,
+				length: found.length
+			};
+		}
+		return null;
+	}
+	eatId(char) {
+		let pos = this.cursor.pos;
+		if (char.match(/[a-zA-Z\-]/)) {
+			while (this.cursor.peek().match(/[a-zA-Z0-9_\-]/)) this.cursor.next();
+			return {
+				type: "IDENT",
+				cursor: this.cursor,
+				pos,
+				length: this.cursor.pos - pos + 1
+			};
+		}
+		return null;
+	}
+	skipWhiteSpace() {
+		while (this.cursor.peek().match(/[ \t\n\r]/)) this.cursor.next();
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/components/placeholders.ts
+function generateAllPlaceHolders(nodes) {
+	let placeholders = [];
+	for (let i = 0; i < nodes.length; i++) {
+		let element = nodes[i];
+		if (typeof element == "string") throw new Error("Top level text can't have placeholders.");
+		else generatePlaceHolder(element, placeholders);
+	}
+	return placeholders;
+}
+function generatePlaceHolder(element, placeHolders) {
+	let id = element.attributes.get("id");
+	for (let [attributeName, attrValue] of element.attributes) if (attrValue.includes("{")) {
+		if (id == null) throw new Error("Element must have an id to use placeholders.");
+		placeHolders.push(...createTextPlaceholders(attrValue, "attribute", id, -1, attributeName));
+	}
+	for (let [i, node] of element.nodes.entries()) if (typeof node == "string") placeHolders.push(...createTextPlaceholders(node, "content", id, i, ""));
+	else generatePlaceHolder(node, placeHolders);
+}
+function createTextPlaceholders(text, type, elementId, nodeIndex, attributeName) {
+	if (!text.includes("{")) return [];
+	if (elementId == null) throw new Error("Element must have an id to use placeholders.");
+	let placeholders = [];
+	let rx = /{(\S+)}/gm;
+	let match;
+	while ((match = rx.exec(text)) != null) {
+		match[1];
+		placeholders.push({
+			placeHolderId: match[1],
+			elementId,
+			type,
+			nodeIndex,
+			attributeName,
+			textParts: text.split(match[0])
+		});
+	}
+	return placeholders;
+}
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
 var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	static tagName = "ebo-now-playing";
@@ -6733,6 +7206,10 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 				smallImg.style.visibility = "hidden";
 			}
 		});
+		let elements = new Parser(new PeekingTokenizer(new HtmlTokenizer(EboTracklistComp.htmlText))).parse();
+		console.log(JSON.stringify(elements, null, 2));
+		let placeholders = generateAllPlaceHolders(elements);
+		console.log(JSON.stringify(placeholders, null, 2));
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
@@ -6995,71 +7472,6 @@ var SettingsView = class extends ComponentView {
 		this.component.on("mopidyConfigAddExclExt.eboplayer", async (ev) => {
 			await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
 		});
-	}
-};
-
-//#endregion
-//#region mopidy_eboplayer/www/typescript/components/eboTracklistComp.ts
-var EboTracklistComp = class EboTracklistComp extends EboComponent {
-	static tagName = "ebo-tracklist-view";
-	static observedAttributes = [];
-	_tracklist = [];
-	get tracklist() {
-		return this._tracklist;
-	}
-	set tracklist(value) {
-		this._tracklist = value;
-		this.requestUpdate();
-	}
-	static styleText = `
-        <style>
-        </style>
-        `;
-	static htmlText = `
-        <div id="wrapper">
-            <table id="tracklist">
-                <tbody></tbody>
-            </table>
-        </div>        
-        `;
-	constructor() {
-		super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
-	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
-	render(shadow) {}
-	update(shadow) {
-		let tBody = shadow.querySelector("tbody");
-		tBody.innerHTML = "";
-		for (let track of this.tracklist) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, tBody, [], track.tlid);
-	}
-	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
-		let tr = document.createElement("tr");
-		body.appendChild(tr);
-		tr.classList.add("trackLine", ...classes);
-		if (!uri.startsWith("eboback")) tr.classList.add("italic");
-		tr.dataset.uri = uri;
-		if (tlid) tr.dataset.tlid = tlid.toString();
-		this.setTrackLineContent(tr, title, artist, album);
-		body.insertAdjacentHTML("beforeend", `
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            `);
-	}
-	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
-		tr.innerHTML = `
-            <td>
-                <h1>${title}</h1>
-                <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
-            </td>
-            <td>
-                <button><i class="fa fa fa-ellipsis-v"></i></button>
-            </td>
-            `;
 	}
 };
 
