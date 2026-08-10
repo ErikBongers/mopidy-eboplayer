@@ -6550,71 +6550,6 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer/www/typescript/components/eboTracklistComp.ts
-var EboTracklistComp = class EboTracklistComp extends EboComponent {
-	static tagName = "ebo-tracklist-view";
-	static observedAttributes = [];
-	_tracklist = [];
-	get tracklist() {
-		return this._tracklist;
-	}
-	set tracklist(value) {
-		this._tracklist = value;
-		this.requestUpdate();
-	}
-	static styleText = `
-        <style>
-        </style>
-        `;
-	static htmlText = `
-        <div id="wrapper">
-            <table id="tracklist">
-                <tbody></tbody>
-            </table>
-        </div>        
-        `;
-	constructor() {
-		super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
-	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
-	render(shadow) {}
-	update(shadow) {
-		let tBody = shadow.querySelector("tbody");
-		tBody.innerHTML = "";
-		for (let track of this.tracklist) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, tBody, [], track.tlid);
-	}
-	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
-		let tr = document.createElement("tr");
-		body.appendChild(tr);
-		tr.classList.add("trackLine", ...classes);
-		if (!uri.startsWith("eboback")) tr.classList.add("italic");
-		tr.dataset.uri = uri;
-		if (tlid) tr.dataset.tlid = tlid.toString();
-		this.setTrackLineContent(tr, title, artist, album);
-		body.insertAdjacentHTML("beforeend", `
-            <tr>
-                <td colspan="2">
-                    <div class="progressBar"></div>
-                </td>
-            </tr>
-            `);
-	}
-	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
-		tr.innerHTML = `
-            <td>
-                <h1>${title}</h1>
-                <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
-            </td>
-            <td>
-                <button><i class="fa fa fa-ellipsis-v"></i></button>
-            </td>
-            `;
-	}
-};
-
-//#endregion
 //#region mopidy_eboplayer/www/typescript/lib/HtmlParserTs/parser.ts
 var Parser = class {
 	tok;
@@ -6623,6 +6558,7 @@ var Parser = class {
 	}
 	parse() {
 		let elements = [];
+		this.match("STRING");
 		while (true) {
 			let element = this.parseElement();
 			if (element == null) break;
@@ -6642,12 +6578,34 @@ var Parser = class {
 			let attributes = this.parseAttributes();
 			t = this.tok.next();
 			if (t == null) this.throwAt("Unexpected EOF", null);
-			if (this.match("/>")) return {
+			if (t.type == "/>") return {
 				tag: name,
 				nodes: [],
 				attributes
 			};
 			if (t.type != ">") this.throwAt("Expected > or />", t);
+			if ([
+				"area",
+				"base",
+				"br",
+				"col",
+				"command",
+				"embed",
+				"hr",
+				"img",
+				"input",
+				"keygen",
+				"link",
+				"meta",
+				"param",
+				"source",
+				"track",
+				"wbr"
+			].includes(name)) return {
+				tag: name,
+				nodes: [],
+				attributes
+			};
 			let content = this.parseElementContent();
 			this.parseClosingTag(t, name);
 			return {
@@ -7074,6 +7032,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	button = "false";
 	active = "true";
 	_albumInfo = AlbumNone;
+	placeholders = [];
 	static styleText = `
             <style>
                 :host { 
@@ -7168,14 +7127,14 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
         
                     <div id="info">
                         <h3 id="albumTitle" class="selectable"></h3>
-                        <h3 id="name" class="selectable"></h3>
-                        <div id="stream_lines" class="selectable info"></div>
-                        <div id="extra" class="selectable info"></div>
+                        <h3 id="name" class="selectable">{name}</h3>
+                        <div id="stream_lines" class="selectable info">{stream_lines}</div>
+                        <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
                 <div id="back">
                     <div id="header" class="flexRow">
-                        <img id="smallImage" src="" alt="Album image">
+                        <img id="smallImage" src="{img}" alt="Album image">
                         <span id="title" class="selectable"></span>
                     </div>
                     <div id="albumTableWrapper">
@@ -7206,10 +7165,10 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 				smallImg.style.visibility = "hidden";
 			}
 		});
-		let elements = new Parser(new PeekingTokenizer(new HtmlTokenizer(EboTracklistComp.htmlText))).parse();
+		let elements = new Parser(new PeekingTokenizer(new HtmlTokenizer(this.divText))).parse();
 		console.log(JSON.stringify(elements, null, 2));
-		let placeholders = generateAllPlaceHolders(elements);
-		console.log(JSON.stringify(placeholders, null, 2));
+		this.placeholders = generateAllPlaceHolders(elements);
+		console.log(JSON.stringify(this.placeholders, null, 2));
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
@@ -7242,6 +7201,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		return this.getShadow().querySelector("ebo-tracklist-view");
 	}
 	update(shadow) {
+		this.updatePlaceHolders();
 		this.getTracklistComp().tracklist = this.tracklist;
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
@@ -7256,6 +7216,19 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		let wrapper = this.shadow.getElementById("wrapper");
 		wrapper.classList.remove("front", "back");
 		wrapper.classList.add(this.show_back ? "back" : "front");
+	}
+	updatePlaceHolders() {
+		let shadow = this.getShadow();
+		for (let placeholder of this.placeholders) {
+			let el = shadow.getElementById(placeholder.elementId);
+			let value = this.getAtt(placeholder.placeHolderId)?.value;
+			if (placeholder.type == "content") {
+				let node = el.childNodes.item(placeholder.nodeIndex);
+				if (node == null) if (placeholder.nodeIndex == 0) el.textContent = placeholder.textParts.join(`{{${value}}}`);
+				else console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
+				else node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
+			}
+		}
 	}
 };
 
@@ -7472,6 +7445,71 @@ var SettingsView = class extends ComponentView {
 		this.component.on("mopidyConfigAddExclExt.eboplayer", async (ev) => {
 			await this.state.getController().addExclExtToMopidyConfig(ev.detail.extension);
 		});
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/components/eboTracklistComp.ts
+var EboTracklistComp = class EboTracklistComp extends EboComponent {
+	static tagName = "ebo-tracklist-view";
+	static observedAttributes = [];
+	_tracklist = [];
+	get tracklist() {
+		return this._tracklist;
+	}
+	set tracklist(value) {
+		this._tracklist = value;
+		this.requestUpdate();
+	}
+	static styleText = `
+        <style>
+        </style>
+        `;
+	static htmlText = `
+        <div id="wrapper">
+            <table id="tracklist">
+                <tbody></tbody>
+            </table>
+        </div>        
+        `;
+	constructor() {
+		super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
+	}
+	attributeReallyChangedCallback(name, _oldValue, newValue) {
+		this.requestUpdate();
+	}
+	render(shadow) {}
+	update(shadow) {
+		let tBody = shadow.querySelector("tbody");
+		tBody.innerHTML = "";
+		for (let track of this.tracklist) this.insertTrackLine(track.track.name ?? "--no name--", track.track.uri, tBody, [], track.tlid);
+	}
+	insertTrackLine(title, uri, body, classes = [], tlid, album, artist) {
+		let tr = document.createElement("tr");
+		body.appendChild(tr);
+		tr.classList.add("trackLine", ...classes);
+		if (!uri.startsWith("eboback")) tr.classList.add("italic");
+		tr.dataset.uri = uri;
+		if (tlid) tr.dataset.tlid = tlid.toString();
+		this.setTrackLineContent(tr, title, artist, album);
+		body.insertAdjacentHTML("beforeend", `
+            <tr>
+                <td colspan="2">
+                    <div class="progressBar"></div>
+                </td>
+            </tr>
+            `);
+	}
+	setTrackLineContent(tr, title, artist = "⚬⚬⚬", album = "⚬⚬⚬") {
+		tr.innerHTML = `
+            <td>
+                <h1>${title}</h1>
+                <small>${artist ?? "⚬⚬⚬"} • ${album ?? "⚬⚬⚬"}</small>
+            </td>
+            <td>
+                <button><i class="fa fa fa-ellipsis-v"></i></button>
+            </td>
+            `;
 	}
 };
 

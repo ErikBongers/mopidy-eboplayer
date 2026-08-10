@@ -7,7 +7,7 @@ import TlTrack = models.TlTrack;
 import {Parser} from "../lib/HtmlParserTs/parser";
 import {PeekingTokenizer} from "../lib/HtmlParserTs/PeekingTokenizer";
 import {HtmlTokenizer} from "../lib/HtmlParserTs/HtmlTokenizer";
-import {generateAllPlaceHolders} from "./placeholders";
+import {generateAllPlaceHolders, PlaceHolder} from "./placeholders";
 
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
@@ -55,6 +55,8 @@ export class EboNowPlayingComp extends EboComponent {
     private active: string = "true";
 
     private _albumInfo: AlbumData = AlbumNone;
+
+    private placeholders: PlaceHolder[] = [];
 
     static styleText= `
             <style>
@@ -152,14 +154,14 @@ export class EboNowPlayingComp extends EboComponent {
         
                     <div id="info">
                         <h3 id="albumTitle" class="selectable"></h3>
-                        <h3 id="name" class="selectable"></h3>
-                        <div id="stream_lines" class="selectable info"></div>
-                        <div id="extra" class="selectable info"></div>
+                        <h3 id="name" class="selectable">{name}</h3>
+                        <div id="stream_lines" class="selectable info">{stream_lines}</div>
+                        <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
                 <div id="back">
                     <div id="header" class="flexRow">
-                        <img id="smallImage" src="" alt="Album image">
+                        <img id="smallImage" src="{img}" alt="Album image">
                         <span id="title" class="selectable"></span>
                     </div>
                     <div id="albumTableWrapper">
@@ -194,12 +196,12 @@ export class EboNowPlayingComp extends EboComponent {
         });
 
         //PLACEHOLDER TEST
-        let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(EboTracklistComp.htmlText)));
+        let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(this.divText)));
         let elements = parser.parse();
         console.log(JSON.stringify(elements, null, 2));
 
-        let placeholders = generateAllPlaceHolders(elements);
-        console.log(JSON.stringify(placeholders, null, 2));
+        this.placeholders = generateAllPlaceHolders(elements);
+        console.log(JSON.stringify(this.placeholders, null, 2));
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -239,6 +241,7 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
+        this.updatePlaceHolders()
         this.getTracklistComp().tracklist = this.tracklist;
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboNowPlayingComp.progressBarAttributes.forEach(attName => {
@@ -258,5 +261,24 @@ export class EboNowPlayingComp extends EboComponent {
         let wrapper = this.shadow.getElementById("wrapper") as HTMLElement;
         wrapper.classList.remove("front", "back");
         wrapper.classList.add(this.show_back ? "back" : "front");
+    }
+
+    private updatePlaceHolders() {
+        let shadow = this.getShadow();
+        for(let placeholder of this.placeholders) {
+            let el = shadow.getElementById(placeholder.elementId)!; //! let crash
+            let value = this.getAtt(placeholder.placeHolderId)?.value;
+            if(placeholder.type == "content") {
+                let node = el.childNodes.item(placeholder.nodeIndex);
+                if(node == null) {
+                    if (placeholder.nodeIndex == 0)
+                        el.textContent = placeholder.textParts.join(`{{${value}}}`);
+                    else
+                        console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
+                }
+                else
+                    node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
+            }
+        }
     }
 }
