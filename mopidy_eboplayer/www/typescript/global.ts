@@ -106,3 +106,7 @@ export function searchImageOnGoogle(albumName: string) {
     let escaped = escapeGoogleSearchString(albumName);
     window.open("https://www.google.com/search?tbm=isch&q=" + escaped, '_blank')?.focus();
 }
+
+export function zip<T>(array1: T[], array2: T[]) {
+    return array1.map((value, index) => [value, array2[index]]).flat();
+}

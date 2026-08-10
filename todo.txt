@@ -1,5 +1,32 @@
 * Now playing takes in album info, but it also displays radios.
 
+HTML string tags
+=================
+Example:
+--------
+<div>This is {variable} !</div>   >>> this cannot work because we don't know how to find the div without an id!
+<div id="title">This is {var1} and {var2} !</div>
+<div id="title" class="flex {var1} {var2} row">...
+<div id="[title]">This is {variable} !</div>  >>> this checks if title is a defined attribute.
+
+
+This should result in
+-----------------------
+this.shadow.getElementById("title").innerText = "This is " + this.getAtt("variable").value + "...";
+or better a mapping like:
+{
+    id: "title", [
+        {
+        target: "content",
+        parts:["This is ", {att:"var1"}, " and ", {att:"var2"}, " !"]
+        }
+    ]
+}
+ {id:"title", target:"content", att:"variable"}
+
+
+
+
 * A view component can only be created if the actual dom element already exists.
   BIG problem for components that are NOT part of index.html.
   > A view can only be created if the component already exists.
