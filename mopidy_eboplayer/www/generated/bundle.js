@@ -2683,7 +2683,7 @@ var NowPlayingView = class extends ComponentView {
 		this.streamLines = "";
 		if (selectedTrackUri == currentTrackUri) {
 			let linesObject = this.state.getModel().getActiveStreamLines();
-			if (this.uri && linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
+			if (this.uri && linesObject?.uri == this.uri) this.streamLines = linesObject.active_titles?.join("\n") ?? "";
 		}
 		this.component.setAttribute("stream_lines", this.streamLines);
 	}
@@ -7128,7 +7128,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     <div id="info">
                         <h3 id="albumTitle" class="selectable"></h3>
                         <h3 id="name" class="selectable">{name}</h3>
-                        <div id="stream_lines" class="selectable info">{stream_lines}</div>
+                        <div id="stream_lines" class="selectable nl info">{stream_lines}</div>
                         <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
@@ -7221,12 +7221,21 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		let shadow = this.getShadow();
 		for (let placeholder of this.placeholders) {
 			let el = shadow.getElementById(placeholder.elementId);
+			console.log(`let el = shadow.getElementById("${placeholder.elementId}")!;`);
 			let value = this.getAtt(placeholder.placeHolderId)?.value;
+			console.log(`let value = this.getAtt(${placeholder.placeHolderId})?.value;`);
 			if (placeholder.type == "content") {
 				let node = el.childNodes.item(placeholder.nodeIndex);
-				if (node == null) if (placeholder.nodeIndex == 0) el.textContent = placeholder.textParts.join(`{{${value}}}`);
-				else console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
-				else node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
+				console.log(`let node = el.childNodes.item(${placeholder.nodeIndex});`);
+				console.log("//todo: test node != null");
+				if (node == null) if (placeholder.nodeIndex == 0) {
+					el.textContent = placeholder.textParts.join(`{{${value}}}`);
+					console.log(`el.textContent = ${JSON.stringify(placeholder.textParts)}.join(\`{{${value}}}\`);`);
+				} else console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
+				else {
+					node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
+					console.log(`node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join("{{${value}}}");`);
+				}
 			}
 		}
 	}

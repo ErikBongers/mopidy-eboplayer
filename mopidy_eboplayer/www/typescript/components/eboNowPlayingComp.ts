@@ -155,7 +155,7 @@ export class EboNowPlayingComp extends EboComponent {
                     <div id="info">
                         <h3 id="albumTitle" class="selectable"></h3>
                         <h3 id="name" class="selectable">{name}</h3>
-                        <div id="stream_lines" class="selectable info">{stream_lines}</div>
+                        <div id="stream_lines" class="selectable nl info">{stream_lines}</div>
                         <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
@@ -267,17 +267,25 @@ export class EboNowPlayingComp extends EboComponent {
         let shadow = this.getShadow();
         for(let placeholder of this.placeholders) {
             let el = shadow.getElementById(placeholder.elementId)!; //! let crash
+            console.log(`let el = shadow.getElementById("${placeholder.elementId}")!;`);
             let value = this.getAtt(placeholder.placeHolderId)?.value;
+            console.log(`let value = this.getAtt(${placeholder.placeHolderId})?.value;`);
             if(placeholder.type == "content") {
                 let node = el.childNodes.item(placeholder.nodeIndex);
+                console.log(`let node = el.childNodes.item(${placeholder.nodeIndex});`);
+                console.log("//todo: test node != null");
                 if(node == null) {
-                    if (placeholder.nodeIndex == 0)
+                    if (placeholder.nodeIndex == 0) {
                         el.textContent = placeholder.textParts.join(`{{${value}}}`);
+                        console.log(`el.textContent = ${JSON.stringify(placeholder.textParts)}.join(\`{{${value}}}\`);`)
+                    }
                     else
                         console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
                 }
-                else
+                else {
                     node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
+                    console.log(`node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join("{{${value}}}");`)
+                }
             }
         }
     }
