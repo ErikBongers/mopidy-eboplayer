@@ -2444,14 +2444,14 @@ var EboComponent = class EboComponent extends HTMLElement {
 		css = css.concat(this.cssNeeded.map((name) => EboComponent.cssCache.get(name)));
 		this.shadow.adoptedStyleSheets = css;
 		if (this.styleText) {
-			let template = document.createElement("template");
-			template.innerHTML = this.styleText.trim();
-			this.shadow.append(...template.content.childNodes);
+			let template$1 = document.createElement("template");
+			template$1.innerHTML = this.styleText.trim();
+			this.shadow.append(...template$1.content.childNodes);
 		}
 		if (this.divText) {
-			let template = document.createElement("template");
-			template.innerHTML = this.divText.trim();
-			this.shadow.append(...template.content.childNodes);
+			let template$1 = document.createElement("template");
+			template$1.innerHTML = this.divText.trim();
+			this.shadow.append(...template$1.content.childNodes);
 		}
 		this.render(this.shadow);
 		this._isRendered = true;
@@ -6979,6 +6979,7 @@ function createTextPlaceholders(text, type, elementId, nodeIndex, attributeName)
 	}
 	return placeholders;
 }
+function template(value, context) {}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
@@ -7116,7 +7117,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                 }
             </style>
         `;
-	static htmlText = `
+	@template static htmlText = `
         <div id="wrapper">
             <div id="hero" class="front">
                 <div id="front">

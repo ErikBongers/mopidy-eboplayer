@@ -7,7 +7,7 @@ import TlTrack = models.TlTrack;
 import {Parser} from "../lib/HtmlParserTs/parser";
 import {PeekingTokenizer} from "../lib/HtmlParserTs/PeekingTokenizer";
 import {HtmlTokenizer} from "../lib/HtmlParserTs/HtmlTokenizer";
-import {generateAllPlaceHolders, PlaceHolder} from "./placeholders";
+import {generateAllPlaceHolders, PlaceHolder, template} from "./placeholders";
 
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
@@ -143,6 +143,7 @@ export class EboNowPlayingComp extends EboComponent {
         `;
 
     // noinspection HtmlUnknownTarget
+    @template
     static htmlText = `
         <div id="wrapper">
             <div id="hero" class="front">

@@ -1,4 +1,5 @@
 import { defineConfig } from 'rolldown';
+import placeholdersPlugin from "./rolldown_plugins/placeholders.js";
 // import nodePolyfills from '@rolldown/plugin-node-polyfills';
 
 export default defineConfig({
@@ -9,6 +10,7 @@ export default defineConfig({
     },
     plugins: [
         // nodePolyfills()
+        placeholdersPlugin()
     ],
     external: [
         "events",

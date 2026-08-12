@@ -135,3 +135,8 @@ function test() {
     console.log(JSON.stringify(placeholders, null, 2));
 
 }
+
+export function template(value: any, context: ClassFieldDecoratorContext) {
+    //...or return `undefined`.
+}
+
