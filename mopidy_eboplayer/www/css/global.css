@@ -224,3 +224,7 @@ ebo-player-bar {
 .scroll {
     overflow-y: auto;
 }
+
+.nl {
+    white-space: pre-line;
+}

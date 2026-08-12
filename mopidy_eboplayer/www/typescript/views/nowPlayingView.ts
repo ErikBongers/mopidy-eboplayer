@@ -52,7 +52,7 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
         if (selectedTrackUri == currentTrackUri) {
             let linesObject = this.state.getModel().getActiveStreamLines();
             if (this.uri && linesObject?.uri == this.uri)
-                this.streamLines = linesObject.active_titles?.join("<br/>") ?? "";
+                this.streamLines = linesObject.active_titles?.join("\n") ?? "";
         }
         this.component.setAttribute("stream_lines", this.streamLines);
     }
