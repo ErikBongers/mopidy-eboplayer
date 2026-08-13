@@ -1,23 +1,34 @@
-import { Plugin } from 'rolldown';
+import {Plugin} from 'rolldown';
 import {Visitors, walk} from 'zimmerframe';
-import { parse } from '@typescript-eslint/typescript-estree';
-// import { parse } from 'acorn';
-import type {BaseNode, Node, Program} from 'estree';
+import {parse} from '@typescript-eslint/typescript-estree';
+import type {Node, Program} from 'estree';
 
-function stringify(val: any, depth: number, replacer: (number | string)[] | null | ((key: any, value: any) => any), space: string | number) {
+type StringifyReplacer = (number | string)[] | null | ((key: any, value: any) => any);
+
+function stringify(value: any, depth: number, replacer: StringifyReplacer, space: string | number) {
     function _build(key: any, val: any, depth: number, o?: any, a?: any): any { // (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
-        return !val || typeof val != 'object' ? val : (a = Array.isArray(val), JSON.stringify(val, function (k, v) {
+        function depthReplacer (k: any, v: any) {
             if (a || depth > 0) {
                 if (typeof replacer == "function")
                     v = replacer(k, v);
-                if (!k)
-                    return (a = Array.isArray(v), val = v);
+                if (!k) {
+                    a = Array.isArray(v);
+                    return val = v;
+                }
                 !o && (o = a ? [] : {});
                 o[k] = _build(k, v, a ? depth : depth - 1);
             }
-        }), o || (a ? [] : {}));
+        }
+
+        if (!val || typeof val != 'object') {
+            return val;
+        } else {
+            a = Array.isArray(val);
+            JSON.stringify(val, depthReplacer);
+            return o || (a ? [] : {});
+        }
     }
-    return JSON.stringify(_build('', val, depth), null, space);
+    return JSON.stringify(_build('', value, depth), null, space);
 }
 
 type WalkState = {
