@@ -6,26 +6,26 @@ import type {Node, Program} from 'estree';
 type StringifyReplacer = (number | string)[] | null | ((key: any, value: any) => any);
 
 function stringify(value: any, depth: number, replacer: StringifyReplacer, space: string | number) {
-    function _build(key: any, val: any, depth: number, o?: any, a?: any): any { // (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
+    function _build(_key: any, val: any, depth: number, o?: any, isArray?: any): any { // (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
         function depthReplacer (k: any, v: any) {
-            if (a || depth > 0) {
+            if (isArray || depth > 0) {
                 if (typeof replacer == "function")
                     v = replacer(k, v);
                 if (!k) {
-                    a = Array.isArray(v);
+                    isArray = Array.isArray(v);
                     return val = v;
                 }
-                !o && (o = a ? [] : {});
-                o[k] = _build(k, v, a ? depth : depth - 1);
+                !o && (o = isArray ? [] : {});
+                o[k] = _build(k, v, isArray ? depth : depth - 1);
             }
         }
 
         if (!val || typeof val != 'object') {
             return val;
         } else {
-            a = Array.isArray(val);
+            isArray = Array.isArray(val);
             JSON.stringify(val, depthReplacer);
-            return o || (a ? [] : {});
+            return o || (isArray ? [] : {});
         }
     }
     return JSON.stringify(_build('', value, depth), null, space);
@@ -54,7 +54,7 @@ const placeholdersPlugin = (): Plugin => {
                 const ast = parse(code, {range: true}) as Program;
 
                 // Print safely structured JSON output
-                let startPos = 70000;
+                // let startPos = 70000;
                 // console.log(stringify(ast, 2, null, 2));
                 // findNodeType(ast, 'VariableDeclaration');
 
@@ -107,7 +107,7 @@ const placeholdersPlugin = (): Plugin => {
                         state.templateId = null;
                         state.isTemplateExpression = false;
                     },
-                    TemplateLiteral(node, {state, next}) {
+                    TemplateLiteral(node, {state}) {
                         if (state.templateId == null)
                             return;
                         let fragments = node.quasis;
@@ -129,4 +129,5 @@ const placeholdersPlugin = (): Plugin => {
     };
 }
 
+// noinspection JSUnusedGlobalSymbols
 export default placeholdersPlugin;
