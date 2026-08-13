@@ -6979,7 +6979,12 @@ function createTextPlaceholders(text, type, elementId, nodeIndex, attributeName)
 	}
 	return placeholders;
 }
-function template(value, context) {}
+function template(strings, ...values) {
+	console.log(strings, values);
+	if (strings.length == 0) return "";
+	if (strings.length > 1) throw new Error(`A template cannot contain regular \${} placehoders.`);
+	return strings[0];
+}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
@@ -7117,7 +7122,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                 }
             </style>
         `;
-	@template static htmlText = `
+	static htmlText = template`
         <div id="wrapper">
             <div id="hero" class="front">
                 <div id="front">
@@ -7220,6 +7225,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	updatePlaceHolders() {
 		let shadow = this.getShadow();
+		console.log("START OF GENERATED CODE");
 		for (let placeholder of this.placeholders) {
 			let el = shadow.getElementById(placeholder.elementId);
 			console.log(`let el = shadow.getElementById("${placeholder.elementId}")!;`);
@@ -7239,6 +7245,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 				}
 			}
 		}
+		console.log("END OF GENERATED CODE");
 	}
 };
 

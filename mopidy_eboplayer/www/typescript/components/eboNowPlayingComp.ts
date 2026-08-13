@@ -143,8 +143,7 @@ export class EboNowPlayingComp extends EboComponent {
         `;
 
     // noinspection HtmlUnknownTarget
-    @template
-    static htmlText = `
+    static htmlText = template`
         <div id="wrapper">
             <div id="hero" class="front">
                 <div id="front">
@@ -266,6 +265,8 @@ export class EboNowPlayingComp extends EboComponent {
 
     private updatePlaceHolders() {
         let shadow = this.getShadow();
+
+        console.log("START OF GENERATED CODE");
         for(let placeholder of this.placeholders) {
             let el = shadow.getElementById(placeholder.elementId)!; //! let crash
             console.log(`let el = shadow.getElementById("${placeholder.elementId}")!;`);
@@ -289,5 +290,8 @@ export class EboNowPlayingComp extends EboComponent {
                 }
             }
         }
+        console.log("END OF GENERATED CODE");
     }
+//closing class
 }
+//class closed
