@@ -1,0 +1,24 @@
+{
+    //  "include": ["mopidy_eboplayer/www/typescript/**/*"],
+    "files": [
+        "placeholders.ts",
+    ],
+    "exclude": [],
+    "compilerOptions": {
+        "outDir": ".",
+        "target": "esnext",
+        "sourceMap": true,
+        "noEmit": true,
+        "incremental": false,
+        "moduleResolution": "bundler",
+        "noImplicitOverride": true,
+        "noImplicitThis": true,
+        "noImplicitReturns": true,
+        "noImplicitAny": true,
+        "strict": true,
+        "paths": {
+        },
+        "typeRoots": [],
+        "types": []
+    },
+}
