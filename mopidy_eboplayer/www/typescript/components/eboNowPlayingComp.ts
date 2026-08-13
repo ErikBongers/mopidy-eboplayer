@@ -292,6 +292,7 @@ export class EboNowPlayingComp extends EboComponent {
         }
         console.log("END OF GENERATED CODE");
     }
+
 //closing class
 }
 //class closed

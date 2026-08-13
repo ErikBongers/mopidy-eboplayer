@@ -2431,6 +2431,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (!this.connected) return;
 		if (!this._isRendered) return;
 		this.updateHtmlFromAtts();
+		this.testPlugin();
 		this.update(this.shadow);
 	}
 	update(shadow) {}
@@ -2545,6 +2546,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	addShadowEventListener(id, type, listener) {
 		this.shadow.getElementById(id)?.addEventListener(type, listener);
 	}
+	testPlugin() {}
 };
 
 //#endregion
@@ -7246,6 +7248,9 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 			}
 		}
 		console.log("END OF GENERATED CODE");
+	}
+	testPlugin() {
+		console.log("Modderfokker!");
 	}
 };
 

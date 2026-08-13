@@ -2,6 +2,7 @@ import {Plugin} from 'rolldown';
 import {Visitors, walk} from 'zimmerframe';
 import {parse} from '@typescript-eslint/typescript-estree';
 import type {Node, Program} from 'estree';
+import MagicString from 'magic-string';
 
 type StringifyReplacer = (number | string)[] | null | ((key: any, value: any) => any);
 
@@ -42,6 +43,7 @@ type WalkState = {
     isPlaceholderTemplate: boolean;
     isTemplateExpression: boolean;
     currentPropertyName: string | null;
+    ms: MagicString;
 };
 
 const placeholdersPlugin = (): Plugin => {
@@ -50,7 +52,7 @@ const placeholdersPlugin = (): Plugin => {
         transform(code: string, id: string) {
             if (id.includes('eboNowPlayingComp')) {
                 console.log(`Transforming ${id}...`);
-                // Parse using Rolldown's high-speed parser
+                const ms = new MagicString(code);
                 const ast = parse(code, {range: true}) as Program;
 
                 // Print safely structured JSON output
@@ -65,6 +67,7 @@ const placeholdersPlugin = (): Plugin => {
                     isPlaceholderTemplate: false,
                     isTemplateExpression: false,
                     currentPropertyName: null,
+                    ms,
                 };
 
 
@@ -76,7 +79,7 @@ const placeholdersPlugin = (): Plugin => {
                         state.currentClass = {
                             name: node.id.name,
                             start: node.range![0],
-                            end: node.range![0],
+                            end: node.range![1],
                         };
                         next(state); //nested classes are not possible, so just pass on the current state.
                         state.currentClass = null;
@@ -94,6 +97,8 @@ const placeholdersPlugin = (): Plugin => {
                         state.templateId = null;
                     },
                     TaggedTemplateExpression(node, {state, next}) {
+                        if(state.currentClass == null)
+                            return;
                         if(node.tag.type != "Identifier")
                             return; //the template tag should be a plain identifier
                         if(node.tag.name != "template")
@@ -104,6 +109,8 @@ const placeholdersPlugin = (): Plugin => {
                         next(state);
                         //todo: handle template...
                         console.log(JSON.stringify(state));
+                        console.log(code.substring(state.currentClass.end-1, state.currentClass.end));
+                        state.ms.overwrite(state.currentClass.end-1, state.currentClass.end, 'private override testPlugin() { console.log("TODO"); }\n}');
                         state.templateId = null;
                         state.isTemplateExpression = false;
                     },
@@ -122,7 +129,16 @@ const placeholdersPlugin = (): Plugin => {
                 };
                 walk(ast, state, visitors);
 
-                return code;
+                if (ms.hasChanged()) {
+                    return {
+                        code: ms.toString(),
+                        map: ms.generateMap({
+                            source: id,
+                            file: id + '.map',
+                            includeContent: true
+                        })
+                    };
+                }
             }
             return null;
         }

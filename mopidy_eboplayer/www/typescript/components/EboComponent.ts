@@ -110,6 +110,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         if (!this._isRendered)
             return;
         this.updateHtmlFromAtts();
+        this.testPlugin();
         this.update(this.shadow);
     }
 
@@ -264,5 +265,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     addShadowEventListener(id: string, type: string, listener: (this: HTMLElement, ev: Event) => any) {
         this.shadow.getElementById(id)?.addEventListener(type, listener);
     }
+
+    protected testPlugin() {}
 }
 
