@@ -1,5 +1,5 @@
 import { defineConfig } from 'rolldown';
-import placeholdersPlugin from "./rolldown_plugins/placeholders/placeholders.js";
+import placeholdersPlugin from "./rolldown_plugins/placeholders/placeholders.cjs";
 // import nodePolyfills from '@rolldown/plugin-node-polyfills';
 
 export default defineConfig({

@@ -1,8 +1,8 @@
 import { Plugin } from 'rolldown';
-// import type {Program, IdentifierName} from '@oxc-project/types';
-import type {Program, BaseNode} from 'estree';
 import {Visitors, walk} from 'zimmerframe';
-
+import { parse } from '@typescript-eslint/typescript-estree';
+// import { parse } from 'acorn';
+import type {BaseNode, Node, Program} from 'estree';
 
 function stringify(val: any, depth: number, replacer: (number | string)[] | null | ((key: any, value: any) => any), space: string | number) {
     function _build(key: any, val: any, depth: number, o?: any, a?: any): any { // (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
@@ -28,6 +28,9 @@ type WalkState = {
     } | null;
     templateId: string | null;
     templateString: string | null;
+    isPlaceholderTemplate: boolean;
+    isTemplateExpression: boolean;
+    currentPropertyName: string | null;
 };
 
 const placeholdersPlugin = (): Plugin => {
@@ -37,7 +40,7 @@ const placeholdersPlugin = (): Plugin => {
             if (id.includes('eboNowPlayingComp')) {
                 console.log(`Transforming ${id}...`);
                 // Parse using Rolldown's high-speed parser
-                const ast = this.parse(code, {lang: 'ts'}) as Program;
+                const ast = parse(code, {range: true}) as Program;
 
                 // Print safely structured JSON output
                 let startPos = 70000;
@@ -48,18 +51,21 @@ const placeholdersPlugin = (): Plugin => {
                     currentClass: null,
                     templateId: null,
                     templateString: null,
+                    isPlaceholderTemplate: false,
+                    isTemplateExpression: false,
+                    currentPropertyName: null,
                 };
 
-                let visitors: Visitors<any, WalkState> = { //todo: try to get rid of any type. estree.Node or BaseNode doesn't likely work because start and end are in node.loc instead of directly in node.
+
+                let visitors: Visitors<Node, WalkState> = { //todo: try to get rid of any type. estree.Node or BaseNode doesn't likely work because start and end are in node.loc instead of directly in node.
                     ClassDeclaration(node, {state, next}) {
                         //todo if not an EboComponent, skip.
                         // if(node.superClass?.name === 'EboComponent') {
 
-                        console.log(stringify(node, 2, null, 2));
                         state.currentClass = {
                             name: node.id.name,
-                            start: node.start,
-                            end: node.end,
+                            start: node.range![0],
+                            end: node.range![0],
                         };
                         next(state); //nested classes are not possible, so just pass on the current state.
                         state.currentClass = null;
@@ -67,18 +73,28 @@ const placeholdersPlugin = (): Plugin => {
                     PropertyDefinition(node, {state, next}) {
                         if (state.currentClass == null)
                             return;
-                        //Note that decorators don't work yet in browsers.
-                        if (node.decorators?.length > 0 && node.decorators[0].expression.name === 'template') {
-                            state.templateId = node.key.name;
-                            next({...state, templateId: node.key.name});
-                            state.templateId = null;
-                        }
-                        if (node.value.type === 'TaggedTemplateExpression' && node.value.tag.name === 'template') {
-                            state.templateId = node.key.name;
-                            next(state);
-                            // console.log(JSON.stringify(state));
-                            state.templateId = null;
-                        }
+                        console.log(stringify(node, 2, null, 2));
+                        if(node.key.type != "Identifier")
+                            return;
+                        state.currentPropertyName = node.key.name;
+                        state.templateId = null;
+                        next(state);
+                        // console.log(JSON.stringify(state));
+                        state.templateId = null;
+                    },
+                    TaggedTemplateExpression(node, {state, next}) {
+                        if(node.tag.type != "Identifier")
+                            return; //the template tag should be a plain identifier
+                        if(node.tag.name != "template")
+                            return;
+
+                        state.isTemplateExpression = true;
+                        state.templateId = state.currentPropertyName;
+                        next(state);
+                        //todo: handle template...
+                        console.log(JSON.stringify(state));
+                        state.templateId = null;
+                        state.isTemplateExpression = false;
                     },
                     TemplateLiteral(node, {state, next}) {
                         if (state.templateId == null)
