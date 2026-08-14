@@ -1,3 +1,11 @@
+* Implement a progress bar.
+  > use the existing one?
+  > This may solve the Now Playing vs Album issue
+
+* If the tracklist has a default visual (fading top and bottom?), this may also enhance the diff Now Playing vs Album.
+
+* To distinguish Now Playing from Album or Radio, wrap the image in an album sleeve or radio: some fine and fading squircle borders.
+
 * Now playing takes in album info, but it also displays radios.
 
 HTML string tags

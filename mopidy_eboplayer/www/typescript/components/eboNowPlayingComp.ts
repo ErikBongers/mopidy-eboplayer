@@ -3,10 +3,7 @@ import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../model
 import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
-import {Parser} from "../lib/HtmlParserTs/parser";
-import {PeekingTokenizer} from "../lib/HtmlParserTs/PeekingTokenizer";
-import {HtmlTokenizer} from "../lib/HtmlParserTs/HtmlTokenizer";
-import {generateAllPlaceHolders, PlaceHolder, template} from "./placeholders";
+import {template} from "./placeholders";
 import TlTrack = models.TlTrack;
 
 export class EboNowPlayingComp extends EboComponent {
@@ -45,8 +42,6 @@ export class EboNowPlayingComp extends EboComponent {
         this.requestUpdate();
     }
 
-    private enabled: boolean = false;
-    private show_back: boolean = false;
     //for progressBar
     private position: string = "40";
     private min: string = "0";
@@ -142,7 +137,7 @@ export class EboNowPlayingComp extends EboComponent {
 
     // noinspection HtmlUnknownTarget
     static htmlText = template`
-        <div id="wrapper">
+        <div id="wrapper" class="{show_back}">
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
@@ -176,6 +171,7 @@ export class EboNowPlayingComp extends EboComponent {
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
         this.defineAtt("hide_tracklist", "", (value) => value == "true"? "hidden" : "");
+        this.defineAtt("show_back", "", (value) => value == "true"? "back" : "front");
         this.defineAtt("name", "");
         this.defineAtt("extra", "");
         this.defineAtt("stream_lines", "");
@@ -229,7 +225,6 @@ export class EboNowPlayingComp extends EboComponent {
             // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });
-        this.switchFrontBackNoRender();
         if(this.albumInfo.type == AlbumDataType.Loaded) {
             // @ts-ignore
             shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
@@ -237,11 +232,4 @@ export class EboNowPlayingComp extends EboComponent {
         let redioDetailsComp = shadow.querySelector("ebo-radio-details-view") as EboRadioHistoryComp;
         redioDetailsComp.streamInfo = this.streamInfo;
     }
-
-    private switchFrontBackNoRender() {
-        let wrapper = this.shadow.getElementById("wrapper") as HTMLElement;
-        wrapper.classList.remove("front", "back");
-        wrapper.classList.add(this.show_back ? "back" : "front");
-    }
-
 }
