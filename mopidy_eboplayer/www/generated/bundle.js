@@ -2522,15 +2522,6 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	updatePlaceholders(shadow) {}
 };
-function addShadowEventListener(element, type, listener_or_event, ...args) {
-	if (typeof listener_or_event == "function") {
-		element.addEventListener(type, listener_or_event);
-		return;
-	}
-	element.addEventListener(type, () => {
-		element.dispatchEvent(createEvent(listener_or_event, args[0]));
-	});
-}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboProgressBar.ts
@@ -6692,15 +6683,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                         <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
-                <div id="back">
-                    <div id="header" class="flexRow">
-                        <img id="smallImage" src="{img}" alt="Album image">
-                        <span id="title" class="selectable">{name}</span>
-                    </div>
-                    <div id="albumTableWrapper">
-                        <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
-                    </div>
-                </div>
             </div>
             <div id="tracklist" class="flex scroll {hide_tracklist}">
                 <ebo-tracklist-view></ebo-tracklist-view>            
@@ -6715,16 +6697,10 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this.defineAtt("extra", "");
 		this.defineAtt("stream_lines", "");
 		this.defineAtt("img", "", (value, shadow, el) => {
-			let smallImg = shadow.getElementById("smallImage");
 			if (value != "") {
 				el.style.visibility = "";
-				smallImg.style.visibility = "";
 				el.src = value;
-				smallImg.src = value;
-			} else {
-				el.style.visibility = "hidden";
-				smallImg.style.visibility = "hidden";
-			}
+			} else el.style.visibility = "hidden";
 			return value;
 		});
 	}
@@ -6735,7 +6711,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 			return;
 		}
 		switch (name) {
-			case "enabled":
 			case "show_back":
 				this.updateBoolProperty(name, newValue);
 				break;
@@ -6744,8 +6719,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
-		let smallImage = shadow.getElementById("smallImage");
-		addShadowEventListener(smallImage, "click", "bigTrackAlbumSmallImgClicked.eboplayer", {});
 		this.requestUpdate();
 	}
 	getTracklistComp() {
@@ -6758,8 +6731,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
 		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-		let redioDetailsComp = shadow.querySelector("ebo-radio-details-view");
-		redioDetailsComp.streamInfo = this.streamInfo;
 	}
 	updatePlaceholders(shadow) {
 		let el;
@@ -6793,18 +6764,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		el = shadow.getElementById("extra");
 		attDef = this.getAtt("extra");
 		value = this.getAtt("extra")?.value ?? "???";
-		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
-		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(value);
-		else node.nodeValue = ["", ""].join(value);
-		el = shadow.getElementById("smallImage");
-		attDef = this.getAtt("img");
-		value = this.getAtt("img")?.value ?? "???";
-		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
-		el.setAttribute("src", ["", ""].join(value));
-		el = shadow.getElementById("title");
-		attDef = this.getAtt("name");
-		value = this.getAtt("name")?.value ?? "???";
 		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
 		node = el.childNodes.item(0);
 		if (node == null) el.textContent = ["", ""].join(value);

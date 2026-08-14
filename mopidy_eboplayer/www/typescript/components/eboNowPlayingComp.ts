@@ -152,15 +152,6 @@ export class EboNowPlayingComp extends EboComponent {
                         <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
-                <div id="back">
-                    <div id="header" class="flexRow">
-                        <img id="smallImage" src="{img}" alt="Album image">
-                        <span id="title" class="selectable">{name}</span>
-                    </div>
-                    <div id="albumTableWrapper">
-                        <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
-                    </div>
-                </div>
             </div>
             <div id="tracklist" class="flex scroll {hide_tracklist}">
                 <ebo-tracklist-view></ebo-tracklist-view>            
@@ -176,16 +167,12 @@ export class EboNowPlayingComp extends EboComponent {
         this.defineAtt("extra", "");
         this.defineAtt("stream_lines", "");
         this.defineAtt("img", "", (value, shadow, el) => {
-            let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
             if(value != "") {
                 el.style.visibility = "";
-                smallImg.style.visibility = "";
                 (el as HTMLImageElement).src = value as string;
-                smallImg.src = value as string;
             }
             else {
                 (el as HTMLImageElement).style.visibility = "hidden";
-                smallImg.style.visibility = "hidden";
             }
             return value as string;
         });
@@ -199,7 +186,6 @@ export class EboNowPlayingComp extends EboComponent {
             return;
         }
         switch (name) {
-            case "enabled":
             case "show_back":
                 this.updateBoolProperty(name, newValue);
                 break;
@@ -209,8 +195,6 @@ export class EboNowPlayingComp extends EboComponent {
 
     override render(shadow:ShadowRoot) {
         this.addShadowEventListener("img","click","bigTimelineImageClicked.eboplayer", {});
-        let smallImage = shadow.getElementById("smallImage") as HTMLImageElement;
-        addShadowEventListener(smallImage, "click", "bigTrackAlbumSmallImgClicked.eboplayer", {});
         this.requestUpdate();
     }
 
@@ -226,10 +210,9 @@ export class EboNowPlayingComp extends EboComponent {
             progressBarElement.setAttribute(attName, this[attName]);
         });
         if(this.albumInfo.type == AlbumDataType.Loaded) {
+            //todo: call this groupTitle or something and move it in a property that is set in the view and handled as a placeholder.
             // @ts-ignore
             shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
         }
-        let redioDetailsComp = shadow.querySelector("ebo-radio-details-view") as EboRadioHistoryComp;
-        redioDetailsComp.streamInfo = this.streamInfo;
     }
 }
