@@ -27,12 +27,14 @@ function generatePlaceHolderCode(placeholders: PlaceHolder[], buffer: Buffer) {
             buffer.appendLine(`       node = el.childNodes.item(${placeholder.nodeIndex});`);
             buffer.appendLine(`       if(node == null) {`);
             if (placeholder.nodeIndex == 0)
-                buffer.appendLine(`           el.textContent = ${JSON.stringify(placeholder.textParts)}.join(\`{{\${value}}}\`);`);
+                buffer.appendLine(`           el.textContent = ${JSON.stringify(placeholder.textParts)}.join(value);`);
             else
                 buffer.appendLine(`           console.error("Text node to set not found for element #${placeholder.elementId}, node ${placeholder.nodeIndex}, placeholder: ${placeholder.placeHolderId}");`);
             buffer.appendLine(`       } else {`);
-            buffer.appendLine(`           node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join(\`{{\${value}}}\`);`);
+            buffer.appendLine(`           node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join(value);`);
             buffer.appendLine(`       }`);
+        } else if (placeholder.type == "attribute") {
+            buffer.appendLine(`       el.setAttribute("${placeholder.attributeName}", ${JSON.stringify(placeholder.textParts)}.join(value));`);
         }
     }
 }

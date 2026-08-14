@@ -7231,20 +7231,21 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		el = shadow.getElementById("name");
 		value = this.getAtt("name")?.value;
 		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(`{{${value}}}`);
-		else node.nodeValue = ["", ""].join(`{{${value}}}`);
+		if (node == null) el.textContent = ["", ""].join(value);
+		else node.nodeValue = ["", ""].join(value);
 		el = shadow.getElementById("stream_lines");
 		value = this.getAtt("stream_lines")?.value;
 		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(`{{${value}}}`);
-		else node.nodeValue = ["", ""].join(`{{${value}}}`);
+		if (node == null) el.textContent = ["", ""].join(value);
+		else node.nodeValue = ["", ""].join(value);
 		el = shadow.getElementById("extra");
 		value = this.getAtt("extra")?.value;
 		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(`{{${value}}}`);
-		else node.nodeValue = ["", ""].join(`{{${value}}}`);
+		if (node == null) el.textContent = ["", ""].join(value);
+		else node.nodeValue = ["", ""].join(value);
 		el = shadow.getElementById("smallImage");
 		value = this.getAtt("img")?.value;
+		el.setAttribute("src", ["", ""].join(value));
 	}
 };
 
