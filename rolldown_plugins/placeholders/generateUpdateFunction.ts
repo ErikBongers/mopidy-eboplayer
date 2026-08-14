@@ -11,6 +11,7 @@ export function generateUpdateFunction(placeholders: PlaceHolder[]) {
     buffer.appendLine("//START OF GENERATED CODE");
     buffer.appendLine("   override testPlugin(shadow: ShadowRoot) {");
     buffer.appendLine(`       let el: HTMLElement;`);
+    buffer.appendLine(`       let attDef: AttDef;`);
     buffer.appendLine(`       let value: unknown;`);
     buffer.appendLine(`       let node: ChildNode;`);
     generatePlaceHolderCode(placeholders, buffer);
@@ -21,8 +22,13 @@ export function generateUpdateFunction(placeholders: PlaceHolder[]) {
 
 function generatePlaceHolderCode(placeholders: PlaceHolder[], buffer: Buffer) {
     for(let placeholder of placeholders) {
+        //todo: group per att, so that updater gets called only once...or group by element and store result of updater in attDef?
         buffer.appendLine(`       el = shadow.getElementById("${placeholder.elementId}")!;`);
-        buffer.appendLine(`       value = this.getAtt("${placeholder.placeHolderId}")?.value;`);
+        buffer.appendLine(`       attDef = this.getAtt("${placeholder.placeHolderId}");`);
+        buffer.appendLine(`       value = this.getAtt("${placeholder.placeHolderId}")?.value??"???";`);
+        buffer.appendLine(`       if(attDef?.updater != null) {`);
+        buffer.appendLine(`           value = attDef.updater(value, shadow, el);`);
+        buffer.appendLine(`       }`);
         if(placeholder.type == "content") {
             buffer.appendLine(`       node = el.childNodes.item(${placeholder.nodeIndex});`);
             buffer.appendLine(`       if(node == null) {`);

@@ -109,7 +109,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             return;
         if (!this._isRendered)
             return;
-        this.updateHtmlFromAtts();
+        // this.updateHtmlFromAtts();
         this.testPlugin(this.shadow);
         this.update(this.shadow);
     }

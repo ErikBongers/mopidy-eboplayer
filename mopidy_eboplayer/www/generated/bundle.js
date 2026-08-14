@@ -2430,7 +2430,6 @@ var EboComponent = class EboComponent extends HTMLElement {
 	doUpdate() {
 		if (!this.connected) return;
 		if (!this._isRendered) return;
-		this.updateHtmlFromAtts();
 		this.testPlugin(this.shadow);
 		this.update(this.shadow);
 	}
@@ -7129,7 +7128,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" style="visibility: hidden" src="" alt="Album cover"/>
+                        <img id="img" style="visibility: hidden" src="{img}" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -7143,22 +7142,22 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                 <div id="back">
                     <div id="header" class="flexRow">
                         <img id="smallImage" src="{img}" alt="Album image">
-                        <span id="title" class="selectable"></span>
+                        <span id="title" class="selectable">{name}</span>
                     </div>
                     <div id="albumTableWrapper">
                         <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
                     </div>
                 </div>
             </div>
-            <div id="tracklist" class="flex scroll">
+            <div id="tracklist" class="flex scroll {hide_tracklist}">
                 <ebo-tracklist-view></ebo-tracklist-view>            
             </div>  
         </div>
         `;
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-		this.defineAtt("hide_tracklist", "hide", false, ["tracklist"]);
-		this.defineAtt("name", "string", "", ["name", "title"]);
+		this.defineAtt("hide_tracklist", "string", "", (value) => value == "true" ? "hidden" : "");
+		this.defineAtt("name", "string", "");
 		this.defineAtt("extra", "string", "");
 		this.defineAtt("stream_lines", "string", "");
 		this.defineAtt("img", "string", "", (value, shadow, el) => {
@@ -7227,26 +7226,52 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	testPlugin(shadow) {
 		let el;
+		let attDef;
 		let value;
 		let node;
+		el = shadow.getElementById("img");
+		attDef = this.getAtt("img");
+		value = this.getAtt("img")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
+		el.setAttribute("src", ["", ""].join(value));
 		el = shadow.getElementById("name");
-		value = this.getAtt("name")?.value;
+		attDef = this.getAtt("name");
+		value = this.getAtt("name")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
 		node = el.childNodes.item(0);
 		if (node == null) el.textContent = ["", ""].join(value);
 		else node.nodeValue = ["", ""].join(value);
 		el = shadow.getElementById("stream_lines");
-		value = this.getAtt("stream_lines")?.value;
+		attDef = this.getAtt("stream_lines");
+		value = this.getAtt("stream_lines")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
 		node = el.childNodes.item(0);
 		if (node == null) el.textContent = ["", ""].join(value);
 		else node.nodeValue = ["", ""].join(value);
 		el = shadow.getElementById("extra");
-		value = this.getAtt("extra")?.value;
+		attDef = this.getAtt("extra");
+		value = this.getAtt("extra")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
 		node = el.childNodes.item(0);
 		if (node == null) el.textContent = ["", ""].join(value);
 		else node.nodeValue = ["", ""].join(value);
 		el = shadow.getElementById("smallImage");
-		value = this.getAtt("img")?.value;
+		attDef = this.getAtt("img");
+		value = this.getAtt("img")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
 		el.setAttribute("src", ["", ""].join(value));
+		el = shadow.getElementById("title");
+		attDef = this.getAtt("name");
+		value = this.getAtt("name")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
+		node = el.childNodes.item(0);
+		if (node == null) el.textContent = ["", ""].join(value);
+		else node.nodeValue = ["", ""].join(value);
+		el = shadow.getElementById("tracklist");
+		attDef = this.getAtt("hide_tracklist");
+		value = this.getAtt("hide_tracklist")?.value ?? "???";
+		if (attDef?.updater != null) value = attDef.updater(value, shadow, el);
+		el.setAttribute("class", ["flex scroll ", ""].join(value));
 	}
 };
 

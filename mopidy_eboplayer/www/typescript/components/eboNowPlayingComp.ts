@@ -148,7 +148,7 @@ export class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" style="visibility: hidden" src="" alt="Album cover"/>
+                        <img id="img" style="visibility: hidden" src="{img}" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -162,14 +162,14 @@ export class EboNowPlayingComp extends EboComponent {
                 <div id="back">
                     <div id="header" class="flexRow">
                         <img id="smallImage" src="{img}" alt="Album image">
-                        <span id="title" class="selectable"></span>
+                        <span id="title" class="selectable">{name}</span>
                     </div>
                     <div id="albumTableWrapper">
                         <ebo-radio-details-view img="images/default_cover.png" ></ebo-radio-details-view>
                     </div>
                 </div>
             </div>
-            <div id="tracklist" class="flex scroll">
+            <div id="tracklist" class="flex scroll {hide_tracklist}">
                 <ebo-tracklist-view></ebo-tracklist-view>            
             </div>  
         </div>
@@ -177,8 +177,8 @@ export class EboNowPlayingComp extends EboComponent {
 
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-        this.defineAtt("hide_tracklist", "hide", false, ["tracklist"]);
-        this.defineAtt("name", "string", "", ["name", "title"]);
+        this.defineAtt("hide_tracklist", "string", "", (value) => value == "true"? "hidden" : "");
+        this.defineAtt("name", "string", "");
         this.defineAtt("extra", "string", "");
         this.defineAtt("stream_lines", "string", "");
         this.defineAtt("img", "string", "", (value, shadow, el) => {

@@ -112,10 +112,6 @@ input {
     background-color: var(--edit-background);
 }
 
-.hidden {
-    display: none;
-}
-
 .linkButton {
     background: none!important;
     border: none;
@@ -228,3 +224,9 @@ ebo-player-bar {
 .nl {
     white-space: pre-line;
 }
+
+/*KEEP THIS AT BOTTOM, for priority.*/
+.hidden {
+    display: none;
+}
+
