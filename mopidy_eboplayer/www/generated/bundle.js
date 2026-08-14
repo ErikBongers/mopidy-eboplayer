@@ -2430,7 +2430,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	doUpdate() {
 		if (!this.connected) return;
 		if (!this._isRendered) return;
-		this.testPlugin(this.shadow);
+		this.updatePlaceholders(this.shadow);
 		this.update(this.shadow);
 	}
 	update(shadow) {}
@@ -2462,9 +2462,8 @@ var EboComponent = class EboComponent extends HTMLElement {
 	getShadow() {
 		return this.shadow;
 	}
-	defineAtt(name, type, value, updater = null) {
+	defineAtt(name, value, updater = null) {
 		this.attDefs.set(name, {
-			type,
 			value,
 			updater
 		});
@@ -2473,42 +2472,8 @@ var EboComponent = class EboComponent extends HTMLElement {
 	updateAtts(name, _oldValue, newValue) {
 		let attDef = this.getAtt(name);
 		if (attDef == void 0) return false;
-		switch (attDef.type) {
-			case "string":
-				attDef.value = newValue;
-				return true;
-			case "hide":
-				attDef.value = newValue;
-				return true;
-			default: unreachable(attDef.type);
-		}
-	}
-	updateHtmlFromAtts(shadow = this.getShadow()) {
-		this.attDefs.forEach((attDef, attName) => {
-			if (typeof attDef.updater == "function") {
-				let el = this.shadow.getElementById(attName);
-				attDef.updater(attDef.value, shadow, el);
-			} else if (attDef.updater instanceof Array) attDef.updater.forEach((elementId) => {
-				this.updateHtmlFromAtt(elementId, attDef);
-			});
-			else this.updateHtmlFromAtt(attName, attDef);
-		});
-	}
-	updateHtmlFromAtt(elementId, attDef) {
-		let el = this.shadow.getElementById(elementId);
-		if (el == null) {
-			console.error("Element with id " + elementId + " not found");
-			return;
-		}
-		switch (attDef.type) {
-			case "string":
-				el.innerHTML = attDef.value;
-				break;
-			case "hide":
-				el.style.display = attDef.value == "true" ? "none" : "";
-				break;
-			default: unreachable(attDef.type);
-		}
+		attDef.value = newValue;
+		return true;
 	}
 	setClassFromBoolAttribute(el, attName) {
 		if (this[attName] == true) el.classList.add(attName);
@@ -2545,7 +2510,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	addShadowEventListener(id, type, listener) {
 		this.shadow.getElementById(id)?.addEventListener(type, listener);
 	}
-	testPlugin(shadow) {}
+	updatePlaceholders(shadow) {}
 };
 
 //#endregion
@@ -7156,11 +7121,11 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
         `;
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-		this.defineAtt("hide_tracklist", "string", "", (value) => value == "true" ? "hidden" : "");
-		this.defineAtt("name", "string", "");
-		this.defineAtt("extra", "string", "");
-		this.defineAtt("stream_lines", "string", "");
-		this.defineAtt("img", "string", "", (value, shadow, el) => {
+		this.defineAtt("hide_tracklist", "", (value) => value == "true" ? "hidden" : "");
+		this.defineAtt("name", "");
+		this.defineAtt("extra", "");
+		this.defineAtt("stream_lines", "");
+		this.defineAtt("img", "", (value, shadow, el) => {
 			let smallImg = shadow.getElementById("smallImage");
 			if (value != "") {
 				el.style.visibility = "";
@@ -7224,7 +7189,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		wrapper.classList.remove("front", "back");
 		wrapper.classList.add(this.show_back ? "back" : "front");
 	}
-	testPlugin(shadow) {
+	updatePlaceholders(shadow) {
 		let el;
 		let attDef;
 		let value;

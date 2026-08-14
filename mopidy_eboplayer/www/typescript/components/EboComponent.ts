@@ -6,12 +6,10 @@ export interface HasName {
     tagName: string;
 }
 
-export type AttType = "string" | "hide";
 export type ElementId = string;
 export interface AttDef {
-    type: AttType;
     value: unknown;
-    updater: Updater | ElementId[] | null;
+    updater: Updater | null;
 }
 
 export type Updater = (value: unknown, shadow: ShadowRoot, el: HTMLElement) => void | string;
@@ -110,7 +108,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         if (!this._isRendered)
             return;
         // this.updateHtmlFromAtts();
-        this.testPlugin(this.shadow);
+        this.updatePlaceholders(this.shadow);
         this.update(this.shadow);
     }
 
@@ -151,8 +149,8 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         return this.shadow;
     }
 
-    protected defineAtt(name: string, type: AttType, value: any, updater: Updater | ElementId[] | null = null) {
-        this.attDefs.set(name, {type: type, value, updater});
+    protected defineAtt(name: string, value: any, updater: Updater | null = null) {
+        this.attDefs.set(name, {value, updater});
     }
 
     getAtt = (name: string) => this.attDefs.get(name);
@@ -162,50 +160,8 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         if(attDef == undefined)
             return false;
 
-        switch (attDef.type) {
-            case "string":
-                attDef.value = newValue;
-                return true;
-            case "hide":
-                attDef.value = newValue;
-                return true;
-            default:
-                unreachable(attDef.type);
-        }
-    }
-
-    updateHtmlFromAtts(shadow: ShadowRoot = this.getShadow()) {
-        this.attDefs
-            .forEach((attDef, attName) => {
-                if (typeof attDef.updater == "function") {
-                    let el = this.shadow.getElementById(attName) as HTMLElement;
-                    attDef.updater(attDef.value, shadow, el);
-                } else if (attDef.updater instanceof Array) {
-                    attDef.updater.forEach(elementId => {
-                        this.updateHtmlFromAtt(elementId, attDef);
-                    });
-                } else {
-                    this.updateHtmlFromAtt(attName, attDef);
-                }
-            });
-    }
-
-    private updateHtmlFromAtt(elementId: string, attDef: AttDef) {
-        let el = this.shadow.getElementById(elementId) as HTMLElement
-        if (el == null) {
-            console.error("Element with id " + elementId + " not found");
-            return;
-        }
-        switch (attDef.type) {
-            case "string":
-                el.innerHTML = attDef.value as string;
-                break;
-            case "hide":
-                el.style.display = attDef.value == "true" ? "none" : "";
-                break;
-            default:
-                unreachable(attDef.type);
-        }
+        attDef.value = newValue;
+        return true;
     }
 
     setClassFromBoolAttribute(el: HTMLElement, attName: string) {
@@ -266,6 +222,6 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         this.shadow.getElementById(id)?.addEventListener(type, listener);
     }
 
-    protected testPlugin(shadow: ShadowRoot) {}
+    protected updatePlaceholders(shadow: ShadowRoot) {}
 }
 

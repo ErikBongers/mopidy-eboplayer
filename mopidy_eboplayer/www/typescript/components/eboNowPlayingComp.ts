@@ -177,11 +177,11 @@ export class EboNowPlayingComp extends EboComponent {
 
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-        this.defineAtt("hide_tracklist", "string", "", (value) => value == "true"? "hidden" : "");
-        this.defineAtt("name", "string", "");
-        this.defineAtt("extra", "string", "");
-        this.defineAtt("stream_lines", "string", "");
-        this.defineAtt("img", "string", "", (value, shadow, el) => {
+        this.defineAtt("hide_tracklist", "", (value) => value == "true"? "hidden" : "");
+        this.defineAtt("name", "");
+        this.defineAtt("extra", "");
+        this.defineAtt("stream_lines", "");
+        this.defineAtt("img", "", (value, shadow, el) => {
             let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
             if(value != "") {
                 el.style.visibility = "";

@@ -9,7 +9,7 @@ class Buffer {
 export function generateUpdateFunction(placeholders: PlaceHolder[]) {
     let buffer = new Buffer();
     buffer.appendLine("//START OF GENERATED CODE");
-    buffer.appendLine("   override testPlugin(shadow: ShadowRoot) {");
+    buffer.appendLine("   override updatePlaceholders(shadow: ShadowRoot) {");
     buffer.appendLine(`       let el: HTMLElement;`);
     buffer.appendLine(`       let attDef: AttDef;`);
     buffer.appendLine(`       let value: unknown;`);
