@@ -191,7 +191,7 @@ export class EboNowPlayingComp extends EboComponent {
                 (el as HTMLImageElement).style.visibility = "hidden";
                 smallImg.style.visibility = "hidden";
             }
-            return value as string; //todo: make AddDef and Updater generic for value: T
+            return value as string;
         });
 
         //PLACEHOLDER TEST
