@@ -2507,8 +2507,12 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (comp.tagName == EboComponent.NO_TAG_NAME) throw "Component class should have tagName defined.";
 		customElements.define(comp.tagName, comp);
 	}
-	addShadowEventListener(id, type, listener) {
-		this.shadow.getElementById(id)?.addEventListener(type, listener);
+	addShadowEventListener(id, type, listener_or_event, ...args) {
+		if (typeof listener_or_event == "function") {
+			this.shadow.getElementById(id)?.addEventListener(type, listener_or_event);
+			return;
+		}
+		this.dispatchEboEvent(listener_or_event, args[0]);
 	}
 	updatePlaceholders(shadow) {}
 };
@@ -7162,9 +7166,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		this.addShadowEventListener("img", "click", (ev) => {
-			this.dispatchEboEvent("bigTimelineImageClicked.eboplayer", {});
-		});
+		this.addShadowEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
 		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
 		});

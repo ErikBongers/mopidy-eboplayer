@@ -218,8 +218,16 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         customElements.define(comp.tagName, comp);
     }
 
-    addShadowEventListener(id: string, type: string, listener: (this: HTMLElement, ev: Event) => any) {
-        this.shadow.getElementById(id)?.addEventListener(type, listener);
+    addShadowEventListener<TEventName extends keyof EboEventHandlersEventMap, TStrOrFnc extends (TEventName | ((this: HTMLElement, ev: Event) => any))> (
+        id: string, type: string,
+        listener_or_event: TStrOrFnc,
+        ...args: TStrOrFnc extends TEventName ? [EboEventHandlersEventMap[TEventName]] : []
+    ) {
+        if(typeof listener_or_event == "function") {
+            this.shadow.getElementById(id)?.addEventListener(type, listener_or_event);
+            return;
+        }
+        this.dispatchEboEvent(listener_or_event, args[0]!); //! checked by generics.
     }
 
     protected updatePlaceholders(shadow: ShadowRoot) {}
