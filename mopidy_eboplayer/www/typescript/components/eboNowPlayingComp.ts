@@ -1,4 +1,4 @@
-import {EboComponent} from "./EboComponent";
+import {AttDef, EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
@@ -241,7 +241,6 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        this.updatePlaceHolders()
         this.getTracklistComp().tracklist = this.tracklist;
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboNowPlayingComp.progressBarAttributes.forEach(attName => {
@@ -263,36 +262,4 @@ export class EboNowPlayingComp extends EboComponent {
         wrapper.classList.add(this.show_back ? "back" : "front");
     }
 
-    private updatePlaceHolders() {
-        let shadow = this.getShadow();
-
-        console.log("START OF GENERATED CODE");
-        for(let placeholder of this.placeholders) {
-            let el = shadow.getElementById(placeholder.elementId)!; //! let crash
-            console.log(`let el = shadow.getElementById("${placeholder.elementId}")!;`);
-            let value = this.getAtt(placeholder.placeHolderId)?.value;
-            console.log(`let value = this.getAtt(${placeholder.placeHolderId})?.value;`);
-            if(placeholder.type == "content") {
-                let node = el.childNodes.item(placeholder.nodeIndex);
-                console.log(`let node = el.childNodes.item(${placeholder.nodeIndex});`);
-                console.log("//todo: test node != null");
-                if(node == null) {
-                    if (placeholder.nodeIndex == 0) {
-                        el.textContent = placeholder.textParts.join(`{{${value}}}`);
-                        console.log(`el.textContent = ${JSON.stringify(placeholder.textParts)}.join(\`{{${value}}}\`);`)
-                    }
-                    else
-                        console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
-                }
-                else {
-                    node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
-                    console.log(`node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join("{{${value}}}");`)
-                }
-            }
-        }
-        console.log("END OF GENERATED CODE");
-    }
-
-//closing class
 }
-//class closed

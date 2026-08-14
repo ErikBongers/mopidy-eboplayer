@@ -2431,7 +2431,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (!this.connected) return;
 		if (!this._isRendered) return;
 		this.updateHtmlFromAtts();
-		this.testPlugin();
+		this.testPlugin(this.shadow);
 		this.update(this.shadow);
 	}
 	update(shadow) {}
@@ -2546,7 +2546,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 	addShadowEventListener(id, type, listener) {
 		this.shadow.getElementById(id)?.addEventListener(type, listener);
 	}
-	testPlugin() {}
+	testPlugin(shadow) {}
 };
 
 //#endregion
@@ -7209,7 +7209,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		return this.getShadow().querySelector("ebo-tracklist-view");
 	}
 	update(shadow) {
-		this.updatePlaceHolders();
 		this.getTracklistComp().tracklist = this.tracklist;
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
@@ -7225,32 +7224,27 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		wrapper.classList.remove("front", "back");
 		wrapper.classList.add(this.show_back ? "back" : "front");
 	}
-	updatePlaceHolders() {
-		let shadow = this.getShadow();
-		console.log("START OF GENERATED CODE");
-		for (let placeholder of this.placeholders) {
-			let el = shadow.getElementById(placeholder.elementId);
-			console.log(`let el = shadow.getElementById("${placeholder.elementId}")!;`);
-			let value = this.getAtt(placeholder.placeHolderId)?.value;
-			console.log(`let value = this.getAtt(${placeholder.placeHolderId})?.value;`);
-			if (placeholder.type == "content") {
-				let node = el.childNodes.item(placeholder.nodeIndex);
-				console.log(`let node = el.childNodes.item(${placeholder.nodeIndex});`);
-				console.log("//todo: test node != null");
-				if (node == null) if (placeholder.nodeIndex == 0) {
-					el.textContent = placeholder.textParts.join(`{{${value}}}`);
-					console.log(`el.textContent = ${JSON.stringify(placeholder.textParts)}.join(\`{{${value}}}\`);`);
-				} else console.error("Text node to set not found for element #" + placeholder.elementId + ", node " + placeholder.nodeIndex + " placeholder: " + placeholder.placeHolderId);
-				else {
-					node.nodeValue = placeholder.textParts.join(`{{${value}}}`);
-					console.log(`node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join("{{${value}}}");`);
-				}
-			}
-		}
-		console.log("END OF GENERATED CODE");
-	}
-	testPlugin() {
-		console.log("TODO");
+	testPlugin(shadow) {
+		let el;
+		let value;
+		let node;
+		el = shadow.getElementById("name");
+		value = this.getAtt("name")?.value;
+		node = el.childNodes.item(0);
+		if (node == null) el.textContent = ["", ""].join(`{{${value}}}`);
+		else node.nodeValue = ["", ""].join(`{{${value}}}`);
+		el = shadow.getElementById("stream_lines");
+		value = this.getAtt("stream_lines")?.value;
+		node = el.childNodes.item(0);
+		if (node == null) el.textContent = ["", ""].join(`{{${value}}}`);
+		else node.nodeValue = ["", ""].join(`{{${value}}}`);
+		el = shadow.getElementById("extra");
+		value = this.getAtt("extra")?.value;
+		node = el.childNodes.item(0);
+		if (node == null) el.textContent = ["", ""].join(`{{${value}}}`);
+		else node.nodeValue = ["", ""].join(`{{${value}}}`);
+		el = shadow.getElementById("smallImage");
+		value = this.getAtt("img")?.value;
 	}
 };
 
