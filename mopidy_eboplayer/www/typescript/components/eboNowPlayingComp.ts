@@ -207,11 +207,6 @@ export class EboNowPlayingComp extends EboComponent {
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
         }
-        if(this.updateAtts(name, _oldValue, newValue)){
-            this.requestUpdate();
-            return;
-        }
-
         switch (name) {
             case "enabled":
             case "show_back":

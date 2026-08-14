@@ -45,6 +45,12 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         if(oldValue === newValue)
             return;
+
+        if(this.updateAtts(name, oldValue, newValue)){
+            this.requestUpdate();
+            return;
+        }
+
         this.attributeReallyChangedCallback(name, oldValue, newValue);
     }
 

@@ -2389,6 +2389,10 @@ var EboComponent = class EboComponent extends HTMLElement {
 	}
 	attributeChangedCallback(name, oldValue, newValue) {
 		if (oldValue === newValue) return;
+		if (this.updateAtts(name, oldValue, newValue)) {
+			this.requestUpdate();
+			return;
+		}
 		this.attributeReallyChangedCallback(name, oldValue, newValue);
 	}
 	static setGlobalCss(text) {
@@ -7122,10 +7126,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
 			this.updateStringProperty(name, newValue);
 			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
-			return;
-		}
-		if (this.updateAtts(name, _oldValue, newValue)) {
-			this.requestUpdate();
 			return;
 		}
 		switch (name) {
