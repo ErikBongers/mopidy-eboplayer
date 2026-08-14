@@ -2488,7 +2488,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.attDefs.forEach((attDef, attName) => {
 			if (typeof attDef.updater == "function") {
 				let el = this.shadow.getElementById(attName);
-				attDef.updater(shadow, el, attDef.value);
+				attDef.updater(attDef.value, shadow, el);
 			} else if (attDef.updater instanceof Array) attDef.updater.forEach((elementId) => {
 				this.updateHtmlFromAtt(elementId, attDef);
 			});
@@ -7161,7 +7161,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this.defineAtt("name", "string", "", ["name", "title"]);
 		this.defineAtt("extra", "string", "");
 		this.defineAtt("stream_lines", "string", "");
-		this.defineAtt("img", "string", "", (shadow, el, value) => {
+		this.defineAtt("img", "string", "", (value, shadow, el) => {
 			let smallImg = shadow.getElementById("smallImage");
 			if (value != "") {
 				el.style.visibility = "";
@@ -7172,6 +7172,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 				el.style.visibility = "hidden";
 				smallImg.style.visibility = "hidden";
 			}
+			return value;
 		});
 		let elements = new Parser(new PeekingTokenizer(new HtmlTokenizer(this.divText))).parse();
 		console.log(JSON.stringify(elements, null, 2));

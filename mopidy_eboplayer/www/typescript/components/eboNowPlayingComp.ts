@@ -181,7 +181,7 @@ export class EboNowPlayingComp extends EboComponent {
         this.defineAtt("name", "string", "", ["name", "title"]);
         this.defineAtt("extra", "string", "");
         this.defineAtt("stream_lines", "string", "");
-        this.defineAtt("img", "string", "", (shadow, el, value) => {
+        this.defineAtt("img", "string", "", (value, shadow, el) => {
             let smallImg = shadow.getElementById("smallImage") as HTMLImageElement;
             if(value != "") {
                 el.style.visibility = "";
@@ -193,6 +193,7 @@ export class EboNowPlayingComp extends EboComponent {
                 (el as HTMLImageElement).style.visibility = "hidden";
                 smallImg.style.visibility = "hidden";
             }
+            return value as string; //todo: make AddDef and Updater generic for value: T
         });
 
         //PLACEHOLDER TEST

@@ -1,7 +1,27 @@
-* replace testPlugin() function with a generated placeholder function.
-    - create PlaceholderDefs.
-      > store them...how? Or is this even needed?
+* can AttType "hide" be replaced by normal Att? YES!!!
+  > Updater can also be converter, in which case the {att} can be replaced with a class name instead of "true".
+  > So...the AttType is "string" and AttDef has a BoolConverter...actually just a `updater(value) => value ? "class" : "no class"`
 
+* How can placeHolderPlugin see the AttDefs?
+  > the "hide" type will be gone, so that leaves...
+  > the Updater/Converter.
+    > since this is called at runtime, we do not need to know this.
+
+
+* There's still a component conflict between updates
+  - from attributes -> elementId -> all content
+  - from placeholders -> elementId -> content with placeHolders.
+  > the AttDefs have types:
+    - string: replace full content of el with same id.
+      > is standard placeholder stuff.
+    - hide: el.style.display = attDef.value == "true" ? "none" : "";
+      > can also be set by placeholder code?
+    - function: attDef.updater(shadow, el, attDef.value);
+      > placeholder code can call this function?
+  > generatePlaceHolderCode():
+    > only generate the current code for "string" types.
+      > b.bbut...the generator can't see the AttDefs !!!!
+    > Add sections for "hide" and "function"
 
 
 * Now playing takes in album info, but it also displays radios.

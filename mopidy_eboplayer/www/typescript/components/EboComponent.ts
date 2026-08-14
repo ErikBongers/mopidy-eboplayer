@@ -14,7 +14,7 @@ export interface AttDef {
     updater: Updater | ElementId[] | null;
 }
 
-export type Updater = (shadow: ShadowRoot, el: HTMLElement, value: unknown) => void;
+export type Updater = (value: unknown, shadow: ShadowRoot, el: HTMLElement) => void | string;
 
 
 export abstract class EboComponent extends HTMLElement implements HasName, EboEventTarget {
@@ -179,7 +179,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             .forEach((attDef, attName) => {
                 if (typeof attDef.updater == "function") {
                     let el = this.shadow.getElementById(attName) as HTMLElement;
-                    attDef.updater(shadow, el, attDef.value);
+                    attDef.updater(attDef.value, shadow, el);
                 } else if (attDef.updater instanceof Array) {
                     attDef.updater.forEach(elementId => {
                         this.updateHtmlFromAtt(elementId, attDef);
