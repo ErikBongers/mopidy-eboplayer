@@ -193,11 +193,6 @@ export class EboNowPlayingComp extends EboComponent {
             }
             return value as string;
         });
-
-        //PLACEHOLDER TEST
-        let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(this.divText)));
-        let elements = parser.parse();
-        console.log(JSON.stringify(elements, null, 2));
     }
 
     // noinspection JSUnusedGlobalSymbols
