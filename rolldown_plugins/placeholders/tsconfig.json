@@ -1,7 +1,7 @@
 {
     //  "include": ["mopidy_eboplayer/www/typescript/**/*"],
     "files": [
-        "placeholders.ts",
+      "main.ts"
     ],
     "exclude": [],
     "compilerOptions": {

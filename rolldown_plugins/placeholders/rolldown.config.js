@@ -3,9 +3,9 @@ import { defineConfig } from 'rolldown';
 
 export default defineConfig({
     platform: 'node',
-    input: './placeholders.ts',
+    input: './main.ts',
     output: {
-        file: './placeholders.cjs',
+        file: './main.cjs',
         sourcemap: true,
         format: 'cjs',
     }

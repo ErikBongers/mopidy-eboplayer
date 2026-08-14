@@ -7250,7 +7250,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		console.log("END OF GENERATED CODE");
 	}
 	testPlugin() {
-		console.log("Modderfokker!");
+		console.log("TODO");
 	}
 };
 

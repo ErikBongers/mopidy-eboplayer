@@ -1,5 +1,8 @@
 * replace testPlugin() function with a generated placeholder function.
-  > basically, the output of updatePlaceHolders()
+    - create PlaceholderDefs.
+      > store them...how? Or is this even needed?
+
+
 
 * Now playing takes in album info, but it also displays radios.
 

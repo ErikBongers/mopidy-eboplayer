@@ -2,7 +2,7 @@
   "name": "placeholders",
   "version": "1.0.0",
   "description": "",
-  "main": "placeholders.ts",
+  "main": "main.ts",
   "scripts": {
     "build": "tsc && rolldown -c"
   },
@@ -11,12 +11,13 @@
     "@oxc-project/types": "^0.144.0",
     "@types/estree": "^1.0.9",
     "@types/node": "^26.2.0",
+    "magic-string": "^1.2.0",
     "rolldown": "^1.0.0-beta.41",
-    "zimmerframe": "^1.1.4",
-    "magic-string": "^1.2.0"
+    "zimmerframe": "^1.1.4"
   },
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^8.67.0",
-    "acorn": "^8.18.0"
+    "acorn": "^8.18.0",
+    "htmlparserts": "github:ErikBongers/HtmlParserTs"
   }
 }
