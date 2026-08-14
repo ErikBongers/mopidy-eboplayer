@@ -1,12 +1,11 @@
 import {Batching} from "../Batching";
-import {EboEventTarget, createEvent, EboEventHandlersEventMap, EboplayerEvent} from "../events";
-import {unreachable} from "../global";
+import {createEvent, EboEventHandlersEventMap, EboEventTarget, EboplayerEvent} from "../events";
 
 export interface HasName {
     tagName: string;
 }
 
-export type ElementId = string;
+// export type ElementId = string;
 export interface AttDef {
     value: unknown;
     updater: Updater | null;
@@ -70,7 +69,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         return super.dispatchEvent(createEvent(key, args));
     }
 
-    // noinspection JSUnusedGlobalSymbols
+    // noinspection JSUnusedGlobalSymbols,JSUnusedLocalSymbols
     private connectedCallback() {
         this.shadow = this.attachShadow({mode: "open"});
         this.fetchCssAndCache().then( () => {
@@ -227,9 +226,26 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             this.shadow.getElementById(id)?.addEventListener(type, listener_or_event);
             return;
         }
-        this.dispatchEboEvent(listener_or_event, args[0]!); //! checked by generics.
+        this.shadow.getElementById(id)?.addEventListener(type, () => {
+            this.dispatchEboEvent(listener_or_event, args[0]!); //! checked by generics.
+        });
     }
 
+    // noinspection JSUnusedLocalSymbols
     protected updatePlaceholders(shadow: ShadowRoot) {}
 }
 
+export function addShadowEventListener<TEventName extends keyof EboEventHandlersEventMap, TStrOrFnc extends (TEventName | ((this: HTMLElement, ev: Event) => any))> (
+    element: HTMLElement,
+    type: string,
+    listener_or_event: TStrOrFnc,
+...args: TStrOrFnc extends TEventName ? [EboEventHandlersEventMap[TEventName]] : []
+) {
+    if(typeof listener_or_event == "function") {
+        element.addEventListener(type, listener_or_event);
+        return;
+    }
+    element.addEventListener(type, () => {
+        element.dispatchEvent(createEvent(listener_or_event, args[0]!)); //! checked by generics.
+    });
+}

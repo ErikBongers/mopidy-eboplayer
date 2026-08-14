@@ -1,13 +1,13 @@
-import {AttDef, EboComponent} from "./EboComponent";
+import {addShadowEventListener, EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
-import TlTrack = models.TlTrack;
 import {Parser} from "../lib/HtmlParserTs/parser";
 import {PeekingTokenizer} from "../lib/HtmlParserTs/PeekingTokenizer";
 import {HtmlTokenizer} from "../lib/HtmlParserTs/HtmlTokenizer";
 import {generateAllPlaceHolders, PlaceHolder, template} from "./placeholders";
+import TlTrack = models.TlTrack;
 
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
@@ -55,8 +55,6 @@ export class EboNowPlayingComp extends EboComponent {
     private active: string = "true";
 
     private _albumInfo: AlbumData = AlbumNone;
-
-    private placeholders: PlaceHolder[] = [];
 
     static styleText= `
             <style>
@@ -200,9 +198,6 @@ export class EboNowPlayingComp extends EboComponent {
         let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(this.divText)));
         let elements = parser.parse();
         console.log(JSON.stringify(elements, null, 2));
-
-        this.placeholders = generateAllPlaceHolders(elements);
-        console.log(JSON.stringify(this.placeholders, null, 2));
     }
 
     // noinspection JSUnusedGlobalSymbols
@@ -229,9 +224,7 @@ export class EboNowPlayingComp extends EboComponent {
     override render(shadow:ShadowRoot) {
         this.addShadowEventListener("img","click","bigTimelineImageClicked.eboplayer", {});
         let smallImage = shadow.getElementById("smallImage") as HTMLImageElement;
-        smallImage.addEventListener("click", (ev) => {
-            this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
-        });
+        addShadowEventListener(smallImage, "click", "bigTrackAlbumSmallImgClicked.eboplayer", {});
         this.requestUpdate();
     }
 

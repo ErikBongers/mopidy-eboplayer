@@ -2512,10 +2512,21 @@ var EboComponent = class EboComponent extends HTMLElement {
 			this.shadow.getElementById(id)?.addEventListener(type, listener_or_event);
 			return;
 		}
-		this.dispatchEboEvent(listener_or_event, args[0]);
+		this.shadow.getElementById(id)?.addEventListener(type, () => {
+			this.dispatchEboEvent(listener_or_event, args[0]);
+		});
 	}
 	updatePlaceholders(shadow) {}
 };
+function addShadowEventListener(element, type, listener_or_event, ...args) {
+	if (typeof listener_or_event == "function") {
+		element.addEventListener(type, listener_or_event);
+		return;
+	}
+	element.addEventListener(type, () => {
+		element.dispatchEvent(createEvent(listener_or_event, args[0]));
+	});
+}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboProgressBar.ts
@@ -6912,43 +6923,6 @@ var HtmlTokenizer = class HtmlTokenizer {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/placeholders.ts
-function generateAllPlaceHolders(nodes) {
-	let placeholders = [];
-	for (let i = 0; i < nodes.length; i++) {
-		let element = nodes[i];
-		if (typeof element == "string") throw new Error("Top level text can't have placeholders.");
-		else generatePlaceHolder(element, placeholders);
-	}
-	return placeholders;
-}
-function generatePlaceHolder(element, placeHolders) {
-	let id = element.attributes.get("id");
-	for (let [attributeName, attrValue] of element.attributes) if (attrValue.includes("{")) {
-		if (id == null) throw new Error("Element must have an id to use placeholders.");
-		placeHolders.push(...createTextPlaceholders(attrValue, "attribute", id, -1, attributeName));
-	}
-	for (let [i, node] of element.nodes.entries()) if (typeof node == "string") placeHolders.push(...createTextPlaceholders(node, "content", id, i, ""));
-	else generatePlaceHolder(node, placeHolders);
-}
-function createTextPlaceholders(text, type, elementId, nodeIndex, attributeName) {
-	if (!text.includes("{")) return [];
-	if (elementId == null) throw new Error("Element must have an id to use placeholders.");
-	let placeholders = [];
-	let rx = /{(\S+)}/gm;
-	let match;
-	while ((match = rx.exec(text)) != null) {
-		match[1];
-		placeholders.push({
-			placeHolderId: match[1],
-			elementId,
-			type,
-			nodeIndex,
-			attributeName,
-			textParts: text.split(match[0])
-		});
-	}
-	return placeholders;
-}
 function template(strings, ...values) {
 	console.log(strings, values);
 	if (strings.length == 0) return "";
@@ -7008,7 +6982,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	button = "false";
 	active = "true";
 	_albumInfo = AlbumNone;
-	placeholders = [];
 	static styleText = `
             <style>
                 :host { 
@@ -7144,8 +7117,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		});
 		let elements = new Parser(new PeekingTokenizer(new HtmlTokenizer(this.divText))).parse();
 		console.log(JSON.stringify(elements, null, 2));
-		this.placeholders = generateAllPlaceHolders(elements);
-		console.log(JSON.stringify(this.placeholders, null, 2));
 	}
 	attributeReallyChangedCallback(name, _oldValue, newValue) {
 		if (EboNowPlayingComp.progressBarAttributes.includes(name)) {
@@ -7167,9 +7138,8 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	render(shadow) {
 		this.addShadowEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
-		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
-			this.dispatchEboEvent("bigTrackAlbumSmallImgClicked.eboplayer", {});
-		});
+		let smallImage = shadow.getElementById("smallImage");
+		addShadowEventListener(smallImage, "click", "bigTrackAlbumSmallImgClicked.eboplayer", {});
 		this.requestUpdate();
 	}
 	getTracklistComp() {
