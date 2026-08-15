@@ -1,10 +1,11 @@
 import {Plugin} from 'rolldown';
 import {Visitors, walk} from 'zimmerframe';
 import {parse} from '@typescript-eslint/typescript-estree';
-import type {Node, Program} from 'estree';
+import {ExtendedNode, Program} from 'estree';
 import MagicString from 'magic-string';
 import {createPlaceHolders} from "./placeholders";
 import {generateUpdateFunction} from "./generateUpdateFunction";
+import {stringifyWithDepth} from "./utils";
 
 type WalkState = {
     currentClass: {
@@ -39,7 +40,7 @@ const placeholdersPlugin = (): Plugin => {
                 };
 
 
-                let visitors: Visitors<Node, WalkState> = { //todo: try to get rid of any type. estree.Node or BaseNode doesn't likely work because start and end are in node.loc instead of directly in node.
+                let visitors: Visitors<ExtendedNode, WalkState> = { //todo: try to get rid of any type. estree.Node or BaseNode doesn't likely work because start and end are in node.loc instead of directly in node.
                     ClassDeclaration(node, {state, next}) {
                         //todo if not an EboComponent, skip.
                         // if(node.superClass?.name === 'EboComponent') {
@@ -61,6 +62,9 @@ const placeholdersPlugin = (): Plugin => {
                         state.templateId = null;
                         next(state);
                         state.templateId = null;
+                    },
+                    Decorator(node, {state, next}) {
+                        console.log(stringifyWithDepth(node, 2, null, 2));
                     },
                     TaggedTemplateExpression(node, {state, next}) {
                         if(state.currentClass == null)

@@ -6540,6 +6540,7 @@ function template(strings, ...values) {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
+function attribute(value, context) {}
 var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	static tagName = "ebo-now-playing";
 	static progressBarAttributes = [
@@ -6582,6 +6583,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this._tracklist = value;
 		this.requestUpdate();
 	}
+	@attribute naame = "";
 	position = "40";
 	min = "0";
 	max = "100";

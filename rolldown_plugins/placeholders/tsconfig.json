@@ -3,6 +3,9 @@
     "files": [
       "main.ts"
     ],
+    "include": [
+        "./**/*"
+    ],
     "exclude": [],
     "compilerOptions": {
         "outDir": ".",

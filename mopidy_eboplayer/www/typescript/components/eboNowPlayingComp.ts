@@ -6,6 +6,10 @@ import {EboTracklistComp} from "./eboTracklistComp";
 import {template} from "./placeholders";
 import TlTrack = models.TlTrack;
 
+function attribute(value: any, context: ClassFieldDecoratorContext) {
+  //don' do nott'n...
+}
+
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -41,6 +45,9 @@ export class EboNowPlayingComp extends EboComponent {
         this._tracklist = value;
         this.requestUpdate();
     }
+
+    @attribute
+    private name: string = "";
 
     //for progressBar
     private position: string = "40";

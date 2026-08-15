@@ -1,4 +1,7 @@
-* browseController:185 browses streams.
+* if defineAtt() is static, it can fill the attributes array.
+  > observedAttributes can be found in AST, appended or even created if it doesn't exist.
+
+* Escape \{placeholder\}
 
 * Implement a progress bar.
   > use the existing one?

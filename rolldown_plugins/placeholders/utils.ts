@@ -1,7 +1,7 @@
 export type StringifyReplacer = (number | string)[] | null | ((key: any, value: any) => any);
 
 // noinspection JSUnusedGlobalSymbols
-export function stringify(value: any, depth: number, replacer: StringifyReplacer, space: string | number) {
+export function stringifyWithDepth(value: any, depth: number, replacer: StringifyReplacer, space: string | number) {
     function _build(_key: any, val: any, depth: number, o?: any, isArray?: any): any { // (JSON.stringify() has it's own rules, which we respect here by using it for property iteration)
         function depthReplacer(k: any, v: any) {
             if (isArray || depth > 0) {
