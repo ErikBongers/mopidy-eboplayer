@@ -5,7 +5,7 @@ import {
     BreadCrumbBrowseFilter, BreadCrumbHome,
     BreadCrumbRef,
     BrowseFilter,
-    ExpandedFileTrackModel, isBreadCrumbForAlbum,
+    ExpandedFileTrackModel, isBreadCrumbForAlbum, isBreadCrumbForStream,
     StreamUri,
     TrackUri
 } from "../modelTypes";
@@ -181,6 +181,8 @@ export class BrowseController {
                 this.model.setCurrentRefs(new SomeRefs(results));
                 return;
             }
+            if (isBreadCrumbForStream(lastCrumb))
+                return;
 
             let refs = await this.controller.mopidyProxy.browse(lastCrumb.data.uri);
             let results = await Refs.transformRefsToSearchResults(this.controller.cache, refs);

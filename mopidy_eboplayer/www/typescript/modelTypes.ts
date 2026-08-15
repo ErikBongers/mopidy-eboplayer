@@ -63,6 +63,10 @@ export function isBreadCrumbForArtist(breadCrumb: BreadCrumbRef<AllUris>): bread
     return breadCrumb.data.type == "artist";
 }
 
+export function isBreadCrumbForStream(breadCrumb: BreadCrumbRef<AllUris>): breadCrumb is BreadCrumbRef<StreamUri> {
+    return breadCrumb.data.uri.startsWith("eboback:stream:");
+}
+
 export type ImageLookup = {[string: AllUris]: Image[]}
 
 export interface BrowseFilterFlags {

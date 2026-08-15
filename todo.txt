@@ -1,3 +1,5 @@
+* browseController:185 browses streams.
+
 * Implement a progress bar.
   > use the existing one?
   > This may solve the Now Playing vs Album issue

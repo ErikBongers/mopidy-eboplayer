@@ -657,6 +657,9 @@ var BreadCrumbRef = class extends BrowseFilterBreadCrumb {
 function isBreadCrumbForAlbum(breadCrumb) {
 	return breadCrumb.data.type == "album";
 }
+function isBreadCrumbForStream(breadCrumb) {
+	return breadCrumb.data.uri.startsWith("eboback:stream:");
+}
 var BrowseFilter = class {
 	searchText;
 	album;
@@ -1898,6 +1901,7 @@ var BrowseController = class {
 				this.model.setCurrentRefs(new SomeRefs(results$1));
 				return;
 			}
+			if (isBreadCrumbForStream(lastCrumb)) return;
 			let refs = await this.controller.mopidyProxy.browse(lastCrumb.data.uri);
 			let results = await Refs.transformRefsToSearchResults(this.controller.cache, refs);
 			this.model.setCurrentRefs(new SomeRefs(results));
