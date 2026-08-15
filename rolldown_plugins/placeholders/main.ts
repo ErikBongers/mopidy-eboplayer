@@ -108,7 +108,6 @@ const placeholdersPlugin = (): Plugin => {
                         next(state);
                         console.log(state.currentProperty);
                         ms.remove(state.propertyDecorator.start, state.propertyDecorator.end);
-                        //todo: make private.
                         ms.overwrite(state.currentProperty.id.start, state.currentProperty.id.end, "_"+state.currentProperty.id.name);
                         let buffer = generateProperty(state.currentProperty.id.name, "string", `"VALUE!!!"`, state.decoratorArg??"");
                         ms.appendRight(state.currentProperty.end, buffer);
