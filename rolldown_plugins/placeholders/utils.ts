@@ -27,3 +27,11 @@ export function stringifyWithDepth(value: any, depth: number, replacer: Stringif
 
     return JSON.stringify(_build('', value, depth), null, space);
 }
+
+export class Buffer {
+    buffer = "";
+
+    appendLine(text: string) {
+        this.buffer += text + "\n";
+    }
+}

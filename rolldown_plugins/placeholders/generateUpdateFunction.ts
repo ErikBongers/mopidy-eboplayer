@@ -1,11 +1,6 @@
 import {PlaceHolder} from "htmlparserts";
+import {Buffer} from "./utils";
 
-class Buffer {
-    buffer = "";
-    appendLine(text: string) {
-        this.buffer += text + "\n";
-    }
-}
 export function generateUpdateFunction(placeholders: PlaceHolder[]) {
     let buffer = new Buffer();
     buffer.appendLine("//START OF GENERATED CODE");

@@ -16,7 +16,7 @@ export function createPlaceHolders(code: string) {
             addPlaceHolder(element, placeholders);
 
     }
-    console.log(JSON.stringify(placeholders, null, 2));
+    // console.log(JSON.stringify(placeholders, null, 2));
     return placeholders;
 }
 

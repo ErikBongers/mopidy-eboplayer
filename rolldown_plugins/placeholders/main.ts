@@ -6,6 +6,7 @@ import MagicString from 'magic-string';
 import {createPlaceHolders} from "./placeholders";
 import {generateUpdateFunction} from "./generateUpdateFunction";
 import {stringifyWithDepth} from "./utils";
+import {generateProperty} from "./generateProperty";
 
 type WalkState = {
     currentClass: {
@@ -17,8 +18,14 @@ type WalkState = {
     templateString: string | null;
     isPlaceholderTemplate: boolean;
     isTemplateExpression: boolean;
-    currentPropertyName: string | null;
+    currentProperty: {
+        name: string;
+        start: number;
+        end: number;
+    } | null;
     ms: MagicString;
+    isDecorator: boolean;
+    decoratorArg: string | null;
 };
 
 const placeholdersPlugin = (): Plugin => {
@@ -35,8 +42,10 @@ const placeholdersPlugin = (): Plugin => {
                     templateString: null,
                     isPlaceholderTemplate: false,
                     isTemplateExpression: false,
-                    currentPropertyName: null,
+                    currentProperty: null,
                     ms,
+                    isDecorator: false,
+                    decoratorArg: null,
                 };
 
 
@@ -58,15 +67,50 @@ const placeholdersPlugin = (): Plugin => {
                             return;
                         if(node.key.type != "Identifier")
                             return;
-                        state.currentPropertyName = node.key.name;
+                        console.log(stringifyWithDepth(node, 2, null, 2));
+                        state.currentProperty = {
+                            name: node.key.name,
+                            start: node.range![0],
+                            end: node.range![1],
+                            // accessibility: node.accessibility;
+                        };
                         state.templateId = null;
                         next(state);
                         state.templateId = null;
+                        state.currentProperty = null;
                     },
                     Decorator(node, {state, next}) {
-                        console.log(stringifyWithDepth(node, 2, null, 2));
+                        if(state.currentProperty == null)
+                            return;
+                        console.log(stringifyWithDepth(node, 99, null, 2));
+                        if(node.expression.type!= "CallExpression")
+                            return;
+                        if(node.expression.callee.type != "Identifier")
+                            return;
+                        if(node.expression.callee.name!= "property")
+                            return;
+                        state.isDecorator = true;
+                        next(state);
+                        let buffer = generateProperty(state.currentProperty.name, "string", `"VALUE!!!"`, state.decoratorArg??"");
+                        ms.overwrite(state.currentProperty.start, state.currentProperty.end, buffer);
+                        console.log(buffer);
+                        state.isDecorator = false;
+                    },
+                    CallExpression(node, {state, next}) {
+                        if(!state.isDecorator)
+                            return;
+                        state.decoratorArg = null;
+                        next(state);
+                    },
+                    Literal(node, {state, next}) {
+                        if(!state.isDecorator)
+                            return;
+                        state.decoratorArg = node.value as string;
+                        console.log(stringifyWithDepth(node, 99, null, 2));
                     },
                     TaggedTemplateExpression(node, {state, next}) {
+                        if(state.currentProperty == null)
+                            return;
                         if(state.currentClass == null)
                             return;
                         if(node.tag.type != "Identifier")
@@ -75,12 +119,12 @@ const placeholdersPlugin = (): Plugin => {
                             return;
 
                         state.isTemplateExpression = true;
-                        state.templateId = state.currentPropertyName;
+                        state.templateId = state.currentProperty.name;
                         next(state);
                         if(state.templateString != null) {
                             let buffer = generateUpdateFunction(createPlaceHolders(state.templateString));
                             state.ms.overwrite(state.currentClass.end - 1, state.currentClass.end, buffer + "\n}");
-                            console.log(buffer);
+                            // console.log(buffer);
                         }
                         state.templateId = null;
                         state.isTemplateExpression = false;
