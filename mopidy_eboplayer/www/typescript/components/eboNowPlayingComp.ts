@@ -2,9 +2,8 @@ import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
-import {template} from "./placeholders";
+import {template, property} from "./placeholders";
 import TlTrack = models.TlTrack;
-import {property} from "../../../../rolldown_plugins/placeholders/placeholders";
 
 // noinspection JSUnusedGlobalSymbols
 export class EboNowPlayingComp extends EboComponent {

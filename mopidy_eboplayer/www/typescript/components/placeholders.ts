@@ -144,3 +144,14 @@ export function template(strings: TemplateStringsArray, ...values: any[]) {
     }
     return strings[0];
 }
+
+export function attribute(action: "update" | "render" | "noUpdate" = "update"){
+    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
+        //don' do nott'n...
+    }
+}
+export function property(action: "update" | "render" | "noUpdate" = "update"){
+    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
+        //don' do nott'n...
+    }
+}

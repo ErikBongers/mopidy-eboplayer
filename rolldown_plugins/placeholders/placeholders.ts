@@ -3,17 +3,6 @@ import {PlaceHolder, PlaceHolderType} from "htmlparserts";
 import {PeekingTokenizer} from "htmlparserts/PeekingTokenizer";
 import {HtmlTokenizer} from "htmlparserts/HtmlTokenizer";
 
-export function attribute(action: "update" | "render" | "noUpdate" = "update"){
-    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
-        //don' do nott'n...
-    }
-}
-export function property(action: "update" | "render" | "noUpdate" = "update"){
-    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
-        //don' do nott'n...
-    }
-}
-
 export function createPlaceHolders(code: string) {
     let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(code)));
     let nodes = parser.parse();
