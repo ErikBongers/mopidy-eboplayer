@@ -1,7 +1,7 @@
 import {Plugin} from 'rolldown';
 import {Visitors, walk} from 'zimmerframe';
 import {parse} from '@typescript-eslint/typescript-estree';
-import {Program} from 'estree';
+// import {Program} from 'estree';
 import MagicString from 'magic-string';
 import {createPlaceHolders} from "./placeholders";
 import {generateUpdateFunction} from "./generateUpdateFunction";
@@ -43,7 +43,7 @@ const placeholdersPlugin = (): Plugin => {
         transform(code: string, id: string) {
             if (id.includes('eboNowPlayingComp')) {
                 const ms = new MagicString(code);
-                const ast = parse(code, {range: true}) as Program;
+                const ast = parse(code, {range: true});
 
                 let state: WalkState = {
                     currentClass: null,
@@ -166,7 +166,7 @@ const placeholdersPlugin = (): Plugin => {
                         console.log(stringifyWithDepth(node, 99, null, 2));
                     }
                 };
-                walk(ast as TSESTree.Node, state, visitors);
+                walk(ast, state, visitors);
 
                 if (ms.hasChanged()) {
                     return {

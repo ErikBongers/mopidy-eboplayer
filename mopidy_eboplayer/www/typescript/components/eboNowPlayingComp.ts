@@ -1,22 +1,12 @@
-import {addShadowEventListener, EboComponent} from "./EboComponent";
+import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
-import {EboRadioHistoryComp} from "./radio/eboRadioHistoryComp";
 import models from "../../js/mopidy";
 import {EboTracklistComp} from "./eboTracklistComp";
 import {template} from "./placeholders";
 import TlTrack = models.TlTrack;
+import {property} from "../../../../rolldown_plugins/placeholders/placeholders";
 
-function attribute(action: "update" | "render" | "noUpdate" = "update"){
-    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
-        //don' do nott'n...
-    }
-}
-function property(action: "update" | "render" | "noUpdate" = "update"){
-    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
-        //don' do nott'n...
-    }
-}
-
+// noinspection JSUnusedGlobalSymbols
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -26,18 +16,9 @@ export class EboNowPlayingComp extends EboComponent {
         ...EboNowPlayingComp.progressBarAttributes
     ];
 
-    @property("render")
-    albumInfo: AlbumData = AlbumNone;
-
-    @property("update")
-    streamInfo: ExpandedStreamModel | null = null;
-
-    @property("update")
-    tracklist: TlTrack[] = [];
-
-    static THEVAL = "Brol"
-    @property("update")
-    private naam: string = EboNowPlayingComp.THEVAL;
+    @property("render") albumInfo: AlbumData = AlbumNone;
+    @property() streamInfo: ExpandedStreamModel | null = null;
+    @property() tracklist: TlTrack[] = [];
 
     //for progressBar
     private position: string = "40";

@@ -6583,15 +6583,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this._tracklist = value;
 		this.requestUpdate();
 	}
-	static THEVAL = "Brol";
-	_naam = EboNowPlayingComp.THEVAL;
-	get naam() {
-		return this._naam;
-	}
-	set naam(value) {
-		this._naam = value;
-		this.requestUpdate();
-	}
 	position = "40";
 	min = "0";
 	max = "100";
