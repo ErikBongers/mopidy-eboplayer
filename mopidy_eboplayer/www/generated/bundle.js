@@ -6637,21 +6637,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                         width: 100%;
                         align-items: center;
                     }
-                    #back {
-                        width: 100%;
-                        padding: 1rem;
-                    }
-                }
-                #hero.front {
-                    #back {
-                        display: none;
-                    }                
-                }
-                #hero.back {
-                    #front {
-                        position: absolute;
-                        display: none;
-                    }                
                 }
                 .info {
                     font-size: .7em;
@@ -6661,13 +6646,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     & * {
                         text-align: center;
                     }
-                }
-                ebo-radio-details-view {
-                    height: 100%;
-                }
-                #albumTableWrapper {
-                    height: 100%;
-                    font-size: .8rem;
                 }
             </style>
         `;
