@@ -11,6 +11,12 @@ function attribute(action: "update" | "render" | "noUpdate" = "update"){
         //don' do nott'n...
     }
 }
+function property(action: "update" | "render" | "noUpdate" = "update"){
+    return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
+        //don' do nott'n...
+    }
+}
+
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -19,36 +25,19 @@ export class EboNowPlayingComp extends EboComponent {
         "name", "stream_lines", "extra", "img", "disabled", "show_back", "hide_tracklist",
         ...EboNowPlayingComp.progressBarAttributes
     ];
-    get albumInfo(): AlbumData {
-        return this._albumInfo;
-    }
 
-    set albumInfo(value: AlbumData) {
-        this._albumInfo = value;
-        this.requestRender();
-    }
+    @property("render")
+    albumInfo: AlbumData = AlbumNone;
 
-    private _streamInfo: ExpandedStreamModel | null = null;
-    get streamInfo(): ExpandedStreamModel | null {
-        return this._streamInfo;
-    }
-    set streamInfo(value: ExpandedStreamModel | null) {
-        this._streamInfo = value;
-        this.requestUpdate();
-    }
+    @property("update")
+    streamInfo: ExpandedStreamModel | null = null;
 
-    private _tracklist: TlTrack[] = [];
-    get tracklist(): models.TlTrack[] {
-        return this._tracklist;
-    }
+    @property("update")
+    tracklist: TlTrack[] = [];
 
-    set tracklist(value: models.TlTrack[]) {
-        this._tracklist = value;
-        this.requestUpdate();
-    }
-
-    @attribute("update")
-    private naam: string = "Eriksken";
+    static THEVAL = "Brol"
+    @property("update")
+    private naam: string = EboNowPlayingComp.THEVAL;
 
     //for progressBar
     private position: string = "40";
@@ -56,8 +45,6 @@ export class EboNowPlayingComp extends EboComponent {
     private max: string = "100";
     private button: string = "false";
     private active: string = "true";
-
-    private _albumInfo: AlbumData = AlbumNone;
 
     static styleText= `
             <style>

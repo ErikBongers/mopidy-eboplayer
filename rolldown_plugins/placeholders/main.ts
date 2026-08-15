@@ -1,12 +1,13 @@
 import {Plugin} from 'rolldown';
 import {Visitors, walk} from 'zimmerframe';
 import {parse} from '@typescript-eslint/typescript-estree';
-import {ExtendedNode, Program} from 'estree';
+import {Program} from 'estree';
 import MagicString from 'magic-string';
 import {createPlaceHolders} from "./placeholders";
 import {generateUpdateFunction} from "./generateUpdateFunction";
 import {stringifyWithDepth} from "./utils";
 import {generateProperty} from "./generateProperty";
+import type {TSESTree} from '@typescript-eslint/types';
 
 type WalkState = {
     currentClass: {
@@ -19,12 +20,20 @@ type WalkState = {
     isPlaceholderTemplate: boolean;
     isTemplateExpression: boolean;
     currentProperty: {
-        name: string;
+        id: {
+            name: string;
+            start: number;
+            end: number;
+        }
         start: number;
         end: number;
+        accessibility:  "private" | "protected" | "public" | null;
     } | null;
     ms: MagicString;
-    isDecorator: boolean;
+    propertyDecorator: {
+        start: number;
+         end: number;
+    } | null;
     decoratorArg: string | null;
 };
 
@@ -44,22 +53,24 @@ const placeholdersPlugin = (): Plugin => {
                     isTemplateExpression: false,
                     currentProperty: null,
                     ms,
-                    isDecorator: false,
+                    propertyDecorator: null,
                     decoratorArg: null,
                 };
 
 
-                let visitors: Visitors<ExtendedNode, WalkState> = { //todo: try to get rid of any type. estree.Node or BaseNode doesn't likely work because start and end are in node.loc instead of directly in node.
+                let visitors: Visitors<TSESTree.Node, WalkState> = { //todo: try to get rid of any type. estree.Node or BaseNode doesn't likely work because start and end are in node.loc instead of directly in node.
                     ClassDeclaration(node, {state, next}) {
                         //todo if not an EboComponent, skip.
                         // if(node.superClass?.name === 'EboComponent') {
 
-                        state.currentClass = {
-                            name: node.id.name,
-                            start: node.range![0],
-                            end: node.range![1],
-                        };
-                        next(state); //nested classes are not possible, so just pass on the current state.
+                        if(node.id) {
+                            state.currentClass = {
+                                name: node.id.name,
+                                start: node.range![0],
+                                end: node.range![1],
+                            };
+                            next(state); //nested clas}ses are not possible, so just pass on the current state.
+                        }
                         state.currentClass = null;
                     },
                     PropertyDefinition(node, {state, next}) {
@@ -69,10 +80,14 @@ const placeholdersPlugin = (): Plugin => {
                             return;
                         console.log(stringifyWithDepth(node, 2, null, 2));
                         state.currentProperty = {
-                            name: node.key.name,
+                            id: {
+                                name: node.key.name,
+                                start: node.key.range![0],
+                                end: node.key.range![1],
+                            },
                             start: node.range![0],
                             end: node.range![1],
-                            // accessibility: node.accessibility;
+                            accessibility: node.accessibility??null,
                         };
                         state.templateId = null;
                         next(state);
@@ -89,21 +104,25 @@ const placeholdersPlugin = (): Plugin => {
                             return;
                         if(node.expression.callee.name!= "property")
                             return;
-                        state.isDecorator = true;
+                        state.propertyDecorator = { start: node.range![0], end: node.range![1] };
                         next(state);
-                        let buffer = generateProperty(state.currentProperty.name, "string", `"VALUE!!!"`, state.decoratorArg??"");
-                        ms.overwrite(state.currentProperty.start, state.currentProperty.end, buffer);
+                        console.log(state.currentProperty);
+                        ms.remove(state.propertyDecorator.start, state.propertyDecorator.end);
+                        //todo: make private.
+                        ms.overwrite(state.currentProperty.id.start, state.currentProperty.id.end, "_"+state.currentProperty.id.name);
+                        let buffer = generateProperty(state.currentProperty.id.name, "string", `"VALUE!!!"`, state.decoratorArg??"");
+                        ms.appendRight(state.currentProperty.end, buffer);
                         console.log(buffer);
-                        state.isDecorator = false;
+                        state.propertyDecorator = null;
                     },
                     CallExpression(node, {state, next}) {
-                        if(!state.isDecorator)
+                        if(!state.propertyDecorator)
                             return;
                         state.decoratorArg = null;
                         next(state);
                     },
                     Literal(node, {state, next}) {
-                        if(!state.isDecorator)
+                        if(!state.propertyDecorator)
                             return;
                         state.decoratorArg = node.value as string;
                         console.log(stringifyWithDepth(node, 99, null, 2));
@@ -119,7 +138,7 @@ const placeholdersPlugin = (): Plugin => {
                             return;
 
                         state.isTemplateExpression = true;
-                        state.templateId = state.currentProperty.name;
+                        state.templateId = state.currentProperty.id.name;
                         next(state);
                         if(state.templateString != null) {
                             let buffer = generateUpdateFunction(createPlaceHolders(state.templateString));
@@ -140,9 +159,14 @@ const placeholdersPlugin = (): Plugin => {
                         let theFragment = fragments[0];
                         let templateString = theFragment.value; //todo: assuming type = "TemplateElement"
                         state.templateString = templateString.raw;
+                    },
+                    MemberExpression(node, {state, next}) {
+                        if(state.currentProperty == null)
+                            return;
+                        console.log(stringifyWithDepth(node, 99, null, 2));
                     }
                 };
-                walk(ast, state, visitors);
+                walk(ast as TSESTree.Node, state, visitors);
 
                 if (ms.hasChanged()) {
                     return {

@@ -6540,9 +6540,6 @@ function template(strings, ...values) {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
-function attribute(action = "update") {
-	return function attributeDecorator(value, context) {};
-}
 var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	static tagName = "ebo-now-playing";
 	static progressBarAttributes = [
@@ -6562,6 +6559,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		"hide_tracklist",
 		...EboNowPlayingComp.progressBarAttributes
 	];
+	_albumInfo = AlbumNone;
 	get albumInfo() {
 		return this._albumInfo;
 	}
@@ -6585,13 +6583,20 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this._tracklist = value;
 		this.requestUpdate();
 	}
-	@attribute("update") naam = "Eriksken";
+	static THEVAL = "Brol";
+	_naam = EboNowPlayingComp.THEVAL;
+	get naam() {
+		return this._naam;
+	}
+	set naam(value) {
+		this._naam = value;
+		this.requestUpdate();
+	}
 	position = "40";
 	min = "0";
 	max = "100";
 	button = "false";
 	active = "true";
-	_albumInfo = AlbumNone;
 	static styleText = `
             <style>
                 :host { 
