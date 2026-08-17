@@ -5,7 +5,6 @@ import {EboTracklistComp} from "./eboTracklistComp";
 import {template, property} from "./placeholders";
 import TlTrack = models.TlTrack;
 
-// noinspection JSUnusedGlobalSymbols
 export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
@@ -143,20 +142,14 @@ export class EboNowPlayingComp extends EboComponent {
                 this.updateBoolProperty(name, newValue);
                 break;
         }
-        this.requestUpdate();
-        }
+    }
 
     override render(shadow:ShadowRoot) {
         this.addShadowEventListener("img","click","bigTimelineImageClicked.eboplayer", {});
-        this.requestUpdate();
-    }
-
-    getTracklistComp(): EboTracklistComp {
-        return this.getShadow().querySelector("ebo-tracklist-view") as EboTracklistComp;
     }
 
     override update(shadow:ShadowRoot) {
-        this.getTracklistComp().tracklist = this.tracklist;
+        (shadow.querySelector("ebo-tracklist-view") as EboTracklistComp).tracklist = this.tracklist;
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboNowPlayingComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore

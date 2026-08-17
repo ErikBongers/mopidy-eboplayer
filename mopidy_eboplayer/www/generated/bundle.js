@@ -2397,7 +2397,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 			this.requestUpdate();
 			return;
 		}
-		this.attributeReallyChangedCallback(name, oldValue, newValue);
+		if (this.attributeReallyChangedCallback(name, oldValue, newValue) ?? true) this.requestUpdate();
 	}
 	static setGlobalCss(text) {
 		this.globalCss = text.map((text$1) => {
@@ -2461,12 +2461,10 @@ var EboComponent = class EboComponent extends HTMLElement {
 			template$1.innerHTML = this.divText.trim();
 			this.shadow.append(...template$1.content.childNodes);
 		}
-		this.render(this.shadow);
+		if (this.render(this.shadow) ?? true) this.requestUpdate();
 		this._isRendered = true;
 	}
-	render(shadow) {
-		this.requestUpdate();
-	}
+	render(shadow) {}
 	getShadow() {
 		return this.shadow;
 	}
@@ -6697,17 +6695,12 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 				this.updateBoolProperty(name, newValue);
 				break;
 		}
-		this.requestUpdate();
 	}
 	render(shadow) {
 		this.addShadowEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
-		this.requestUpdate();
-	}
-	getTracklistComp() {
-		return this.getShadow().querySelector("ebo-tracklist-view");
 	}
 	update(shadow) {
-		this.getTracklistComp().tracklist = this.tracklist;
+		shadow.querySelector("ebo-tracklist-view").tracklist = this.tracklist;
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);

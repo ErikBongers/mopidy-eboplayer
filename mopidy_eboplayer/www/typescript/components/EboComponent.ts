@@ -51,10 +51,11 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             return;
         }
 
-        this.attributeReallyChangedCallback(name, oldValue, newValue);
+        if(this.attributeReallyChangedCallback(name, oldValue, newValue)??true)
+            this.requestUpdate();
     }
 
-    abstract attributeReallyChangedCallback(name: string, oldValue: string, newValue: string): void;
+    abstract attributeReallyChangedCallback(name: string, oldValue: string, newValue: string): boolean | void;
 
     static setGlobalCss(text: string[]) {
         this.globalCss = text.map(text => {
@@ -142,12 +143,12 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             template.innerHTML = this.divText.trim();
             this.shadow.append(...template.content.childNodes);
         }
-        this.render(this.shadow);
+        if(this.render(this.shadow)??true)
+            this.requestUpdate();
         this._isRendered = true;
     }
 
     render(shadow: ShadowRoot): void {
-        this.requestUpdate();
     };
 
     getShadow(){

@@ -1,3 +1,10 @@
+* When a (sub) component needs data, it subscribes to that data.
+  > This requires a unique key for every data granularity.
+    > a URI, rather than an index in a list.
+    > how are subscriptions ended?
+    > The requester also has a unique id.
+      > when the requester goes out of scope, it should de-register itself.
+
 * if defineAtt() is static, it can fill the attributes array.
   > observedAttributes can be found in AST, appended or even created if it doesn't exist.
 
