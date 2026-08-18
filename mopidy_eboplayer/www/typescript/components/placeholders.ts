@@ -137,7 +137,7 @@ function test() {
 }
 
 export function template(strings: TemplateStringsArray, ...values: any[]) {
-    console.log(strings, values);
+    // console.log(strings, values);
     if(strings.length == 0) return "";
     if(strings.length > 1) {
         throw new Error(`A template cannot contain regular \${} placehoders.`);

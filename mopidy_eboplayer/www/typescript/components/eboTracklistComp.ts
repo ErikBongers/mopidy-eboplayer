@@ -1,23 +1,14 @@
 import {EboComponent} from "./EboComponent";
-import {EboButton} from "./general/eboButton";
-import {GenreDef} from "../modelTypes";
 import models from "../../js/mopidy";
 import TlTrack = models.TlTrack;
+import {property, template} from "./placeholders";
 
 export class EboTracklistComp extends EboComponent {
     static override readonly tagName=  "ebo-tracklist-view";
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];
 
-    private _tracklist: TlTrack[] = [];
-    get tracklist(): TlTrack[] {
-        return this._tracklist;
-    }
-
-    set tracklist(value: TlTrack[]) {
-        this._tracklist = value;
-        this.requestUpdate();
-    }
+    @property() tracklist: TlTrack[] = [];
 
     static styleText= `
         <style>
@@ -25,7 +16,7 @@ export class EboTracklistComp extends EboComponent {
         `;
 
     // noinspection HtmlUnknownTarget
-    static htmlText = `
+    static htmlText = template`
         <div id="wrapper">
             <table id="tracklist">
                 <tbody></tbody>

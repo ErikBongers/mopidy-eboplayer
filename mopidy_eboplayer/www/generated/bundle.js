@@ -6532,7 +6532,6 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 //#endregion
 //#region mopidy_eboplayer/www/typescript/components/placeholders.ts
 function template(strings, ...values) {
-	console.log(strings, values);
 	if (strings.length == 0) return "";
 	if (strings.length > 1) throw new Error(`A template cannot contain regular \${} placehoders.`);
 	return strings[0];
@@ -6984,7 +6983,7 @@ var EboTracklistComp = class EboTracklistComp extends EboComponent {
         <style>
         </style>
         `;
-	static htmlText = `
+	static htmlText = template`
         <div id="wrapper">
             <table id="tracklist">
                 <tbody></tbody>
@@ -7030,6 +7029,7 @@ var EboTracklistComp = class EboTracklistComp extends EboComponent {
             </td>
             `;
 	}
+	updatePlaceholders(shadow) {}
 };
 
 //#endregion
