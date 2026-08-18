@@ -6048,8 +6048,10 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	}
 	update(shadow) {
 		let container = shadow.getElementById("scrollContainer");
-		let nextIndex = this.renderGenreDef(container, 0, -1);
-		while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
+		if (this.genreDefs.length != 0) {
+			let nextIndex = this.renderGenreDef(container, 0, -1);
+			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
+		}
 		this.getActiveAncestors(shadow).forEach((ancestor) => {
 			ancestor.classList.toggle("containsActive", true);
 		});
