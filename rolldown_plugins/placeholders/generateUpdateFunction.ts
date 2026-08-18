@@ -9,6 +9,7 @@ export function generateUpdateFunction(className: string, placeholders: PlaceHol
     buffer.appendLine(`       let value: unknown;`);
     buffer.appendLine(`       let updater: Updater | null;`);
     buffer.appendLine(`       let node: ChildNode;`);
+    buffer.appendLine(`       if(${className}["updaters"] == null) ${className}["updaters"] = {};`);
     generatePlaceHolderCode(className, placeholders, buffer);
     buffer.appendLine("   }");
     buffer.appendLine("//END OF GENERATED CODE");

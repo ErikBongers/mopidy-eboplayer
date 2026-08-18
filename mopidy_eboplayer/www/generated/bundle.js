@@ -6651,6 +6651,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
         </div>
         `;
 	static updaters = { "img": (value, shadow, el) => {
+		console.log("UPDATER!!!!!");
 		if (value != "") {
 			el.style.visibility = "";
 			el.src = value;
@@ -6682,6 +6683,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		let value;
 		let updater;
 		let node;
+		if (EboNowPlayingComp["updaters"] == null) EboNowPlayingComp["updaters"] = {};
 		el = shadow.getElementById("img");
 		value = this.getAttribute("img") ?? "";
 		updater = EboNowPlayingComp.updaters["img"];
@@ -6997,7 +6999,9 @@ var EboTracklistComp = class EboTracklistComp extends EboComponent {
             </td>
             `;
 	}
-	updatePlaceholders(shadow) {}
+	updatePlaceholders(shadow) {
+		if (EboTracklistComp["updaters"] == null) EboTracklistComp["updaters"] = {};
+	}
 };
 
 //#endregion
