@@ -6535,17 +6535,9 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		"stream_lines",
 		"extra",
 		"img",
-		"disabled",
 		"hide_tracklist",
 		...EboNowPlayingComp.progressBarAttributes
 	];
-	_albumInfo = AlbumNone;
-	get albumInfo() {
-		return this._albumInfo;
-	}
-	set albumInfo(value) {
-		this._albumInfo = value;
-	}
 	_streamInfo = null;
 	get streamInfo() {
 		return this._streamInfo;
@@ -6668,7 +6660,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
 		});
-		if (this.albumInfo.type == AlbumDataType.Loaded) shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
 	}
 	updatePlaceholders(shadow) {
 		let el;

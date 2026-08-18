@@ -1,4 +1,4 @@
-import {EboComponent, Updater, Updaters} from "./EboComponent";
+import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import models from "../../js/mopidy";
 import {property, template} from "./placeholders";
@@ -9,11 +9,10 @@ export class EboNowPlayingComp extends EboComponent {
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "hide_tracklist",
+        "name", "stream_lines", "extra", "img", "hide_tracklist",
         ...EboNowPlayingComp.progressBarAttributes
     ];
 
-    @property({action: "render"}) albumInfo: AlbumData = AlbumNone;
     @property() streamInfo: ExpandedStreamModel | null = null;
     @property({forwardTo: "tracklistView"}) tracklist: TlTrack[] = [];
 
@@ -133,10 +132,5 @@ export class EboNowPlayingComp extends EboComponent {
             // @ts-ignore
             progressBarElement.setAttribute(attName, this[attName]);
         });
-        if(this.albumInfo.type == AlbumDataType.Loaded) {
-            //todo: call this groupTitle or something and move it in a property that is set in the view and handled as a placeholder.
-            // @ts-ignore
-            shadow.getElementById("albumTitle").textContent = this.albumInfo.album.albumInfo.name;
-        }
     }
 }
