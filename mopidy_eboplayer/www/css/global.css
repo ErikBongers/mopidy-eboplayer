@@ -225,6 +225,14 @@ ebo-player-bar {
     white-space: pre-line;
 }
 
+img:not([src]) {
+    visibility: hidden;
+}
+
+img[src=""] {
+    visibility: hidden;
+}
+
 /*KEEP THIS AT BOTTOM, for priority.*/
 .hidden {
     display: none;

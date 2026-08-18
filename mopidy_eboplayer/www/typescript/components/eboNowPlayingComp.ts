@@ -92,7 +92,7 @@ export class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" style="visibility: hidden" src="{img}" alt="Album cover"/>
+                        <img id="img" src="{img}" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -109,18 +109,6 @@ export class EboNowPlayingComp extends EboComponent {
             </div>  
         </div>
         `;
-
-    static updaters: Updaters = {
-        "img": (value: string, shadow: ShadowRoot, el: HTMLElement) => {
-            if (value != "") {
-                el.style.visibility = "";
-                (el as HTMLImageElement).src = value as string;
-            } else {
-                (el as HTMLImageElement).style.visibility = "hidden";
-            }
-            return value as string;
-        }
-    };
 
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);

@@ -6633,7 +6633,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" style="visibility: hidden" src="{img}" alt="Album cover"/>
+                        <img id="img" src="{img}" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
@@ -6650,14 +6650,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
             </div>  
         </div>
         `;
-	static updaters = { "img": (value, shadow, el) => {
-		console.log("UPDATER!!!!!");
-		if (value != "") {
-			el.style.visibility = "";
-			el.src = value;
-		} else el.style.visibility = "hidden";
-		return value;
-	} };
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
 	}
