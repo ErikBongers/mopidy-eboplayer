@@ -14,9 +14,9 @@ export class EboNowPlayingComp extends EboComponent {
         ...EboNowPlayingComp.progressBarAttributes
     ];
 
-    @property("render") albumInfo: AlbumData = AlbumNone;
+    @property({action: "render"}) albumInfo: AlbumData = AlbumNone;
     @property() streamInfo: ExpandedStreamModel | null = null;
-    @property() tracklist: TlTrack[] = [];
+    @property({forwardTo: "tracklistView"}) tracklist: TlTrack[] = [];
 
     //for progressBar
     private position: string = "40";
@@ -106,7 +106,7 @@ export class EboNowPlayingComp extends EboComponent {
                 </div>
             </div>
             <div id="tracklist" class="flex scroll {hide_tracklist}">
-                <ebo-tracklist-view></ebo-tracklist-view>            
+                <ebo-tracklist-view id="tracklistView"></ebo-tracklist-view>            
             </div>  
         </div>
         `;
@@ -149,7 +149,7 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        (shadow.querySelector("ebo-tracklist-view") as EboTracklistComp).tracklist = this.tracklist;
+        // (shadow. querySelector("ebo-tracklist-view") as EboTracklistComp).tracklist = this.tracklist;
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboNowPlayingComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore

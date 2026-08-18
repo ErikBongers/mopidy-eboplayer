@@ -8,6 +8,7 @@ import {generateUpdateFunction} from "./generateUpdateFunction";
 import {stringifyWithDepth} from "./utils";
 import {generateProperty} from "./generateProperty";
 import type {TSESTree} from '@typescript-eslint/types';
+import {ObjectExpression} from "@oxc-project/types";
 
 type WalkState = {
     currentClass: {
@@ -31,11 +32,26 @@ type WalkState = {
     } | null;
     ms: MagicString;
     propertyDecorator: {
+        action: string | null;
+        forwardTo: string | null;
         start: number;
          end: number;
     } | null;
     decoratorArg: string | null;
 };
+
+function getPropStringRawValue(node: TSESTree.ObjectLiteralElement, propName: string): string | null {
+    if(node.type != "Property")
+        return null;
+    if(node.key.type != "Identifier")
+        return null;
+    if(node.key.name == propName) {
+        if(node.value.type != "Literal")
+            return null;
+        return node.value.raw;
+    }
+    return null;
+}
 
 const placeholdersPlugin = (): Plugin => {
     return {
@@ -104,12 +120,12 @@ const placeholdersPlugin = (): Plugin => {
                             return;
                         if(node.expression.callee.name!= "property")
                             return;
-                        state.propertyDecorator = { start: node.range![0], end: node.range![1] };
+                        state.propertyDecorator = { start: node.range![0], end: node.range![1],action: null, forwardTo: null };
                         next(state);
                         console.log(state.currentProperty);
                         ms.remove(state.propertyDecorator.start, state.propertyDecorator.end);
                         ms.overwrite(state.currentProperty.id.start, state.currentProperty.id.end, "_"+state.currentProperty.id.name);
-                        let buffer = generateProperty(state.currentProperty.id.name, "string", `"VALUE!!!"`, state.decoratorArg??"");
+                        let buffer = generateProperty(state.currentProperty.id.name, "string", `"VALUE!!!"`, state.propertyDecorator.action, state.propertyDecorator.forwardTo);
                         ms.appendRight(state.currentProperty.end, buffer);
                         console.log(buffer);
                         state.propertyDecorator = null;
@@ -119,6 +135,15 @@ const placeholdersPlugin = (): Plugin => {
                             return;
                         state.decoratorArg = null;
                         next(state);
+                    },
+                    ObjectExpression(node, {state, next}) {
+                        if(!state.propertyDecorator)
+                            return;
+
+                        for(let prop of node.properties) {
+                            state.propertyDecorator.forwardTo = getPropStringRawValue(prop,"forwardTo");
+                            state.propertyDecorator.action = getPropStringRawValue(prop,"action");
+                        }
                     },
                     Literal(node, {state, next}) {
                         if(!state.propertyDecorator)

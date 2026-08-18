@@ -1,3 +1,32 @@
+* create a `forward` class/object that listenens for data changes and informs a forward (sub) component.
+  > we need some event that says only that specific data has changed.
+  > it's the properties setter!
+
+* Create a DataPoint class.
+  - has a value
+  - get()
+    > get's the value...and no subscription...
+  - set()
+    > calls subscribers
+  - subscribe()
+    > unless the get() function implicitely subscribes...for a pre-set context (effect) or by setting the context explicitely in the getter.
+        > with get(this) we keep a memory leak.
+          > how does do we know the subscribers are still 'active'?
+
+* A sub-component get's data in the following ways:
+  - it directly listens to the model
+    > only in case it has global context. --> have a direct listener `on(...)`
+  - a parent forces an update
+    > if a parent defines the context (a list index, a selection,...)
+    > can it listen to parent events?
+      > this requires at least a parent to be set at...
+        > connection time?
+        > via a atrribute?
+  > A component can be handed a reactive data point that contans an onChange() method.
+    > via a key set as an attribute: onChange("key") or something.
+    > via a reactive property of type...
+
+
 * When a (sub) component needs data, it subscribes to that data.
   > This requires a unique key for every data granularity.
     > a URI, rather than an index in a list.

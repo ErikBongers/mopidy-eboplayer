@@ -1,16 +1,20 @@
 import {Buffer} from "./utils";
 
-export function generateProperty(name: string, type: string, value: string, options: string): string {
-    console.log(`PROPERTY ${name}: ${type} = ${value}, options: ${options}`);
+export function generateProperty(name: string, type: string, value: string, action: string | null, forwardTo: string | null): string {
+    console.log(`PROPERTY ${name}: ${type} = ${value}, action: ${action}, forwardTo: ${forwardTo}`);
     let buffer = new Buffer();
     buffer.appendLine(`        get ${name}(): ${type} {`);
     buffer.appendLine(`            return this._${name};`);
     buffer.appendLine(`        }`);
     buffer.appendLine(`        set ${name}(value: ${type}) {`);
     buffer.appendLine(`            this._${name} = value;`);
-    if(options == "render")
+    if(forwardTo != null)
+        buffer.appendLine(`            this.getShadow().getElementById(${forwardTo}).${name} = this.${name};`);
+    if(action == "render")
         buffer.appendLine(`            this.requestRender();`);
-    else if(options != "noupdate")
+    else if(action == "update")
+        buffer.appendLine(`            this.requestUpdate();`);
+    else if(action == null && forwardTo == null)
         buffer.appendLine(`            this.requestUpdate();`);
     buffer.appendLine(`        }`);
     return buffer.buffer;

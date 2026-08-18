@@ -150,7 +150,14 @@ export function attribute(action: "update" | "render" | "noUpdate" = "update"){
         //don' do nott'n...
     }
 }
-export function property(action: "update" | "render" | "noUpdate" = "update"){
+
+export type ElementId = string;
+export type PropertyOptions = {
+    action?: "update" | "render" | "noUpdate";
+    forwardTo?: ElementId;
+};
+
+export function property(options?: PropertyOptions){
     return function attributeDecorator(value: any, context: ClassFieldDecoratorContext) {
         //don' do nott'n...
     }

@@ -6563,7 +6563,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	set albumInfo(value) {
 		this._albumInfo = value;
-		this.requestRender();
 	}
 	_streamInfo = null;
 	get streamInfo() {
@@ -6579,7 +6578,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	set tracklist(value) {
 		this._tracklist = value;
-		this.requestUpdate();
+		this.getShadow().getElementById("tracklistView").tracklist = this.tracklist;
 	}
 	position = "40";
 	min = "0";
@@ -6665,7 +6664,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                 </div>
             </div>
             <div id="tracklist" class="flex scroll {hide_tracklist}">
-                <ebo-tracklist-view></ebo-tracklist-view>            
+                <ebo-tracklist-view id="tracklistView"></ebo-tracklist-view>            
             </div>  
         </div>
         `;
@@ -6700,7 +6699,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		this.addShadowEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
 	}
 	update(shadow) {
-		shadow.querySelector("ebo-tracklist-view").tracklist = this.tracklist;
 		let progressBarElement = shadow.querySelector("ebo-progressbar");
 		EboNowPlayingComp.progressBarAttributes.forEach((attName) => {
 			progressBarElement.setAttribute(attName, this[attName]);
