@@ -107,7 +107,7 @@ let visitors: Visitors<TSESTree.Node, WalkState> = {
             return;
         if(node.key.type != "Identifier")
             return;
-        console.log(stringifyWithDepth(node, 2, null, 2));
+        // console.log(stringifyWithDepth(node, 2, null, 2));
         state.currentProperty = {
             id: {
                 name: node.key.name,
@@ -196,11 +196,6 @@ let visitors: Visitors<TSESTree.Node, WalkState> = {
         let theFragment = fragments[0];
         let templateString = theFragment.value; //todo: assuming type = "TemplateElement"
         state.templateString = templateString.raw;
-    },
-    MemberExpression(node, {state, next}) {
-        if(state.currentProperty == null)
-            return;
-        console.log(stringifyWithDepth(node, 99, null, 2));
     }
 };
 
