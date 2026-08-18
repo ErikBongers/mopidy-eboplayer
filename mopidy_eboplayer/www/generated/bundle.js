@@ -2637,8 +2637,8 @@ var NowPlayingView = class extends ComponentView {
 		this.state.getModel().on("activeStreamLinesChanged.eboplayer", (ev) => {
 			this.onStreamLinesChanged();
 		});
-		this.state.getModel().on("programTitleChanged.eboplayer", (ev) => {
-			this.onProgramTitleChanged();
+		this.state.getModel().on("programTitleChanged.eboplayer", async (ev) => {
+			await this.onProgramTitleChanged();
 		});
 		this.state.getModel().on("trackListChanged.eboplayer", async () => {
 			await this.onTrackListChanged();
@@ -2670,7 +2670,7 @@ var NowPlayingView = class extends ComponentView {
 		this.track = await this.state.getController().getExpandedTrackModel(uri);
 		this.setComponentData();
 	}
-	setComponentData() {
+	async setComponentData() {
 		let name = "no current track";
 		let info = "";
 		let position;
@@ -2705,15 +2705,15 @@ var NowPlayingView = class extends ComponentView {
 		this.component.setAttribute("button", button);
 		this.component.setAttribute("img", imageUrl);
 		this.onStreamLinesChanged();
-		this.component.tracklist = this.state.getModel().getTrackList();
-		this.component.setAttribute("hide_tracklist", this.state.getModel().getTrackList().length < 2 ? "true" : "false");
+		await this.onTrackListChanged();
 	}
-	onProgramTitleChanged() {
+	async onProgramTitleChanged() {
 		this.programTitle = this.state.getModel().getCurrentProgramTitle();
-		this.setComponentData();
+		await this.setComponentData();
 	}
 	async onTrackListChanged() {
 		this.component.tracklist = this.state.getModel().getTrackList();
+		this.component.setAttribute("hide_tracklist", this.state.getModel().getTrackList().length < 2 ? "true" : "false");
 		if (!this.state.getModel().getCurrentTrack()) {
 			let trackList = this.state.getModel().getTrackList();
 			if (trackList.length > 0) await this.state.getController().setCurrentTrackAndFetchDetails(trackList[0]);

@@ -149,7 +149,6 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        // (shadow. querySelector("ebo-tracklist-view") as EboTracklistComp).tracklist = this.tracklist;
         let progressBarElement = shadow.querySelector("ebo-progressbar") as HTMLElement;
         EboNowPlayingComp.progressBarAttributes.forEach(attName => {
             // @ts-ignore
