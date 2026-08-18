@@ -6554,7 +6554,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		"extra",
 		"img",
 		"disabled",
-		"show_back",
 		"hide_tracklist",
 		...EboNowPlayingComp.progressBarAttributes
 	];
@@ -6672,7 +6671,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	constructor() {
 		super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
 		this.defineAtt("hide_tracklist", "", (value) => value == "true" ? "hidden" : "");
-		this.defineAtt("show_back", "", (value) => value == "true" ? "back" : "front");
 		this.defineAtt("name", "");
 		this.defineAtt("extra", "");
 		this.defineAtt("stream_lines", "");
@@ -6689,11 +6687,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 			this.updateStringProperty(name, newValue);
 			this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
 			return;
-		}
-		switch (name) {
-			case "show_back":
-				this.updateBoolProperty(name, newValue);
-				break;
 		}
 	}
 	render(shadow) {

@@ -1,8 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import models from "../../js/mopidy";
-import {EboTracklistComp} from "./eboTracklistComp";
-import {template, property} from "./placeholders";
+import {property, template} from "./placeholders";
 import TlTrack = models.TlTrack;
 
 export class EboNowPlayingComp extends EboComponent {
@@ -10,7 +9,7 @@ export class EboNowPlayingComp extends EboComponent {
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "disabled", "show_back", "hide_tracklist",
+        "name", "stream_lines", "extra", "img", "disabled", "hide_tracklist",
         ...EboNowPlayingComp.progressBarAttributes
     ];
 
@@ -114,7 +113,6 @@ export class EboNowPlayingComp extends EboComponent {
     constructor() {
         super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
         this.defineAtt("hide_tracklist", "", (value) => value == "true"? "hidden" : "");
-        this.defineAtt("show_back", "", (value) => value == "true"? "back" : "front");
         this.defineAtt("name", "");
         this.defineAtt("extra", "");
         this.defineAtt("stream_lines", "");
@@ -136,11 +134,6 @@ export class EboNowPlayingComp extends EboComponent {
             this.updateStringProperty(name, newValue);
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);
             return;
-        }
-        switch (name) {
-            case "show_back":
-                this.updateBoolProperty(name, newValue);
-                break;
         }
     }
 

@@ -1,3 +1,10 @@
+* Implicit attributes: derived from the template.
+  > added to the attrubutes static var.
+  > attDefs are just (unknown) values and a optional updater!
+  > so,...
+    > static AttDefs are just a set of updaters.
+    > this.attValues = set of values...that's it...
+
 * create a `forward` class/object that listenens for data changes and informs a forward (sub) component.
   > we need some event that says only that specific data has changed.
   > it's the properties setter!
