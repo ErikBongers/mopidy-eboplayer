@@ -178,7 +178,7 @@ let visitors: Visitors<TSESTree.Node, WalkState> = {
         state.templateId = state.currentProperty.id.name;
         next(state);
         if(state.templateString != null) {
-            let buffer = generateUpdateFunction(createPlaceHolders(state.templateString));
+            let buffer = generateUpdateFunction(state.currentClass.name, createPlaceHolders(state.templateString));
             state.ms.overwrite(state.currentClass.end - 1, state.currentClass.end, buffer + "\n}");
             // console.log(buffer);
         }

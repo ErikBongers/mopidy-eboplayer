@@ -1,4 +1,4 @@
-import {EboComponent} from "./EboComponent";
+import {EboComponent, Updater, Updaters} from "./EboComponent";
 import {AlbumData, AlbumDataType, AlbumNone, ExpandedStreamModel} from "../modelTypes";
 import models from "../../js/mopidy";
 import {property, template} from "./placeholders";
@@ -88,7 +88,7 @@ export class EboNowPlayingComp extends EboComponent {
 
     // noinspection HtmlUnknownTarget
     static htmlText = template`
-        <div id="wrapper" class="{show_back}">
+        <div id="wrapper">
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
@@ -104,28 +104,26 @@ export class EboNowPlayingComp extends EboComponent {
                     </div>
                 </div>
             </div>
-            <div id="tracklist" class="flex scroll {hide_tracklist}">
+            <div id="tracklist" class="flex scroll {hide_tracklist?hidden:shown}">
                 <ebo-tracklist-view id="tracklistView"></ebo-tracklist-view>            
             </div>  
         </div>
         `;
 
-    constructor() {
-        super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
-        this.defineAtt("hide_tracklist", "", (value) => value == "true"? "hidden" : "");
-        this.defineAtt("name", "");
-        this.defineAtt("extra", "");
-        this.defineAtt("stream_lines", "");
-        this.defineAtt("img", "", (value, shadow, el) => {
-            if(value != "") {
+    static updaters: Updaters = {
+        "img": (value: string, shadow: ShadowRoot, el: HTMLElement) => {
+            if (value != "") {
                 el.style.visibility = "";
                 (el as HTMLImageElement).src = value as string;
-            }
-            else {
+            } else {
                 (el as HTMLImageElement).style.visibility = "hidden";
             }
             return value as string;
-        });
+        }
+    };
+
+    constructor() {
+        super(EboNowPlayingComp.styleText, EboNowPlayingComp.htmlText);
     }
 
     // noinspection JSUnusedGlobalSymbols

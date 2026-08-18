@@ -1,7 +1,18 @@
 import {ElementDef, Parser} from "htmlparserts/parser";
-import {PlaceHolder, PlaceHolderType} from "htmlparserts";
 import {PeekingTokenizer} from "htmlparserts/PeekingTokenizer";
 import {HtmlTokenizer} from "htmlparserts/HtmlTokenizer";
+
+export type PlaceHolderType = "content" | "attribute";
+export interface PlaceHolder {
+    placeHolderId: string;
+    elementId: string; //todo: bundle per element. ElementFiller contains a list of placeholders.
+    type: PlaceHolderType;
+    nodeIndex: number;  //todo: make this depend on type.
+    attributeName: string; //todo: make this depend on type.
+    textParts: string[]; //place placeholder text in between each array item.
+    trueValue: string | null;
+    falseValue: string | null;
+}
 
 export function createPlaceHolders(code: string) {
     let parser = new Parser(new PeekingTokenizer(new HtmlTokenizer(code)));
@@ -68,16 +79,36 @@ function createTextPlaceholders(text: string, type: PlaceHolderType, elementId: 
     let rx = /{(\S+)}/gm;
     let match: RegExpExecArray | null;
     while((match = rx.exec(text)) != null) {
-        let name = match[1];
+        let placeHolder = match[1];
+        let placeHolderParts = parsePlaceHolder(placeHolder);
         placeholders.push({
-            placeHolderId: match[1],
+            placeHolderId: placeHolderParts.placeHolderId,
             elementId,
             type,
             nodeIndex,
             attributeName,
             textParts: text.split(match[0]),
+            trueValue: placeHolderParts.trueValue,
+            falseValue: placeHolderParts.falseValue,
         });
     }
 
     return placeholders;
+}
+
+interface PlaceHolderParts {
+    placeHolderId: string;
+    trueValue: string | null;
+    falseValue: string | null;
+}
+function parsePlaceHolder(placeHolder: string): PlaceHolderParts {
+    let parts = placeHolder.split("?");
+    if (parts.length == 1) {
+        return {placeHolderId: parts[0], trueValue: null, falseValue: null};
+    }
+    let parts2 = parts[1].split(":");
+    if (parts2.length == 1) {
+        return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: null};
+    }
+    return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: parts2[1]};
 }

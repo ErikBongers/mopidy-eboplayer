@@ -6,12 +6,8 @@ export interface HasName {
 }
 
 // export type ElementId = string;
-export interface AttDef {
-    value: unknown;
-    updater: Updater | null;
-}
-
-export type Updater = (value: unknown, shadow: ShadowRoot, el: HTMLElement) => void | string;
+export type Updater = (value: string, shadow: ShadowRoot, el: HTMLElement) => void | string;
+export type Updaters = Record<string, (value: string, shadow: ShadowRoot, el: HTMLElement) => string>;
 
 
 export abstract class EboComponent extends HTMLElement implements HasName, EboEventTarget {
@@ -31,7 +27,6 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     private renderBatching: Batching;
     private updateBatching: Batching;
     protected cssNeeded: string[] = [];
-    private attDefs: Map<string, AttDef> = new Map();
 
     protected constructor(styleText: string, htmlText: string) {
         super();
@@ -45,11 +40,6 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     attributeChangedCallback(name: string, oldValue: string, newValue: string) {
         if(oldValue === newValue)
             return;
-
-        if(this.updateAtts(name, oldValue, newValue)){
-            this.requestUpdate();
-            return;
-        }
 
         if(this.attributeReallyChangedCallback(name, oldValue, newValue)??true)
             this.requestUpdate();
@@ -153,21 +143,6 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
 
     getShadow(){
         return this.shadow;
-    }
-
-    protected defineAtt(name: string, value: any, updater: Updater | null = null) {
-        this.attDefs.set(name, {value, updater});
-    }
-
-    getAtt = (name: string) => this.attDefs.get(name);
-
-    updateAtts(name: string, _oldValue: string, newValue: string): boolean {
-        let attDef = this.getAtt(name);
-        if(attDef == undefined)
-            return false;
-
-        attDef.value = newValue;
-        return true;
     }
 
     setClassFromBoolAttribute(el: HTMLElement, attName: string) {
