@@ -1,5 +1,5 @@
 import {Plugin} from 'rolldown';
-import {Visitors, walk} from 'zimmerframe';
+import {Context, Visitors, walk} from 'zimmerframe';
 import {parse} from '@typescript-eslint/typescript-estree';
 import MagicString from 'magic-string';
 import {createPlaceHolders} from "./placeholders";
@@ -7,35 +7,30 @@ import {generateUpdateFunction} from "./generateUpdateFunction";
 import {stringifyWithDepth} from "./utils";
 import {generateProperty} from "./generateProperty";
 import type {TSESTree} from '@typescript-eslint/types';
+import {TemplateLiteral} from "@oxc-project/types";
 
-type WalkState = {
-    currentClass: {
+type AccessModifier = "public" | "private" | "protected";
+interface ClassDef {
+    name: string;
+    start: number;
+    end: number;
+}
+
+interface PropDef {
+    classDef: ClassDef;
+    id: {
         name: string;
         start: number;
         end: number;
-    } | null;
-    templateId: string | null;
-    templateString: string | null;
-    isPlaceholderTemplate: boolean;
-    isTemplateExpression: boolean;
-    currentProperty: {
-        id: {
-            name: string;
-            start: number;
-            end: number;
-        }
-        start: number;
-        end: number;
-        accessibility:  "private" | "protected" | "public" | null;
-    } | null;
+    },
+    start: number;
+    end: number;
+    accessibility: AccessModifier | null;
+}
+
+type WalkStateMachine = {
+    machineState: MachineState;
     ms: MagicString;
-    propertyDecorator: {
-        action: string | null;
-        forwardTo: string | null;
-        start: number;
-         end: number;
-    } | null;
-    decoratorArg: string | null;
 };
 
 function getPropStringRawValue(node: TSESTree.ObjectLiteralElement, propName: string): string | null {
@@ -58,16 +53,9 @@ const placeholdersPlugin = (): Plugin => {
             const ms = new MagicString(code);
             const ast = parse(code, {range: true});
 
-            let state: WalkState = {
-                currentClass: null,
-                templateId: null,
-                templateString: null,
-                isPlaceholderTemplate: false,
-                isTemplateExpression: false,
-                currentProperty: null,
+            let state: WalkStateMachine = {
+                machineState: new StartState(),
                 ms,
-                propertyDecorator: null,
-                decoratorArg: null,
             };
 
             walk(ast, state, visitors);
@@ -87,107 +75,164 @@ const placeholdersPlugin = (): Plugin => {
     };
 }
 
-let visitors: Visitors<TSESTree.Node, WalkState> = {
+let visitors: Visitors<TSESTree.Node, WalkStateMachine> = {
     ClassDeclaration(node, {state, next}) {
-        if(!(node.superClass?.type == "Identifier" && node.superClass.name == 'EboComponent'))
-            return;
-
-        if(node.id) {
-            state.currentClass = {
-                name: node.id.name,
-                start: node.range![0],
-                end: node.range![1],
-            };
-            next(state); //nested clas}ses are not possible, so just pass on the current state.
-        }
-        state.currentClass = null;
+        if(state.machineState.classDeclaration(node, state, next) === false)
+            next(state);
     },
     PropertyDefinition(node, {state, next}) {
-        if (state.currentClass == null)
+        if(state.machineState.propertyDefinition(node, state, next) === false)
+            next(state);
+    },
+    Decorator(node, {state, next}) {
+        if(state.machineState.decorator(node, state, next) === false)
+            next(state);
+    },
+    ObjectExpression(node, {state, next}) {
+        if(state.machineState.objectExpression(node, state, next) === false)
+            next(state);
+    },
+    TaggedTemplateExpression(node, {state, next}) {
+        if(state.machineState.taggedTemplateExpression(node, state, next) === false)
+            next(state);
+    },
+    TemplateLiteral(node, {state, next}) {
+        if(state.machineState.templateLiteral(node, state, next) === false)
+            next(state);
+    }
+};
+
+type Next = (state?: WalkStateMachine | undefined) => void | TSESTree.Node;
+type NotHandled = false;
+
+abstract class MachineState {
+    classDeclaration(node: TSESTree.ClassDeclaration, state: WalkStateMachine, next: Next): NotHandled | void { return false; }
+    propertyDefinition(node: TSESTree.PropertyDefinition, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
+    decorator(node: TSESTree.Decorator, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
+    objectExpression(node: TSESTree.ObjectExpression, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
+    taggedTemplateExpression(node: TSESTree.TaggedTemplateExpression, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
+    templateLiteral(node: TSESTree.TemplateLiteral, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
+}
+
+class StartState extends MachineState {
+    override classDeclaration(node: TSESTree.ClassDeclaration, state: WalkStateMachine, next: Next) {
+        if(!(node.superClass?.type == "Identifier" && node.superClass.name == 'EboComponent'))
             return;
+        if(node.id) {
+            let machineState = new EboComponentState({name: node.id.name, start: node.range![0], end: node.range![1]});
+            next({...state, machineState});
+        }
+    }
+}
+
+class EboComponentState extends MachineState {
+    constructor(public classDef: ClassDef) {
+        super();
+    }
+    override propertyDefinition(node: TSESTree.PropertyDefinition, state: WalkStateMachine, next: Next) {
         if(node.key.type != "Identifier")
             return;
-        // console.log(stringifyWithDepth(node, 2, null, 2));
-        state.currentProperty = {
-            id: {
-                name: node.key.name,
-                start: node.key.range![0],
-                end: node.key.range![1],
-            },
+        let propDef: PropDef = {
+            classDef: this.classDef,
+            id: {name: node.key.name, start: node.key.range![0], end: node.key.range![1]},
             start: node.range![0],
             end: node.range![1],
             accessibility: node.accessibility??null,
         };
-        state.templateId = null;
-        next(state);
-        state.templateId = null;
-        state.currentProperty = null;
-    },
-    Decorator(node, {state, next}) {
-        if(state.currentProperty == null)
-            return;
-        console.log(stringifyWithDepth(node, 99, null, 2));
-        if(node.expression.type!= "CallExpression")
+        //prop could be a decorated thing or "observedAttributes"
+        if(node.key.name == "observedAttributes")
+            next({...state, machineState: new ObservedAttributesState(propDef)});
+        else
+            next({...state, machineState: new UndeterminedPropertyState(propDef)});
+    }
+}
+
+class ObservedAttributesState extends MachineState {
+    constructor(public propDef: PropDef) {
+        super();
+    }
+    //todo
+}
+
+interface DecoratorDef {
+    propDef: PropDef;
+    name: string;
+    start: number;
+    end: number;
+    decoratorArg: string | null;
+}
+
+interface TemplateDef {
+    propDef: PropDef;
+    id: string;
+}
+
+class UndeterminedPropertyState extends MachineState {
+    constructor(public propDef: PropDef) {
+        super();
+    }
+    override decorator(node: TSESTree.Decorator, state: WalkStateMachine, next: Next) {
+        if(node.expression.type != "CallExpression")
             return;
         if(node.expression.callee.type != "Identifier")
             return;
-        if(node.expression.callee.name!= "property")
-            return;
-        state.propertyDecorator = { start: node.range![0], end: node.range![1],action: null, forwardTo: null };
-        next(state);
-        console.log(state.currentProperty);
-        state.ms.remove(state.propertyDecorator.start, state.propertyDecorator.end);
-        state.ms.overwrite(state.currentProperty.id.start, state.currentProperty.id.end, "_"+state.currentProperty.id.name);
-        let buffer = generateProperty(state.currentProperty.id.name, "string", `"VALUE!!!"`, state.propertyDecorator.action, state.propertyDecorator.forwardTo);
-        state.ms.appendRight(state.currentProperty.end, buffer);
-        console.log(buffer);
-        state.propertyDecorator = null;
-    },
-    CallExpression(node, {state, next}) {
-        if(!state.propertyDecorator)
-            return;
-        state.decoratorArg = null;
-        next(state);
-    },
-    ObjectExpression(node, {state, next}) {
-        if(!state.propertyDecorator)
-            return;
-
-        for(let prop of node.properties) {
-            state.propertyDecorator.forwardTo = getPropStringRawValue(prop,"forwardTo");
-            state.propertyDecorator.action = getPropStringRawValue(prop,"action");
+        if(node.expression.callee.name == "property") {
+            let decoratorDef: DecoratorDef = {
+                propDef: this.propDef,
+                name: node.expression.callee.name,
+                start: node.range![0],
+                end: node.range![1],
+                decoratorArg: null,
+            }
+            let propertyDecoratorState = new PropertyDecoratorState(decoratorDef);
+            next({...state, machineState: propertyDecoratorState});
+            propertyDecoratorState.write(state.ms);
         }
-    },
-    Literal(node, {state, next}) {
-        if(!state.propertyDecorator)
-            return;
-        state.decoratorArg = node.value as string;
-        console.log(stringifyWithDepth(node, 99, null, 2));
-    },
-    TaggedTemplateExpression(node, {state, next}) {
-        if(state.currentProperty == null)
-            return;
-        if(state.currentClass == null)
-            return;
+    }
+
+    override taggedTemplateExpression(node: TSESTree.TaggedTemplateExpression, state: WalkStateMachine, next: Next) {
         if(node.tag.type != "Identifier")
-            return; //the template tag should be a plain identifier
-        if(node.tag.name != "template")
             return;
-
-        state.isTemplateExpression = true;
-        state.templateId = state.currentProperty.id.name;
-        next(state);
-        if(state.templateString != null) {
-            let buffer = generateUpdateFunction(state.currentClass.name, createPlaceHolders(state.templateString));
-            state.ms.overwrite(state.currentClass.end - 1, state.currentClass.end, buffer + "\n}");
-            // console.log(buffer);
+        if(node.tag.name == "template") {
+            let templateDef: TemplateDef = {propDef: this.propDef, id: node.tag.name};
+            let templateState = new TemplateState(templateDef);
+            next({...state, machineState: templateState});
+            templateState.write(state.ms);
         }
-        state.templateId = null;
-        state.isTemplateExpression = false;
-    },
-    TemplateLiteral(node, {state}) {
-        if (state.templateId == null)
-            return;
+    }
+}
+
+class PropertyDecoratorState extends MachineState {
+    private action: string | null = null;
+    private forwardTo: string | null = null;
+
+    constructor(public decoratorDef: DecoratorDef) {
+        super();
+    }
+
+    override objectExpression(node: TSESTree.ObjectExpression, state: WalkStateMachine, next: Next) {
+        for(let prop of node.properties) {
+            this.forwardTo = getPropStringRawValue(prop,"forwardTo");
+            this.action = getPropStringRawValue(prop,"action");
+        }
+    }
+
+    write(ms: MagicString) {
+        ms.remove(this.decoratorDef.start, this.decoratorDef.end);
+        ms.overwrite(this.decoratorDef.propDef.id.start, this.decoratorDef.propDef.id.end, "_"+this.decoratorDef.propDef.id.name);
+        let buffer = generateProperty(this.decoratorDef.propDef.id.name, "string", `"VALUE!!!"`, this.action, this.forwardTo);
+        ms.appendRight(this.decoratorDef.propDef.end, buffer);
+    }
+}
+
+
+class TemplateState extends MachineState {
+    templateString: string | null = null;
+    constructor(public templateDef: TemplateDef) {
+        super();
+    }
+
+    override templateLiteral(node: TSESTree.TemplateLiteral, state: WalkStateMachine, next: Next): NotHandled | void {
         let fragments = node.quasis;
         if (fragments.length > 1) {
             console.log(`TODO: can't yet handle template strings with embedded variables.`);
@@ -195,9 +240,16 @@ let visitors: Visitors<TSESTree.Node, WalkState> = {
         }
         let theFragment = fragments[0];
         let templateString = theFragment.value; //todo: assuming type = "TemplateElement"
-        state.templateString = templateString.raw;
+        this.templateString = templateString.raw;
     }
-};
+
+    write(ms: MagicString) {
+        if(this.templateString != null) {
+            let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, createPlaceHolders(this.templateString));
+            ms.overwrite(this.templateDef.propDef.classDef.end - 1, this.templateDef.propDef.classDef.end, buffer + "\n}");
+        }
+    }
+}
 
 
 // noinspection JSUnusedGlobalSymbols

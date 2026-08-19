@@ -1,3 +1,7 @@
+* visitors are parsing different kinds of things.
+  > Perhaps separate them with a state machine or a strategy pattern.
+
+
 * Create a DataPoint class.
   - has a value
   - get()

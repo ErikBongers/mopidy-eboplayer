@@ -6637,7 +6637,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
                     </div>
                 </div>
             </div>
-            <div id="tracklist" class="flex scroll {hide_tracklist?hidden:shown}">
+            <div id="tracklist" class="flex scroll {hide_tracklist?hidden}">
                 <ebo-tracklist-view id="tracklistView"></ebo-tracklist-view>            
             </div>  
         </div>
@@ -6698,7 +6698,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		updater = EboNowPlayingComp.updaters["hide_tracklist"];
 		if (updater != null) value = updater(value, shadow, el);
 		if (value == "true") value = "hidden";
-		else value = "shown";
+		else value = "";
 		el.setAttribute("class", ["flex scroll ", ""].join(value));
 	}
 };
