@@ -8,6 +8,7 @@ import {generateProperty} from "./generateProperty";
 import type {TSESTree} from '@typescript-eslint/types';
 import {createVisitors, MachineState, Next, NotHandled, WalkStateMachine} from "./machine";
 import {ClassDef, DecoratorDef, PropDef, TemplateDef} from "./types";
+import {stringifyWithDepth} from "./utils";
 
 function getPropStringRawValue(node: TSESTree.ObjectLiteralElement, propName: string): string | null {
     if(node.type != "Property")
@@ -56,8 +57,15 @@ class StartState extends MachineState {
         if(!(node.superClass?.type == "Identifier" && node.superClass.name == 'EboComponent'))
             return;
         if(node.id) {
-            let machineState = new EboComponentState({name: node.id.name, start: node.range![0], end: node.range![1]});
+            let machineState = new EboComponentState({
+                    name: node.id.name,
+                    start: node.range![0],
+                    end: node.range![1],
+                    observedAttDef: null,
+                    placeHolderIds: null
+                });
             next({...state, machineState});
+            machineState.write(state.ms);
         }
     }
 }
@@ -77,10 +85,29 @@ class EboComponentState extends MachineState {
             accessibility: node.accessibility??null,
         };
         //prop could be a decorated thing or "observedAttributes"
-        if(node.key.name == "observedAttributes")
+        if(node.key.name == "observedAttributes") {
+            if(this.classDef.name == "EboNowPlayingComp")
+                console.log(stringifyWithDepth(node, 99, null, 2));
             next({...state, machineState: new ObservedAttributesState(propDef)});
+        }
         else
             next({...state, machineState: new UndeterminedPropertyState(propDef)});
+    }
+
+    write(ms: MagicString) {
+        if(this.classDef.observedAttDef && this.classDef.placeHolderIds) {
+            let uniqueRawAtts = new Set(this.classDef.observedAttDef.observedAttRaws);
+            this.classDef.placeHolderIds
+                .forEach(phId => {
+                    if (!uniqueRawAtts.has(`"${phId}"`) && !uniqueRawAtts.has(`'${phId}'`)) {
+                        uniqueRawAtts.add(`"${phId}"`);
+                    }
+                });
+            if(uniqueRawAtts.size == 0)
+                return;
+            let arrayString = [...uniqueRawAtts.values()].join(", ");
+            ms.overwrite(this.classDef.observedAttDef.start, this.classDef.observedAttDef.end, `[${arrayString}]`);
+        }
     }
 }
 
@@ -88,7 +115,23 @@ class ObservedAttributesState extends MachineState {
     constructor(public propDef: PropDef) {
         super();
     }
-    //todo
+    override arrayExpression(node: TSESTree.ArrayExpression, state: WalkStateMachine, next: Next) {
+        let raws: string[] = [];
+        for(let element of node.elements) {
+            if(element?.type == "Literal") {
+                raws.push(element.raw);
+            } else {
+                raws.push(state.ms.original.substring(element!.range![0], element!.range![1]));
+            }
+        }
+        // console.log(`===${state.ms.original.substring(node!.range![0], node!.range![1])}===`);
+        // console.log(raws);
+        this.propDef.classDef.observedAttDef = {
+            start: node.range![0],
+            end: node.range![1],
+            observedAttRaws: raws,
+        }
+    }
 }
 
 class UndeterminedPropertyState extends MachineState {
@@ -169,8 +212,11 @@ class TemplateState extends MachineState {
 
     write(ms: MagicString) {
         if(this.templateString != null) {
-            let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, createPlaceHolders(this.templateString));
+            let placeHolders = createPlaceHolders(this.templateString);
+            let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, placeHolders);
             ms.overwrite(this.templateDef.propDef.classDef.end - 1, this.templateDef.propDef.classDef.end, buffer + "\n}");
+
+            this.templateDef.propDef.classDef.placeHolderIds = placeHolders.map(ph => ph.placeHolderId);
         }
     }
 }

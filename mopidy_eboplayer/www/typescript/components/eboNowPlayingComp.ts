@@ -8,10 +8,7 @@ export class EboNowPlayingComp extends EboComponent {
     static override readonly tagName=  "ebo-now-playing";
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
     // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = [
-        "name", "stream_lines", "extra", "img", "hide_tracklist",
-        ...EboNowPlayingComp.progressBarAttributes
-    ];
+    static observedAttributes = [...EboNowPlayingComp.progressBarAttributes];
 
     @property() streamInfo: ExpandedStreamModel | null = null;
     @property({forwardTo: "tracklistView"}) tracklist: TlTrack[] = [];

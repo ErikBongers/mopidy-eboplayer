@@ -6531,12 +6531,12 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		"active"
 	];
 	static observedAttributes = [
+		...EboNowPlayingComp.progressBarAttributes,
+		"img",
 		"name",
 		"stream_lines",
 		"extra",
-		"img",
-		"hide_tracklist",
-		...EboNowPlayingComp.progressBarAttributes
+		"hide_tracklist"
 	];
 	_streamInfo = null;
 	get streamInfo() {

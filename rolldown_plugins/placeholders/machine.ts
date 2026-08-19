@@ -29,6 +29,9 @@ export abstract class MachineState {
     templateLiteral(node: TSESTree.TemplateLiteral, state: WalkStateMachine, next: Next): NotHandled | void {
         return false;
     }
+    arrayExpression(node: TSESTree.ArrayExpression, state: WalkStateMachine, next: Next): NotHandled | void {
+        return false;
+    }
 }
 
 export type WalkStateMachine = {
@@ -60,6 +63,10 @@ export function createVisitors() {
         },
         TemplateLiteral(node, {state, next}) {
             if (state.machineState.templateLiteral(node, state, next) === false)
+                next(state);
+        },
+        ArrayExpression(node, {state, next}) {
+            if (state.machineState.arrayExpression(node, state, next) === false)
                 next(state);
         }
     };

@@ -4,6 +4,14 @@ export interface ClassDef {
     name: string;
     start: number;
     end: number;
+    placeHolderIds: string[] | null;
+    observedAttDef: ObservedAttDef | null;
+}
+
+export interface ObservedAttDef {
+    observedAttRaws: string[];
+    start: number;
+    end: number;
 }
 
 export interface PropDef {
