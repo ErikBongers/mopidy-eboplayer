@@ -20,8 +20,8 @@ function generatePlaceHolderCode(className: string, placeholders: PlaceHolder[],
     for(let placeholder of placeholders) {
         //todo: group per att, so that updater gets called only once...or group by element and store result of updater in attDef?
         buffer.appendLine(`       el = shadow.getElementById("${placeholder.elementId}")!;`);
-        buffer.appendLine(`       value = this.getAttribute("${placeholder.placeHolderId}")??"";`);
-        buffer.appendLine(`       updater = ${className}.updaters["${placeholder.placeHolderId}"];`);
+        buffer.appendLine(`       value = this.getAttribute("${placeholder.placeHolderText}")??"";`);
+        buffer.appendLine(`       updater = ${className}.updaters["${placeholder.placeHolderText}"];`);
         buffer.appendLine(`       if(updater != null) {`);
         buffer.appendLine(`           value = updater(value, shadow, el);`);
         buffer.appendLine(`       }`);
@@ -37,7 +37,7 @@ function generatePlaceHolderCode(className: string, placeholders: PlaceHolder[],
             if (placeholder.nodeIndex == 0)
                 buffer.appendLine(`           el.textContent = ${JSON.stringify(placeholder.textParts)}.join(value);`);
             else
-                buffer.appendLine(`           console.error("Text node to set not found for element #${placeholder.elementId}, node ${placeholder.nodeIndex}, placeholder: ${placeholder.placeHolderId}");`);
+                buffer.appendLine(`           console.error("Text node to set not found for element #${placeholder.elementId}, node ${placeholder.nodeIndex}, placeholder: ${placeholder.placeHolderText}");`);
             buffer.appendLine(`       } else {`);
             buffer.appendLine(`           node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join(value);`);
             buffer.appendLine(`       }`);

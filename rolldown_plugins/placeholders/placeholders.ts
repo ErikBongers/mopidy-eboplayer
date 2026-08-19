@@ -4,7 +4,7 @@ import {HtmlTokenizer} from "htmlparserts/HtmlTokenizer";
 
 export type PlaceHolderType = "content" | "attribute";
 export interface PlaceHolder {
-    placeHolderId: string;
+    placeHolderText: string;
     elementId: string; //todo: bundle per element. ElementFiller contains a list of placeholders.
     type: PlaceHolderType;
     nodeIndex: number;  //todo: make this depend on type.
@@ -82,7 +82,7 @@ function createTextPlaceholders(text: string, type: PlaceHolderType, elementId: 
         let placeHolder = match[1];
         let placeHolderParts = parsePlaceHolder(placeHolder);
         placeholders.push({
-            placeHolderId: placeHolderParts.placeHolderId,
+            placeHolderText: placeHolderParts.placeHolderText,
             elementId,
             type,
             nodeIndex,
@@ -97,18 +97,18 @@ function createTextPlaceholders(text: string, type: PlaceHolderType, elementId: 
 }
 
 interface PlaceHolderParts {
-    placeHolderId: string;
+    placeHolderText: string;
     trueValue: string | null;
     falseValue: string | null;
 }
 function parsePlaceHolder(placeHolder: string): PlaceHolderParts {
     let parts = placeHolder.split("?");
     if (parts.length == 1) {
-        return {placeHolderId: parts[0], trueValue: null, falseValue: null};
+        return {placeHolderText: parts[0], trueValue: null, falseValue: null};
     }
     let parts2 = parts[1].split(":");
     if (parts2.length == 1) {
-        return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: null};
+        return {placeHolderText: parts[0], trueValue: parts2[0], falseValue: null};
     }
-    return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: parts2[1]};
+    return {placeHolderText: parts[0], trueValue: parts2[0], falseValue: parts2[1]};
 }
