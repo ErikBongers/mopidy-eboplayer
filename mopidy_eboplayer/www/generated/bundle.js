@@ -6530,14 +6530,6 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		"button",
 		"active"
 	];
-	static observedAttributes = [
-		...EboNowPlayingComp.progressBarAttributes,
-		"img",
-		"name",
-		"stream_lines",
-		"extra",
-		"hide_tracklist"
-	];
 	_streamInfo = null;
 	get streamInfo() {
 		return this._streamInfo;
@@ -6701,6 +6693,13 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		else value = "";
 		el.setAttribute("class", ["flex scroll ", ""].join(value));
 	}
+	static observedAttributes = [
+		"img",
+		"name",
+		"stream_lines",
+		"extra",
+		"hide_tracklist"
+	];
 };
 
 //#endregion

@@ -107,6 +107,10 @@ class EboComponentState extends MachineState {
                 return;
             let arrayString = [...uniqueRawAtts.values()].join(", ");
             ms.overwrite(this.classDef.observedAttDef.start, this.classDef.observedAttDef.end, `[${arrayString}]`);
+        } else if(this.classDef.placeHolderIds) {
+            let uniqueRawAtts = new Set(this.classDef.placeHolderIds.map(phId => `"${phId}"`));
+            let arrayString = [...uniqueRawAtts.values()].join(", ");
+            ms.appendLeft(this.classDef.end-1, `\n    static observedAttributes = [${arrayString}];\n`);
         }
     }
 }
@@ -214,7 +218,7 @@ class TemplateState extends MachineState {
         if(this.templateString != null) {
             let placeHolders = createPlaceHolders(this.templateString);
             let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, placeHolders);
-            ms.overwrite(this.templateDef.propDef.classDef.end - 1, this.templateDef.propDef.classDef.end, buffer + "\n}");
+            ms.appendLeft(this.templateDef.propDef.classDef.end-1, buffer + "\n");
 
             this.templateDef.propDef.classDef.placeHolderIds = placeHolders.map(ph => ph.placeHolderId);
         }
