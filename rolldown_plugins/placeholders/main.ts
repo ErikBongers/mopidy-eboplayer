@@ -1,37 +1,13 @@
 import {Plugin} from 'rolldown';
-import {Context, Visitors, walk} from 'zimmerframe';
+import {walk} from 'zimmerframe';
 import {parse} from '@typescript-eslint/typescript-estree';
 import MagicString from 'magic-string';
 import {createPlaceHolders} from "./placeholders";
 import {generateUpdateFunction} from "./generateUpdateFunction";
-import {stringifyWithDepth} from "./utils";
 import {generateProperty} from "./generateProperty";
 import type {TSESTree} from '@typescript-eslint/types';
-import {TemplateLiteral} from "@oxc-project/types";
-
-type AccessModifier = "public" | "private" | "protected";
-interface ClassDef {
-    name: string;
-    start: number;
-    end: number;
-}
-
-interface PropDef {
-    classDef: ClassDef;
-    id: {
-        name: string;
-        start: number;
-        end: number;
-    },
-    start: number;
-    end: number;
-    accessibility: AccessModifier | null;
-}
-
-type WalkStateMachine = {
-    machineState: MachineState;
-    ms: MagicString;
-};
+import {createVisitors, MachineState, Next, NotHandled, WalkStateMachine} from "./machine";
+import {ClassDef, DecoratorDef, PropDef, TemplateDef} from "./types";
 
 function getPropStringRawValue(node: TSESTree.ObjectLiteralElement, propName: string): string | null {
     if(node.type != "Property")
@@ -58,7 +34,7 @@ const placeholdersPlugin = (): Plugin => {
                 ms,
             };
 
-            walk(ast, state, visitors);
+            walk(ast, state, createVisitors());
 
             if (ms.hasChanged()) {
                 return {
@@ -73,45 +49,6 @@ const placeholdersPlugin = (): Plugin => {
             return null;
         }
     };
-}
-
-let visitors: Visitors<TSESTree.Node, WalkStateMachine> = {
-    ClassDeclaration(node, {state, next}) {
-        if(state.machineState.classDeclaration(node, state, next) === false)
-            next(state);
-    },
-    PropertyDefinition(node, {state, next}) {
-        if(state.machineState.propertyDefinition(node, state, next) === false)
-            next(state);
-    },
-    Decorator(node, {state, next}) {
-        if(state.machineState.decorator(node, state, next) === false)
-            next(state);
-    },
-    ObjectExpression(node, {state, next}) {
-        if(state.machineState.objectExpression(node, state, next) === false)
-            next(state);
-    },
-    TaggedTemplateExpression(node, {state, next}) {
-        if(state.machineState.taggedTemplateExpression(node, state, next) === false)
-            next(state);
-    },
-    TemplateLiteral(node, {state, next}) {
-        if(state.machineState.templateLiteral(node, state, next) === false)
-            next(state);
-    }
-};
-
-type Next = (state?: WalkStateMachine | undefined) => void | TSESTree.Node;
-type NotHandled = false;
-
-abstract class MachineState {
-    classDeclaration(node: TSESTree.ClassDeclaration, state: WalkStateMachine, next: Next): NotHandled | void { return false; }
-    propertyDefinition(node: TSESTree.PropertyDefinition, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
-    decorator(node: TSESTree.Decorator, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
-    objectExpression(node: TSESTree.ObjectExpression, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
-    taggedTemplateExpression(node: TSESTree.TaggedTemplateExpression, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
-    templateLiteral(node: TSESTree.TemplateLiteral, state: WalkStateMachine, next: Next) : NotHandled | void { return false; }
 }
 
 class StartState extends MachineState {
@@ -152,19 +89,6 @@ class ObservedAttributesState extends MachineState {
         super();
     }
     //todo
-}
-
-interface DecoratorDef {
-    propDef: PropDef;
-    name: string;
-    start: number;
-    end: number;
-    decoratorArg: string | null;
-}
-
-interface TemplateDef {
-    propDef: PropDef;
-    id: string;
 }
 
 class UndeterminedPropertyState extends MachineState {
@@ -250,7 +174,6 @@ class TemplateState extends MachineState {
         }
     }
 }
-
 
 // noinspection JSUnusedGlobalSymbols
 export default placeholdersPlugin;
