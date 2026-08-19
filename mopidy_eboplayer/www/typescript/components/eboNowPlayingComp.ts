@@ -103,7 +103,7 @@ export class EboNowPlayingComp extends EboComponent {
                     </div>
                 </div>
             </div>
-            <div id="tracklist" class="flex scroll {hide_tracklist?hidden:shown}">
+            <div id="tracklist" class="flex scroll {hide_tracklist?hidden}">
                 <ebo-tracklist-view id="tracklistView"></ebo-tracklist-view>            
             </div>  
         </div>
