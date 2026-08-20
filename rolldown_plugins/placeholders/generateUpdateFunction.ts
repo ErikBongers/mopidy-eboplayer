@@ -20,29 +20,31 @@ function generatePlaceHolderCode(className: string, placeholders: PlaceHolder[],
     for(let placeholder of placeholders) {
         //todo: group per att, so that updater gets called only once...or group by element and store result of updater in attDef?
         buffer.appendLine(`       el = shadow.getElementById("${placeholder.elementId}")!;`);
-        buffer.appendLine(`       value = this.getAttribute("${placeholder.placeHolderId}")??"";`);
-        buffer.appendLine(`       updater = ${className}.updaters["${placeholder.placeHolderId}"];`);
-        buffer.appendLine(`       if(updater != null) {`);
-        buffer.appendLine(`           value = updater(value, shadow, el);`);
-        buffer.appendLine(`       }`);
+        buffer.appendLine(`       if(el != null) {`);
+        buffer.appendLine(`           value = this.getAttribute("${placeholder.placeHolderId}")??"";`);
+        buffer.appendLine(`           updater = ${className}.updaters["${placeholder.placeHolderId}"];`);
+        buffer.appendLine(`           if(updater != null) {`);
+        buffer.appendLine(`               value = updater(value, shadow, el);`);
+        buffer.appendLine(`           }`);
         if(placeholder.trueValue) {
-            buffer.appendLine(`       if(value == "true")`);
-            buffer.appendLine(`           value = "${placeholder.trueValue}";`);
-            buffer.appendLine(`       else`);
-            buffer.appendLine(`           value = "${placeholder.falseValue??""}"??value;`);
+            buffer.appendLine(`           if(value == "true")`);
+            buffer.appendLine(`               value = "${placeholder.trueValue}";`);
+            buffer.appendLine(`           else`);
+            buffer.appendLine(`               value = "${placeholder.falseValue??""}"??value;`);
         }
         if(placeholder.type == "content") {
-            buffer.appendLine(`       node = el.childNodes.item(${placeholder.nodeIndex});`);
-            buffer.appendLine(`       if(node == null) {`);
+            buffer.appendLine(`           node = el.childNodes.item(${placeholder.nodeIndex});`);
+            buffer.appendLine(`           if(node == null) {`);
             if (placeholder.nodeIndex == 0)
-                buffer.appendLine(`           el.textContent = ${JSON.stringify(placeholder.textParts)}.join(value);`);
+                buffer.appendLine(`               el.textContent = ${JSON.stringify(placeholder.textParts)}.join(value);`);
             else
-                buffer.appendLine(`           console.error("Text node to set not found for element #${placeholder.elementId}, node ${placeholder.nodeIndex}, placeholder: ${placeholder.placeHolderId}");`);
-            buffer.appendLine(`       } else {`);
-            buffer.appendLine(`           node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join(value);`);
-            buffer.appendLine(`       }`);
+                buffer.appendLine(`               console.error("Text node to set not found for element #${placeholder.elementId}, node ${placeholder.nodeIndex}, placeholder: ${placeholder.placeHolderId}");`);
+            buffer.appendLine(`           } else {`);
+            buffer.appendLine(`               node.nodeValue = ${JSON.stringify(placeholder.textParts)}.join(value);`);
+            buffer.appendLine(`           }`);
         } else if (placeholder.type == "attribute") {
-            buffer.appendLine(`       el.setAttribute("${placeholder.attributeName}", ${JSON.stringify(placeholder.textParts)}.join(value));`);
+            buffer.appendLine(`           el.setAttribute("${placeholder.attributeName}", ${JSON.stringify(placeholder.textParts)}.join(value));`);
         }
+        buffer.appendLine(`       }`);
     }
 }

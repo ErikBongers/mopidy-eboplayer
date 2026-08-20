@@ -8,8 +8,13 @@ export function generateProperty(name: string, type: string, value: string, acti
     buffer.appendLine(`        }`);
     buffer.appendLine(`        set ${name}(value: ${type}) {`);
     buffer.appendLine(`            this._${name} = value;`);
-    if(forwardTo != null)
-        buffer.appendLine(`            this.getShadow().getElementById(${forwardTo}).${name} = this.${name};`);
+    if(forwardTo != null) {
+        buffer.appendLine(`            let el = this.getShadow()?.getElementById(${forwardTo});`);
+        buffer.appendLine(`            if(el != null) {`);
+        buffer.appendLine(`                el.${name} = this.${name};`);
+        buffer.appendLine(`            }`);
+
+    }
     if(action == "render")
         buffer.appendLine(`            this.requestRender();`);
     else if(action == "update")

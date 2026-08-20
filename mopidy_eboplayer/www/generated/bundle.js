@@ -3549,15 +3549,17 @@ var EboButton = class EboButton extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/components/placeholders.ts
+function template(strings, ...values) {
+	if (strings.length == 0) return "";
+	if (strings.length > 1) throw new Error(`A template cannot contain regular \${} placehoders.`);
+	return strings[0];
+}
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/components/album/eboBigAlbumComp.ts
 var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	static tagName = "ebo-big-album-view";
-	static observedAttributes = [
-		"name",
-		"extra",
-		"img",
-		"disabled"
-	];
 	get selected_track_uris() {
 		return this.getShadow().querySelector("ebo-album-tracks-view").selected_track_uris;
 	}
@@ -3565,6 +3567,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		this.getShadow().querySelector("ebo-album-tracks-view").selected_track_uris = value;
 		this.requestUpdate();
 	}
+	_btn_states = ListButtonState_AllHidden();
 	get btn_states() {
 		return this._btn_states;
 	}
@@ -3579,12 +3582,14 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		this._activeTrackUri = value;
 		this.onActiveTrackChanged();
 	}
+	_albumInfo = null;
 	get albumInfo() {
 		return this._albumInfo;
 	}
 	set albumInfo(value) {
 		this._albumInfo = value;
-		this.requestUpdate();
+		let el = this.getShadow()?.getElementById("tracksView");
+		if (el != null) el.albumInfo = this.albumInfo;
 	}
 	_activeTrackUri = null;
 	static progressBarAttributes = [
@@ -3594,11 +3599,7 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		"button",
 		"active"
 	];
-	name = "";
-	extra = "";
 	img = "";
-	_albumInfo = null;
-	_btn_states = ListButtonState_AllHidden();
 	static styleText = `
         <style>
             :host { 
@@ -3658,26 +3659,25 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
             }
         </style>
         `;
-	static list_source = "albumView";
-	static htmlText = `
+	static htmlText = template`
         <div id="wrapper" class="front">
             <div id="top">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="bigImage" src="" alt="Album cover"/>
+                        <img id="img" src="{img}" alt="Album cover"/>
                     </div>
         
                     <div id="info">
                         <h3 id="text" class="selectable"></h3>
                         <h3 class="selectable flexRow">
-                            <div id="name" class="selectable flexGrow"></div>
+                            <div id="name" class="selectable flexGrow">{name}</div>
                             <ebo-button id="btnFavorite" toggle>
                                 <i slot="off" class="fa fa-heart-o"></i>
                                 <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
                             </ebo-button>
                         </h3>
                         <div id="stream_lines" class="selectable info"></div>
-                        <div id="extra" class="selectable info"></div>
+                        <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
                 <div id="back">
@@ -3685,9 +3685,9 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
                 </div>                
             </div>
             <div id="bottom">
-                <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
+                <ebo-list-button-bar list_source="albumView"></ebo-list-button-bar>
                 <div id="albumTableWrapper">
-                    <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
+                    <ebo-album-tracks-view id="tracksView" img="" ></ebo-album-tracks-view>
                 </div>
             </div>
         </div>        
@@ -3701,17 +3701,9 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 			this.updateStringProperty(name, newValue);
 			return;
 		}
-		switch (name) {
-			case "name":
-			case "extra":
-			case "img":
-				this[name] = newValue;
-				break;
-		}
-		this.requestUpdate();
 	}
 	render(shadow) {
-		this.shadow.getElementById("bigImage").addEventListener("click", () => {
+		this.shadow.getElementById("img").addEventListener("click", () => {
 			let wrapper = this.getShadow().querySelector("#wrapper");
 			wrapper.classList.toggle("front");
 			wrapper.classList.toggle("back");
@@ -3726,16 +3718,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		});
 	}
 	update(shadow) {
-		["name", "extra"].forEach((attName) => {
-			shadow.getElementById(attName).innerHTML = this[attName];
-		});
-		let tracksComp = shadow.querySelector("ebo-album-tracks-view");
-		tracksComp.albumInfo = this.albumInfo;
-		let img = shadow.getElementById("bigImage");
-		if (this.img != "") {
-			img.style.visibility = "";
-			img.src = this.img;
-		} else img.style.visibility = "hidden";
 		if (this.albumInfo) {
 			shadow.querySelector("ebo-list-button-bar").setAttribute("uri", this.albumInfo.album.albumInfo?.uri ?? "--no albumInfo--");
 			let albumDetails = shadow.querySelector("ebo-album-details");
@@ -3762,6 +3744,43 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 	updateVolumeAdjust() {
 		this.getShadow().querySelector("ebo-album-details").volumeAdjustChanged();
 	}
+	updatePlaceholders(shadow) {
+		let el;
+		let value;
+		let updater;
+		let node;
+		if (EboBigAlbumComp["updaters"] == null) EboBigAlbumComp["updaters"] = {};
+		el = shadow.getElementById("img");
+		if (el != null) {
+			value = this.getAttribute("img") ?? "";
+			updater = EboBigAlbumComp.updaters["img"];
+			if (updater != null) value = updater(value, shadow, el);
+			el.setAttribute("src", ["", ""].join(value));
+		}
+		el = shadow.getElementById("name");
+		if (el != null) {
+			value = this.getAttribute("name") ?? "";
+			updater = EboBigAlbumComp.updaters["name"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
+		el = shadow.getElementById("extra");
+		if (el != null) {
+			value = this.getAttribute("extra") ?? "";
+			updater = EboBigAlbumComp.updaters["extra"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
+	}
+	static observedAttributes = [
+		"img",
+		"name",
+		"extra"
+	];
 };
 
 //#endregion
@@ -6512,14 +6531,6 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 };
 
 //#endregion
-//#region mopidy_eboplayer/www/typescript/components/placeholders.ts
-function template(strings, ...values) {
-	if (strings.length == 0) return "";
-	if (strings.length > 1) throw new Error(`A template cannot contain regular \${} placehoders.`);
-	return strings[0];
-}
-
-//#endregion
 //#region mopidy_eboplayer/www/typescript/components/eboNowPlayingComp.ts
 var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	static tagName = "ebo-now-playing";
@@ -6544,7 +6555,8 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 	}
 	set tracklist(value) {
 		this._tracklist = value;
-		this.getShadow().getElementById("tracklistView").tracklist = this.tracklist;
+		let el = this.getShadow()?.getElementById("tracklistView");
+		if (el != null) el.tracklist = this.tracklist;
 	}
 	position = "40";
 	min = "0";
@@ -6660,38 +6672,48 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		let node;
 		if (EboNowPlayingComp["updaters"] == null) EboNowPlayingComp["updaters"] = {};
 		el = shadow.getElementById("img");
-		value = this.getAttribute("img") ?? "";
-		updater = EboNowPlayingComp.updaters["img"];
-		if (updater != null) value = updater(value, shadow, el);
-		el.setAttribute("src", ["", ""].join(value));
+		if (el != null) {
+			value = this.getAttribute("img") ?? "";
+			updater = EboNowPlayingComp.updaters["img"];
+			if (updater != null) value = updater(value, shadow, el);
+			el.setAttribute("src", ["", ""].join(value));
+		}
 		el = shadow.getElementById("name");
-		value = this.getAttribute("name") ?? "";
-		updater = EboNowPlayingComp.updaters["name"];
-		if (updater != null) value = updater(value, shadow, el);
-		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(value);
-		else node.nodeValue = ["", ""].join(value);
+		if (el != null) {
+			value = this.getAttribute("name") ?? "";
+			updater = EboNowPlayingComp.updaters["name"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
 		el = shadow.getElementById("stream_lines");
-		value = this.getAttribute("stream_lines") ?? "";
-		updater = EboNowPlayingComp.updaters["stream_lines"];
-		if (updater != null) value = updater(value, shadow, el);
-		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(value);
-		else node.nodeValue = ["", ""].join(value);
+		if (el != null) {
+			value = this.getAttribute("stream_lines") ?? "";
+			updater = EboNowPlayingComp.updaters["stream_lines"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
 		el = shadow.getElementById("extra");
-		value = this.getAttribute("extra") ?? "";
-		updater = EboNowPlayingComp.updaters["extra"];
-		if (updater != null) value = updater(value, shadow, el);
-		node = el.childNodes.item(0);
-		if (node == null) el.textContent = ["", ""].join(value);
-		else node.nodeValue = ["", ""].join(value);
+		if (el != null) {
+			value = this.getAttribute("extra") ?? "";
+			updater = EboNowPlayingComp.updaters["extra"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
 		el = shadow.getElementById("tracklist");
-		value = this.getAttribute("hide_tracklist") ?? "";
-		updater = EboNowPlayingComp.updaters["hide_tracklist"];
-		if (updater != null) value = updater(value, shadow, el);
-		if (value == "true") value = "hidden";
-		else value = "";
-		el.setAttribute("class", ["flex scroll ", ""].join(value));
+		if (el != null) {
+			value = this.getAttribute("hide_tracklist") ?? "";
+			updater = EboNowPlayingComp.updaters["hide_tracklist"];
+			if (updater != null) value = updater(value, shadow, el);
+			if (value == "true") value = "hidden";
+			else value = "";
+			el.setAttribute("class", ["flex scroll ", ""].join(value));
+		}
 	}
 	static observedAttributes = [
 		"img",

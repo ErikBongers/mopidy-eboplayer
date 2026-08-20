@@ -1,3 +1,8 @@
+* If mopidy starts without a save history, or for the very first time, you get an empty screen.
+  > Show albums, favorites,...?
+
+* allow JS template placeholders ${}, or do not allow them and give specific error.
+
 * Create a DataPoint class.
   - has a value
   - get()

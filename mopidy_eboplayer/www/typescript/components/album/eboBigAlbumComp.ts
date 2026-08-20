@@ -4,14 +4,12 @@ import {AlbumUri, ExpandedAlbumModel, TrackUri} from "../../modelTypes";
 import {GuiSource} from "../../events";
 import {EboAlbumDetails} from "./eboAlbumDetails";
 import {EboListButtonBar, ListButtonState_AllHidden, ListButtonStates} from "../eboListButtonBar";
-import {arrayToggle} from "../../global";
 import {EboButton} from "../general/eboButton";
+import {property, template} from "../placeholders";
 
 
 export class EboBigAlbumComp extends EboComponent {
     static override readonly tagName=  "ebo-big-album-view";
-    // noinspection JSUnusedGlobalSymbols
-    static observedAttributes = ["name", "extra", "img", "disabled"];
 
     get selected_track_uris(): TrackUri[] {
         return (this.getShadow().querySelector("ebo-album-tracks-view") as EboAlbumTracksComp).selected_track_uris;
@@ -21,14 +19,7 @@ export class EboBigAlbumComp extends EboComponent {
         this.requestUpdate();
     }
 
-    get btn_states(): ListButtonStates {
-        return this._btn_states;
-    }
-
-    set btn_states(value: ListButtonStates) {
-        this._btn_states = value;
-        this.requestUpdate();
-    }
+    @property() btn_states: ListButtonStates = ListButtonState_AllHidden();
     get activeTrackUri(): string | null {
         return this._activeTrackUri;
     }
@@ -36,22 +27,11 @@ export class EboBigAlbumComp extends EboComponent {
         this._activeTrackUri = value;
         this.onActiveTrackChanged();
     }
-    get albumInfo(): ExpandedAlbumModel | null {
-        return this._albumInfo;
-    }
-
-    set albumInfo(value: ExpandedAlbumModel | null) {
-        this._albumInfo = value;
-        this.requestUpdate();
-    }
+    @property({forwardTo: "tracksView"}) albumInfo: ExpandedAlbumModel | null = null;
 
     private _activeTrackUri: string | null = null;
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
-    private name: string = "";
-    private extra: string = "";
     private img: string  = "";
-    private _albumInfo: ExpandedAlbumModel | null = null;
-    private _btn_states: ListButtonStates = ListButtonState_AllHidden();
 
     static styleText= `
         <style>
@@ -113,27 +93,26 @@ export class EboBigAlbumComp extends EboComponent {
         </style>
         `;
 
-    private static readonly list_source: GuiSource = "albumView";
     // noinspection HtmlUnknownTarget
-    static htmlText = `
+    static htmlText = template`
         <div id="wrapper" class="front">
             <div id="top">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="bigImage" src="" alt="Album cover"/>
+                        <img id="img" src="{img}" alt="Album cover"/>
                     </div>
         
                     <div id="info">
                         <h3 id="text" class="selectable"></h3>
                         <h3 class="selectable flexRow">
-                            <div id="name" class="selectable flexGrow"></div>
+                            <div id="name" class="selectable flexGrow">{name}</div>
                             <ebo-button id="btnFavorite" toggle>
                                 <i slot="off" class="fa fa-heart-o"></i>
                                 <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
                             </ebo-button>
                         </h3>
                         <div id="stream_lines" class="selectable info"></div>
-                        <div id="extra" class="selectable info"></div>
+                        <div id="extra" class="selectable info">{extra}</div>
                     </div>
                 </div>
                 <div id="back">
@@ -141,9 +120,9 @@ export class EboBigAlbumComp extends EboComponent {
                 </div>                
             </div>
             <div id="bottom">
-                <ebo-list-button-bar list_source="${this.list_source}"></ebo-list-button-bar>
+                <ebo-list-button-bar list_source="albumView"></ebo-list-button-bar>
                 <div id="albumTableWrapper">
-                    <ebo-album-tracks-view img="" ></ebo-album-tracks-view>
+                    <ebo-album-tracks-view id="tracksView" img="" ></ebo-album-tracks-view>
                 </div>
             </div>
         </div>        
@@ -160,18 +139,10 @@ export class EboBigAlbumComp extends EboComponent {
             this.updateStringProperty(name, newValue);
             return;
         }
-        switch (name) {
-            case "name":
-            case "extra":
-            case "img":
-                this[name] = newValue;
-                break;
-        }
-        this.requestUpdate();
         }
 
     override render(shadow:ShadowRoot) {
-        let image = this.shadow.getElementById("bigImage") as HTMLImageElement;
+        let image = this.shadow.getElementById("img") as HTMLImageElement;
         image.addEventListener("click", () => {
             let wrapper = this.getShadow().querySelector("#wrapper") as HTMLElement;
             wrapper.classList.toggle("front");
@@ -189,18 +160,6 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     override update(shadow:ShadowRoot) {
-        ["name", "extra"].forEach(attName => {
-            // @ts-ignore
-            shadow.getElementById(attName).innerHTML = this[attName];
-        });
-        let tracksComp = shadow.querySelector("ebo-album-tracks-view") as EboAlbumTracksComp;
-        tracksComp.albumInfo = this.albumInfo;
-        let img = shadow.getElementById("bigImage") as HTMLImageElement;
-        if(this.img != "") {
-            img.style.visibility = "";
-            img.src = this.img;
-        } else
-            img.style.visibility = "hidden";
         if(this.albumInfo) {
             let buttonBar = shadow.querySelector("ebo-list-button-bar") as HTMLElement;
             buttonBar.setAttribute("uri", this.albumInfo.album.albumInfo?.uri?? "--no albumInfo--");
