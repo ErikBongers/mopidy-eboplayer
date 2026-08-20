@@ -4,7 +4,7 @@ import {Mopidy} from "../../js/mopidy";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort} from "../global";
-import {AlbumUri, LastViewed, StreamUri, TrackUri, Pages, Goto} from "../modelTypes";
+import {AlbumUri, LastViewed, StreamUri, TrackUri, Pages, Goto, PageIds} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {RefArgs} from "../events";
@@ -81,5 +81,12 @@ export class ViewController extends Commands {
         await this.controller.browseController.clearBreadCrumbs();
         await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false);
         this.setView("#Browse");
+    }
+
+    setViewForHash() {
+        let hash = location.hash;
+        if(PageIds.includes(hash as Pages)) {
+            this.controller.viewController.setView(hash as Pages);
+        }
     }
 }

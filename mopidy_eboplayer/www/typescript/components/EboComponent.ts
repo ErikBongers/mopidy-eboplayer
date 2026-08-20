@@ -213,6 +213,10 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         });
     }
 
+    addShadowEventListener(elementId: string, type: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
+        this.shadow.getElementById(elementId)?.addEventListener(type, listener, options);
+    }
+
     // noinspection JSUnusedLocalSymbols
     protected updatePlaceholders(shadow: ShadowRoot) {}
 }

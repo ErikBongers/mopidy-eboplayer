@@ -195,6 +195,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
 
     private onGenreEditRequested(detail: UriArgs) {
         location.hash = "#Genres";
+        this.state.getController().localStorageProxy.setLastViewed("#Genres", detail.uri as AlbumUri);
         this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri as AlbumUri);
         location.reload();
     }

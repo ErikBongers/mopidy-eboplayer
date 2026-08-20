@@ -824,6 +824,15 @@ let AlbumDataType = /* @__PURE__ */ function(AlbumDataType$1) {
 	return AlbumDataType$1;
 }({});
 const AlbumNone = { type: AlbumDataType.None };
+const PageIds = [
+	"#NowPlaying",
+	"#Browse",
+	"#Album",
+	"#Settings",
+	"#Remembered",
+	"#Genres",
+	"#Radio"
+];
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/events.ts
@@ -1763,6 +1772,10 @@ var ViewController = class extends Commands {
 		await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false);
 		this.setView("#Browse");
 	}
+	setViewForHash() {
+		let hash = location.hash;
+		if (PageIds.includes(hash)) this.controller.viewController.setView(hash);
+	}
 };
 
 //#endregion
@@ -2503,6 +2516,9 @@ var EboComponent = class EboComponent extends HTMLElement {
 		this.shadow.getElementById(id)?.addEventListener(type, () => {
 			this.dispatchEboEvent(listener_or_event, args[0]);
 		});
+	}
+	addShadowEventListener(elementId, type, listener, options) {
+		this.shadow.getElementById(elementId)?.addEventListener(type, listener, options);
 	}
 	updatePlaceholders(shadow) {}
 };
@@ -4448,9 +4464,7 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 				});
 			});
 		});
-		shadow.querySelector("#btnEditGenre").addEventListener("click", (ev) => {
-			this.dispatchEboEvent("albumGenreEditRequested.eboplayer", { "uri": this.albumInfo?.album?.ref.uri });
-		});
+		this.addShadowEboEventListener("btnEditGenre", "click", "albumGenreEditRequested.eboplayer", { "uri": this.albumInfo?.album?.ref.uri });
 		this.volumeAdjustChanged();
 	}
 	volumeAdjustChanged() {
@@ -5495,6 +5509,7 @@ var AlbumView = class AlbumView extends ComponentView {
 	}
 	onGenreEditRequested(detail) {
 		location.hash = "#Genres";
+		this.state.getController().localStorageProxy.setLastViewed("#Genres", detail.uri);
 		this.state.getController().localStorageProxy.saveAlbumBeingEdited(detail.uri);
 		location.reload();
 	}
@@ -7079,6 +7094,7 @@ function setupStuff() {
 	mopidy.connect();
 	eboWsFrontCtrl.connect();
 	eboWsBackCtrl.connect();
+	controller.viewController.setViewForHash();
 }
 let rootDir = document.location.pathname.replace("index.html", "");
 

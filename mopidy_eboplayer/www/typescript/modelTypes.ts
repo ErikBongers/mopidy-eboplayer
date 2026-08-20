@@ -369,7 +369,8 @@ export const AlbumNone: AlbumDataNone = {
 
 export type AlbumData = AlbumDataLoaded | AlbumDataNone | AlbumDataLoading | AlbumStreamLinesLoaded;
 
-export type Pages = "#NowPlaying" | "#Browse" | "#Album" | "#Settings" | "#Remembered" | "#Genres" | "#Radio";
+export const PageIds = ["#NowPlaying", "#Browse", "#Album", "#Settings", "#Remembered", "#Genres", "#Radio"] as const;
+export type Pages = typeof PageIds[number];
 
 export type Goto = Pages | "#Browse.Favorites" | "#Browse.WhatsNew";
 

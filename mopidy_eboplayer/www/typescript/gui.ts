@@ -138,6 +138,7 @@ function setupStuff() {
     mopidy.connect();
     eboWsFrontCtrl.connect();
     eboWsBackCtrl.connect();
+    controller.viewController.setViewForHash();
 }
 
 //intellij live preview hack because they don't allow to set a root folder for the built-in server:

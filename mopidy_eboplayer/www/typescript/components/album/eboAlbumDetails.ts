@@ -178,10 +178,7 @@ export class EboAlbumDetails extends EboComponent {
                 this.dispatchEboEvent("browseToArtist.eboplayer", {"name": (ev.target as HTMLElement).textContent, "type": "artist", "uri": link.dataset.uri as ArtistUri});
             });
         });
-        let genreEdit = shadow.querySelector("#btnEditGenre") as HTMLElement;
-        genreEdit.addEventListener("click", (ev) => {
-            this.dispatchEboEvent("albumGenreEditRequested.eboplayer", {"uri": this.albumInfo?.album?.ref.uri as AlbumUri});
-        });
+        this.addShadowEboEventListener("btnEditGenre", "click", "albumGenreEditRequested.eboplayer", {"uri": this.albumInfo?.album?.ref.uri as AlbumUri});
         this.volumeAdjustChanged();
     }
 
