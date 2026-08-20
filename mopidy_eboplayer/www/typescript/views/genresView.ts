@@ -14,8 +14,6 @@ export class GenresView extends ComponentView<EboGenresComp>{
             this.component.genreDefs = genreDefs.map(genreDef => {
                 return {genreDef, active: genreReplacements.has(genreDef.child ?? genreDef.name)};
             });
-            this.component.on("genreSelected.eboplayer", ev => {
-            });
         });
     }
 }

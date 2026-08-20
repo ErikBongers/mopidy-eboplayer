@@ -5377,7 +5377,7 @@ var AlbumView = class AlbumView extends ComponentView {
 		this.component.on("albumVolumeAdjustUp.eboplayer", async (ev) => {
 			await this.state.getController().setAlbumVolumeUp(ev.detail.uri);
 		});
-		this.component.on("genreSelected.eboplayer", async (ev) => {
+		addEboEventListener(document.body, "genreSelected.eboplayer", async (ev) => {
 			await this.onGenreSelected(ev.detail.text);
 		});
 		this.component.on("playTrackClicked.eboplayer", async (ev) => {
@@ -6149,7 +6149,6 @@ var GenresView = class extends ComponentView {
 					active: genreReplacements.has(genreDef.child ?? genreDef.name)
 				};
 			});
-			this.component.on("genreSelected.eboplayer", (ev) => {});
 		});
 	}
 };

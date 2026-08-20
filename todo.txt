@@ -1,3 +1,8 @@
+* Genres: show album (if any) we're selecting a genre for.
+
+* Genres: allow to specify an alias for genres.
+  > allow list to show the genres with aliases.
+
 * Album tracks: option to also show artist/composers.
   > e.g. Assad brothers: scarlatti,...
 
