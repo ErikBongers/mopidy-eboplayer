@@ -2495,7 +2495,7 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (comp.tagName == EboComponent.NO_TAG_NAME) throw "Component class should have tagName defined.";
 		customElements.define(comp.tagName, comp);
 	}
-	addShadowEventListener(id, type, listener_or_event, ...args) {
+	addShadowEboEventListener(id, type, listener_or_event, ...args) {
 		if (typeof listener_or_event == "function") {
 			this.shadow.getElementById(id)?.addEventListener(type, listener_or_event);
 			return;
@@ -3016,30 +3016,30 @@ var EboListButtonBar = class EboListButtonBar extends EboComponent {
 		this.requestUpdate();
 	}
 	render(shadow) {
-		this.addShadowEventListener("btnPlay", "click", () => {
+		this.addShadowEboEventListener("btnPlay", "click", () => {
 			if (this.btn_states.play != "show") return;
 			this.dispatchEboEvent("playItemClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnAdd", "click", () => {
+		this.addShadowEboEventListener("btnAdd", "click", () => {
 			if (this.btn_states.add != "show") return;
 			this.dispatchEboEvent("addItemListClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnReplace", "click", () => {
+		this.addShadowEboEventListener("btnReplace", "click", () => {
 			if (this.btn_states.replace != "show") return;
 			this.dispatchEboEvent("replaceItemListClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnEdit", "click", () => {
+		this.addShadowEboEventListener("btnEdit", "click", () => {
 			if (this.btn_states.edit != "show") return;
 			this.dispatchEboEvent("editClicked.eboplayer", { source: this.list_source });
 		});
-		this.addShadowEventListener("btnSave", "click", () => {
+		this.addShadowEboEventListener("btnSave", "click", () => {
 			if (this.btn_states.save != "show") return;
 			this.dispatchEboEvent("saveToPlaylistClicked.eboplayer", {
 				source: this.list_source,
 				uri: this.uri
 			});
 		});
-		this.addShadowEventListener("btnNewPlaylist", "click", () => {
+		this.addShadowEboEventListener("btnNewPlaylist", "click", () => {
 			if (this.btn_states.new_playlist != "show") return;
 			this.dispatchEboEvent("newPlaylistClicked.eboplayer", { source: this.list_source });
 		});
@@ -6657,7 +6657,7 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
 		}
 	}
 	render(shadow) {
-		this.addShadowEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
+		this.addShadowEboEventListener("img", "click", "bigTimelineImageClicked.eboplayer", {});
 	}
 	update(shadow) {
 		let progressBarElement = shadow.querySelector("ebo-progressbar");

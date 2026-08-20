@@ -199,7 +199,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
         customElements.define(comp.tagName, comp);
     }
 
-    addShadowEventListener<TEventName extends keyof EboEventHandlersEventMap, TStrOrFnc extends (TEventName | ((this: HTMLElement, ev: Event) => any))> (
+    addShadowEboEventListener<TEventName extends keyof EboEventHandlersEventMap, TStrOrFnc extends (TEventName | ((this: HTMLElement, ev: Event) => any))> (
         id: string, type: string,
         listener_or_event: TStrOrFnc,
         ...args: TStrOrFnc extends TEventName ? [EboEventHandlersEventMap[TEventName]] : []
@@ -217,7 +217,7 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
     protected updatePlaceholders(shadow: ShadowRoot) {}
 }
 
-export function addShadowEventListener<TEventName extends keyof EboEventHandlersEventMap, TStrOrFnc extends (TEventName | ((this: HTMLElement, ev: Event) => any))> (
+export function addShadowEboEventListener<TEventName extends keyof EboEventHandlersEventMap, TStrOrFnc extends (TEventName | ((this: HTMLElement, ev: Event) => any))> (
     element: HTMLElement,
     type: string,
     listener_or_event: TStrOrFnc,

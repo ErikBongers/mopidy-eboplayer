@@ -123,27 +123,27 @@ export class EboListButtonBar extends EboComponent {
         }
 
     override render(shadow:ShadowRoot) {
-        this.addShadowEventListener("btnPlay", "click", () => {
+        this.addShadowEboEventListener("btnPlay", "click", () => {
             if(this.btn_states.play != "show") return;
             this.dispatchEboEvent("playItemClicked.eboplayer", {source: this.list_source});
         });
-        this.addShadowEventListener("btnAdd", "click", () => {
+        this.addShadowEboEventListener("btnAdd", "click", () => {
             if(this.btn_states.add != "show") return;
             this.dispatchEboEvent("addItemListClicked.eboplayer", {source: this.list_source});
         });
-        this.addShadowEventListener("btnReplace", "click", () => {
+        this.addShadowEboEventListener("btnReplace", "click", () => {
             if(this.btn_states.replace != "show") return;
             this.dispatchEboEvent("replaceItemListClicked.eboplayer", {source: this.list_source});
         });
-        this.addShadowEventListener("btnEdit", "click", () => {
+        this.addShadowEboEventListener("btnEdit", "click", () => {
             if(this.btn_states.edit != "show") return;
             this.dispatchEboEvent("editClicked.eboplayer", {source: this.list_source});
         });
-        this.addShadowEventListener("btnSave", "click", () => {
+        this.addShadowEboEventListener("btnSave", "click", () => {
             if(this.btn_states.save != "show") return;
             this.dispatchEboEvent("saveToPlaylistClicked.eboplayer", {source: this.list_source, uri: this.uri as AllUris});
         });
-        this.addShadowEventListener("btnNewPlaylist", "click", () => {
+        this.addShadowEboEventListener("btnNewPlaylist", "click", () => {
             if(this.btn_states.new_playlist != "show") return;
             this.dispatchEboEvent("newPlaylistClicked.eboplayer", {source: this.list_source});
         });

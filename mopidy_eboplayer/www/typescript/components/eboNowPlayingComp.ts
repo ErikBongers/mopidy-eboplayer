@@ -118,7 +118,7 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     override render(shadow:ShadowRoot) {
-        this.addShadowEventListener("img","click","bigTimelineImageClicked.eboplayer", {});
+        this.addShadowEboEventListener("img","click","bigTimelineImageClicked.eboplayer", {});
     }
 
     override update(shadow:ShadowRoot) {
