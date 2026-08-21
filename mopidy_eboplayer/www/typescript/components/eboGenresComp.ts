@@ -79,6 +79,9 @@ export class EboGenresComp extends EboComponent {
                 cursor: pointer;
                 font-size: .8rem;
             }
+            .albumSelection {
+                background-color: royalblue;
+            }
         </style>
         `;
 
@@ -86,7 +89,8 @@ export class EboGenresComp extends EboComponent {
     static htmlText = template`
         <div id="wrapper" class="flexColumn">
             <div id="header">
-                <h3 id="headerText">{album_title}</h3>
+                <h3 id="headerText" class="mb-0">{album_title}</h3>
+                <label id="genres" class="text-sm">{album_genres}</label>
             </div>
             <div class="flexRow">
                 <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
@@ -133,10 +137,12 @@ export class EboGenresComp extends EboComponent {
 
     override update(shadow:ShadowRoot) {
         let container = shadow.getElementById("scrollContainer") as HTMLElement;
+        container.innerHTML = "";
+        let albumGenres = (this.getAttribute("album_genres")??"").split(", ");
         if(this.genreDefs.length != 0) {
-            let nextIndex = this.renderGenreDef(container, 0, -1);
+            let nextIndex = this.renderGenreDef(container, 0, -1, albumGenres);
             while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) {
-                nextIndex = this.renderGenreDef(container, nextIndex, -1);
+                nextIndex = this.renderGenreDef(container, nextIndex, -1, albumGenres);
             }
         }
         this.getActiveAncestors(shadow).forEach(ancestor => {
@@ -177,7 +183,7 @@ export class EboGenresComp extends EboComponent {
         return activeAncestors;
     }
 
-    private renderGenreDef(container: HTMLElement, index: number, parentLevel: number): number {
+    private renderGenreDef(container: HTMLElement, index: number, parentLevel: number, albumGenres: string[]): number {
         //prepare data
         let genreDef = this.genreDefs[index];
 
@@ -201,11 +207,11 @@ export class EboGenresComp extends EboComponent {
             newContainer.dataset.level = (genreDef.genreDef.level+1).toString();
             container.appendChild(newContainer);
             let summary = document.createElement("summary");
-            summary.textContent = name;
+            this.setSummary(summary, name, albumGenres);
             newContainer.appendChild(summary);
-            let nextIndex = this.renderGenreDef(newContainer, index+1, genreDef.genreDef.level);
+            let nextIndex = this.renderGenreDef(newContainer, index+1, genreDef.genreDef.level, albumGenres);
             while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == genreDef.genreDef.level+1) {
-                nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.genreDef.level);
+                nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.genreDef.level, albumGenres);
             }
             return nextIndex;
         }
@@ -215,8 +221,15 @@ export class EboGenresComp extends EboComponent {
         newLine.classList.toggle("active", genreDef.active);
         newLine.dataset.level = (genreDef.genreDef.level+1).toString();
         container.appendChild(newLine);
-        newLine.textContent = name;
+        this.setSummary(newLine, name, albumGenres);
         return index + 1;
+    }
+
+    private setSummary(element: HTMLElement, name: string, albumGenres: string[]) {
+        element.textContent = name;
+        if(albumGenres.includes(name)) {
+            element.classList.add("albumSelection");
+        }
     }
 
     private showLevel(level: number) {

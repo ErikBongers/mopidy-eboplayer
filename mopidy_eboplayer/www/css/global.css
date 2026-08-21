@@ -238,3 +238,6 @@ img[src=""] {
     display: none;
 }
 
+.mb-0 { margin-bottom: 0; }
+
+.text-sm { font-size: .8rem; }

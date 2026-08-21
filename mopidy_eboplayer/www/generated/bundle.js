@@ -5939,7 +5939,7 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 //#region mopidy_eboplayer/www/typescript/components/eboGenresComp.ts
 var EboGenresComp = class EboGenresComp extends EboComponent {
 	static tagName = "ebo-genres-view";
-	static observedAttributes = ["album_title"];
+	static observedAttributes = ["album_title", "album_genres"];
 	_genreDefs = [];
 	get genreDefs() {
 		return this._genreDefs;
@@ -6004,12 +6004,16 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
                 cursor: pointer;
                 font-size: .8rem;
             }
+            .albumSelection {
+                background-color: royalblue;
+            }
         </style>
         `;
 	static htmlText = template`
         <div id="wrapper" class="flexColumn">
             <div id="header">
-                <h3 id="headerText">{album_title}</h3>
+                <h3 id="headerText" class="mb-0">{album_title}</h3>
+                <label id="genres" class="text-sm">{album_genres}</label>
             </div>
             <div class="flexRow">
                 <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
@@ -6049,9 +6053,11 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	}
 	update(shadow) {
 		let container = shadow.getElementById("scrollContainer");
+		container.innerHTML = "";
+		let albumGenres = (this.getAttribute("album_genres") ?? "").split(", ");
 		if (this.genreDefs.length != 0) {
-			let nextIndex = this.renderGenreDef(container, 0, -1);
-			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1);
+			let nextIndex = this.renderGenreDef(container, 0, -1, albumGenres);
+			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == 0) nextIndex = this.renderGenreDef(container, nextIndex, -1, albumGenres);
 		}
 		this.getActiveAncestors(shadow).forEach((ancestor) => {
 			ancestor.classList.toggle("containsActive", true);
@@ -6083,7 +6089,7 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		});
 		return activeAncestors;
 	}
-	renderGenreDef(container, index, parentLevel) {
+	renderGenreDef(container, index, parentLevel, albumGenres) {
 		let genreDef = this.genreDefs[index];
 		if (genreDef.genreDef.level < parentLevel + 1) return index;
 		let hasChildren = ((this.genreDefs.length > index + 1 ? this.genreDefs[index + 1] : null)?.genreDef.level ?? -1) > genreDef.genreDef.level;
@@ -6097,10 +6103,10 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 			newContainer.dataset.level = (genreDef.genreDef.level + 1).toString();
 			container.appendChild(newContainer);
 			let summary = document.createElement("summary");
-			summary.textContent = name;
+			this.setSummary(summary, name, albumGenres);
 			newContainer.appendChild(summary);
-			let nextIndex = this.renderGenreDef(newContainer, index + 1, genreDef.genreDef.level);
-			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == genreDef.genreDef.level + 1) nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.genreDef.level);
+			let nextIndex = this.renderGenreDef(newContainer, index + 1, genreDef.genreDef.level, albumGenres);
+			while (nextIndex < this.genreDefs.length && this.genreDefs[nextIndex].genreDef.level == genreDef.genreDef.level + 1) nextIndex = this.renderGenreDef(newContainer, nextIndex, genreDef.genreDef.level, albumGenres);
 			return nextIndex;
 		}
 		let newLine = document.createElement("div");
@@ -6108,8 +6114,12 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		newLine.classList.toggle("active", genreDef.active);
 		newLine.dataset.level = (genreDef.genreDef.level + 1).toString();
 		container.appendChild(newLine);
-		newLine.textContent = name;
+		this.setSummary(newLine, name, albumGenres);
 		return index + 1;
+	}
+	setSummary(element, name, albumGenres) {
+		element.textContent = name;
+		if (albumGenres.includes(name)) element.classList.add("albumSelection");
 	}
 	showLevel(level) {
 		this.shadow.querySelectorAll("details").forEach((detailElement) => {
@@ -6126,6 +6136,15 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 		if (el != null) {
 			value = this.getAttribute("album_title") ?? "";
 			updater = EboGenresComp.updaters["album_title"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
+		el = shadow.getElementById("genres");
+		if (el != null) {
+			value = this.getAttribute("album_genres") ?? "";
+			updater = EboGenresComp.updaters["album_genres"];
 			if (updater != null) value = updater(value, shadow, el);
 			node = el.childNodes.item(0);
 			if (node == null) el.textContent = ["", ""].join(value);
@@ -6153,7 +6172,9 @@ var GenresView = class extends ComponentView {
 		});
 		this.state.getModel().on("albumToViewChanged.eboplayer", async (ev) => {
 			let album = await this.state.getController().getExpandedAlbumModel(ev.detail.uri);
+			let { genreDefs } = await album.getAllDetails();
 			this.component.setAttribute("album_title", album.album.albumInfo?.name ?? "--no name--");
+			this.component.setAttribute("album_genres", genreDefs.map((gd) => gd.replacement ?? gd.ref.name ?? "???").join(", "));
 		});
 	}
 };

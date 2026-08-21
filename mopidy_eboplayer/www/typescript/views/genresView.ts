@@ -18,7 +18,9 @@ export class GenresView extends ComponentView<EboGenresComp>{
         });
         this.state.getModel().on("albumToViewChanged.eboplayer", async (ev) => {
             let album = await this.state.getController().getExpandedAlbumModel(ev.detail.uri as AlbumUri);
+            let {genreDefs} = await album.getAllDetails();
             this.component.setAttribute("album_title", album.album.albumInfo?.name??"--no name--");
+            this.component.setAttribute("album_genres", genreDefs.map(gd => gd.replacement??gd.ref.name??"???").join(", "));
         });
     }
 }
