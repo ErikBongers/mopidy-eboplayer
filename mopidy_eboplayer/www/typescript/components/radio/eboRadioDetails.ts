@@ -80,10 +80,6 @@ export class EboRadioDetails extends EboComponent {
         super(EboRadioDetails.styleText, EboRadioDetails.htmlText);
     }
 
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-    }
-
     override render(shadow:ShadowRoot) {
         let imageTag = shadow.getElementById("smallImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {

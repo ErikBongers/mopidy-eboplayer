@@ -48,7 +48,7 @@ export class EboRememberedComp extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "nada":
                 this.updateBoolProperty(name, newValue);

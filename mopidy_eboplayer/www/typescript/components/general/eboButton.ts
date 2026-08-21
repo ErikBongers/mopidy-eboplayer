@@ -56,7 +56,7 @@ export class EboButton extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "img":
                 this[name] = newValue;

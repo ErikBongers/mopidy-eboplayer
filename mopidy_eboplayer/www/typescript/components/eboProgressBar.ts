@@ -65,7 +65,7 @@ export class EboProgressBar extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, oldValue: string, newValue: string) {
         switch (name) {
             case "position":
             case "min":

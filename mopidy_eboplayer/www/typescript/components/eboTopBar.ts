@@ -111,11 +111,6 @@ export class EboTopBar extends EboComponent {
         super(EboTopBar.styleText, EboTopBar.htmlText);
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-        }
-
     override render(shadow:ShadowRoot) {
         shadow.getElementById("headerSearchBtn")?.addEventListener("click", (ev) => {
             this.dispatchEboEvent("gotoPage.eboplayer", {page: "#Browse"});

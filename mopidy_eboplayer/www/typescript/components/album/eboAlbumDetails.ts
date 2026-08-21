@@ -98,11 +98,6 @@ export class EboAlbumDetails extends EboComponent {
         super(EboAlbumDetails.styleText, EboAlbumDetails.htmlText);
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-        }
-
     override render(shadow:ShadowRoot) {
         let imageTag = shadow.getElementById("bigImage") as HTMLImageElement;
         imageTag.addEventListener("click", (ev) => {

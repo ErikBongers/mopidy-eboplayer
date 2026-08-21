@@ -73,7 +73,7 @@ export class EboIconDropdown extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "value":
                 this[name] = newValue as PlaybackUserOptions;

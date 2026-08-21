@@ -108,7 +108,7 @@ export class EboListButtonBar extends EboComponent {
         super(EboListButtonBar.styleText, EboListButtonBar.htmlText);
     }
 
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "list_source":
                 this.list_source = newValue as GuiSource;

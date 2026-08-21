@@ -83,11 +83,6 @@ export class EboRadioHistoryComp extends EboComponent {
             </dialog>        
         `;
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(_name: string, _oldValue: string, _newValue: string) {
-        this.requestUpdate();
-        }
-
     override async render(shadow:ShadowRoot) {
         let btnRemembered = shadow.getElementById("btnRemembered") as HTMLButtonElement;
         btnRemembered.addEventListener("click", (ev) => {

@@ -187,7 +187,7 @@ export class EboBrowseComp extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "display_mode":
                 this.updateStringProperty(name, newValue);

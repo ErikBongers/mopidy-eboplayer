@@ -28,11 +28,6 @@ export class EboTracklistComp extends EboComponent {
         super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-        }
-
     override render(shadow:ShadowRoot) {
     }
 

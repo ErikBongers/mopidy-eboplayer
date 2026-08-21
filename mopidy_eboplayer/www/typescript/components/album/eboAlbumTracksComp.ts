@@ -93,11 +93,6 @@ export class EboAlbumTracksComp extends EboComponent {
             </dialog>        
         `;
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-        }
-
     override async render(shadow:ShadowRoot) {
         let tbody = (shadow.getElementById("tracksTable") as HTMLTableElement).tBodies[0];
         tbody.innerHTML  = "";

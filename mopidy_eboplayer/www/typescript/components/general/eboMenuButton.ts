@@ -64,11 +64,6 @@ export class EboMenuButton extends EboComponent {
         this.requestRender();
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestRender();
-        }
-
     closeMenu() {
         (this.getShadow().getElementById("menu") as HTMLElement).hidePopover();
     }

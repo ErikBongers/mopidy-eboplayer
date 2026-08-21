@@ -70,7 +70,7 @@ export class EboSettingsComp extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         switch (name) {
             case "show_whats_new":
                 this.updateBoolProperty(name, newValue);

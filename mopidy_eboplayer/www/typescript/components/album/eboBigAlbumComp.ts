@@ -134,7 +134,7 @@ export class EboBigAlbumComp extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboBigAlbumComp.progressBarAttributes.includes(name)) {
             this.updateStringProperty(name, newValue);
             return;

@@ -27,9 +27,4 @@ export class EboOption extends EboComponent {
         super.onConnected();
         this.requestRender();
     }
-
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-        }
 }

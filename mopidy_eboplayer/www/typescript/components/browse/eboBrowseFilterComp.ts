@@ -167,11 +167,6 @@ export class EboBrowseFilterComp extends EboComponent {
         this.availableRefTypes = new Set();
     }
 
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestRender();
-    }
-
     setFocusAndSelect() {
         let searchText = this.getShadow().getElementById("searchText") as HTMLInputElement;
         searchText?.focus();

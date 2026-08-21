@@ -109,7 +109,7 @@ export class EboNowPlayingComp extends EboComponent {
     }
 
     // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
+    override attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
         if(EboNowPlayingComp.progressBarAttributes.includes(name)) {
             this.updateStringProperty(name, newValue);
             this.getShadow().querySelector("ebo-progressbar")?.setAttribute(name, newValue);

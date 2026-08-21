@@ -45,7 +45,9 @@ export abstract class EboComponent extends HTMLElement implements HasName, EboEv
             this.requestUpdate();
     }
 
-    abstract attributeReallyChangedCallback(name: string, oldValue: string, newValue: string): boolean | void;
+    attributeReallyChangedCallback(name: string, oldValue: string, newValue: string): boolean | void {
+        this.requestUpdate();
+    }
 
     static setGlobalCss(text: string[]) {
         this.globalCss = text.map(text => {
