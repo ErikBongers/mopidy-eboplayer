@@ -10,7 +10,7 @@ export interface EboModelEventHandlersEventMap {
     "favoritesChanged.eboplayer"                : VoidArgs,
     "scanStatusChanged.eboplayer"               : ScanStatusArgs,
     "remembersChanged.eboplayer"                : VoidArgs,
-    "albumToViewChanged.eboplayer"              : VoidArgs,
+    "albumToViewChanged.eboplayer"              : UriArgs,
     "currentRefsLoaded.eboplayer"               : VoidArgs,
     "trackListChanged.eboplayer"                : VoidArgs,
     "viewChanged.eboplayer"                     : VoidArgs,

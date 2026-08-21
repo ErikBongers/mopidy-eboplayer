@@ -351,7 +351,7 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
 
     setAlbumToView(uri: AlbumUri, selectedTrackUri: TrackUri | null) {
         this.albumToView = {albumUri: uri, selectedTrackUri: selectedTrackUri};
-        this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
+        this.dispatchEboEvent("albumToViewChanged.eboplayer", {uri});
     }
     getAlbumToView = () => this.albumToView;
 
