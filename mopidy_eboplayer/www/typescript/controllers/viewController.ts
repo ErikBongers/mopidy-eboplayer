@@ -7,7 +7,7 @@ import {getHostAndPort} from "../global";
 import {AlbumUri, LastViewed, StreamUri, TrackUri, Pages, Goto, PageIds} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
-import {RefArgs} from "../events";
+import {RefArgs, UriArgs} from "../events";
 import {CacheHandler} from "./cacheHandler";
 import Controller from "./controller";
 
@@ -39,6 +39,16 @@ export class ViewController extends Commands {
             case "#Radio":
                 if (location.hash == lastViewed.view) {
                     this.gotoRadio(lastViewed.uri as StreamUri);
+                    return;
+                }
+                break;
+            case "#Genres":
+                if (location.hash == lastViewed.view) {
+                    let hash = location.hash;
+                    let albumUri = this.localStorageProxy.getAlbumBeingEdited();
+                    if(albumUri)
+                        this.model.setAlbumToView(albumUri, null);
+                    this.controller.viewController.setView(hash as Pages);
                     return;
                 }
                 break;
@@ -77,16 +87,14 @@ export class ViewController extends Commands {
         this.model.setPage("#Radio");
     }
 
+    showGenres(uri: StreamUri | AlbumUri) {
+        this.localStorageProxy.setLastViewed("#Genres", uri);
+        this.model.setPage("#Genres");
+    }
+
     async browseToArtist(args: RefArgs) {
         await this.controller.browseController.clearBreadCrumbs();
         await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false);
         this.setView("#Browse");
-    }
-
-    setViewForHash() {
-        let hash = location.hash;
-        if(PageIds.includes(hash as Pages)) {
-            this.controller.viewController.setView(hash as Pages);
-        }
     }
 }

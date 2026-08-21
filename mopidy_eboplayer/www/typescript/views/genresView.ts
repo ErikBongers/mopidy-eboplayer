@@ -1,6 +1,7 @@
 import {ComponentView} from "./view";
 import {State} from "../playerState";
 import {EboGenresComp} from "../components/eboGenresComp";
+import {AlbumUri} from "../modelTypes";
 
 export class GenresView extends ComponentView<EboGenresComp>{
     constructor(state: State, component: EboGenresComp) {
@@ -14,6 +15,10 @@ export class GenresView extends ComponentView<EboGenresComp>{
             this.component.genreDefs = genreDefs.map(genreDef => {
                 return {genreDef, active: genreReplacements.has(genreDef.child ?? genreDef.name)};
             });
+        });
+        this.state.getModel().on("albumToViewChanged.eboplayer", async (ev) => {
+            let album = await this.state.getController().getExpandedAlbumModel(ev.detail.uri as AlbumUri);
+            this.component.setAttribute("album_title", album.album.albumInfo?.name??"--no name--");
         });
     }
 }

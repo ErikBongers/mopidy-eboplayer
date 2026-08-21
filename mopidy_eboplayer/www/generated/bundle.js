@@ -824,15 +824,6 @@ let AlbumDataType = /* @__PURE__ */ function(AlbumDataType$1) {
 	return AlbumDataType$1;
 }({});
 const AlbumNone = { type: AlbumDataType.None };
-const PageIds = [
-	"#NowPlaying",
-	"#Browse",
-	"#Album",
-	"#Settings",
-	"#Remembered",
-	"#Genres",
-	"#Radio"
-];
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/events.ts
@@ -1123,7 +1114,7 @@ var Model = class extends EboModelEventTargetClass {
 			albumUri: uri,
 			selectedTrackUri
 		};
-		this.dispatchEboEvent("albumToViewChanged.eboplayer", {});
+		this.dispatchEboEvent("albumToViewChanged.eboplayer", { uri });
 	}
 	getAlbumToView = () => this.albumToView;
 	setRemembers(remembers) {
@@ -1738,6 +1729,15 @@ var ViewController = class extends Commands {
 					return;
 				}
 				break;
+			case "#Genres":
+				if (location.hash == lastViewed.view) {
+					let hash = location.hash;
+					let albumUri = this.localStorageProxy.getAlbumBeingEdited();
+					if (albumUri) this.model.setAlbumToView(albumUri, null);
+					this.controller.viewController.setView(hash);
+					return;
+				}
+				break;
 			default:
 				this.setView(location.hash != "" ? location.hash : "#NowPlaying");
 				return;
@@ -1767,14 +1767,14 @@ var ViewController = class extends Commands {
 		this.model.setRadioToView(radioUri);
 		this.model.setPage("#Radio");
 	}
+	showGenres(uri) {
+		this.localStorageProxy.setLastViewed("#Genres", uri);
+		this.model.setPage("#Genres");
+	}
 	async browseToArtist(args) {
 		await this.controller.browseController.clearBreadCrumbs();
 		await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false);
 		this.setView("#Browse");
-	}
-	setViewForHash() {
-		let hash = location.hash;
-		if (PageIds.includes(hash)) this.controller.viewController.setView(hash);
 	}
 };
 
@@ -2407,6 +2407,9 @@ var EboComponent = class EboComponent extends HTMLElement {
 		if (oldValue === newValue) return;
 		if (this.attributeReallyChangedCallback(name, oldValue, newValue) ?? true) this.requestUpdate();
 	}
+	attributeReallyChangedCallback(name, oldValue, newValue) {
+		this.requestUpdate();
+	}
 	static setGlobalCss(text) {
 		this.globalCss = text.map((text$1) => {
 			let css = new CSSStyleSheet();
@@ -2814,9 +2817,6 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
               Tadaaa....
             </dialog>        
         `;
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
 	async render(shadow) {
 		let tbody = shadow.getElementById("tracksTable").tBodies[0];
 		tbody.innerHTML = "";
@@ -4096,9 +4096,6 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 		super.onConnected();
 		this.requestRender();
 	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestRender();
-	}
 	closeMenu() {
 		this.getShadow().getElementById("menu").hidePopover();
 	}
@@ -4395,9 +4392,6 @@ var EboAlbumDetails = class EboAlbumDetails extends EboComponent {
 	constructor() {
 		super(EboAlbumDetails.styleText, EboAlbumDetails.htmlText);
 	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
 	render(shadow) {
 		shadow.getElementById("bigImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("detailsAlbumImgClicked.eboplayer", {});
@@ -4561,9 +4555,6 @@ var EboRadioHistoryComp = class EboRadioHistoryComp extends EboComponent {
             <dialog popover id="albumTrackPopup">
             </dialog>        
         `;
-	attributeReallyChangedCallback(_name, _oldValue, _newValue) {
-		this.requestUpdate();
-	}
 	async render(shadow) {
 		shadow.getElementById("btnRemembered").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("rememberedRequested.eboplayer", {});
@@ -4798,9 +4789,6 @@ var EboBrowseFilterComp = class EboBrowseFilterComp extends EboComponent {
 		super(EboBrowseFilterComp.styleText, EboBrowseFilterComp.htmlText);
 		this._browseFilter = new BrowseFilter();
 		this.availableRefTypes = /* @__PURE__ */ new Set();
-	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestRender();
 	}
 	setFocusAndSelect() {
 		let searchText = this.getShadow().getElementById("searchText");
@@ -5839,9 +5827,6 @@ var EboOption = class EboOption extends EboComponent {
 		super.onConnected();
 		this.requestRender();
 	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
 };
 
 //#endregion
@@ -5954,7 +5939,7 @@ var EboIconDropdown = class EboIconDropdown extends EboComponent {
 //#region mopidy_eboplayer/www/typescript/components/eboGenresComp.ts
 var EboGenresComp = class EboGenresComp extends EboComponent {
 	static tagName = "ebo-genres-view";
-	static observedAttributes = [];
+	static observedAttributes = ["album_title"];
 	_genreDefs = [];
 	get genreDefs() {
 		return this._genreDefs;
@@ -6021,8 +6006,11 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
             }
         </style>
         `;
-	static htmlText = `
+	static htmlText = template`
         <div id="wrapper" class="flexColumn">
+            <div id="header">
+                <h3 id="headerText">{album_title}</h3>
+            </div>
             <div class="flexRow">
                 <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
                 <ebo-button data-level="2" toggle><div id="lvl2" class="squircleButton" style="margin-inline-end: .2rem;">2</div></ebo-button>            
@@ -6038,9 +6026,6 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
         `;
 	constructor() {
 		super(EboGenresComp.styleText, EboGenresComp.htmlText);
-	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
 	}
 	render(shadow) {
 		shadow.querySelectorAll(`ebo-button[data-level]`).forEach((eboButton) => {
@@ -6131,6 +6116,22 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 			detailElement.open = parseInt(detailElement.dataset.level) < level;
 		});
 	}
+	updatePlaceholders(shadow) {
+		let el;
+		let value;
+		let updater;
+		let node;
+		if (EboGenresComp["updaters"] == null) EboGenresComp["updaters"] = {};
+		el = shadow.getElementById("headerText");
+		if (el != null) {
+			value = this.getAttribute("album_title") ?? "";
+			updater = EboGenresComp.updaters["album_title"];
+			if (updater != null) value = updater(value, shadow, el);
+			node = el.childNodes.item(0);
+			if (node == null) el.textContent = ["", ""].join(value);
+			else node.nodeValue = ["", ""].join(value);
+		}
+	}
 };
 
 //#endregion
@@ -6149,6 +6150,10 @@ var GenresView = class extends ComponentView {
 					active: genreReplacements.has(genreDef.child ?? genreDef.name)
 				};
 			});
+		});
+		this.state.getModel().on("albumToViewChanged.eboplayer", async (ev) => {
+			let album = await this.state.getController().getExpandedAlbumModel(ev.detail.uri);
+			this.component.setAttribute("album_title", album.album.albumInfo?.name ?? "--no name--");
 		});
 	}
 };
@@ -6515,9 +6520,6 @@ var EboRadioDetails = class EboRadioDetails extends EboComponent {
 	constructor() {
 		super(EboRadioDetails.styleText, EboRadioDetails.htmlText);
 	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
 	render(shadow) {
 		shadow.getElementById("smallImage").addEventListener("click", (ev) => {
 			this.dispatchEboEvent("detailsRadioImgClicked.eboplayer", {});
@@ -6843,9 +6845,6 @@ var EboTopBar = class EboTopBar extends EboComponent {
 	constructor() {
 		super(EboTopBar.styleText, EboTopBar.htmlText);
 	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
 	render(shadow) {
 		shadow.getElementById("headerSearchBtn")?.addEventListener("click", (ev) => {
 			this.dispatchEboEvent("gotoPage.eboplayer", { page: "#Browse" });
@@ -6981,9 +6980,6 @@ var EboTracklistComp = class EboTracklistComp extends EboComponent {
 	constructor() {
 		super(EboTracklistComp.styleText, EboTracklistComp.htmlText);
 	}
-	attributeReallyChangedCallback(name, _oldValue, newValue) {
-		this.requestUpdate();
-	}
 	render(shadow) {}
 	update(shadow) {
 		let tBody = shadow.querySelector("tbody");
@@ -7093,7 +7089,6 @@ function setupStuff() {
 	mopidy.connect();
 	eboWsFrontCtrl.connect();
 	eboWsBackCtrl.connect();
-	controller.viewController.setViewForHash();
 }
 let rootDir = document.location.pathname.replace("index.html", "");
 

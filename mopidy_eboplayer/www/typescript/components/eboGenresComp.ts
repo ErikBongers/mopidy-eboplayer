@@ -1,6 +1,7 @@
 import {EboComponent} from "./EboComponent";
 import {EboButton} from "./general/eboButton";
 import {GenreDef} from "../modelTypes";
+import {template} from "./placeholders";
 
 export type ExpandedGenreDef = {
     genreDef: GenreDef,
@@ -82,8 +83,11 @@ export class EboGenresComp extends EboComponent {
         `;
 
     // noinspection HtmlUnknownTarget
-    static htmlText = `
+    static htmlText = template`
         <div id="wrapper" class="flexColumn">
+            <div id="header">
+                <h3 id="headerText">{album_title}</h3>
+            </div>
             <div class="flexRow">
                 <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
                 <ebo-button data-level="2" toggle><div id="lvl2" class="squircleButton" style="margin-inline-end: .2rem;">2</div></ebo-button>            
@@ -101,11 +105,6 @@ export class EboGenresComp extends EboComponent {
     constructor() {
         super(EboGenresComp.styleText, EboGenresComp.htmlText);
     }
-
-    // noinspection JSUnusedGlobalSymbols
-    attributeReallyChangedCallback(name: string, _oldValue: string, newValue: string) {
-        this.requestUpdate();
-        }
 
     override render(shadow:ShadowRoot) {
         let levelButtons = shadow.querySelectorAll(`ebo-button[data-level]`) as NodeListOf<EboButton>;

@@ -1,3 +1,15 @@
+* plugin: template should give warning if attName has uppercase.
+
+* index.html should show empty screen (no splash as this will likely be shown a split second.)
+
+* Create a solid savedPageState strategy.
+  > rename ViewController to PageController.
+  > should allow a decent refresh page to at least the same page.
+  > based on url hasl
+  > may have some state data in local storage.
+    > force a save of this state on page switch.
+
+
 * Genres: show album (if any) we're selecting a genre for.
 
 * Genres: allow to specify an alias for genres.
