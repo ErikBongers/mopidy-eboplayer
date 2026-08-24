@@ -44,6 +44,7 @@ button, input {
 
 #topContent {
     flex: 1;
+    justify-content: center;
     display: flex;
     overflow: hidden;
     & > .page {
@@ -82,10 +83,8 @@ h3#modalname a{
     background-color: transparent;
 }
 
-#nowPlayingView {
-    flex: 1;
-    display: flex;
-    overflow: hidden;
+#nowPlaying {
+    max-width: 800px;
 }
 
 #browseView {

@@ -174,6 +174,7 @@ p, span {
 
 ebo-player-bar {
     margin-block-end: .5ch;
+    max-width: 500px;
 }
 
 .op8 {
