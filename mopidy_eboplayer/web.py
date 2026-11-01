@@ -54,7 +54,6 @@ class IndexHandler(tornado.web.RequestHandler):
         self.__title = string.Template("Mopidy on $hostname")
 
     def get(self, path):
-        logger.info("get: CACHE OFF")
         self.set_header('Cache-Control', 'no-store, no-cache, must-revalidate, max-age=0')
         return self.render(path, title=self.get_title(), **self.__dict)
 

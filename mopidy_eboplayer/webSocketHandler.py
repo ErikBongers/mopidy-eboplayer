@@ -21,7 +21,7 @@ class EboWebsocketHandler(tornado.websocket.WebSocketHandler):
         socket_handlers_to_broadcast_to.add(self)
 
     def on_message(self, message):
-        logger.info("eboplayer websocket message received: " + message)
+        pass
 
     def on_close(self):
         socket_handlers_to_broadcast_to.remove(self)

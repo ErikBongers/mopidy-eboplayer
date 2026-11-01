@@ -61,15 +61,11 @@ class ActionHandler(tornado.web.RequestHandler):
             else:
                 future = backend_proxy.adjust_album_volume_down(uri)
             new_volume_adjust = future.get() # Wait for the backend to finish saving
-            logger.info(f"Adjusted volume to {new_volume_adjust}")
 
             current_tl_track = self.core.playback.get_current_tl_track().get()
-            logger.info("Getting current track: ")
 
             if current_tl_track is not None:
                 track: Track = current_tl_track.track
-                logger.info(f"Now playing (or selected): {track.name or "-- no name --"}")
-                logger.info(f"TLID: {current_tl_track.tlid}")
                 #todo: change the volume!!!
                 future = backend_proxy.set_volume_from_track(track.uri)
                 future.get()
