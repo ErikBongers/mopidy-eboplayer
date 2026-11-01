@@ -80,6 +80,8 @@ class ActionHandler(tornado.web.RequestHandler):
                 "volumeAdjust" : new_volume_adjust
             }
             broadcast_to_websockets(json.dumps(the_event))
+        else:
+            logger.error("Backend proxy not available")
 
     def add_excluded_file_extension(self):
         ext = self.get_argument("ext")
