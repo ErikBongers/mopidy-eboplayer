@@ -4968,6 +4968,7 @@ var EboSettingsComp = class EboSettingsComp extends EboComponent {
         `;
 	static htmlText = `
         <div id="wrapper" class="flexColumn">
+            <label>Version 123.4556</label>
             <ebo-button id="rememberedBtn" class="roundBorder">Remembered info.</ebo-button>
             <ebo-button id="scanBtn" class="roundBorder">Rescan media folder</ebo-button>
             <p id="scanStatus"></p>
