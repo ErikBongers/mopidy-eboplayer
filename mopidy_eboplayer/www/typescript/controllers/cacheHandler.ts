@@ -138,8 +138,8 @@ export class CacheHandler extends Commands{
     async getAllRefsCached() {
         let allRefs = this.model.getAllRefs();
         if(!allRefs) {
-            let allExpandedRefs = await this.webProxy.fetchAllRefs();
-            allRefs = await createAllRefs(this, allExpandedRefs);
+            let refs = await this.webProxy.fetchAllRefs();
+            allRefs = await createAllRefs(this, refs.allRefs, refs.tracksNoAlbumRefs);
             this.model.setAllRefs(allRefs);
         }
         return allRefs;

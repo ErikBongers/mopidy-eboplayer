@@ -1,3 +1,12 @@
+* Get list of all tracks without an album.
+  > store it in model.
+  > use it to see if browse results contain tracks without album.
+    > if not: don't show tracks as they are all included in an album.
+
+* WSL2: has no alsa cards
+  > setting hardware volume should be ignored
+  > set alsa_card = none?
+
 * Favorites/filters:
   - Favorites should not be saved/remembered
   - When clicking on genre, exclude tracks that belong to an already shown album.

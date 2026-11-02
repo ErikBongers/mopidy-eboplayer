@@ -1,15 +1,15 @@
 import {EboComponent} from "../EboComponent";
 import {EboButton} from "../general/eboButton";
 import {BrowseFilter, BrowseFilterFlags} from "../../modelTypes";
-import {RefType} from "../../refs";
+import {RefType, RefTypeForFilter} from "../../refs";
 import {EboplayerEvent, GuiSource, PressedArgs} from "../../events";
 
 export class EboBrowseFilterComp extends EboComponent {
-    get availableRefTypes(): Set<RefType> {
+    get availableRefTypes(): Set<RefTypeForFilter> {
         return this._availableRefTypes;
     }
 
-    set availableRefTypes(value: Set<RefType>) {
+    set availableRefTypes(value: Set<RefTypeForFilter>) {
         this._availableRefTypes = value;
         this.requestUpdate();
     }
@@ -28,7 +28,7 @@ export class EboBrowseFilterComp extends EboComponent {
 
     private _browseFilter: BrowseFilter;
 
-    private _availableRefTypes: Set<RefType> = new Set();
+    private _availableRefTypes: Set<RefTypeForFilter> = new Set();
 
     // noinspection JSUnusedGlobalSymbols
     static observedAttributes: string[] = [];

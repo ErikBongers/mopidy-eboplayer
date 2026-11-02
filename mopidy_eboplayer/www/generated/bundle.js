@@ -469,8 +469,12 @@ var Refs = class {
 	getSearchResults() {
 		return this.searchResults;
 	}
-	getAvailableRefTypes(refs) {
-		return refs.map((r) => r instanceof RefSearchResult ? r.item.refType : "genre").reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
+	getAvailableRefTypes(refs, tracksNoAlbumRefsMap) {
+		let types = refs.map((r) => r instanceof RefSearchResult ? r.item.refType : "genre").reduce((typeSet, val) => typeSet.add(val), /* @__PURE__ */ new Set());
+		if (tracksNoAlbumRefsMap) {
+			if (refs.some((r) => r.item.refType == "track" && tracksNoAlbumRefsMap.has(r.item.uri))) types.add("trackNoAlbum");
+		}
+		return types;
 	}
 	static toRefType(ref) {
 		if (!["directory", "track"].includes(ref.type)) return ref.type;
@@ -529,8 +533,8 @@ var Refs = class {
 		return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
 	}
 };
-async function createAllRefs(cache, allRefs) {
-	return new AllRefs(cache, allRefs);
+async function createAllRefs(cache, allRefs, tracksNoAlbumRefs) {
+	return new AllRefs(cache, allRefs, tracksNoAlbumRefs);
 }
 function filterRefsToResult(refs, refType, cache) {
 	return refs.filter((ref) => ref.refType == refType).map((expandedRef) => {
@@ -546,9 +550,13 @@ var AllRefs = class extends Refs {
 	radios;
 	playlists;
 	availableRefTypes;
-	constructor(cache, allRefs) {
+	tracksNoAlbumRefs;
+	tracksNoAlbumRefsMap;
+	constructor(cache, allRefs, tracksNoAlbumRefs) {
 		super();
 		this.allRefs = allRefs;
+		this.tracksNoAlbumRefs = tracksNoAlbumRefs;
+		this.tracksNoAlbumRefsMap = new Map(tracksNoAlbumRefs.map((res) => [res.uri, res]));
 		this.tracks = filterRefsToResult(allRefs, "track", cache);
 		this.albums = filterRefsToResult(allRefs, "album", cache);
 		this.artists = filterRefsToResult(allRefs, "artist", cache);
@@ -558,7 +566,7 @@ var AllRefs = class extends Refs {
 		});
 		this.playlists = filterRefsToResult(allRefs, "playlist", cache);
 		this.availableRefTypes = /* @__PURE__ */ new Set();
-		this.getAvailableRefTypes(this.tracks).forEach((type) => this.availableRefTypes.add(type));
+		this.getAvailableRefTypes(this.tracks, this.tracksNoAlbumRefsMap).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.artists).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.radios).forEach((type) => this.availableRefTypes.add(type));
@@ -585,10 +593,10 @@ var AllRefs = class extends Refs {
 var SomeRefs = class extends Refs {
 	allresults;
 	availableRefTypes;
-	constructor(results) {
+	constructor(results, allRefs) {
 		super();
 		this.allresults = results;
-		this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
+		this.availableRefTypes = this.getAvailableRefTypes(this.allresults, allRefs.tracksNoAlbumRefsMap);
 	}
 	async filter() {
 		this.searchResults = {
@@ -1104,6 +1112,7 @@ var Model = class extends EboModelEventTargetClass {
 		this.currentRefs = refs;
 		this.dispatchEboEvent("currentRefsLoaded.eboplayer", {});
 	}
+	getCurrentRefs = () => this.currentRefs;
 	setPage(page) {
 		this.page = page;
 		this.dispatchEboEvent("viewChanged.eboplayer", {});
@@ -1633,6 +1642,15 @@ var WebProxy = class {
 	}
 	async fetchAllRefs() {
 		let url = this.ebobackUrl(`get_all_refs`);
+		let allRefs = await (await fetch(url)).json();
+		let tracksNoAlbumRefs = await this.fetchAllTracksWithoutAlbum();
+		return {
+			allRefs,
+			tracksNoAlbumRefs
+		};
+	}
+	async fetchAllTracksWithoutAlbum() {
+		let url = this.ebobackUrl(`get_tracks_no_album`);
 		return await (await fetch(url)).json();
 	}
 	async updateAlbumData(albumUri) {
@@ -1832,8 +1850,12 @@ var BrowseController = class {
 				newBrowseFilter.radio = true;
 				break;
 		}
-		await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 		await this.fetchRefsForCurrentBreadCrumbs();
+		let currentRefs = this.model.getCurrentRefs();
+		if (currentRefs) {
+			if (!currentRefs.getSearchResults().availableRefTypes.has("trackNoAlbum")) newBrowseFilter.track = false;
+		}
+		await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 		await this.filterBrowseResults();
 	}
 	async setWhatsNewFilter() {
@@ -1911,13 +1933,13 @@ var BrowseController = class {
 					}
 				});
 				let results$1 = await Refs.transformRefsToSearchResults(this.controller.cache, playlistItems);
-				this.model.setCurrentRefs(new SomeRefs(results$1));
+				this.model.setCurrentRefs(new SomeRefs(results$1, await this.controller.cache.getAllRefsCached()));
 				return;
 			}
 			if (isBreadCrumbForStream(lastCrumb)) return;
 			let refs = await this.controller.mopidyProxy.browse(lastCrumb.data.uri);
 			let results = await Refs.transformRefsToSearchResults(this.controller.cache, refs);
-			this.model.setCurrentRefs(new SomeRefs(results));
+			this.model.setCurrentRefs(new SomeRefs(results, await this.controller.cache.getAllRefsCached()));
 			return;
 		}
 	}
@@ -2117,7 +2139,7 @@ var Controller = class extends Commands {
 	}
 	async fetchAllRefs() {
 		let allRefs = await this.webProxy.fetchAllRefs();
-		return createAllRefs(this.cache, allRefs);
+		return createAllRefs(this.cache, allRefs.allRefs, allRefs.tracksNoAlbumRefs);
 	}
 	async setAllRefsAsCurrent() {
 		this.model.setCurrentRefs(await this.cache.getAllRefsCached());
@@ -5734,8 +5756,8 @@ var CacheHandler = class extends Commands {
 	async getAllRefsCached() {
 		let allRefs = this.model.getAllRefs();
 		if (!allRefs) {
-			let allExpandedRefs = await this.webProxy.fetchAllRefs();
-			allRefs = await createAllRefs(this, allExpandedRefs);
+			let refs = await this.webProxy.fetchAllRefs();
+			allRefs = await createAllRefs(this, refs.allRefs, refs.tracksNoAlbumRefs);
 			this.model.setAllRefs(allRefs);
 		}
 		return allRefs;

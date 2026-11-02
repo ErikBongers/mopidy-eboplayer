@@ -343,6 +343,8 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("currentRefsLoaded.eboplayer", {});
     }
 
+    getCurrentRefs = () => this.currentRefs;
+
     setPage(page: Goto) {
         this.page = page;
         this.dispatchEboEvent("viewChanged.eboplayer", {});

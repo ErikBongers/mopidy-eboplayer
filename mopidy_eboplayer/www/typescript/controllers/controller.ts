@@ -277,7 +277,7 @@ class Controller extends Commands {
     async fetchAllRefs() {
         let allRefs = await this.webProxy.fetchAllRefs();
 
-        return createAllRefs(this.cache, allRefs);
+        return createAllRefs(this.cache, allRefs.allRefs, allRefs.tracksNoAlbumRefs);
     }
 
     async setAllRefsAsCurrent() {

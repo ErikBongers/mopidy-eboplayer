@@ -75,9 +75,14 @@ export class BrowseController {
                 newBrowseFilter.radio = true;
                 break;
         }
+        await this.fetchRefsForCurrentBreadCrumbs();
+        let currentRefs = this.model.getCurrentRefs();
+        if(currentRefs) {
+            if(!currentRefs.getSearchResults().availableRefTypes.has("trackNoAlbum"))
+                newBrowseFilter.track = false;
+        }
         await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 
-        await this.fetchRefsForCurrentBreadCrumbs()
         await this.filterBrowseResults();
     }
 
@@ -177,7 +182,7 @@ export class BrowseController {
                     }
                 });
                 let results = await Refs.transformRefsToSearchResults(this.controller.cache, playlistItems);
-                this.model.setCurrentRefs(new SomeRefs(results));
+                this.model.setCurrentRefs(new SomeRefs(results, await this.controller.cache.getAllRefsCached()));
                 return;
             }
             if (isBreadCrumbForStream(lastCrumb))
@@ -185,7 +190,7 @@ export class BrowseController {
 
             let refs = await this.controller.mopidyProxy.browse(lastCrumb.data.uri);
             let results = await Refs.transformRefsToSearchResults(this.controller.cache, refs);
-            this.model.setCurrentRefs(new SomeRefs(results));
+            this.model.setCurrentRefs(new SomeRefs(results, await this.controller.cache.getAllRefsCached()));
             return;
         }
     }

@@ -1,11 +1,12 @@
 import models from "../js/mopidy";
-import {AllUris, BrowseFilter, GenreUri} from "./modelTypes";
+import {AllUris, BrowseFilter, GenreUri, TrackUri} from "./modelTypes";
 import Controller from "./controllers/controller";
 import {getBaseUrl, getDefaultImageUrl} from "./global";
 import Ref = models.Ref;
 import {CacheHandler} from "./controllers/cacheHandler";
 
 export type RefType = "album" | "artist" | "playlist" | "track" | "genre" | "radio";
+export type RefTypeForFilter = RefType | "trackNoAlbum";
 export interface ExpandedRef<TUri extends AllUris> {
     refType: RefType,
     name: string,
@@ -59,7 +60,7 @@ export type SearchResult = RefSearchResult | GenreSearchResult;
 
 export interface SearchResults {
     refs: SearchResult[];
-    availableRefTypes: Set<RefType>;
+    availableRefTypes: Set<RefTypeForFilter>;
 }
 
 export const EmptySearchResults: SearchResults = {refs: [], availableRefTypes: new Set()};
@@ -159,10 +160,17 @@ export abstract class Refs {
         return this.searchResults;
     }
 
-    protected getAvailableRefTypes(refs: SearchResult[]) {
-        return refs
+    protected getAvailableRefTypes(refs: SearchResult[], tracksNoAlbumRefsMap?: Map<TrackUri, ExpandedRef<TrackUri>>) {
+        let types: Set<RefTypeForFilter> = refs
             .map(r => r instanceof RefSearchResult ? r.item.refType : "genre")
             .reduce((typeSet, val) => typeSet.add(val), new Set<RefType>());
+        if (tracksNoAlbumRefsMap) {
+            let trackNoAlbumRefsFound = refs.some(r => r.item.refType == "track" && tracksNoAlbumRefsMap.has(r.item.uri as TrackUri)); //todo item.uri not really a track uri. Perhaps cast map to AllUris
+            if (trackNoAlbumRefsFound) {
+                types.add("trackNoAlbum");
+            }
+        }
+        return types;
     }
 
     static toRefType(ref: models.Ref<AllUris>): RefType {
@@ -223,8 +231,8 @@ export abstract class Refs {
     }
 }
 
-export async function createAllRefs(cache: CacheHandler, allRefs: ExpandedRef<AllUris>[]) {
-    return new AllRefs(cache, allRefs);
+export async function createAllRefs(cache: CacheHandler, allRefs: ExpandedRef<AllUris>[], tracksNoAlbumRefs: ExpandedRef<TrackUri>[]) {
+    return new AllRefs(cache, allRefs, tracksNoAlbumRefs);
 }
 
 function filterRefsToResult(refs: ExpandedRef<AllUris>[], refType: RefType, cache: CacheHandler) {
@@ -243,11 +251,17 @@ export class AllRefs extends Refs {
     genres: SearchResult[];
     radios: SearchResult[];
     playlists: SearchResult[];
-    availableRefTypes: Set<RefType>;
+    availableRefTypes: Set<RefTypeForFilter>;
+    tracksNoAlbumRefs: ExpandedRef<TrackUri>[];
+    tracksNoAlbumRefsMap: Map<TrackUri, ExpandedRef<TrackUri>>;
 
-    constructor(cache: CacheHandler, allRefs: ExpandedRef<AllUris>[]) {
+    constructor(cache: CacheHandler, allRefs: ExpandedRef<AllUris>[], tracksNoAlbumRefs: ExpandedRef<TrackUri>[]) {
         super();
         this.allRefs = allRefs;
+        this.tracksNoAlbumRefs = tracksNoAlbumRefs;
+        this.tracksNoAlbumRefsMap = new Map<TrackUri, ExpandedRef<TrackUri>>(
+            tracksNoAlbumRefs.map(res => [res.uri, res])
+        );
         this.tracks = filterRefsToResult(allRefs, "track", cache);
         this.albums = filterRefsToResult(allRefs, "album", cache);
         this.artists = filterRefsToResult(allRefs, "artist", cache);
@@ -260,7 +274,7 @@ export class AllRefs extends Refs {
         this.playlists = filterRefsToResult(allRefs, "playlist", cache);
 
         this.availableRefTypes = new Set();
-        this.getAvailableRefTypes(this.tracks).forEach(type => this.availableRefTypes.add(type));
+        this.getAvailableRefTypes(this.tracks, this.tracksNoAlbumRefsMap).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.albums).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.artists).forEach(type => this.availableRefTypes.add(type));
         this.getAvailableRefTypes(this.radios).forEach(type => this.availableRefTypes.add(type));
@@ -295,12 +309,12 @@ export class AllRefs extends Refs {
 
 export class SomeRefs extends Refs {
     allresults: SearchResult[];
-    availableRefTypes: Set<RefType>;
+    availableRefTypes: Set<RefTypeForFilter>;
 
-    constructor(results: SearchResult[]) {
+    constructor(results: SearchResult[], allRefs: AllRefs) {
         super();
         this.allresults = results;
-        this.availableRefTypes = this.getAvailableRefTypes(this.allresults);
+        this.availableRefTypes = this.getAvailableRefTypes(this.allresults, allRefs.tracksNoAlbumRefsMap);
     }
 
     async filter() {
