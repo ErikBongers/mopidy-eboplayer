@@ -116,8 +116,7 @@ export class BrowseController {
             let browseFilter = this.model.popBreadCrumb(stackName)?.data as BrowseFilter;
             await this.setAndSaveBrowseFilter(browseFilter);
             this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
-            await this.fetchRefsForCurrentBreadCrumbs(stackName);
-            await this.filterBrowseResults();
+            await this.fetchAndFilterBrowseResults(stackName);
         } else if(breadCrumb instanceof BreadCrumbRef) {
             if(isBreadCrumbForAlbum(breadCrumb)) {
                 this.controller.viewController.showAlbum(breadCrumb.data.uri, null);
@@ -132,9 +131,13 @@ export class BrowseController {
             browseFilter.album = true;
             await this.setAndSaveBrowseFilter(browseFilter);
             this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
-            await this.fetchRefsForCurrentBreadCrumbs(stackName)
-            await this.filterBrowseResults();
+            await this.fetchAndFilterBrowseResults(stackName);
         }
+    }
+
+    async fetchAndFilterBrowseResults(stackName: string) {
+        await this.fetchRefsForCurrentBreadCrumbs(stackName)
+        await this.filterBrowseResults();
     }
 
     async setFavoritesFilter() {

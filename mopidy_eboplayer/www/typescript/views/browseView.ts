@@ -60,20 +60,25 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
                 return;
 
             let resultsDisplayMode: DisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+            let stackName = "browse";
             switch (page) {
                 case "#Browse":
-                    await this.state.getController().setCurrentBreadCrumbStack("browse");
+                    stackName = "browse";
+                    await this.state.getController().setCurrentBreadCrumbStack(stackName);
                     break;
                 case "#Browse.WhatsNew":
                     resultsDisplayMode = "icon";
-                    await this.state.getController().setCurrentBreadCrumbStack("whatsNew");
+                    stackName = "whatsNew";
+                    await this.state.getController().setCurrentBreadCrumbStack(stackName);
                     await this.state.getController().browseController.setWhatsNewFilter("whatsNew");
                     break;
                 case "#Browse.Favorites":
-                    await this.state.getController().setCurrentBreadCrumbStack("favorites");
+                    stackName = "favorites";
+                    await this.state.getController().setCurrentBreadCrumbStack(stackName);
                     await this.state.getController().browseController.setFavoritesFilter();
                     break;
             }
+            await this.state.getController().browseController.fetchAndFilterBrowseResults(stackName);
             this.updateCompFromState(resultsDisplayMode);
         });
 

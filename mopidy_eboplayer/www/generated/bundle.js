@@ -1892,8 +1892,7 @@ var BrowseController = class {
 			let browseFilter = this.model.popBreadCrumb(stackName)?.data;
 			await this.setAndSaveBrowseFilter(browseFilter);
 			this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
-			await this.fetchRefsForCurrentBreadCrumbs(stackName);
-			await this.filterBrowseResults();
+			await this.fetchAndFilterBrowseResults(stackName);
 		} else if (breadCrumb instanceof BreadCrumbRef) {
 			if (isBreadCrumbForAlbum(breadCrumb)) {
 				this.controller.viewController.showAlbum(breadCrumb.data.uri, null);
@@ -1908,9 +1907,12 @@ var BrowseController = class {
 			browseFilter.album = true;
 			await this.setAndSaveBrowseFilter(browseFilter);
 			this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
-			await this.fetchRefsForCurrentBreadCrumbs(stackName);
-			await this.filterBrowseResults();
+			await this.fetchAndFilterBrowseResults(stackName);
 		}
+	}
+	async fetchAndFilterBrowseResults(stackName) {
+		await this.fetchRefsForCurrentBreadCrumbs(stackName);
+		await this.filterBrowseResults();
 	}
 	async setFavoritesFilter() {
 		let favoritesName = await this.controller.cache.getFavoritePlaylistName();
@@ -5281,20 +5283,25 @@ var BrowseView = class extends ComponentView {
 			let page = this.state.getModel().getPage();
 			if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#Browse.WhatsNew")) return;
 			let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
+			let stackName = "browse";
 			switch (page) {
 				case "#Browse":
-					await this.state.getController().setCurrentBreadCrumbStack("browse");
+					stackName = "browse";
+					await this.state.getController().setCurrentBreadCrumbStack(stackName);
 					break;
 				case "#Browse.WhatsNew":
 					resultsDisplayMode = "icon";
-					await this.state.getController().setCurrentBreadCrumbStack("whatsNew");
+					stackName = "whatsNew";
+					await this.state.getController().setCurrentBreadCrumbStack(stackName);
 					await this.state.getController().browseController.setWhatsNewFilter("whatsNew");
 					break;
 				case "#Browse.Favorites":
-					await this.state.getController().setCurrentBreadCrumbStack("favorites");
+					stackName = "favorites";
+					await this.state.getController().setCurrentBreadCrumbStack(stackName);
 					await this.state.getController().browseController.setFavoritesFilter();
 					break;
 			}
+			await this.state.getController().browseController.fetchAndFilterBrowseResults(stackName);
 			this.updateCompFromState(resultsDisplayMode);
 		});
 	}
