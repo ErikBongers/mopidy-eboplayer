@@ -2219,6 +2219,9 @@ var Controller = class extends Commands {
 			type
 		});
 	}
+	async setCurrentBreadCrumbStack(stackName) {
+		this.model.setCurrentBreadCrumbStackName(stackName);
+	}
 };
 var controller_default = Controller;
 
@@ -5279,11 +5282,16 @@ var BrowseView = class extends ComponentView {
 			if (!(page == "#Browse" || page == "#Browse.Favorites" || page == "#Browse.WhatsNew")) return;
 			let resultsDisplayMode = this.state.getController().localStorageProxy.getLineOrIconPreference();
 			switch (page) {
+				case "#Browse":
+					await this.state.getController().setCurrentBreadCrumbStack("browse");
+					break;
 				case "#Browse.WhatsNew":
 					resultsDisplayMode = "icon";
+					await this.state.getController().setCurrentBreadCrumbStack("whatsNew");
 					await this.state.getController().browseController.setWhatsNewFilter("whatsNew");
 					break;
 				case "#Browse.Favorites":
+					await this.state.getController().setCurrentBreadCrumbStack("favorites");
 					await this.state.getController().browseController.setFavoritesFilter();
 					break;
 			}

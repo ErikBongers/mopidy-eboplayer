@@ -361,6 +361,10 @@ class Controller extends Commands {
     showTempMessage(message: string, type: MessageType) {
         this.model.setTempMessage({message, type});
     }
+
+    async setCurrentBreadCrumbStack(stackName: string) {
+        this.model.setCurrentBreadCrumbStackName(stackName);
+    }
 }
 
 export default Controller
