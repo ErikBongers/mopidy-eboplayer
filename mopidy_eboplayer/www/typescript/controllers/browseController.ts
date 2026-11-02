@@ -102,7 +102,8 @@ export class BrowseController {
     }
 
     async clearBreadCrumbs(stackName: string) {
-        this.model.resetBreadCrumbsTo(stackName, this.model.getBreadCrumbStack(stackName)[0].id);
+        let stack = this.model.getBreadCrumbStack(stackName);
+        this.model.resetBreadCrumbsTo(stackName, stack[0].id);
     }
 
     async resetToBreadCrumb(stackName: string, id: number) {

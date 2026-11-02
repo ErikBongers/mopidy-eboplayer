@@ -1885,7 +1885,8 @@ var BrowseController = class {
 		if (applyFilter == "apply") await this.filterBrowseResults();
 	}
 	async clearBreadCrumbs(stackName) {
-		this.model.resetBreadCrumbsTo(stackName, this.model.getBreadCrumbStack(stackName)[0].id);
+		let stack = this.model.getBreadCrumbStack(stackName);
+		this.model.resetBreadCrumbsTo(stackName, stack[0].id);
 	}
 	async resetToBreadCrumb(stackName, id) {
 		let breadCrumb = this.model.getBreadCrumbStack(stackName).get(id);
