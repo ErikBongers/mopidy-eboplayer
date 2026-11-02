@@ -74,8 +74,8 @@ class Controller extends Commands {
         this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
         await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
-        this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-        await this.browseController.fetchRefsForCurrentBreadCrumbs();
+        this.localStorageProxy.loadBrowseFiltersBreadCrumbs("browse");
+        await this.browseController.fetchRefsForCurrentBreadCrumbs("browse");
         await this.browseController.filterBrowseResults();
         await this.cache.getGenreReplacementsCached();
         await this.cache.getRemembersCached();

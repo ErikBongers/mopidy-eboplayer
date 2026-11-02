@@ -63,7 +63,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
             switch (page) {
                 case "#Browse.WhatsNew":
                     resultsDisplayMode = "icon";
-                    await this.state.getController().browseController.setWhatsNewFilter();
+                    await this.state.getController().browseController.setWhatsNewFilter("whatsNew");
                     break;
                 case "#Browse.Favorites":
                     await this.state.getController().browseController.setFavoritesFilter();
@@ -131,7 +131,7 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     updateCompFromState(displayMode: DisplayMode) {
         this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter(); //todo: already set in controller?
         this.component.results = this.state.getModel().getCurrentSearchResults();
-        this.component.breadCrumbs = this.state.getModel().getBreadCrumbs();
+        this.component.breadCrumbs = this.state.getModel().getBreadCrumbStack(this.state.getModel().getCurrentBreadCrumbStackName());
         this.component.setFocusAndSelect();
         this.component.action_btn_states = this.getListButtonStates();
 
@@ -157,7 +157,8 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private onBreadCrumbsChanged() {
-        this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
+        let stackName = this.state.getModel().getCurrentBreadCrumbStackName();
+        this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbStack(stackName) ?? [];
     }
 
     private onModelBrowseFilterChanged() {
@@ -184,11 +185,13 @@ export class BrowseView extends ComponentView<EboBrowseComp> {
     }
 
     private async onBrowseResultClick(label: string, uri: AllUris, type: string) {
-        await this.state.getController().browseController.diveIntoBrowseResult(label, uri, type, true);
+        let stackName = this.state.getModel().getCurrentBreadCrumbStackName();
+        await this.state.getController().browseController.diveIntoBrowseResult(label, uri, type, true, stackName);
     }
 
     private async onBreadcrumbClick(breadcrumbId: number) {
-        await this.state.getController().browseController.resetToBreadCrumb(breadcrumbId);
+        let stackName = this.state.getModel().getCurrentBreadCrumbStackName();
+        await this.state.getController().browseController.resetToBreadCrumb(stackName, breadcrumbId);
     }
 
     private async onGenreReplacementChanged() {

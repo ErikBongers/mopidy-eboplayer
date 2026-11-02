@@ -27,10 +27,10 @@ export class LocalStorageProxy {
         console.error("Could not load or parse browse filter bread crumbs from local storage. Using default bread crumbs.");
     }
 
-    loadBrowseFiltersBreadCrumbs() {
-        let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
+    loadBrowseFiltersBreadCrumbs(stackName: string) {
+        let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY + "_" + stackName);
         if (breadCrumbsString) {
-            let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs());
+            let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbStack(stackName));
             let breadCrumbs = new BrowseFilterBreadCrumbStack();
             breadCrumbsArray
                 .map(crumb => {
@@ -54,7 +54,7 @@ export class LocalStorageProxy {
                 if (breadCrumbs[0].type != "home")
                     breadCrumbs.unshift(new BreadCrumbHome());
             }
-            this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
+            this.model.setBrowseFilterBreadCrumbs(stackName, breadCrumbs);
             return;
         }
         console.error("Could not load or parse browse filters from local storage. Using default filters.");
@@ -65,9 +65,9 @@ export class LocalStorageProxy {
         localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
     }
 
-    saveBrowseFilterBreadCrumbs(breadCrumbs: BrowseFilterBreadCrumbStack) {
+    saveBrowseFilterBreadCrumbs(breadCrumbs: BrowseFilterBreadCrumbStack, stackName: string) {
         let obj = JSON.stringify(breadCrumbs);
-        localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
+        localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY + "_" + stackName, obj);
     }
 
     saveAlbumBeingEdited(albumUri: AlbumUri | null) {

@@ -62,8 +62,8 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
     private imageCache: Map<string, string> = new Map();
     private metaCache: Map<string, CachedAlbumMetaData> = new Map();
     private currentBrowseFilter= new BrowseFilter();
-    // private filterBreadCrumbStack: BreadCrumbStack<number> = new BreadCrumbStack<number>();
-    private filterBreadCrumbStack: BrowseFilterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
+    private filterBreadCrumbStacks: Map<string, BrowseFilterBreadCrumbStack> = new Map(); // = new BrowseFilterBreadCrumbStack();
+    private currentBreadCrumbStackName: string = "browse";
     private genreReplacements: Map<string, GenreReplacement> = new Map();
     private genreDefs: GenreDef[] = [];
     private currentProgramTitle: string = "";
@@ -82,7 +82,11 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
 
     constructor() {
         super();
-        this.initializeBreadcrumbStack();
+    }
+
+    getCurrentBreadCrumbStackName = (): string => this.currentBreadCrumbStackName;
+    setCurrentBreadCrumbStackName(stackName: string) {
+        return this.currentBreadCrumbStackName = stackName;
     }
 
     getScanStatus = () => this.scanStatus;
@@ -105,32 +109,34 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
     }
     getGenreReplacements = () => this.genreReplacements;
 
-    pushBreadCrumb(crumb: FilterBreadCrumb, dispatch: "dispatch" | "noDispatch" = "dispatch") {
-        this.filterBreadCrumbStack.push(crumb);
+    pushBreadCrumb(crumb: FilterBreadCrumb, dispatch: "dispatch" | "noDispatch" = "dispatch", stackName: string) {
+        let stack = this.getBreadCrumbStack(stackName);
+        stack.push(crumb);
         if(dispatch == "dispatch")
-            this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+            this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
     }
-    popBreadCrumb() {
-        let crumb = this.filterBreadCrumbStack.pop();
-        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+    popBreadCrumb(stackName: string) {
+        let stack = this.getBreadCrumbStack(stackName);
+        let crumb = stack.pop();
+        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
         return crumb;
     }
 
-    getBreadCrumbs = () => this.filterBreadCrumbStack;
-
-    resetBreadCrumbsTo(id: number) {
-        this.filterBreadCrumbStack.resetTo(id);
-        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+    resetBreadCrumbsTo(stackName: string, id: number) {
+        let stack = this.getBreadCrumbStack(stackName);
+        stack.resetTo(id);
+        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
     }
 
-    private initializeBreadcrumbStack() {
-        this.filterBreadCrumbStack.length = 0;
-        this.filterBreadCrumbStack.push(new BreadCrumbHome());
+    private initializeBreadcrumbStack(stackName: string) {
+        let stack = this.getBreadCrumbStack(stackName);
+        stack.length = 0;
+        stack.push(new BreadCrumbHome());
     }
 
-    clearBreadCrumbs() {
-        this.initializeBreadcrumbStack();
-        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+    clearBreadCrumbs(stackName: string) {
+        this.initializeBreadcrumbStack(stackName);
+        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
     }
 
     setAllRefs(refs: AllRefs) {
@@ -191,10 +197,20 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("modelBrowseFilterChanged.eboplayer", {});
     }
 
-    setBrowseFilterBreadCrumbs(breadCrumbStack: BrowseFilterBreadCrumbStack) {
-        this.filterBreadCrumbStack.length = 0;
-        this.filterBreadCrumbStack.push(...breadCrumbStack);
-        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+    setBrowseFilterBreadCrumbs(stackName: string, breadCrumbStack: BrowseFilterBreadCrumbStack) {
+        let stack = this.getBreadCrumbStack(stackName);
+        stack.length = 0;
+        stack.push(...breadCrumbStack);
+        this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
+    }
+
+    getBreadCrumbStack(stackName: string) {
+        let stack = this.filterBreadCrumbStacks.get(stackName);
+        if(!stack) {
+            stack = new BrowseFilterBreadCrumbStack();
+            this.filterBreadCrumbStacks.set(stackName, stack);
+        }
+        return stack;
     }
 
     getCurrentTrack(): TrackUri | StreamUri | null {

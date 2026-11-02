@@ -20,7 +20,7 @@ export interface EboModelEventHandlersEventMap {
     "volumeAdjustChanged.eboplayer"             : VolumeAdjustArgs,
     "programTitleChanged.eboplayer"             : VoidArgs,
     "genreReplacementsChanged.eboplayer"        : VoidArgs,
-    "breadCrumbsChanged.eboplayer"              : VoidArgs,
+    "breadCrumbsChanged.eboplayer"              : BreadCrumbStackArgs,
     "refsFiltered.eboplayer"                    : VoidArgs,
     "connectionChanged.eboplayer"               : VoidArgs,
     "modelBrowseFilterChanged.eboplayer"        : VoidArgs,
@@ -150,6 +150,10 @@ export interface UriArgs extends EboEventArgs {
 
 export interface ExtArgs extends EboEventArgs {
     extension: string
+}
+
+export interface BreadCrumbStackArgs extends EboEventArgs {
+    stackName: string
 }
 
 export interface VolumeAdjustArgs extends EboEventArgs {

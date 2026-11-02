@@ -1,23 +1,13 @@
-* Get list of all tracks without an album.
-  > store it in model.
-  > use it to see if browse results contain tracks without album.
-    > if not: don't show tracks as they are all included in an album.
-
-* WSL2: has no alsa cards
-  > setting hardware volume should be ignored
-  > set alsa_card = none?
-
 * Favorites/filters:
   - Favorites should not be saved/remembered
-  - When clicking on genre, exclude tracks that belong to an already shown album.
-    > I think search results just return tracks, not albums...
-      > If so, tracks can ALWAYS be turned off.
-        > Are there tracks without an album?
+  > but Favorites is just a filter.
 
 * plugin: template should give warning if attName has uppercase.
 
 * index.html should show empty screen (no splash as this will likely be shown a split second.)
   > if there clearly is no history, startup at the search screen with albums and radios.
+  > if there are favorites, show those
+
 
 * Create a solid savedPageState strategy.
   > rename ViewController to PageController.

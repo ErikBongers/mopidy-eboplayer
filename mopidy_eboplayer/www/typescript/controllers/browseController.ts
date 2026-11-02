@@ -22,7 +22,7 @@ export class BrowseController {
         this.model = model;
     }
 
-    async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean) {
+    async diveIntoBrowseResult(label: string, uri: AllUris, type: string, addTextFilterBreadcrumb: boolean, stackName: string) {
         if(type == "track") {
             let track = await this.controller.getExpandedTrackModel(uri as TrackUri) as ExpandedFileTrackModel;
             if(track.album?.albumInfo?.uri)
@@ -47,14 +47,14 @@ export class BrowseController {
             let browseFilter = this.model.getCurrentBrowseFilter();
             if(! browseFilter.isEmpty()) {
                 let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-                this.model.pushBreadCrumb(breadCrumb1, "noDispatch");
+                this.model.pushBreadCrumb(breadCrumb1, "noDispatch", stackName);
             }
         }
         let ref: Ref<AllUris> = {type: type as models.ModelType, name: label, uri};
         let breadCrumb2 = new BreadCrumbRef(label, ref);
-        this.model.pushBreadCrumb(breadCrumb2);
+        this.model.pushBreadCrumb(breadCrumb2, "dispatch", stackName);
 
-        this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
+        this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbStack(stackName), stackName);
 
         let newBrowseFilter = new BrowseFilter();
         switch (type) {
@@ -75,7 +75,7 @@ export class BrowseController {
                 newBrowseFilter.radio = true;
                 break;
         }
-        await this.fetchRefsForCurrentBreadCrumbs();
+        await this.fetchRefsForCurrentBreadCrumbs(stackName);
         let currentRefs = this.model.getCurrentRefs();
         if(currentRefs) {
             if(!currentRefs.getSearchResults().availableRefTypes.has("trackNoAlbum"))
@@ -86,8 +86,8 @@ export class BrowseController {
         await this.filterBrowseResults();
     }
 
-    async setWhatsNewFilter() {
-        await this.clearBreadCrumbs();
+    async setWhatsNewFilter(stackName: string) {
+        await this.clearBreadCrumbs(stackName);
         let browseFilter = new BrowseFilter();
         browseFilter.addedSince = 1;
         this.controller.localStorageProxy.saveCurrentBrowseFilter(browseFilter);
@@ -101,37 +101,37 @@ export class BrowseController {
             await this.filterBrowseResults();
     }
 
-    async clearBreadCrumbs() {
-        this.model.resetBreadCrumbsTo(this.model.getBreadCrumbs()[0].id);
+    async clearBreadCrumbs(stackName: string) {
+        this.model.resetBreadCrumbsTo(stackName, this.model.getBreadCrumbStack(stackName)[0].id);
     }
 
-    async resetToBreadCrumb(id: number) {
-        let breadCrumb = this.model.getBreadCrumbs().get(id);
-        let breadCrumbs = this.model.getBreadCrumbs();
+    async resetToBreadCrumb(stackName: string, id: number) {
+        let breadCrumb = this.model.getBreadCrumbStack(stackName).get(id);
+        let breadCrumbs = this.model.getBreadCrumbStack(stackName);
 
         //if the breadCrumb is a browseFilter, reset to the previous breadCrumb and set the current browseFilter to the one in the breadCrumb.
         if(breadCrumb instanceof BreadCrumbBrowseFilter) {
-            this.model.resetBreadCrumbsTo(id);
-            let browseFilter = this.model.popBreadCrumb()?.data as BrowseFilter;
+            this.model.resetBreadCrumbsTo(stackName, id);
+            let browseFilter = this.model.popBreadCrumb(stackName)?.data as BrowseFilter;
             await this.setAndSaveBrowseFilter(browseFilter);
-            this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-            await this.fetchRefsForCurrentBreadCrumbs()
+            this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
+            await this.fetchRefsForCurrentBreadCrumbs(stackName);
             await this.filterBrowseResults();
         } else if(breadCrumb instanceof BreadCrumbRef) {
             if(isBreadCrumbForAlbum(breadCrumb)) {
                 this.controller.viewController.showAlbum(breadCrumb.data.uri, null);
                 return;
             }
-            this.model.resetBreadCrumbsTo(id);
-            this.model.popBreadCrumb(); // remove the current breadCrumb as it will be added again below.
-            await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+            this.model.resetBreadCrumbsTo(stackName, id);
+            this.model.popBreadCrumb(stackName); // remove the current breadCrumb as it will be added again below.
+            await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false, stackName);
         } else if (breadCrumb instanceof BreadCrumbHome) {
-            this.model.resetBreadCrumbsTo(id);
+            this.model.resetBreadCrumbsTo(stackName, id);
             let browseFilter = new BrowseFilter();
             browseFilter.album = true;
             await this.setAndSaveBrowseFilter(browseFilter);
-            this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-            await this.fetchRefsForCurrentBreadCrumbs()
+            this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
+            await this.fetchRefsForCurrentBreadCrumbs(stackName)
             await this.filterBrowseResults();
         }
     }
@@ -142,12 +142,14 @@ export class BrowseController {
         let favoritesRef = allRefs.playlists.find(res => res.item.name == favoritesName);
         if(!favoritesRef)
             return;
-        await this.clearBreadCrumbs();
-        await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
+        let stackName = "favorites";
+        this.model.setCurrentBreadCrumbStackName(stackName);
+        await this.clearBreadCrumbs(stackName);
+        await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false, stackName);
     }
 
-    async fetchRefsForCurrentBreadCrumbs() {
-        let breadCrumbs = this.model.getBreadCrumbs();
+    async fetchRefsForCurrentBreadCrumbs(stackName: string) {
+        let breadCrumbs = this.model.getBreadCrumbStack(stackName);
         let lastCrumb = breadCrumbs.getLast();
         if(!lastCrumb) {
             await this.controller.setAllRefsAsCurrent();

@@ -893,7 +893,8 @@ var Model = class extends EboModelEventTargetClass {
 	imageCache = /* @__PURE__ */ new Map();
 	metaCache = /* @__PURE__ */ new Map();
 	currentBrowseFilter = new BrowseFilter();
-	filterBreadCrumbStack = new BrowseFilterBreadCrumbStack();
+	filterBreadCrumbStacks = /* @__PURE__ */ new Map();
+	currentBreadCrumbStackName = "browse";
 	genreReplacements = /* @__PURE__ */ new Map();
 	genreDefs = [];
 	currentProgramTitle = "";
@@ -910,7 +911,10 @@ var Model = class extends EboModelEventTargetClass {
 	favoritesPlaylistName = null;
 	constructor() {
 		super();
-		this.initializeBreadcrumbStack();
+	}
+	getCurrentBreadCrumbStackName = () => this.currentBreadCrumbStackName;
+	setCurrentBreadCrumbStackName(stackName) {
+		return this.currentBreadCrumbStackName = stackName;
 	}
 	getScanStatus = () => this.scanStatus;
 	getCurrentProgramTitle() {
@@ -926,27 +930,27 @@ var Model = class extends EboModelEventTargetClass {
 		this.dispatchEboEvent("genreReplacementsChanged.eboplayer", {});
 	}
 	getGenreReplacements = () => this.genreReplacements;
-	pushBreadCrumb(crumb, dispatch = "dispatch") {
-		this.filterBreadCrumbStack.push(crumb);
-		if (dispatch == "dispatch") this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+	pushBreadCrumb(crumb, dispatch = "dispatch", stackName) {
+		this.getBreadCrumbStack(stackName).push(crumb);
+		if (dispatch == "dispatch") this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
 	}
-	popBreadCrumb() {
-		let crumb = this.filterBreadCrumbStack.pop();
-		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+	popBreadCrumb(stackName) {
+		let crumb = this.getBreadCrumbStack(stackName).pop();
+		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
 		return crumb;
 	}
-	getBreadCrumbs = () => this.filterBreadCrumbStack;
-	resetBreadCrumbsTo(id) {
-		this.filterBreadCrumbStack.resetTo(id);
-		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+	resetBreadCrumbsTo(stackName, id) {
+		this.getBreadCrumbStack(stackName).resetTo(id);
+		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
 	}
-	initializeBreadcrumbStack() {
-		this.filterBreadCrumbStack.length = 0;
-		this.filterBreadCrumbStack.push(new BreadCrumbHome());
+	initializeBreadcrumbStack(stackName) {
+		let stack = this.getBreadCrumbStack(stackName);
+		stack.length = 0;
+		stack.push(new BreadCrumbHome());
 	}
-	clearBreadCrumbs() {
-		this.initializeBreadcrumbStack();
-		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+	clearBreadCrumbs(stackName) {
+		this.initializeBreadcrumbStack(stackName);
+		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
 	}
 	setAllRefs(refs) {
 		this.allRefs = refs;
@@ -987,10 +991,19 @@ var Model = class extends EboModelEventTargetClass {
 		this.currentBrowseFilter = browseFilter;
 		this.dispatchEboEvent("modelBrowseFilterChanged.eboplayer", {});
 	}
-	setBrowseFilterBreadCrumbs(breadCrumbStack) {
-		this.filterBreadCrumbStack.length = 0;
-		this.filterBreadCrumbStack.push(...breadCrumbStack);
-		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", {});
+	setBrowseFilterBreadCrumbs(stackName, breadCrumbStack) {
+		let stack = this.getBreadCrumbStack(stackName);
+		stack.length = 0;
+		stack.push(...breadCrumbStack);
+		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
+	}
+	getBreadCrumbStack(stackName) {
+		let stack = this.filterBreadCrumbStacks.get(stackName);
+		if (!stack) {
+			stack = new BrowseFilterBreadCrumbStack();
+			this.filterBreadCrumbStacks.set(stackName, stack);
+		}
+		return stack;
 	}
 	getCurrentTrack() {
 		return this.currentTrack;
@@ -1488,10 +1501,10 @@ var LocalStorageProxy = class {
 		}
 		console.error("Could not load or parse browse filter bread crumbs from local storage. Using default bread crumbs.");
 	}
-	loadBrowseFiltersBreadCrumbs() {
-		let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY);
+	loadBrowseFiltersBreadCrumbs(stackName) {
+		let breadCrumbsString = localStorage.getItem(BROWSE_FILTERS_BREADCRUMBS_KEY + "_" + stackName);
 		if (breadCrumbsString) {
-			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbs());
+			let breadCrumbsArray = jsonParse(breadCrumbsString, this.model.getBreadCrumbStack(stackName));
 			let breadCrumbs = new BrowseFilterBreadCrumbStack();
 			breadCrumbsArray.map((crumb) => {
 				switch (crumb.type) {
@@ -1505,7 +1518,7 @@ var LocalStorageProxy = class {
 			}).forEach((crumb) => breadCrumbs.push(crumb));
 			if (breadCrumbs.length == 0) breadCrumbs.push(new BreadCrumbHome());
 			else if (breadCrumbs[0].type != "home") breadCrumbs.unshift(new BreadCrumbHome());
-			this.model.setBrowseFilterBreadCrumbs(breadCrumbs);
+			this.model.setBrowseFilterBreadCrumbs(stackName, breadCrumbs);
 			return;
 		}
 		console.error("Could not load or parse browse filters from local storage. Using default filters.");
@@ -1514,9 +1527,9 @@ var LocalStorageProxy = class {
 		let obj = JSON.stringify(browseFilter);
 		localStorage.setItem(CURRENT_BROWSE_FILTERS__KEY, obj);
 	}
-	saveBrowseFilterBreadCrumbs(breadCrumbs) {
+	saveBrowseFilterBreadCrumbs(breadCrumbs, stackName) {
 		let obj = JSON.stringify(breadCrumbs);
-		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY, obj);
+		localStorage.setItem(BROWSE_FILTERS_BREADCRUMBS_KEY + "_" + stackName, obj);
 	}
 	saveAlbumBeingEdited(albumUri) {
 		localStorage.setItem("albumBeingEdited", albumUri ?? "");
@@ -1790,8 +1803,9 @@ var ViewController = class extends Commands {
 		this.model.setPage("#Genres");
 	}
 	async browseToArtist(args) {
-		await this.controller.browseController.clearBreadCrumbs();
-		await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false);
+		await this.controller.browseController.clearBreadCrumbs("browse");
+		this.model.setCurrentBreadCrumbStackName("browse");
+		await this.controller.browseController.diveIntoBrowseResult(args.name, args.uri, args.type, false, this.model.getCurrentBreadCrumbStackName());
 		this.setView("#Browse");
 	}
 };
@@ -1805,7 +1819,7 @@ var BrowseController = class {
 		this.controller = controller;
 		this.model = model;
 	}
-	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb) {
+	async diveIntoBrowseResult(label, uri, type, addTextFilterBreadcrumb, stackName) {
 		if (type == "track") {
 			let track = await this.controller.getExpandedTrackModel(uri);
 			if (track.album?.albumInfo?.uri) this.controller.viewController.showAlbum(track.album?.albumInfo?.uri, uri);
@@ -1819,7 +1833,7 @@ var BrowseController = class {
 			let browseFilter = this.model.getCurrentBrowseFilter();
 			if (!browseFilter.isEmpty()) {
 				let breadCrumb1 = new BreadCrumbBrowseFilter(browseFilter.searchText, browseFilter);
-				this.model.pushBreadCrumb(breadCrumb1, "noDispatch");
+				this.model.pushBreadCrumb(breadCrumb1, "noDispatch", stackName);
 			}
 		}
 		let breadCrumb2 = new BreadCrumbRef(label, {
@@ -1827,8 +1841,8 @@ var BrowseController = class {
 			name: label,
 			uri
 		});
-		this.model.pushBreadCrumb(breadCrumb2);
-		this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbs());
+		this.model.pushBreadCrumb(breadCrumb2, "dispatch", stackName);
+		this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(this.model.getBreadCrumbStack(stackName), stackName);
 		let newBrowseFilter = new BrowseFilter();
 		switch (type) {
 			case "artist":
@@ -1850,7 +1864,7 @@ var BrowseController = class {
 				newBrowseFilter.radio = true;
 				break;
 		}
-		await this.fetchRefsForCurrentBreadCrumbs();
+		await this.fetchRefsForCurrentBreadCrumbs(stackName);
 		let currentRefs = this.model.getCurrentRefs();
 		if (currentRefs) {
 			if (!currentRefs.getSearchResults().availableRefTypes.has("trackNoAlbum")) newBrowseFilter.track = false;
@@ -1858,8 +1872,8 @@ var BrowseController = class {
 		await this.setAndSaveBrowseFilter(newBrowseFilter, "dontApply");
 		await this.filterBrowseResults();
 	}
-	async setWhatsNewFilter() {
-		await this.clearBreadCrumbs();
+	async setWhatsNewFilter(stackName) {
+		await this.clearBreadCrumbs(stackName);
 		let browseFilter = new BrowseFilter();
 		browseFilter.addedSince = 1;
 		this.controller.localStorageProxy.saveCurrentBrowseFilter(browseFilter);
@@ -1870,34 +1884,34 @@ var BrowseController = class {
 		this.model.setCurrentBrowseFilter(filter);
 		if (applyFilter == "apply") await this.filterBrowseResults();
 	}
-	async clearBreadCrumbs() {
-		this.model.resetBreadCrumbsTo(this.model.getBreadCrumbs()[0].id);
+	async clearBreadCrumbs(stackName) {
+		this.model.resetBreadCrumbsTo(stackName, this.model.getBreadCrumbStack(stackName)[0].id);
 	}
-	async resetToBreadCrumb(id) {
-		let breadCrumb = this.model.getBreadCrumbs().get(id);
-		let breadCrumbs = this.model.getBreadCrumbs();
+	async resetToBreadCrumb(stackName, id) {
+		let breadCrumb = this.model.getBreadCrumbStack(stackName).get(id);
+		let breadCrumbs = this.model.getBreadCrumbStack(stackName);
 		if (breadCrumb instanceof BreadCrumbBrowseFilter) {
-			this.model.resetBreadCrumbsTo(id);
-			let browseFilter = this.model.popBreadCrumb()?.data;
+			this.model.resetBreadCrumbsTo(stackName, id);
+			let browseFilter = this.model.popBreadCrumb(stackName)?.data;
 			await this.setAndSaveBrowseFilter(browseFilter);
-			this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-			await this.fetchRefsForCurrentBreadCrumbs();
+			this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
+			await this.fetchRefsForCurrentBreadCrumbs(stackName);
 			await this.filterBrowseResults();
 		} else if (breadCrumb instanceof BreadCrumbRef) {
 			if (isBreadCrumbForAlbum(breadCrumb)) {
 				this.controller.viewController.showAlbum(breadCrumb.data.uri, null);
 				return;
 			}
-			this.model.resetBreadCrumbsTo(id);
-			this.model.popBreadCrumb();
-			await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false);
+			this.model.resetBreadCrumbsTo(stackName, id);
+			this.model.popBreadCrumb(stackName);
+			await this.diveIntoBrowseResult(breadCrumb.label, breadCrumb.data.uri, breadCrumb.data.type, false, stackName);
 		} else if (breadCrumb instanceof BreadCrumbHome) {
-			this.model.resetBreadCrumbsTo(id);
+			this.model.resetBreadCrumbsTo(stackName, id);
 			let browseFilter = new BrowseFilter();
 			browseFilter.album = true;
 			await this.setAndSaveBrowseFilter(browseFilter);
-			this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs);
-			await this.fetchRefsForCurrentBreadCrumbs();
+			this.controller.localStorageProxy.saveBrowseFilterBreadCrumbs(breadCrumbs, stackName);
+			await this.fetchRefsForCurrentBreadCrumbs(stackName);
 			await this.filterBrowseResults();
 		}
 	}
@@ -1905,11 +1919,13 @@ var BrowseController = class {
 		let favoritesName = await this.controller.cache.getFavoritePlaylistName();
 		let favoritesRef = (await this.controller.cache.getAllRefsCached()).playlists.find((res) => res.item.name == favoritesName);
 		if (!favoritesRef) return;
-		await this.clearBreadCrumbs();
-		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false);
+		let stackName = "favorites";
+		this.model.setCurrentBreadCrumbStackName(stackName);
+		await this.clearBreadCrumbs(stackName);
+		await this.diveIntoBrowseResult(favoritesName, favoritesRef.item.uri, "playlist", false, stackName);
 	}
-	async fetchRefsForCurrentBreadCrumbs() {
-		let lastCrumb = this.model.getBreadCrumbs().getLast();
+	async fetchRefsForCurrentBreadCrumbs(stackName) {
+		let lastCrumb = this.model.getBreadCrumbStack(stackName).getLast();
 		if (!lastCrumb) {
 			await this.controller.setAllRefsAsCurrent();
 			return;
@@ -1983,8 +1999,8 @@ var Controller = class extends Commands {
 		this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
 		await this.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
-		this.localStorageProxy.loadBrowseFiltersBreadCrumbs();
-		await this.browseController.fetchRefsForCurrentBreadCrumbs();
+		this.localStorageProxy.loadBrowseFiltersBreadCrumbs("browse");
+		await this.browseController.fetchRefsForCurrentBreadCrumbs("browse");
 		await this.browseController.filterBrowseResults();
 		await this.cache.getGenreReplacementsCached();
 		await this.cache.getRemembersCached();
@@ -5267,7 +5283,7 @@ var BrowseView = class extends ComponentView {
 			switch (page) {
 				case "#Browse.WhatsNew":
 					resultsDisplayMode = "icon";
-					await this.state.getController().browseController.setWhatsNewFilter();
+					await this.state.getController().browseController.setWhatsNewFilter("whatsNew");
 					break;
 				case "#Browse.Favorites":
 					await this.state.getController().browseController.setFavoritesFilter();
@@ -5317,7 +5333,7 @@ var BrowseView = class extends ComponentView {
 	updateCompFromState(displayMode) {
 		this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
 		this.component.results = this.state.getModel().getCurrentSearchResults();
-		this.component.breadCrumbs = this.state.getModel().getBreadCrumbs();
+		this.component.breadCrumbs = this.state.getModel().getBreadCrumbStack(this.state.getModel().getCurrentBreadCrumbStackName());
 		this.component.setFocusAndSelect();
 		this.component.action_btn_states = this.getListButtonStates();
 		this.setEffectiveDisplayMode(displayMode);
@@ -5336,7 +5352,8 @@ var BrowseView = class extends ComponentView {
 		return states;
 	}
 	onBreadCrumbsChanged() {
-		this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbs() ?? [];
+		let stackName = this.state.getModel().getCurrentBreadCrumbStackName();
+		this.component.breadCrumbs = this.state.getModel()?.getBreadCrumbStack(stackName) ?? [];
 	}
 	onModelBrowseFilterChanged() {
 		this.component.browseFilter = this.state.getModel().getCurrentBrowseFilter();
@@ -5357,10 +5374,12 @@ var BrowseView = class extends ComponentView {
 		await this.state.getPlayer().clearAndPlay([uri]);
 	}
 	async onBrowseResultClick(label, uri, type) {
-		await this.state.getController().browseController.diveIntoBrowseResult(label, uri, type, true);
+		let stackName = this.state.getModel().getCurrentBreadCrumbStackName();
+		await this.state.getController().browseController.diveIntoBrowseResult(label, uri, type, true, stackName);
 	}
 	async onBreadcrumbClick(breadcrumbId) {
-		await this.state.getController().browseController.resetToBreadCrumb(breadcrumbId);
+		let stackName = this.state.getModel().getCurrentBreadCrumbStackName();
+		await this.state.getController().browseController.resetToBreadCrumb(stackName, breadcrumbId);
 	}
 	async onGenreReplacementChanged() {
 		this.component.genreReplacements = await this.state.getController().cache.getGenreReplacementsCached();
