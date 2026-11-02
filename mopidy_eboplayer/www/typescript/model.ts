@@ -128,14 +128,8 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
         this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
     }
 
-    private initializeBreadcrumbStack(stackName: string) {
-        let stack = this.getBreadCrumbStack(stackName);
-        stack.length = 0;
-        stack.push(new BreadCrumbHome());
-    }
-
     clearBreadCrumbs(stackName: string) {
-        this.initializeBreadcrumbStack(stackName);
+        this.filterBreadCrumbStacks.delete(stackName);
         this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
     }
 
@@ -208,6 +202,7 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
         let stack = this.filterBreadCrumbStacks.get(stackName);
         if(!stack) {
             stack = new BrowseFilterBreadCrumbStack();
+            stack.push(new BreadCrumbHome());
             this.filterBreadCrumbStacks.set(stackName, stack);
         }
         return stack;

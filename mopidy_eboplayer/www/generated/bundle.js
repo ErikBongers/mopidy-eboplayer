@@ -943,13 +943,8 @@ var Model = class extends EboModelEventTargetClass {
 		this.getBreadCrumbStack(stackName).resetTo(id);
 		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
 	}
-	initializeBreadcrumbStack(stackName) {
-		let stack = this.getBreadCrumbStack(stackName);
-		stack.length = 0;
-		stack.push(new BreadCrumbHome());
-	}
 	clearBreadCrumbs(stackName) {
-		this.initializeBreadcrumbStack(stackName);
+		this.filterBreadCrumbStacks.delete(stackName);
 		this.dispatchEboEvent("breadCrumbsChanged.eboplayer", { stackName });
 	}
 	setAllRefs(refs) {
@@ -1001,6 +996,7 @@ var Model = class extends EboModelEventTargetClass {
 		let stack = this.filterBreadCrumbStacks.get(stackName);
 		if (!stack) {
 			stack = new BrowseFilterBreadCrumbStack();
+			stack.push(new BreadCrumbHome());
 			this.filterBreadCrumbStacks.set(stackName, stack);
 		}
 		return stack;
