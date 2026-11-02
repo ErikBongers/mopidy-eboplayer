@@ -2000,6 +2000,7 @@ var Controller = class extends Commands {
 		await this.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
 		this.localStorageProxy.loadBrowseFiltersBreadCrumbs("browse");
+		this.localStorageProxy.loadBrowseFiltersBreadCrumbs("favorites");
 		await this.browseController.fetchRefsForCurrentBreadCrumbs("browse");
 		await this.browseController.filterBrowseResults();
 		await this.cache.getGenreReplacementsCached();
