@@ -164677,7 +164677,6 @@ function generatePlaceHolderCode(className, placeholders, buffer) {
 //#endregion
 //#region generateProperty.ts
 function generateProperty(name, type, value, action, forwardTo) {
-	console.log(`PROPERTY ${name}: ${type} = ${value}, action: ${action}, forwardTo: ${forwardTo}`);
 	let buffer = new Buffer$1();
 	buffer.appendLine(`        get ${name}(): ${type} {`);
 	buffer.appendLine(`            return this._${name};`);
@@ -164915,7 +164914,7 @@ var PropertyDecoratorState = class extends MachineState {
 	write(ms) {
 		ms.remove(this.decoratorDef.start, this.decoratorDef.end);
 		ms.overwrite(this.decoratorDef.propDef.id.start, this.decoratorDef.propDef.id.end, "_" + this.decoratorDef.propDef.id.name);
-		let buffer = generateProperty(this.decoratorDef.propDef.id.name, "string", `"VALUE!!!"`, this.action, this.forwardTo);
+		let buffer = generateProperty(this.decoratorDef.propDef.id.name, "string", `""`, this.action, this.forwardTo);
 		ms.appendRight(this.decoratorDef.propDef.end, buffer);
 	}
 };
