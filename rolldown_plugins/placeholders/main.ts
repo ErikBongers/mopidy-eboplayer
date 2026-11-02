@@ -191,7 +191,7 @@ class PropertyDecoratorState extends MachineState {
     write(ms: MagicString) {
         ms.remove(this.decoratorDef.start, this.decoratorDef.end);
         ms.overwrite(this.decoratorDef.propDef.id.start, this.decoratorDef.propDef.id.end, "_"+this.decoratorDef.propDef.id.name);
-        let buffer = generateProperty(this.decoratorDef.propDef.id.name, "string", `"VALUE!!!"`, this.action, this.forwardTo);
+        let buffer = generateProperty(this.decoratorDef.propDef.id.name, "string", `""`, this.action, this.forwardTo);
         ms.appendRight(this.decoratorDef.propDef.end, buffer);
     }
 }

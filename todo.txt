@@ -1,7 +1,3 @@
-* Favorites/filters:
-  - Favorites should not be saved/remembered
-  > but Favorites is just a filter.
-
 * plugin: template should give warning if attName has uppercase.
 
 * index.html should show empty screen (no splash as this will likely be shown a split second.)

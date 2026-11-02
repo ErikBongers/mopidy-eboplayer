@@ -1,7 +1,7 @@
 import {Buffer} from "./utils";
 
 export function generateProperty(name: string, type: string, value: string, action: string | null, forwardTo: string | null): string {
-    console.log(`PROPERTY ${name}: ${type} = ${value}, action: ${action}, forwardTo: ${forwardTo}`);
+    // console.log(`PROPERTY ${name}: ${type} = ${value}, action: ${action}, forwardTo: ${forwardTo}`);
     let buffer = new Buffer();
     buffer.appendLine(`        get ${name}(): ${type} {`);
     buffer.appendLine(`            return this._${name};`);
@@ -26,6 +26,6 @@ export function generateProperty(name: string, type: string, value: string, acti
 }
 
 export function generateAttribute(name: string, type: string, attList: Set<string>): void {
-    console.log(`ATTRIBUTE ${name}`);
+    // console.log(`ATTRIBUTE ${name}`);
     attList.add(name);
 }
