@@ -105,10 +105,14 @@ function setupStuff() {
     };
     let mopidy = new Mopidy(connectOptions);
     let hostAndPort = getHostAndPort();
-    let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer/ws/`;
+    let protocol =
+        typeof document !== "undefined" && document.location.protocol === "https:"
+            ? "wss://"
+            : "ws://";
+    let wsFrontEndUrl = `${protocol}${hostAndPort}/eboplayer/ws/`;
     let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1000, 64000);
 
-    let wsBackEndUrl = `ws://${hostAndPort}/eboback/ws2/`;
+    let wsBackEndUrl = `${protocol}${hostAndPort}/eboback/ws2/`;
     let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1000, 64000);
 
     let model = new Model();

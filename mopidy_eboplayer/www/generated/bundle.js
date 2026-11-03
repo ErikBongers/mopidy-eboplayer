@@ -7131,11 +7131,6 @@ document.addEventListener("DOMContentLoaded", function() {
 		setupStuff();
 	});
 });
-function connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl) {
-	mopidy.connect();
-	eboWsFrontCtrl.connect();
-	eboWsBackCtrl.connect();
-}
 function setupStuff() {
 	let connectOptions = {
 		webSocketUrl: getWebSocketUrl(),
@@ -7143,9 +7138,10 @@ function setupStuff() {
 	};
 	let mopidy = new Mopidy(connectOptions);
 	let hostAndPort = getHostAndPort();
-	let wsFrontEndUrl = `ws://${hostAndPort}/eboplayer/ws/`;
+	let protocol = typeof document !== "undefined" && document.location.protocol === "https:" ? "wss://" : "ws://";
+	let wsFrontEndUrl = `${protocol}${hostAndPort}/eboplayer/ws/`;
 	let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1e3, 64e3);
-	let wsBackEndUrl = `ws://${hostAndPort}/eboback/ws2/`;
+	let wsBackEndUrl = `${protocol}${hostAndPort}/eboback/ws2/`;
 	let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
 	let model = new Model();
 	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
@@ -7174,6 +7170,11 @@ function setupStuff() {
 	document.addEventListener("focus", () => {
 		connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
 	});
+}
+function connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl) {
+	mopidy.connect();
+	eboWsFrontCtrl.connect();
+	eboWsBackCtrl.connect();
 }
 let rootDir = document.location.pathname.replace("index.html", "");
 
