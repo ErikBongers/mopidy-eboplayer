@@ -1,0 +1,13 @@
+{
+        # Tell Caddy to manage local certs but completely skip local operating system trust installation
+        local_certs {
+                skip_install_trust
+        }
+}
+
+192.168.129.111 {
+        tls internal
+
+        reverse_proxy 192.168.129.111:6680
+
+}
