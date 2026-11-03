@@ -1570,8 +1570,9 @@ var WebProxy = class {
 	ebobackBase;
 	eboplayerBase;
 	constructor(hostAndPort) {
-		this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
-		this.eboplayerBase = `http://${hostAndPort}/eboplayer/action/`;
+		let protocol = document.location.protocol;
+		this.ebobackBase = `${protocol}//${hostAndPort}/eboback/data/`;
+		this.eboplayerBase = `${protocol}//${hostAndPort}/eboplayer/action/`;
 	}
 	playerUrl(relPath) {
 		return new URL(this.eboplayerBase + relPath);
