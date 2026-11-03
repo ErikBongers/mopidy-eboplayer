@@ -36,9 +36,9 @@ class IndexHandler(tornado.web.RequestHandler):
         url = urllib.parse.urlparse(
             f"{self.request.protocol}://{self.request.host}"
         )
-        port = url.port or 80
+        port_str = url.port or ""
         try:
-            ip = socket.getaddrinfo(url.hostname, port)[0][4][0]
+            ip = socket.getaddrinfo(url.hostname, url.port)[0][4][0]
         except Exception:
             ip = url.hostname
 
@@ -46,9 +46,9 @@ class IndexHandler(tornado.web.RequestHandler):
         self.__dict = {
             "websocketUrl": webclient.get_websocket_url(self.request),
             "onTrackClick": webclient.get_default_click_action(),
-            "hostname": url.hostname+":"+str(port),
+            "hostname": (url.hostname+":"+port_str) if port_str else url.hostname,
             "serverIP": ip,
-            "serverPort": port,
+            "serverPort": port_str,
         }
         self.__path = path
         self.__title = string.Template("Mopidy on $hostname")
