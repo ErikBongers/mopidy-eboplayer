@@ -8,8 +8,9 @@ export class WebProxy {
     private eboplayerBase: string;
 
     constructor(hostAndPort: string) {
-        this.ebobackBase = `http://${hostAndPort}/eboback/data/`;
-        this.eboplayerBase = `http://${hostAndPort}/eboplayer/action/`;
+        let protocol = document.location.protocol;
+        this.ebobackBase = `${protocol}//${hostAndPort}/eboback/data/`;
+        this.eboplayerBase = `${protocol}//${hostAndPort}/eboplayer/action/`;
     }
 
     playerUrl(relPath: string) {
