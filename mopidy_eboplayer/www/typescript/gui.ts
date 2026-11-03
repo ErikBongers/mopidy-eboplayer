@@ -133,8 +133,19 @@ function setupStuff() {
     ];
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
+    connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
 
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+        }
+    });
+    document.addEventListener("focus", () => {
+        connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+    });
+}
 
+function connectWebsockets(mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController) {
     mopidy.connect();
     eboWsFrontCtrl.connect();
     eboWsBackCtrl.connect();

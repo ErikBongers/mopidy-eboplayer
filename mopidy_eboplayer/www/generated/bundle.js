@@ -7131,6 +7131,11 @@ document.addEventListener("DOMContentLoaded", function() {
 		setupStuff();
 	});
 });
+function connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl) {
+	mopidy.connect();
+	eboWsFrontCtrl.connect();
+	eboWsBackCtrl.connect();
+}
 function setupStuff() {
 	let connectOptions = {
 		webSocketUrl: getWebSocketUrl(),
@@ -7162,9 +7167,13 @@ function setupStuff() {
 	];
 	views.forEach((v) => v.bindRecursive());
 	controller.initialize(views);
-	mopidy.connect();
-	eboWsFrontCtrl.connect();
-	eboWsBackCtrl.connect();
+	connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+	document.addEventListener("visibilitychange", () => {
+		if (document.visibilityState === "visible") connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+	});
+	document.addEventListener("focus", () => {
+		connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+	});
 }
 let rootDir = document.location.pathname.replace("index.html", "");
 
