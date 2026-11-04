@@ -4,6 +4,9 @@
   > if there clearly is no history, startup at the search screen with albums and radios.
   > if there are favorites, show those
 
+* eboback: Hardware mixer controls bypassed. shown 100 times.
+  > looks like this call is made too often.
+
 
 * Create a solid savedPageState strategy.
   > rename ViewController to PageController.

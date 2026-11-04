@@ -36,7 +36,7 @@ class IndexHandler(tornado.web.RequestHandler):
         url = urllib.parse.urlparse(
             f"{self.request.protocol}://{self.request.host}"
         )
-        port_str = url.port or ""
+        port_str = str(url.port) if url.port else ""
         try:
             ip = socket.getaddrinfo(url.hostname, url.port)[0][4][0]
         except Exception:
