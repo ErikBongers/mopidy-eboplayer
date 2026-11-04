@@ -35,6 +35,25 @@
             </SchemaInfo>
           </value>
         </entry>
+        <entry key="tsconfig.json">
+          <value>
+            <SchemaInfo>
+              <option name="name" value="tsconfig.json" />
+              <option name="relativePathToSchema" value="https://www.schemastore.org/tsconfig.json" />
+              <option name="applicationDefined" value="true" />
+              <option name="patterns">
+                <list>
+                  <Item>
+                    <option name="path" value="mopidy_eboplayer/tsconfig_webworker.json" />
+                  </Item>
+                  <Item>
+                    <option name="path" value="tsconfig_webworker.json" />
+                  </Item>
+                </list>
+              </option>
+            </SchemaInfo>
+          </value>
+        </entry>
       </map>
     </state>
   </component>

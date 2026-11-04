@@ -5,7 +5,8 @@
   "main": "gui.js",
   "type": "module",
   "scripts": {
-    "build": "tsc && rolldown -c"
+    "build": "tsc && rolldown -c",
+    "build_webworker": "tsc --project ./tsconfig_webworker.json &&  rolldown -c rolldown_webworker.config.ts"
   },
   "//": "install rolldown globally or add it to devDependencies",
   "devDependencies": {

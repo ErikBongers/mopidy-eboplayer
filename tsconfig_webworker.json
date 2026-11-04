@@ -1,0 +1,24 @@
+{
+  "files": [
+    "mopidy_eboplayer/www/typescript/serviceWorker.ts"
+  ],
+  "exclude": [],
+  "compilerOptions": {
+    "outDir": "./mopidy_eboplayer/www/generated",
+    "target": "esnext",
+    "sourceMap": true,
+    "noEmit": true,
+    "incremental": false,
+    "moduleResolution": "bundler",
+    "noImplicitOverride": true,
+    "noImplicitThis": true,
+    "noImplicitReturns": true,
+    "noImplicitAny": true,
+    "strict": true,
+    "paths": {
+    },
+    "typeRoots": ["node_modules/@types"],
+    "types": ["node"],
+    "lib": ["WebWorker"]
+  },
+}

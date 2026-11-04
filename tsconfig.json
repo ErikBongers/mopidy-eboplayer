@@ -1,5 +1,4 @@
 {
-    //  "include": ["mopidy_eboplayer/www/typescript/**/*"],
     "files": [
         "mopidy_eboplayer/www/typescript/gui.ts"
     ],

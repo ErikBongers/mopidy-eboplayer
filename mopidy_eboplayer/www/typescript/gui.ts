@@ -55,6 +55,21 @@ export function getWebSocketUrl() {
     return webSocketUrl;
 }
 
+
+function setupServiceWorker() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('/generated/serviceWorker.js')
+            .then(registration => {
+                console.log('Service Worker registered with scope:', registration.scope);
+            })
+            .catch(error => {
+                console.error('Service Worker registration failed:', error);
+            });
+    }
+}
+
+setupServiceWorker();
+
 document.addEventListener("DOMContentLoaded",function () {
     Promise.all([
         fetch(`${rootDir}css/global.css`).then(res => res.text()),
