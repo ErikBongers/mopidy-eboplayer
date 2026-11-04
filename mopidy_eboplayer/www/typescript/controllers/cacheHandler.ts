@@ -8,20 +8,21 @@ import {AllRefs, createAllRefs, ExpandedRef} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
+import {MopidyRepository} from "../proxies/mopidyRepository";
 
 export class CacheHandler extends Commands{
     protected model: Model;
-    public mopidyProxy: MopidyProxy;
+    public mopidyRepository: MopidyRepository;
     public webProxy: WebProxy;
     public localStorageProxy: LocalStorageProxy;
     readonly baseUrl: string;
     protected player: PlayController;
 
-    constructor(model: Model, mopidy: Mopidy, mopdyProxy: MopidyProxy, player: PlayController) {
+    constructor(model: Model, mopidy: Mopidy, mopdyRepository: MopidyRepository, player: PlayController) {
         super(mopidy);
         this.model  = model;
         this.player = player;
-        this.mopidyProxy = mopdyProxy;
+        this.mopidyRepository = mopdyRepository;
         this.webProxy = new WebProxy(getHostAndPort());
         this.localStorageProxy = new LocalStorageProxy(model);
         let portDefs = getHostAndPortDefs();
@@ -43,7 +44,7 @@ export class CacheHandler extends Commands{
     }
 
     private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
-        let dict = await this.mopidyProxy.lookup(uri);
+        let dict = await this.mopidyRepository.lookup(uri);
         let trackList = dict[uri] as models.Track[];
         let newListPromises = trackList.map(async track => this.transformTrackDataToModel(track));
         return await Promise.all(newListPromises);
@@ -99,7 +100,7 @@ export class CacheHandler extends Commands{
     }
 
     private async fetchAlbums(albumUris: AlbumUri[]): Promise<AlbumModel[]> {
-        let dict = await this.mopidyProxy.lookup(albumUris);
+        let dict = await this.mopidyRepository.lookup(albumUris);
         let allRefs = await this.getAllRefsMapCached();
         let albumModelsPending = Object.keys(dict).map(async (albumUri: string) => {
             let trackList = dict[albumUri] as models.Track[];

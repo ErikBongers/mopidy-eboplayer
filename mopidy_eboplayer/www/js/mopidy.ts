@@ -183,8 +183,12 @@ export class Mopidy {
         this.rpcController.connect();
     }
 
-    on(name: MopidyEventName | Function, callback?: any) {
+    on(name: MopidyEventName, callback?: any) {
         this.rpcController?.on(name, callback);
+    }
+
+    supervise(func: (event: string, data: any) => void) {
+        this.rpcController?.supervise(func);
     }
 
     private _configure(options: Options): ResolvedOptions {
@@ -219,7 +223,7 @@ export class Mopidy {
 
     _delegateEvents() {
         this.rpcController.on("websocket:close", (closeEvent: any) => this.onWebSocketClose(closeEvent));
-        this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
+        this.rpcController.on("websocket:open", () => this.onWebsocketOpen());
     }
 
     onWebSocketClose(closeEvent: any) {
@@ -240,8 +244,8 @@ export class Mopidy {
             return this.rpcController?.send({method});
     }
 
-    _onWebsocketOpen() {
-    this.rpcController.emit("state", "state:online");
-    this.rpcController.emit("state:online");
-  }
+    private onWebsocketOpen() {
+        this.rpcController.emit("state", "state:online");
+        this.rpcController.emit("state:online");
+    }
 }

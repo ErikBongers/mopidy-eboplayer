@@ -1,12 +1,13 @@
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {AllUris, MopidyHistoryLine, HistoryRef, ImageLookup, PlaylistUri, PlaybackFlags} from "../modelTypes";
+import {AllUris, HistoryRef, ImageLookup, MopidyHistoryLine, PlaybackFlags, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
+import {MopidyRepository} from "./mopidyRepository";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 
-export class MopidyProxy {
+export class MopidyProxy implements MopidyRepository {
     private commands: Commands;
 
     constructor(commands: Commands) {
@@ -59,7 +60,7 @@ export class MopidyProxy {
         return await this.commands.core.library.lookup(uris);
     }
 
-    async fetchTracklist(): Promise< TlTrack[]> {
+    async fetchTracklist(): Promise<TlTrack[]> {
         return await this.commands.core.tracklist.getTlTracks();
     }
 
@@ -103,7 +104,7 @@ export class MopidyProxy {
         return await this.commands.core.playlists.asList() as Ref<PlaylistUri>[];
     }
 
-    async fetchPlaylistItems(uri: string) {
+    async fetchPlaylistItems(uri: string): Promise<models.Ref<AllUris>[] | null> {
         return await this.commands.core.playlists.getItems(uri);
     }
 

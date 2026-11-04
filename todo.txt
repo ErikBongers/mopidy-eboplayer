@@ -1,3 +1,23 @@
+* Create proxies...for the proxies
+  > call the repos?
+    > or rename the proxies to Interface or Api?
+  > create interfaces:
+    > Call the WebProxy,...
+      > call the implementations WebRepo, where the Repo calls the proxy and caches to the IndexedDb, or WebOfflineRepo
+        > WebOnlineRepo
+        > WebOfflineRepo
+
+WebRepo interface
+
+* Startup sequence:
+  - 'state:online'
+        this.model.setConnectionState(ConnectionState.Online);
+        await this.getInitialData(views);
+        this.model.setHistory(await this.webProxy.fetchHistory());
+        this.viewController.setInitialView();
+
+
+
 * start making app offline.
   > see updateOnlineStatus() in gui.ts
 

@@ -34,6 +34,7 @@ import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
+import {MopidyRepository} from "../proxies/mopidyRepository";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -42,7 +43,7 @@ export const LIBRARY_PROTOCOL = "eboback:";
 //The controller should not listen to model events, to avoid circular updates (dead loops).
 class Controller extends Commands {
     protected model: Model;
-    public mopidyProxy: MopidyProxy;
+    public mopidyProxy: MopidyRepository;
     public webProxy: WebProxy;
     public localStorageProxy: LocalStorageProxy;
     private eboWsFrontCtrl: JsonRpcController;
@@ -52,12 +53,12 @@ class Controller extends Commands {
     viewController: ViewController;
     browseController: BrowseController;
 
-    constructor(model: Model, mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController, mopdyProxy: MopidyProxy, player: PlayController, cache: CacheHandler) {
+    constructor(model: Model, mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController, mopdyRepository: MopidyRepository, player: PlayController, cache: CacheHandler) {
         super(mopidy);
         this.cache = cache;
         this.model  = model;
         this.player = player;
-        this.mopidyProxy = mopdyProxy;
+        this.mopidyProxy = mopdyRepository;
         this.webProxy = new WebProxy(getHostAndPort());
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWsFrontCtrl = eboWsFrontCtrl;
@@ -147,7 +148,8 @@ class Controller extends Commands {
         });
 
         //log all events:
-        this.mopidy.on((data: any) => {
+        this.mopidy.supervise((event: string, data: any) => {
+            console.log(`mopidy event ${event}:`, data);
             if(data instanceof MessageEvent) {
                 try {
                     let dataObject = JSON.parse(data.data);
@@ -172,7 +174,7 @@ class Controller extends Commands {
         this.eboWsFrontCtrl.on("event:programTitleChanged", (data: {program_title: string}) => {
             this.model.setCurrentProgramTitle(data.program_title);
         });
-        this.eboWsBackCtrl.on((data: any) => {
+        this.eboWsBackCtrl.supervise((data: any) => {
         });
         this.eboWsBackCtrl.on("event:scanStarted", (data: any) => {
             this.model.setScanStatus({type: data.type, message: data.message});

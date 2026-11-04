@@ -12,18 +12,16 @@ export class EventEmitter {
                 setTimeout(() => callback.call(this, ...data), 0);
             });
         this.supervisors.forEach(callback => {
-            setTimeout(() => callback.call(this, ...data), 0);
+            setTimeout(() => callback.call(this, eventName, ...data), 0);
         });
     }
 
-    on(name: string | Function, callback?: any) { //todo: make callback type more specific?
-        if (typeof name === 'string' && typeof callback === 'function') {
-            this.listeners.push({name, callback});
-            return;
-        }
-        if (typeof name === 'function') {
-            this.supervisors.push(name);
-        }
+    on(event: string, callback?: any) { //todo: make callback type more specific?
+        this.listeners.push({name: event, callback});
+    }
+
+    supervise(callback: (event: string, data: any) => void) { //todo: make callback type more specific?
+        this.supervisors.push(callback);
     }
 
     off(eventName: string, callback: any) {

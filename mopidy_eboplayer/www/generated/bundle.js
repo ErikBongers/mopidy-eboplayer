@@ -7,18 +7,17 @@ var EventEmitter = class {
 			setTimeout(() => callback.call(this, ...data), 0);
 		});
 		this.supervisors.forEach((callback) => {
-			setTimeout(() => callback.call(this, ...data), 0);
+			setTimeout(() => callback.call(this, eventName, ...data), 0);
 		});
 	}
-	on(name, callback) {
-		if (typeof name === "string" && typeof callback === "function") {
-			this.listeners.push({
-				name,
-				callback
-			});
-			return;
-		}
-		if (typeof name === "function") this.supervisors.push(name);
+	on(event, callback) {
+		this.listeners.push({
+			name: event,
+			callback
+		});
+	}
+	supervise(callback) {
+		this.supervisors.push(callback);
 	}
 	off(eventName, callback) {
 		this.removeListener(eventName, callback);
@@ -263,6 +262,9 @@ var Mopidy = class {
 	on(name, callback) {
 		this.rpcController?.on(name, callback);
 	}
+	supervise(func) {
+		this.rpcController?.supervise(func);
+	}
 	_configure(options) {
 		let defaultOptions = {
 			backoffDelayMin: 1e3,
@@ -285,7 +287,7 @@ var Mopidy = class {
 	}
 	_delegateEvents() {
 		this.rpcController.on("websocket:close", (closeEvent) => this.onWebSocketClose(closeEvent));
-		this.rpcController.on("websocket:open", () => this._onWebsocketOpen());
+		this.rpcController.on("websocket:open", () => this.onWebsocketOpen());
 	}
 	onWebSocketClose(closeEvent) {
 		this.rpcController.emit("state", "state:offline");
@@ -301,7 +303,7 @@ var Mopidy = class {
 		});
 		else return this.rpcController?.send({ method });
 	}
-	_onWebsocketOpen() {
+	onWebsocketOpen() {
 		this.rpcController.emit("state", "state:online");
 		this.rpcController.emit("state:online");
 	}
@@ -1978,12 +1980,12 @@ var Controller = class extends Commands {
 	cache;
 	viewController;
 	browseController;
-	constructor(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopdyProxy, player, cache) {
+	constructor(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopdyRepository, player, cache) {
 		super(mopidy);
 		this.cache = cache;
 		this.model = model;
 		this.player = player;
-		this.mopidyProxy = mopdyProxy;
+		this.mopidyProxy = mopdyRepository;
 		this.webProxy = new WebProxy(getHostAndPort());
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWsFrontCtrl = eboWsFrontCtrl;
@@ -2046,7 +2048,8 @@ var Controller = class extends Commands {
 			await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTrack());
 		});
 		this.mopidy.on("event:seeked", () => {});
-		this.mopidy.on((data) => {
+		this.mopidy.supervise((event, data) => {
+			console.log(`mopidy event ${event}:`, data);
 			if (data instanceof MessageEvent) try {
 				if ((JSON.parse(data.data).event ?? "") == "stream_title_changed") return;
 			} catch (e) {}
@@ -2065,7 +2068,7 @@ var Controller = class extends Commands {
 		this.eboWsFrontCtrl.on("event:programTitleChanged", (data) => {
 			this.model.setCurrentProgramTitle(data.program_title);
 		});
-		this.eboWsBackCtrl.on((data) => {});
+		this.eboWsBackCtrl.supervise((data) => {});
 		this.eboWsBackCtrl.on("event:scanStarted", (data) => {
 			this.model.setScanStatus({
 				type: data.type,
@@ -4147,26 +4150,26 @@ var EboMenuButton = class EboMenuButton extends EboComponent {
 //#region mopidy_eboplayer/www/typescript/controllers/playController.ts
 var PlayController = class {
 	model;
-	mopidyProxy;
-	constructor(model, mopidyProxy) {
+	mopidyRepository;
+	constructor(model, mopidyRepository) {
 		this.model = model;
-		this.mopidyProxy = mopidyProxy;
+		this.mopidyRepository = mopidyRepository;
 	}
 	async clear() {
-		await this.mopidyProxy.clearTrackList();
+		await this.mopidyRepository.clearTrackList();
 		this.model.setTrackList([]);
 	}
 	async clearAndPlay(uris) {
-		await this.mopidyProxy.clearTrackList();
+		await this.mopidyRepository.clearTrackList();
 		let trackList = await this.add(uris);
 		await this.play(trackList[0].tlid);
 	}
 	async play(tlid = void 0) {
 		tlid = tlid ?? this.model.getTrackList()[0].tlid;
-		await this.mopidyProxy.playTracklistItem(tlid);
+		await this.mopidyRepository.playTracklistItem(tlid);
 	}
 	async add(uris) {
-		let tracks = await this.mopidyProxy.addTracksToTracklist(uris);
+		let tracks = await this.mopidyRepository.addTracksToTracklist(uris);
 		this.model.addToTrackList(tracks);
 		return tracks;
 	}
@@ -5690,16 +5693,16 @@ var RememberedView = class extends ComponentView {
 //#region mopidy_eboplayer/www/typescript/controllers/cacheHandler.ts
 var CacheHandler = class extends Commands {
 	model;
-	mopidyProxy;
+	mopidyRepository;
 	webProxy;
 	localStorageProxy;
 	baseUrl;
 	player;
-	constructor(model, mopidy, mopdyProxy, player) {
+	constructor(model, mopidy, mopdyRepository, player) {
 		super(mopidy);
 		this.model = model;
 		this.player = player;
-		this.mopidyProxy = mopdyProxy;
+		this.mopidyRepository = mopdyRepository;
 		this.webProxy = new WebProxy(getHostAndPort());
 		this.localStorageProxy = new LocalStorageProxy(model);
 		let portDefs = getHostAndPortDefs();
@@ -5715,7 +5718,7 @@ var CacheHandler = class extends Commands {
 		return this.model.getFromLibraryCache(trackUri);
 	}
 	async fetchAndConvertTracks(uri) {
-		let newListPromises = (await this.mopidyProxy.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
+		let newListPromises = (await this.mopidyRepository.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
 		return await Promise.all(newListPromises);
 	}
 	async transformTrackDataToModel(track) {
@@ -5757,7 +5760,7 @@ var CacheHandler = class extends Commands {
 		return albums;
 	}
 	async fetchAlbums(albumUris) {
-		let dict = await this.mopidyProxy.lookup(albumUris);
+		let dict = await this.mopidyRepository.lookup(albumUris);
 		let allRefs = await this.getAllRefsMapCached();
 		let albumModelsPending = Object.keys(dict).map(async (albumUri) => {
 			let trackList = dict[albumUri];
@@ -7103,6 +7106,21 @@ function getWebSocketUrl() {
 	if (webSocketUrl == "") return null;
 	return webSocketUrl;
 }
+function setupServiceWorker() {
+	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceWorker.js").then((registration) => {
+		console.log("Service Worker registered with scope:", registration.scope);
+	}).catch((error) => {
+		console.error("Service Worker registration failed:", error);
+	});
+}
+setupServiceWorker();
+function updateOnlineStatus() {
+	if (navigator.onLine) console.log("App is online. Attempting WebSocket connection to Mopidy...");
+	else console.log("App is offline. Switching UI to read-only mode...");
+}
+window.addEventListener("online", updateOnlineStatus);
+window.addEventListener("offline", updateOnlineStatus);
+updateOnlineStatus();
 document.addEventListener("DOMContentLoaded", function() {
 	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((texts) => {
 		EboComponent.setGlobalCss(texts);
@@ -7145,10 +7163,10 @@ function setupStuff() {
 	let wsBackEndUrl = `${protocol}${hostAndPort}/eboback/ws2/`;
 	let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
 	let model = new Model();
-	let mopidyProxy = new MopidyProxy(new Commands(mopidy));
-	let player = new PlayController(model, mopidyProxy);
-	let cacheHandler = new CacheHandler(model, mopidy, mopidyProxy, player);
-	let controller = new controller_default(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyProxy, player, cacheHandler);
+	let mopidyRepository = new MopidyProxy(new Commands(mopidy));
+	let player = new PlayController(model, mopidyRepository);
+	let cacheHandler = new CacheHandler(model, mopidy, mopidyRepository, player);
+	let controller = new controller_default(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyRepository, player, cacheHandler);
 	let state = new State(mopidy, model, controller, player, cacheHandler);
 	let views = [
 		new BrowseView(state, document.getElementById("Browse")),
