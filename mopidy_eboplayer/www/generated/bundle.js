@@ -327,7 +327,7 @@ function getHostAndPort() {
 	return hostDefs.altHost ?? hostDefs.host;
 }
 function getBaseUrl() {
-	return `http://${getHostAndPort()}`;
+	return `${document.location.protocol}//${getHostAndPort()}`;
 }
 function getHostAndPortDefs() {
 	let altHostName = document.body.dataset.hostname ?? null;
@@ -7181,7 +7181,7 @@ function getWebSocketUrl() {
 	return webSocketUrl;
 }
 function setupServiceWorker() {
-	if ("serviceWorker" in navigator) navigator.serviceWorker.register("/serviceWorker.js").then((registration) => {
+	if ("serviceWorker" in navigator) navigator.serviceWorker.register("serviceWorker.js").then((registration) => {
 		console.log("Service Worker registered with scope:", registration.scope);
 	}).catch((error) => {
 		console.error("Service Worker registration failed:", error);

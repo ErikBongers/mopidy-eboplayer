@@ -27,7 +27,7 @@ export function getHostAndPort() {
 }
 
 export function getBaseUrl() {
-    return `http://${getHostAndPort()}`;
+    return `${document.location.protocol}//${getHostAndPort()}`;
 }
 
 export function getHostAndPortDefs() {
