@@ -4,7 +4,7 @@
   ],
   "exclude": [],
   "compilerOptions": {
-    "outDir": "./mopidy_eboplayer/www/generated",
+    "outDir": "./mopidy_eboplayer/www",
     "target": "esnext",
     "sourceMap": true,
     "noEmit": true,
