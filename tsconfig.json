@@ -5,7 +5,7 @@
     "exclude": [],
     "compilerOptions": {
         "outDir": "./mopidy_eboplayer/www/generated",
-        "target": "es2021",
+        "target": "esnext",
         "sourceMap": true,
         "noEmit": true,
         "incremental": false,
