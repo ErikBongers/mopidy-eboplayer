@@ -8,7 +8,7 @@ import {AllRefs, createAllRefs, ExpandedRef} from "../refs";
 import {AlbumModel, AlbumUri, AllUris, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
-import {MopidyRepository} from "../proxies/mopidyRepository";
+import {MopidyRepository} from "../repositories/mopidyRepository";
 
 export class CacheHandler extends Commands{
     protected model: Model;

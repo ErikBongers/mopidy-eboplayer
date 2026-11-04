@@ -2,7 +2,7 @@ import {Model} from "../model";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import models, {TlId} from "../../js/mopidy";
 import {AllUris} from "../modelTypes";
-import {MopidyRepository} from "../proxies/mopidyRepository";
+import {MopidyRepository} from "../repositories/mopidyRepository";
 
 export class PlayController {
     protected model: Model;

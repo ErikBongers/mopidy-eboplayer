@@ -44,7 +44,8 @@ import {SettingsView} from "./views/settingsView";
 import {View} from "./views/view";
 import {BrowseController} from "./controllers/browseController";
 import {EboTracklistComp} from "./components/eboTracklistComp";
-import {MopidyRepository} from "./proxies/mopidyRepository";
+import {MopidyRepository} from "./repositories/mopidyRepository";
+import {MopidyOnlineRepository} from "./repositories/MopidyOnlineRepository";
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -153,7 +154,7 @@ function setupStuff() {
     let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1000, 64000);
 
     let model = new Model();
-    let mopidyRepository: MopidyRepository = new MopidyProxy(new Commands(mopidy));
+    let mopidyRepository: MopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
     let player = new PlayController(model, mopidyRepository);
     let cacheHandler = new CacheHandler(model, mopidy, mopidyRepository, player);
     let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyRepository, player, cacheHandler);

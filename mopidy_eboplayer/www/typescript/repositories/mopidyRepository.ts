@@ -5,8 +5,6 @@ import TlTrack = models.TlTrack;
 import Playlist = models.Playlist;
 
 export interface MopidyRepository {
-    fetchRootDirs(): Promise<any>;
-
     playTracklistItem(tlid: number): Promise<void>;
 
     addTracksToTracklist(uris: AllUris[]): Promise<any>;

@@ -4182,9 +4182,6 @@ var MopidyProxy = class {
 	constructor(commands) {
 		this.commands = commands;
 	}
-	async fetchRootDirs() {
-		return this.browse(null);
-	}
 	async playTracklistItem(tlid) {
 		await this.commands.core.playback.play(tlid);
 	}
@@ -7099,6 +7096,83 @@ var EboTracklistComp = class EboTracklistComp extends EboComponent {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/repositories/MopidyOnlineRepository.ts
+var MopidyOnlineRepository = class {
+	constructor(mopidyProxy) {
+		this.mopidyProxy = mopidyProxy;
+	}
+	playTracklistItem(tlid) {
+		return this.mopidyProxy.playTracklistItem(tlid);
+	}
+	addTracksToTracklist(uris) {
+		return this.mopidyProxy.addTracksToTracklist(uris);
+	}
+	clearTrackList() {
+		return this.mopidyProxy.clearTrackList();
+	}
+	browse(uri) {
+		return this.mopidyProxy.browse(uri);
+	}
+	sendVolume(value) {
+		return this.mopidyProxy.sendVolume(value);
+	}
+	sendStop() {
+		return this.mopidyProxy.sendStop();
+	}
+	sendPause() {
+		return this.mopidyProxy.sendPause();
+	}
+	sendPlay() {
+		return this.mopidyProxy.sendPlay();
+	}
+	search(uri) {
+		return this.mopidyProxy.search(uri);
+	}
+	lookup(uris) {
+		return this.mopidyProxy.lookup(uris);
+	}
+	fetchTracklist() {
+		return this.mopidyProxy.fetchTracklist();
+	}
+	fetchHistory() {
+		return this.mopidyProxy.fetchHistory();
+	}
+	fetchCurrentTrack() {
+		return this.mopidyProxy.fetchCurrentTrack();
+	}
+	fetchPlayLists() {
+		return this.mopidyProxy.fetchPlayLists();
+	}
+	fetchPlaylistItems(uri) {
+		return this.mopidyProxy.fetchPlaylistItems(uri);
+	}
+	fetchImages(uris) {
+		return this.mopidyProxy.fetchImages(uris);
+	}
+	fetchVolume() {
+		return this.mopidyProxy.fetchVolume();
+	}
+	fetchCurrentTlTrack() {
+		return this.mopidyProxy.fetchCurrentTlTrack();
+	}
+	fetchPlayState() {
+		return this.mopidyProxy.fetchPlayState();
+	}
+	savePlaylist(playlist) {
+		return this.mopidyProxy.savePlaylist(playlist);
+	}
+	setRepeat(repeat) {
+		return this.mopidyProxy.setRepeat(repeat);
+	}
+	setSingle(single) {
+		return this.mopidyProxy.setSingle(single);
+	}
+	getPlaybackFlags() {
+		return this.mopidyProxy.getPlaybackFlags();
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -7163,7 +7237,7 @@ function setupStuff() {
 	let wsBackEndUrl = `${protocol}${hostAndPort}/eboback/ws2/`;
 	let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
 	let model = new Model();
-	let mopidyRepository = new MopidyProxy(new Commands(mopidy));
+	let mopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
 	let player = new PlayController(model, mopidyRepository);
 	let cacheHandler = new CacheHandler(model, mopidy, mopidyRepository, player);
 	let controller = new controller_default(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyRepository, player, cacheHandler);

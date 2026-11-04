@@ -34,7 +34,7 @@ import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
-import {MopidyRepository} from "../proxies/mopidyRepository";
+import {MopidyRepository} from "../repositories/mopidyRepository";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 

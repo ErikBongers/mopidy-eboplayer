@@ -1,6 +1,6 @@
 {
   "short_name": "Eboplayer",
-  "name": "Mopidy Eboplayer PWA Client",
+  "name": "Eboplayer",
   "description": "Custom read-only offline-capable client for Mopidy Eboplayer",
   "icons": [
     {

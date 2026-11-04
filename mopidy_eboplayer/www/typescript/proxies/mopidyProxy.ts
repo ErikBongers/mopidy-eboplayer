@@ -2,7 +2,7 @@ import {Commands} from "../commands";
 import models from "../../js/mopidy";
 import {AllUris, HistoryRef, ImageLookup, MopidyHistoryLine, PlaybackFlags, PlaylistUri} from "../modelTypes";
 import {SearchResult} from "../refs";
-import {MopidyRepository} from "./mopidyRepository";
+import {MopidyRepository} from "../repositories/mopidyRepository";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
@@ -12,10 +12,6 @@ export class MopidyProxy implements MopidyRepository {
 
     constructor(commands: Commands) {
         this.commands = commands;
-    }
-
-    async fetchRootDirs() {
-        return this.browse(null);
     }
 
     async playTracklistItem(tlid: number) {
