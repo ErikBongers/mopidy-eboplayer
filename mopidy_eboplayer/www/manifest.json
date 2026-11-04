@@ -4,17 +4,17 @@
   "description": "Custom read-only offline-capable client for Mopidy Eboplayer",
   "icons": [
     {
-      "src": "/images/icons/eboplayer-192.png",
+      "src": "images/icons/eboplayer-192.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "/images/icons/eboplayer-512.png",
+      "src": "images/icons/eboplayer-512.png",
       "type": "image/png",
       "sizes": "512x512"
     }
   ],
-  "start_url": "/index.html",
+  "start_url": "/eboplayer/index.html",
   "background_color": "#121212",
   "theme_color": "#121212",
   "display": "standalone",
