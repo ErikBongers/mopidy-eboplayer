@@ -1,5 +1,15 @@
+* WIP: startup tries to load: https://192.168.129.111/eboplayer/%7Bimg%7D
+  > {img}  -> placeholder!!
+  > replace placeholder with default text
+
 * MopidyOnlineRepository:
   > what to save to IndexedDb?
+    > perhaps current track, so the app has a 'snapshot' of how it last was live?
+    > tracklist
+    > images?
+      > for now, nothing, then the thumbnails, and perhaps (and optionally!) the big files
+        > this way on a phone this can be set to "don't store big images offline"
+    >...save everything, even play state, in case of a temporary offline.
 
 
 * Startup sequence:
@@ -25,9 +35,6 @@
 
 * move mopidy.ts to lib or something.
   > instead of /js
-
-* startup tries to load: https://192.168.129.111/eboplayer/%7Bimg%7D
-  > {img}  -> placeholder!!
 
 * Create a solid savedPageState strategy.
   > rename ViewController to PageController.

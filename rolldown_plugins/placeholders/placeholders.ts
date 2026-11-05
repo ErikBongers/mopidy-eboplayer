@@ -1,6 +1,7 @@
 import {ElementDef, Parser} from "htmlparserts/parser";
 import {PeekingTokenizer} from "htmlparserts/PeekingTokenizer";
-import {HtmlTokenizer} from "htmlparserts/HtmlTokenizer";
+import {getText, HtmlTokenizer, isToken, Token} from "htmlparserts/HtmlTokenizer";
+import {Tokenizer} from "htmlparserts/tokenizer";
 
 export type PlaceHolderType = "content" | "attribute";
 export interface PlaceHolder {
@@ -32,17 +33,21 @@ export function createPlaceHolders(code: string) {
 }
 
 function addPlaceHolder(element: ElementDef, placeHolders: PlaceHolder[]): void {
-    let id = element.attributes.get("id");
+    let attDef = element.attributes.get("id");
+    let id = attDef == null ? null : (attDef.value == null ? null : getText(attDef.value));
     // generate attribute placeholders.
     for (let [attributeName, attrValue] of element.attributes) {
-        if (attrValue.includes("{")) {
-            if (id == null)
+        if (attrValue.value == null)
+            continue;
+        let attrValueText = getText(attrValue.value);
+        if (attrValueText.includes("{")) {
+            if (attDef == null)
                 throw new Error("Element must have an id to use placeholders.");
             placeHolders.push(
                 ...createTextPlaceholders(
-                    attrValue,
+                    attrValue.value,
                     "attribute",
-                    id,
+                    id??"--no id--",
                     -1,
                     attributeName,
                 )
@@ -51,12 +56,12 @@ function addPlaceHolder(element: ElementDef, placeHolders: PlaceHolder[]): void 
     }
     // generate content placeholders.
     for (let [i, node] of element.nodes.entries()) {
-        if (typeof node == "string") {
+        if (isToken(node)) {
             placeHolders.push(
                 ...createTextPlaceholders(
                     node,
                     "content",
-                    id,
+                    id??"--no id--",
                     i,
                     "",
                 )
@@ -67,8 +72,8 @@ function addPlaceHolder(element: ElementDef, placeHolders: PlaceHolder[]): void 
     }
 }
 
-function createTextPlaceholders(text: string, type: PlaceHolderType, elementId: string | undefined, nodeIndex: number, attributeName: string): PlaceHolder[] {
-
+function createTextPlaceholders(token: Token, type: PlaceHolderType, elementId: string | undefined, nodeIndex: number, attributeName: string): PlaceHolder[] {
+    let text = token.cursor.getText(token.pos, token.length);
     if (!text.includes("{")) {
         return [];
     }
