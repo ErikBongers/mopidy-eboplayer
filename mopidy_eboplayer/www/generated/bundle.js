@@ -3724,20 +3724,20 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
             <div id="top">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" src="{img}" alt="Album cover"/>
+                        <img id="img" src="images/empty.png" alt="Album cover"/>
                     </div>
         
                     <div id="info">
                         <h3 id="text" class="selectable"></h3>
                         <h3 class="selectable flexRow">
-                            <div id="name" class="selectable flexGrow">{name}</div>
+                            <div id="name" class="selectable flexGrow"></div>
                             <ebo-button id="btnFavorite" toggle>
                                 <i slot="off" class="fa fa-heart-o"></i>
                                 <i slot="on" class="fa fa-heart" style="color: var(--highlight-color);"></i>                            
                             </ebo-button>
                         </h3>
                         <div id="stream_lines" class="selectable info"></div>
-                        <div id="extra" class="selectable info">{extra}</div>
+                        <div id="extra" class="selectable info"></div>
                     </div>
                 </div>
                 <div id="back">
@@ -6067,8 +6067,8 @@ var EboGenresComp = class EboGenresComp extends EboComponent {
 	static htmlText = template`
         <div id="wrapper" class="flexColumn">
             <div id="header">
-                <h3 id="headerText" class="mb-0">{album_title}</h3>
-                <label id="genres" class="text-sm">{album_genres}</label>
+                <h3 id="headerText" class="mb-0"></h3>
+                <label id="genres" class="text-sm"></label>
             </div>
             <div class="flexRow">
                 <ebo-button data-level="1" toggle><div id="lvl1" class="squircleButton" style="margin-inline-end: .2rem;">1</div></ebo-button>            
@@ -6721,19 +6721,19 @@ var EboNowPlayingComp = class EboNowPlayingComp extends EboComponent {
             <div id="hero" class="front">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" src="{img}" alt="Album cover"/>
+                        <img id="img" src="" alt="Album cover"/>
                         <ebo-progressbar position="40" active="false" button="false"></ebo-progressbar>
                     </div>
         
                     <div id="info">
                         <h3 id="albumTitle" class="selectable"></h3>
-                        <h3 id="name" class="selectable">{name}</h3>
-                        <div id="stream_lines" class="selectable nl info">{stream_lines}</div>
-                        <div id="extra" class="selectable info">{extra}</div>
+                        <h3 id="name" class="selectable"></h3>
+                        <div id="stream_lines" class="selectable nl info"></div>
+                        <div id="extra" class="selectable info"></div>
                     </div>
                 </div>
             </div>
-            <div id="tracklist" class="flex scroll {hide_tracklist?hidden}">
+            <div id="tracklist" class="flex scroll ">
                 <ebo-tracklist-view id="tracklistView"></ebo-tracklist-view>            
             </div>  
         </div>

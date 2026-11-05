@@ -26,11 +26,11 @@ function generatePlaceHolderCode(className: string, placeholders: PlaceHolder[],
         buffer.appendLine(`           if(updater != null) {`);
         buffer.appendLine(`               value = updater(value, shadow, el);`);
         buffer.appendLine(`           }`);
-        if(placeholder.trueValue) {
+        if(placeholder.placeHolderParts.trueValue) {
             buffer.appendLine(`           if(value == "true")`);
-            buffer.appendLine(`               value = "${placeholder.trueValue}";`);
+            buffer.appendLine(`               value = "${placeholder.placeHolderParts.trueValue}";`);
             buffer.appendLine(`           else`);
-            buffer.appendLine(`               value = "${placeholder.falseValue??""}"??value;`);
+            buffer.appendLine(`               value = "${placeholder.placeHolderParts.falseValue??""}"??value;`);
         }
         if(placeholder.type == "content") {
             buffer.appendLine(`           node = el.childNodes.item(${placeholder.nodeIndex});`);

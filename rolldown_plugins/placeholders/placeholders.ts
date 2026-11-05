@@ -13,8 +13,7 @@ export interface PlaceHolder {
     nodeIndex: number;  //todo: make this depend on type.
     attributeName: string; //todo: make this depend on type.
     textParts: string[]; //place placeholder text in between each array item.
-    trueValue: string | null;
-    falseValue: string | null;
+    placeHolderParts: PlaceHolderParts;
 }
 
 export function createPlaceHolders(code: string) {
@@ -90,15 +89,14 @@ function createTextPlaceholders(token: Token, type: PlaceHolderType, elementId: 
         let placeHolderParts = parsePlaceHolder(placeHolder);
         placeholders.push({
             placeHolderId: placeHolderParts.placeHolderId,
-            pos: match.index,
+            pos: token.pos + match.index,
             length: match[0].length,
             elementId,
             type,
             nodeIndex,
             attributeName,
             textParts: text.split(match[0]),
-            trueValue: placeHolderParts.trueValue,
-            falseValue: placeHolderParts.falseValue,
+            placeHolderParts: placeHolderParts
         });
     }
 
@@ -109,15 +107,18 @@ interface PlaceHolderParts {
     placeHolderId: string;
     trueValue: string | null;
     falseValue: string | null;
+    defaultValue: string | null;
 }
 function parsePlaceHolder(placeHolder: string): PlaceHolderParts {
-    let parts = placeHolder.split("?");
+    let defaultSplit = placeHolder.split("=");
+    let defaultValue = defaultSplit.length > 1 ? defaultSplit[1] : null;
+    let parts = defaultSplit[0].split("?");
     if (parts.length == 1) {
-        return {placeHolderId: parts[0], trueValue: null, falseValue: null};
+        return {placeHolderId: parts[0], trueValue: null, falseValue: null, defaultValue};
     }
     let parts2 = parts[1].split(":");
     if (parts2.length == 1) {
-        return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: null};
+        return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: null, defaultValue};
     }
-    return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: parts2[1]};
+    return {placeHolderId: parts[0], trueValue: parts2[0], falseValue: parts2[1], defaultValue};
 }

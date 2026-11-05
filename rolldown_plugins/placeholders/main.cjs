@@ -166928,36 +166928,40 @@ function createTextPlaceholders(token, type, elementId, nodeIndex, attributeName
 		let placeHolderParts = parsePlaceHolder(placeHolder);
 		placeholders.push({
 			placeHolderId: placeHolderParts.placeHolderId,
-			pos: match$1.index,
+			pos: token.pos + match$1.index,
 			length: match$1[0].length,
 			elementId,
 			type,
 			nodeIndex,
 			attributeName,
 			textParts: text.split(match$1[0]),
-			trueValue: placeHolderParts.trueValue,
-			falseValue: placeHolderParts.falseValue
+			placeHolderParts
 		});
 	}
 	return placeholders;
 }
 function parsePlaceHolder(placeHolder) {
-	let parts = placeHolder.split("?");
+	let defaultSplit = placeHolder.split("=");
+	let defaultValue = defaultSplit.length > 1 ? defaultSplit[1] : null;
+	let parts = defaultSplit[0].split("?");
 	if (parts.length == 1) return {
 		placeHolderId: parts[0],
 		trueValue: null,
-		falseValue: null
+		falseValue: null,
+		defaultValue
 	};
 	let parts2 = parts[1].split(":");
 	if (parts2.length == 1) return {
 		placeHolderId: parts[0],
 		trueValue: parts2[0],
-		falseValue: null
+		falseValue: null,
+		defaultValue
 	};
 	return {
 		placeHolderId: parts[0],
 		trueValue: parts2[0],
-		falseValue: parts2[1]
+		falseValue: parts2[1],
+		defaultValue
 	};
 }
 
@@ -167017,11 +167021,11 @@ function generatePlaceHolderCode(className, placeholders, buffer) {
 		buffer.appendLine(`           if(updater != null) {`);
 		buffer.appendLine(`               value = updater(value, shadow, el);`);
 		buffer.appendLine(`           }`);
-		if (placeholder.trueValue) {
+		if (placeholder.placeHolderParts.trueValue) {
 			buffer.appendLine(`           if(value == "true")`);
-			buffer.appendLine(`               value = "${placeholder.trueValue}";`);
+			buffer.appendLine(`               value = "${placeholder.placeHolderParts.trueValue}";`);
 			buffer.appendLine(`           else`);
-			buffer.appendLine(`               value = "${placeholder.falseValue ?? ""}"??value;`);
+			buffer.appendLine(`               value = "${placeholder.placeHolderParts.falseValue ?? ""}"??value;`);
 		}
 		if (placeholder.type == "content") {
 			buffer.appendLine(`           node = el.childNodes.item(${placeholder.nodeIndex});`);
@@ -167295,13 +167299,17 @@ var TemplateState = class extends MachineState {
 		this.pos = node.range[0] + 1;
 		this.end = node.range[1] - 1;
 		this.templateString = state.code.substring(this.pos, this.end);
-		console.log(`templateString: [[${this.templateString}]]`);
 	}
 	write(ms) {
 		if (this.templateString != null) {
 			let placeHolders = createPlaceHolders(this.templateString);
 			let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, placeHolders);
 			ms.appendLeft(this.templateDef.propDef.classDef.end - 1, buffer + "\n");
+			for (let placeholder of placeHolders) {
+				let start = this.pos + placeholder.pos;
+				let end = start + placeholder.length;
+				ms.overwrite(start, end, placeholder.placeHolderParts.defaultValue ?? "");
+			}
 			this.templateDef.propDef.classDef.placeHolderIds = placeHolders.map((ph) => ph.placeHolderId);
 		}
 	}

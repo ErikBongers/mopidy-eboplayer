@@ -210,7 +210,6 @@ class TemplateState extends MachineState {
         this.pos = node.range[0]+1;
         this.end = node.range[1]-1;
         this.templateString = state.code.substring(this.pos, this.end);
-        console.log(`templateString: [[${this.templateString}]]`);
     }
 
     write(ms: MagicString) {
@@ -218,9 +217,11 @@ class TemplateState extends MachineState {
             let placeHolders = createPlaceHolders(this.templateString);
             let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, placeHolders);
             ms.appendLeft(this.templateDef.propDef.classDef.end-1, buffer + "\n");
-            // for(let placeholder of placeHolders) {
-            //     ms.overwrite(placeholder.placeHolderId.end, ` = ${placeholder.placeHolderId.name};\n`);
-            // }
+            for(let placeholder of placeHolders) {
+                let start = this.pos + placeholder.pos;
+                let end = start + placeholder.length;
+                ms.overwrite(start, end, placeholder.placeHolderParts.defaultValue??"");
+            }
 
             this.templateDef.propDef.classDef.placeHolderIds = placeHolders.map(ph => ph.placeHolderId);
         }

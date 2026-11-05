@@ -98,7 +98,7 @@ export class EboBigAlbumComp extends EboComponent {
             <div id="top">
                 <div id="front">
                     <div class="albumCoverContainer">
-                        <img id="img" src="{img}" alt="Album cover"/>
+                        <img id="img" src="{img=images/empty.png}" alt="Album cover"/>
                     </div>
         
                     <div id="info">
