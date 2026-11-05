@@ -31,7 +31,6 @@ export class EboBigAlbumComp extends EboComponent {
 
     private _activeTrackUri: string | null = null;
     static progressBarAttributes = ["position", "min", "max", "button", "active"];
-    private img: string  = "";
 
     static styleText= `
         <style>

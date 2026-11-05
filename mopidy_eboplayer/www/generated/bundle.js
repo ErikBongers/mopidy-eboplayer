@@ -3660,7 +3660,6 @@ var EboBigAlbumComp = class EboBigAlbumComp extends EboComponent {
 		"button",
 		"active"
 	];
-	img = "";
 	static styleText = `
         <style>
             :host { 
