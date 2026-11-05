@@ -6,6 +6,8 @@ import {Tokenizer} from "htmlparserts/tokenizer";
 export type PlaceHolderType = "content" | "attribute";
 export interface PlaceHolder {
     placeHolderId: string;
+    pos: number;
+    length: number;
     elementId: string; //todo: bundle per element. ElementFiller contains a list of placeholders.
     type: PlaceHolderType;
     nodeIndex: number;  //todo: make this depend on type.
@@ -88,6 +90,8 @@ function createTextPlaceholders(token: Token, type: PlaceHolderType, elementId: 
         let placeHolderParts = parsePlaceHolder(placeHolder);
         placeholders.push({
             placeHolderId: placeHolderParts.placeHolderId,
+            pos: match.index,
+            length: match[0].length,
             elementId,
             type,
             nodeIndex,

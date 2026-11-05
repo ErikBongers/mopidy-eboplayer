@@ -37,6 +37,7 @@ export abstract class MachineState {
 export type WalkStateMachine = {
     machineState: MachineState;
     ms: MagicString;
+    code: string;
 };
 
 export function createVisitors() {

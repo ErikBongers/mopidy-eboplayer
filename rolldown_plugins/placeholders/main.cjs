@@ -166928,6 +166928,8 @@ function createTextPlaceholders(token, type, elementId, nodeIndex, attributeName
 		let placeHolderParts = parsePlaceHolder(placeHolder);
 		placeholders.push({
 			placeHolderId: placeHolderParts.placeHolderId,
+			pos: match$1.index,
+			length: match$1[0].length,
 			elementId,
 			type,
 			nodeIndex,
@@ -167126,7 +167128,8 @@ const placeholdersPlugin = () => {
 			const ast = (0, import_dist.parse)(code, { range: true });
 			let state = {
 				machineState: new StartState(),
-				ms
+				ms,
+				code
 			};
 			walk(ast, state, createVisitors());
 			if (ms.hasChanged()) return {
@@ -167282,17 +167285,17 @@ var PropertyDecoratorState = class extends MachineState {
 };
 var TemplateState = class extends MachineState {
 	templateString = null;
+	pos = 0;
+	end = 0;
 	constructor(templateDef) {
 		super();
 		this.templateDef = templateDef;
 	}
 	templateLiteral(node, state, next) {
-		let fragments = node.quasis;
-		if (fragments.length > 1) {
-			console.log(`TODO: can't yet handle template strings with embedded variables.`);
-			console.log(JSON.stringify(fragments, null, 2));
-		}
-		this.templateString = fragments[0].value.raw;
+		this.pos = node.range[0] + 1;
+		this.end = node.range[1] - 1;
+		this.templateString = state.code.substring(this.pos, this.end);
+		console.log(`templateString: [[${this.templateString}]]`);
 	}
 	write(ms) {
 		if (this.templateString != null) {

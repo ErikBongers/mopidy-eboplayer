@@ -11,7 +11,8 @@
     "@types/node": "^26.2.0",
     "magic-string": "^1.2.0",
     "rolldown": "^1.0.0-beta.41",
-    "zimmerframe": "^1.1.4"
+    "zimmerframe": "^1.1.4",
+    "tsx": "^4.23.11"
   },
   "dependencies": {
     "@typescript-eslint/typescript-estree": "^8.72.1",

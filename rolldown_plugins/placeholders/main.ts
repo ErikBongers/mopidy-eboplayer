@@ -33,6 +33,7 @@ const placeholdersPlugin = (): Plugin => {
             let state: WalkStateMachine = {
                 machineState: new StartState(),
                 ms,
+                code
             };
 
             walk(ast, state, createVisitors());
@@ -199,19 +200,17 @@ class PropertyDecoratorState extends MachineState {
 
 class TemplateState extends MachineState {
     templateString: string | null = null;
+    pos: number = 0;
+    end: number = 0;
     constructor(public templateDef: TemplateDef) {
         super();
     }
 
     override templateLiteral(node: TSESTree.TemplateLiteral, state: WalkStateMachine, next: Next): NotHandled | void {
-        let fragments = node.quasis;
-        if (fragments.length > 1) {
-            console.log(`TODO: can't yet handle template strings with embedded variables.`);
-            console.log(JSON.stringify(fragments, null, 2));
-        }
-        let theFragment = fragments[0];
-        let templateString = theFragment.value; //todo: assuming type = "TemplateElement"
-        this.templateString = templateString.raw;
+        this.pos = node.range[0]+1;
+        this.end = node.range[1]-1;
+        this.templateString = state.code.substring(this.pos, this.end);
+        console.log(`templateString: [[${this.templateString}]]`);
     }
 
     write(ms: MagicString) {
@@ -219,6 +218,9 @@ class TemplateState extends MachineState {
             let placeHolders = createPlaceHolders(this.templateString);
             let buffer = generateUpdateFunction(this.templateDef.propDef.classDef.name, placeHolders);
             ms.appendLeft(this.templateDef.propDef.classDef.end-1, buffer + "\n");
+            // for(let placeholder of placeHolders) {
+            //     ms.overwrite(placeholder.placeHolderId.end, ` = ${placeholder.placeHolderId.name};\n`);
+            // }
 
             this.templateDef.propDef.classDef.placeHolderIds = placeHolders.map(ph => ph.placeHolderId);
         }
