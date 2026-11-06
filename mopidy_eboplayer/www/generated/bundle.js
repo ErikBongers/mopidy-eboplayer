@@ -1567,14 +1567,19 @@ var LocalStorageProxy = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/def.ts
+const EBOBACK_PATH = "/eboback/data/";
+const EBOPLAYER_PATH = "/eboplayer/action/";
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/proxies/webProxy.ts
 var WebProxy = class {
 	ebobackBase;
 	eboplayerBase;
 	constructor(hostAndPort) {
 		let protocol = document.location.protocol;
-		this.ebobackBase = `${protocol}//${hostAndPort}/eboback/data/`;
-		this.eboplayerBase = `${protocol}//${hostAndPort}/eboplayer/action/`;
+		this.ebobackBase = `${protocol}//${hostAndPort}${EBOBACK_PATH}`;
+		this.eboplayerBase = `${protocol}//${hostAndPort}${EBOPLAYER_PATH}`;
 	}
 	playerUrl(relPath) {
 		return new URL(this.eboplayerBase + relPath);
@@ -7172,14 +7177,13 @@ var MopidyOnlineRepository = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-console.log("hello from bundle.js!");
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
 	if (webSocketUrl?.startsWith("{{")) webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
 	if (webSocketUrl == "") return null;
 	return webSocketUrl;
 }
-const BUILD_VERSION = "1793928401155";
+const BUILD_VERSION = "1793974257510";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {

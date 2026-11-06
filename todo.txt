@@ -1,3 +1,5 @@
+* gui.ts: when new BUILD...reload to use the new bundle?
+
 * MopidyOnlineRepository:
   > what to save to IndexedDb?
     > perhaps current track, so the app has a 'snapshot' of how it last was live?

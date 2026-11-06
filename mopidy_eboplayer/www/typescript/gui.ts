@@ -48,8 +48,6 @@ import {MopidyRepository} from "./repositories/mopidyRepository";
 import {MopidyOnlineRepository} from "./repositories/MopidyOnlineRepository";
 import {UpdateCache} from "./messages";
 
-console.log('hello from bundle.js!');
-
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
     if (webSocketUrl?.startsWith("{{"))

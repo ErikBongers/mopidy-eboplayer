@@ -1,5 +1,6 @@
 import {AlbumMetaData, AlbumUri, AllUris, GenreDef, GenreReplacement, HistoryLineDef, RememberDef, RememberId, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
 import {ExpandedRef, RefType} from "../refs";
+import {EBOBACK_PATH, EBOPLAYER_PATH} from "../def";
 
 export type AlbumMetaDict = {[uri: AlbumUri]: AlbumMetaData};
 
@@ -9,8 +10,8 @@ export class WebProxy {
 
     constructor(hostAndPort: string) {
         let protocol = document.location.protocol;
-        this.ebobackBase = `${protocol}//${hostAndPort}/eboback/data/`;
-        this.eboplayerBase = `${protocol}//${hostAndPort}/eboplayer/action/`;
+        this.ebobackBase = `${protocol}//${hostAndPort}${EBOBACK_PATH}`;
+        this.eboplayerBase = `${protocol}//${hostAndPort}${EBOPLAYER_PATH}`;
     }
 
     playerUrl(relPath: string) {
