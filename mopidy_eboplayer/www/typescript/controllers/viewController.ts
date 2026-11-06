@@ -1,25 +1,16 @@
 import {Model} from "../model";
-import {Commands} from "../commands";
-import {Mopidy} from "../../js/mopidy";
-import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort} from "../global";
-import {AlbumUri, LastViewed, StreamUri, TrackUri, Pages, Goto, PageIds} from "../modelTypes";
-import {WebProxy} from "../proxies/webProxy";
-import {PlayController} from "./playController";
-import {RefArgs, UriArgs} from "../events";
-import {CacheHandler} from "./cacheHandler";
+import {AlbumUri, Goto, Pages, StreamUri, TrackUri} from "../modelTypes";
+import {RefArgs} from "../events";
 import Controller from "./controller";
-import {NetworkProxy} from "../network";
+import {NetworkStateMachine} from "../networkStateMachine";
 
 export class ViewController {
     protected model: Model;
-    private networkProxy: NetworkProxy;
     public localStorageProxy: LocalStorageProxy;
     private controller: Controller;
 
-    constructor(model: Model, networkProxy: NetworkProxy, controller: Controller) {
-        this.networkProxy = networkProxy;
+    constructor(model: Model, controller: Controller) {
         this.model  = model;
         this.localStorageProxy = new LocalStorageProxy(model);
         this.controller = controller;

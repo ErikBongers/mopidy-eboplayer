@@ -1,36 +1,35 @@
 import {Model} from "../model";
-import {MopidyProxy} from "../proxies/mopidyProxy";
-import models, {TlId} from "../../js/mopidy";
+import {TlId} from "../../js/mopidy";
 import {AllUris} from "../modelTypes";
-import {MopidyRepository} from "../repositories/mopidyRepository";
 import {NetworkProxy} from "../network";
+import {NetworkStateMachine} from "../networkStateMachine";
 
 export class PlayController {
     protected model: Model;
-    protected networkProxy: NetworkProxy;
+    protected network: NetworkStateMachine;
 
-    constructor(model: Model, networkProxy: NetworkProxy) {
+    constructor(model: Model, network: NetworkStateMachine) {
         this.model = model;
-        this.networkProxy = networkProxy;
+        this.network = network;
     }
 
     async clear() {
-        await this.networkProxy.mopidyRepository.clearTrackList();
+        await this.network.getProxy().mopidyRepository.clearTrackList();
         this.model.setTrackList([]);
     }
     async clearAndPlay(uris: AllUris[]) {
-        await this.networkProxy.mopidyRepository.clearTrackList();
+        await this.network.getProxy().mopidyRepository.clearTrackList();
         let trackList = await this.add(uris);
         await this.play(trackList[0].tlid);
     }
 
     async play(tlid: TlId | undefined = undefined) {
         tlid = tlid ?? this.model.getTrackList()[0].tlid;
-        await this.networkProxy.mopidyRepository.playTracklistItem(tlid);
+        await this.network.getProxy().mopidyRepository.playTracklistItem(tlid);
     }
 
     async add(uris: AllUris[]) {
-        let tracks = await this.networkProxy.mopidyRepository.addTracksToTracklist(uris);
+        let tracks = await this.network.getProxy().mopidyRepository.addTracksToTracklist(uris);
         this.model.addToTrackList(tracks);
         return tracks;
     }

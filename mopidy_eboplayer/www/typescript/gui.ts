@@ -1,4 +1,4 @@
-import {Mopidy, Options} from "../js/mopidy";
+import {Options} from "../js/mopidy";
 import {Model} from "./model";
 import Controller from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
@@ -10,7 +10,6 @@ import {MainView} from "./views/mainView";
 import {EboBrowseComp} from "./components/browse/eboBrowseComp";
 import {EboButton} from "./components/general/eboButton";
 import {getWebSocketUrl} from "./global";
-import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/album/eboBigAlbumComp";
 import {EboPlayerBar} from "./components/eboPlayerBar";
 import {EboMenuButton} from "./components/general/eboMenuButton";
@@ -43,6 +42,7 @@ import {View} from "./views/view";
 import {EboTracklistComp} from "./components/eboTracklistComp";
 import {UpdateCache} from "./messages";
 import {createConnections} from "./network";
+import {NetworkStateMachine} from "./networkStateMachine";
 
 // @ts-ignore
 const BUILD_VERSION = __BUILD_VERSION__; // Replaced during build step
@@ -135,23 +135,13 @@ document.addEventListener("DOMContentLoaded",function () {
         });
 });
 
-function updateDocumentTitle (headline: string) {
-    // @ts-ignore
-    headline = headline || document.getElementById('contentHeadline').textContent;
-    document.title = headline + ' | ' + document.body.dataset.title;
-}
-
 function setupStuff() {
-    let webSocketUrl = getWebSocketUrl(); //todo: this is probably not used. Remove it?
-    let connectOptions: Options = {
-        webSocketUrl,
-        autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
-    };
-    let networkProxy = createConnections(connectOptions);
+    let networkProxy = createConnections();
+    let networkState = new NetworkStateMachine(networkProxy);
     let model = new Model();
-    let player = new PlayController(model, networkProxy);
-    let cacheHandler = new CacheHandler(model, networkProxy, player);
-    let controller = new Controller(model, networkProxy, player, cacheHandler);
+    let player = new PlayController(model, networkState);
+    let cacheHandler = new CacheHandler(model, networkState, player);
+    let controller = new Controller(model, networkState, player, cacheHandler);
 
     let state = new State(model, controller, player, cacheHandler);
 
@@ -168,16 +158,16 @@ function setupStuff() {
         new GenresView(state, document.getElementById("Genres") as EboGenresComp),
     ];
     views.forEach(v => v.bindRecursive());
+    networkState.getProxy().connectWebsockets();
     controller.initialize(views);
-    networkProxy.connectWebsockets();
 
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-            networkProxy.connectWebsockets();
+            networkState.getProxy().connectWebsockets();
         }
     });
     document.addEventListener("focus", () => {
-        networkProxy.connectWebsockets();
+        networkState.getProxy().connectWebsockets();
     });
 }
 

@@ -1,4 +1,4 @@
-* gui.setupStuff(); put all connections in ConnectionState
+* gui.setupStuff(); put networkProxy in a ConnectionState(Machine)
 
 * Make a OnlineOfflineStateMachine
   > handle the transitions.

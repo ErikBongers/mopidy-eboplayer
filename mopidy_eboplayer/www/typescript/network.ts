@@ -1,7 +1,7 @@
 import {MopidyRepository} from "./repositories/mopidyRepository";
 import {WebProxy} from "./proxies/webProxy";
 import {core, Mopidy, Options} from "../js/mopidy";
-import {getHostAndPort} from "./global";
+import {getHostAndPort, getWebSocketUrl} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {MopidyOnlineRepository} from "./repositories/MopidyOnlineRepository";
 import {MopidyProxy} from "./proxies/mopidyProxy";
@@ -18,7 +18,12 @@ export interface NetworkProxy {
     connectWebsockets: () => void;
 }
 
-export function createConnections(connectOptions: Options): NetworkProxy {
+export function createConnections(): NetworkProxy {
+    let webSocketUrl = getWebSocketUrl(); //todo: this is probably not used. Remove it?
+    let connectOptions: Options = {
+        webSocketUrl,
+        autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
+    };
     let mopidy = new Mopidy(connectOptions);
     let hostAndPort = getHostAndPort();
     let protocol =
@@ -41,6 +46,18 @@ export function createConnections(connectOptions: Options): NetworkProxy {
         backWebSocket.connect();
     }
 
-    return {mopidyRepository, webProxy, frontWebSocket, backWebSocket, on: mopidy.on, supervise: mopidy.supervise, connectWebsockets};
+    return {
+        mopidyRepository,
+        webProxy,
+        frontWebSocket,
+        backWebSocket,
+        on: (name: MopidyEventName, callback?: any) => {
+            mopidy.on(name, callback)
+        },
+        supervise: (func: (event: string, data: any) => void) => {
+            mopidy.supervise(func);
+        },
+        connectWebsockets
+    };
 }
 
