@@ -1,7 +1,3 @@
-* WIP: startup tries to load: https://192.168.129.111/eboplayer/%7Bimg%7D
-  > {img}  -> placeholder!!
-  > replace placeholder with default text
-
 * MopidyOnlineRepository:
   > what to save to IndexedDb?
     > perhaps current track, so the app has a 'snapshot' of how it last was live?

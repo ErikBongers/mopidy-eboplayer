@@ -2049,7 +2049,6 @@ var Controller = class extends Commands {
 		});
 		this.mopidy.on("event:seeked", () => {});
 		this.mopidy.supervise((event, data) => {
-			console.log(`mopidy event ${event}:`, data);
 			if (data instanceof MessageEvent) try {
 				if ((JSON.parse(data.data).event ?? "") == "stream_title_changed") return;
 			} catch (e) {}
@@ -7173,18 +7172,37 @@ var MopidyOnlineRepository = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
+console.log("hello from bundle.js!");
 function getWebSocketUrl() {
 	let webSocketUrl = document.body.dataset.websocketUrl ?? null;
 	if (webSocketUrl?.startsWith("{{")) webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
 	if (webSocketUrl == "") return null;
 	return webSocketUrl;
 }
+const BUILD_VERSION = "1793928401155";
+const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
-	if ("serviceWorker" in navigator) navigator.serviceWorker.register("serviceWorker.js").then((registration) => {
-		console.log("Service Worker registered with scope:", registration.scope);
-	}).catch((error) => {
-		console.error("Service Worker registration failed:", error);
-	});
+	if ("serviceWorker" in navigator) {
+		navigator.serviceWorker.register("serviceWorker.js").then((registration) => {
+			console.log("Service Worker registered with scope:", registration.scope);
+		}).catch((error) => {
+			console.error("Service Worker registration failed:", error);
+		});
+		let storedVersion = localStorage.getItem(STORED_VERSION) ?? "";
+		if (storedVersion != BUILD_VERSION) {
+			localStorage.setItem(STORED_VERSION, BUILD_VERSION);
+			navigator.serviceWorker.ready.then((registration) => {
+				if (registration.active) {
+					let message = {
+						type: "updateCache",
+						newVersion: BUILD_VERSION,
+						oldVersion: storedVersion
+					};
+					registration.active.postMessage(message);
+				}
+			});
+		}
+	}
 }
 setupServiceWorker();
 function updateOnlineStatus() {

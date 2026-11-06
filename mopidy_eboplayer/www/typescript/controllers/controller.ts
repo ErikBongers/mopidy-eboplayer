@@ -149,7 +149,7 @@ class Controller extends Commands {
 
         //log all events:
         this.mopidy.supervise((event: string, data: any) => {
-            console.log(`mopidy event ${event}:`, data);
+            // console.log(`mopidy event ${event}:`, data);
             if(data instanceof MessageEvent) {
                 try {
                     let dataObject = JSON.parse(data.data);

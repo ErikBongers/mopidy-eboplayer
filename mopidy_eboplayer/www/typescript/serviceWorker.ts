@@ -1,8 +1,13 @@
 /// <reference lib="webworker" />
+import {ServiceWorkerMessage} from './messages';
 
+interface ServiceWorkerMessageEvent extends ExtendableMessageEvent {
+    readonly data: ServiceWorkerMessage;
+}
 const sw = self as unknown as ServiceWorkerGlobalScope;
 
-const CACHE_NAME = 'eboplayer-v1';
+const CACHE_NAME = "eboplayer-cache";
+
 const ASSETS_TO_CACHE = [
     'index.html',
     'css/global.css',
@@ -29,7 +34,7 @@ const ASSETS_TO_CACHE = [
     'images/empty.png',
     'images/loader.gif',
 ];
-// 1. Install Event: Cache all static assets
+
 sw.addEventListener('install', async (event: Event) => {
     (event as ExtendableEvent).waitUntil((async () => {
         let cache = await caches.open(CACHE_NAME);
@@ -38,7 +43,6 @@ sw.addEventListener('install', async (event: Event) => {
     })()); //pass the resuting Promise, not the function.
 });
 
-// 2. Activate Event: Clean up old caches if the version changes
 sw.addEventListener('activate', (event) => {
     event.waitUntil((async () => {
         let cacheNames = await caches.keys();
@@ -53,19 +57,101 @@ sw.addEventListener('activate', (event) => {
     })());
 });
 
-// 3. Fetch Event: Intercept requests and serve from cache if offline
 sw.addEventListener('fetch', (event) => {
     // Skip cross-origin requests and non-GET requests (like WebSocket handshakes)
     if (!event.request.url.startsWith(sw.location.origin) || event.request.method !== 'GET') {
         return;
     }
+    const url = new URL(event.request.url);
+
+    if (url.pathname.endsWith('bundle.js')) {
+        console.log('getting bundle.js');
+        event.respondWith(
+            networkFirst(event)()
+        );
+        return;
+    }
 
     event.respondWith(
-        caches.match(event.request).then((cachedResponse) => {
-            if (cachedResponse) {
-                return cachedResponse; // Return the cached asset
-            }
-            return fetch(event.request); // Fallback to network if not cached
-        })
+        cacheFirst(event)()
     );
+});
+
+function networkFirst(event: FetchEvent) {
+    console.log('networkFirst...');
+
+    return async () => {
+        try {
+            console.log('networkFirst: fetching...');
+            const networkResponse = await fetch(event.request);
+
+            if (networkResponse.status === 200) {
+                console.log('networkFirst: got via network first, saving in cache');
+                const cache = await caches.open(CACHE_NAME);
+                // noinspection ES6MissingAwait
+                cache.put(event.request, networkResponse.clone());
+            } else {
+                return await getCached(new Error(`networkFirst: response status ${networkResponse.status}`));
+            }
+            return networkResponse;
+        } catch (error) {
+            return await getCached(error);
+        }
+    };
+
+    async function getCached(error: unknown) {
+        console.log('networkFirst: got error, returning cached response');
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) return cachedResponse;
+        throw error;
+    }
+}
+
+function cacheFirst(event: FetchEvent) {
+    return async () => {
+        // Look in all caches (helps bridge migration windows)
+        const cachedResponse = await caches.match(event.request);
+        if (cachedResponse) return cachedResponse;
+
+        try {
+            const networkResponse = await fetch(event.request);
+
+            if (networkResponse.status === 200) {
+                const cache = await caches.open(CACHE_NAME);
+                // noinspection ES6MissingAwait
+                cache.put(event.request, networkResponse.clone());
+            }
+
+            return networkResponse;
+        } catch (error) {
+            if (event.request.mode === 'navigate') {
+                const rootCache = await caches.match('/');
+                if (rootCache) return rootCache;
+            }
+            throw error;
+        }
+    };
+}
+
+sw.addEventListener('message', async (event: ServiceWorkerMessageEvent) => {
+    if (event.data?.type === "updateCache") {
+        console.log(`Updating cache from ${event.data.oldVersion} to ${event.data.newVersion}`);
+        const newCache = await caches.open(CACHE_NAME);
+        try {
+            await newCache.addAll(ASSETS_TO_CACHE);
+            console.log('Core offline assets successfully migrated to new cache.');
+        } catch (err) {
+            console.error('Failed to pre-cache essential files on version change:', err);
+        }
+
+        const cacheNames = await caches.keys();
+        await Promise.all(
+            cacheNames.map(name => {
+                if (name !== CACHE_NAME) {
+                    return caches.delete(name);
+                }
+                return;
+            })
+        );
+    }
 });

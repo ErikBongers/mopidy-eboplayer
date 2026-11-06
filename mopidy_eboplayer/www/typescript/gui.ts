@@ -46,6 +46,9 @@ import {BrowseController} from "./controllers/browseController";
 import {EboTracklistComp} from "./components/eboTracklistComp";
 import {MopidyRepository} from "./repositories/mopidyRepository";
 import {MopidyOnlineRepository} from "./repositories/MopidyOnlineRepository";
+import {UpdateCache} from "./messages";
+
+console.log('hello from bundle.js!');
 
 export function getWebSocketUrl() {
     let webSocketUrl = document.body.dataset.websocketUrl ?? null;
@@ -57,6 +60,10 @@ export function getWebSocketUrl() {
     return webSocketUrl;
 }
 
+// @ts-ignore
+const BUILD_VERSION = __BUILD_VERSION__; // Replaced during build step
+
+const STORED_VERSION = 'storedVersion';
 
 function setupServiceWorker() {
     if ('serviceWorker' in navigator) {
@@ -67,6 +74,21 @@ function setupServiceWorker() {
             .catch(error => {
                 console.error('Service Worker registration failed:', error);
             });
+        let storedVersion = localStorage.getItem(STORED_VERSION)??"";
+        if(storedVersion != BUILD_VERSION) {
+            localStorage.setItem(STORED_VERSION, BUILD_VERSION);
+            navigator.serviceWorker.ready.then((registration) => {
+                // Send the version to the active service worker
+                if (registration.active) {
+                    let message: UpdateCache = {
+                        type: "updateCache",
+                        newVersion: BUILD_VERSION,
+                        oldVersion: storedVersion
+                    };
+                    registration.active.postMessage(message);
+                }
+            });
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 //#region mopidy_eboplayer/www/typescript/serviceWorker.ts
 const sw = self;
-const CACHE_NAME = "eboplayer-v1";
+const CACHE_NAME = "eboplayer-cache";
 const ASSETS_TO_CACHE = [
 	"index.html",
 	"css/global.css",
@@ -45,10 +45,67 @@ sw.addEventListener("activate", (event) => {
 });
 sw.addEventListener("fetch", (event) => {
 	if (!event.request.url.startsWith(sw.location.origin) || event.request.method !== "GET") return;
-	event.respondWith(caches.match(event.request).then((cachedResponse) => {
+	if (new URL(event.request.url).pathname.endsWith("bundle.js")) {
+		console.log("getting bundle.js");
+		event.respondWith(networkFirst(event)());
+		return;
+	}
+	event.respondWith(cacheFirst(event)());
+});
+function networkFirst(event) {
+	console.log("networkFirst...");
+	return async () => {
+		try {
+			console.log("networkFirst: fetching...");
+			const networkResponse = await fetch(event.request);
+			if (networkResponse.status === 200) {
+				console.log("networkFirst: got via network first, saving in cache");
+				(await caches.open(CACHE_NAME)).put(event.request, networkResponse.clone());
+			} else return await getCached(/* @__PURE__ */ new Error(`networkFirst: response status ${networkResponse.status}`));
+			return networkResponse;
+		} catch (error) {
+			return await getCached(error);
+		}
+	};
+	async function getCached(error) {
+		console.log("networkFirst: got error, returning cached response");
+		const cachedResponse = await caches.match(event.request);
 		if (cachedResponse) return cachedResponse;
-		return fetch(event.request);
-	}));
+		throw error;
+	}
+}
+function cacheFirst(event) {
+	return async () => {
+		const cachedResponse = await caches.match(event.request);
+		if (cachedResponse) return cachedResponse;
+		try {
+			const networkResponse = await fetch(event.request);
+			if (networkResponse.status === 200) (await caches.open(CACHE_NAME)).put(event.request, networkResponse.clone());
+			return networkResponse;
+		} catch (error) {
+			if (event.request.mode === "navigate") {
+				const rootCache = await caches.match("/");
+				if (rootCache) return rootCache;
+			}
+			throw error;
+		}
+	};
+}
+sw.addEventListener("message", async (event) => {
+	if (event.data?.type === "updateCache") {
+		console.log(`Updating cache from ${event.data.oldVersion} to ${event.data.newVersion}`);
+		const newCache = await caches.open(CACHE_NAME);
+		try {
+			await newCache.addAll(ASSETS_TO_CACHE);
+			console.log("Core offline assets successfully migrated to new cache.");
+		} catch (err) {
+			console.error("Failed to pre-cache essential files on version change:", err);
+		}
+		const cacheNames = await caches.keys();
+		await Promise.all(cacheNames.map((name) => {
+			if (name !== CACHE_NAME) return caches.delete(name);
+		}));
+	}
 });
 
 //#endregion
