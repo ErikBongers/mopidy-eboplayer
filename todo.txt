@@ -1,3 +1,18 @@
+* gui.setupStuff(); put all connections in ConnectionState
+
+* Make a OnlineOfflineStateMachine
+  > handle the transitions.
+  > capture all related events
+    > online/offline
+    > server not available.
+      > recognized when websockets go offline
+    > other?
+
+
+* Make a EboBack repository
+  > or...not needed?
+    > most fetches are already cached!
+
 * gui.ts: when new BUILD...reload to use the new bundle?
 
 * MopidyOnlineRepository:

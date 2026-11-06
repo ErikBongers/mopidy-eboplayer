@@ -10,14 +10,16 @@ import {PlayController} from "./playController";
 import {RefArgs, UriArgs} from "../events";
 import {CacheHandler} from "./cacheHandler";
 import Controller from "./controller";
+import {NetworkProxy} from "../network";
 
-export class ViewController extends Commands {
+export class ViewController {
     protected model: Model;
+    private networkProxy: NetworkProxy;
     public localStorageProxy: LocalStorageProxy;
     private controller: Controller;
 
-    constructor(model: Model, mopidy: Mopidy, controller: Controller) {
-        super(mopidy);
+    constructor(model: Model, networkProxy: NetworkProxy, controller: Controller) {
+        this.networkProxy = networkProxy;
         this.model  = model;
         this.localStorageProxy = new LocalStorageProxy(model);
         this.controller = controller;

@@ -1,6 +1,6 @@
 import {Model} from "../model";
 import {Commands} from "../commands";
-import models, {Mopidy} from "../../js/mopidy";
+import models from "../../js/mopidy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {getHostAndPort, getHostAndPortDefs} from "../global";
 import {createAllRefs, ExpandedRef} from "../refs";
@@ -19,27 +19,19 @@ import {
 } from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
-import {MopidyRepository} from "../repositories/mopidyRepository";
+import {NetworkProxy} from "../network";
 
-export class CacheHandler extends Commands{
+export class CacheHandler {
     protected model: Model;
-    public mopidyRepository: MopidyRepository;
-    public webProxy: WebProxy;
+    public networkProxy: NetworkProxy;
     public localStorageProxy: LocalStorageProxy;
-    readonly baseUrl: string;
     protected player: PlayController;
 
-    constructor(model: Model, mopidy: Mopidy, mopdyRepository: MopidyRepository, player: PlayController) {
-        super(mopidy);
+    constructor(model: Model, networkProxy: NetworkProxy, player: PlayController) {
         this.model  = model;
+        this.networkProxy = networkProxy;
         this.player = player;
-        this.mopidyRepository = mopdyRepository;
-        this.webProxy = new WebProxy(getHostAndPort());
         this.localStorageProxy = new LocalStorageProxy(model);
-        let portDefs = getHostAndPortDefs();
-        this.baseUrl = "";
-        if(portDefs.altHost && portDefs.altHost != portDefs.host)
-            this.baseUrl = "http://"+portDefs.altHost;
     }
 
     async lookupTrackCached(trackUri: TrackUri | StreamUri | null) {
@@ -55,7 +47,7 @@ export class CacheHandler extends Commands{
     }
 
     private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
-        let dict = await this.mopidyRepository.lookup(uri);
+        let dict = await this.networkProxy.mopidyRepository.lookup(uri);
         let trackList = dict[uri] as models.Track[] | undefined;
         if(trackList) {
             let newListPromises = trackList.map(async track => this.transformTrackDataToModel(track));
@@ -118,7 +110,7 @@ export class CacheHandler extends Commands{
     }
 
     private async fetchAlbums(albumUris: AlbumUri[]): Promise<AlbumModel[]> {
-        let dict = await this.mopidyRepository.lookup(albumUris);
+        let dict = await this.networkProxy.mopidyRepository.lookup(albumUris);
         let allRefs = await this.getAllRefsMapCached();
         let albumModelsPending = Object.keys(dict).map(async (albumUri: string) => {
             let trackList = dict[albumUri] as models.Track[];
@@ -140,7 +132,7 @@ export class CacheHandler extends Commands{
         let remembers = this.model.getRemembers();
         if (remembers)
             return remembers;
-        remembers = await this.webProxy.fetchRemembers();
+        remembers = await this.networkProxy.webProxy.fetchRemembers();
         this.model.setRemembers(remembers);
         return remembers;
     }
@@ -149,7 +141,7 @@ export class CacheHandler extends Commands{
         let cachedMeta = this.model.getFromMetaCache(albumUri);
         if(cachedMeta)
             return cachedMeta.meta;
-        let meta = await this.webProxy.fetchMetaData(albumUri);
+        let meta = await this.networkProxy.webProxy.fetchMetaData(albumUri);
         this.model.addToMetaCache(albumUri, meta);
         return meta;
     }
@@ -157,7 +149,7 @@ export class CacheHandler extends Commands{
     async getAllRefsCached() {
         let allRefs = this.model.getAllRefs();
         if(!allRefs) {
-            let refs = await this.webProxy.fetchAllRefs();
+            let refs = await this.networkProxy.webProxy.fetchAllRefs();
             allRefs = await createAllRefs(this, refs.allRefs, refs.tracksNoAlbumRefs);
             this.model.setAllRefs(allRefs);
         }
@@ -172,7 +164,7 @@ export class CacheHandler extends Commands{
     async getGenreReplacementsCached() {
         if(this.model.getGenreReplacements().size > 0)
             return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
-        let genreDefs = await this.webProxy.fetchGenreReplacements();
+        let genreDefs = await this.networkProxy.webProxy.fetchGenreReplacements();
         this.model.setGenreReplacements(genreDefs);
         return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
     }
@@ -185,7 +177,7 @@ export class CacheHandler extends Commands{
     async getRemembersCached() {
         if(this.model.getRemembers())
             return this.model.getRemembers() as RememberDef[];
-        let remembers = await this.webProxy.fetchRemembers();
+        let remembers = await this.networkProxy.webProxy.fetchRemembers();
         this.model.setRemembers(remembers);
         return this.model.getRemembers() as RememberDef[];
     }
@@ -193,7 +185,7 @@ export class CacheHandler extends Commands{
     async getGenreDefs() {
         if(this.model.getGenreDefs().length > 0)
             return this.model.getGenreDefs() as GenreDef[];
-        let genreDefs = await this.webProxy.fetchGenreDefs();
+        let genreDefs = await this.networkProxy.webProxy.fetchGenreDefs();
         this.model.setGenreDefs(genreDefs);
         return this.model.getGenreDefs() as GenreDef[];
     }
@@ -201,7 +193,7 @@ export class CacheHandler extends Commands{
     async getFavorites() {
         if(this.model.getFavorites())
             return this.model.getFavorites() as Set<AllUris>;
-        let favorites = await this.webProxy.getFavorites();
+        let favorites = await this.networkProxy.webProxy.getFavorites();
         this.model.setFavorites(favorites);
         return this.model.getFavorites() as Set<AllUris>;
     }
@@ -226,7 +218,7 @@ export class CacheHandler extends Commands{
     }
 
     private async fetchStreamLines(streamUri: string) {
-        let stream_lines = await this.webProxy.fetchAllStreamLines(streamUri);
+        let stream_lines = await this.networkProxy.webProxy.fetchAllStreamLines(streamUri);
         function groupLines (grouped: string[][], line: string) {
             if(line == "---") {
                 grouped.push([]);
@@ -243,7 +235,7 @@ export class CacheHandler extends Commands{
     async getFavoritePlaylistName() {
         if(this.model.getFavoritesPlaylistName())
             return this.model.getFavoritesPlaylistName() as string;
-        let name = await this.webProxy.getFavoritesPlaylistName();
+        let name = await this.networkProxy.webProxy.getFavoritesPlaylistName();
         this.model.setFavoritesPlaylistName(name);
         return name;
     }

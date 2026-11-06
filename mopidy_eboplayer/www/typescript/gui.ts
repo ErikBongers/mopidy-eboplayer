@@ -9,15 +9,13 @@ import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
 import {EboBrowseComp} from "./components/browse/eboBrowseComp";
 import {EboButton} from "./components/general/eboButton";
-import {getHostAndPort} from "./global";
+import {getWebSocketUrl} from "./global";
 import {JsonRpcController} from "./jsonRpcController";
 import {EboBigAlbumComp} from "./components/album/eboBigAlbumComp";
 import {EboPlayerBar} from "./components/eboPlayerBar";
 import {EboMenuButton} from "./components/general/eboMenuButton";
 import {EboListButtonBar} from "./components/eboListButtonBar";
 import {PlayController} from "./controllers/playController";
-import {Commands} from "./commands";
-import {MopidyProxy} from "./proxies/mopidyProxy";
 import {EboDialog} from "./components/eboDialog";
 import {EboAlbumDetails} from "./components/album/eboAlbumDetails";
 import {EboRadioHistoryComp} from "./components/radio/eboRadioHistoryComp";
@@ -42,21 +40,9 @@ import {EboTopBar} from "./components/eboTopBar";
 import {TopBarView} from "./views/topBarView";
 import {SettingsView} from "./views/settingsView";
 import {View} from "./views/view";
-import {BrowseController} from "./controllers/browseController";
 import {EboTracklistComp} from "./components/eboTracklistComp";
-import {MopidyRepository} from "./repositories/mopidyRepository";
-import {MopidyOnlineRepository} from "./repositories/MopidyOnlineRepository";
 import {UpdateCache} from "./messages";
-
-export function getWebSocketUrl() {
-    let webSocketUrl = document.body.dataset.websocketUrl ?? null;
-    if (webSocketUrl?.startsWith("{{"))
-        webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
-
-    if(webSocketUrl == "")
-        return null;
-    return webSocketUrl;
-}
+import {createConnections} from "./network";
 
 // @ts-ignore
 const BUILD_VERSION = __BUILD_VERSION__; // Replaced during build step
@@ -118,8 +104,8 @@ document.addEventListener("DOMContentLoaded",function () {
         fetch(`${rootDir}css/global.css`).then(res => res.text()),
         fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
     ])
-        .then(texts => {
-            EboComponent.setGlobalCss(texts);
+        .then(cssTexts => {
+            EboComponent.setGlobalCss(cssTexts);
 
             EboComponent.define(EboProgressBar);
             EboComponent.define(EboNowPlayingComp);
@@ -161,25 +147,13 @@ function setupStuff() {
         webSocketUrl,
         autoConnect: false //important: delay connection until all bindings, listeners and dependencies are setup.
     };
-    let mopidy = new Mopidy(connectOptions);
-    let hostAndPort = getHostAndPort();
-    let protocol =
-        typeof document !== "undefined" && document.location.protocol === "https:"
-            ? "wss://"
-            : "ws://";
-    let wsFrontEndUrl = `${protocol}${hostAndPort}/eboplayer/ws/`;
-    let eboWsFrontCtrl = new JsonRpcController(wsFrontEndUrl, 1000, 64000);
-
-    let wsBackEndUrl = `${protocol}${hostAndPort}/eboback/ws2/`;
-    let eboWsBackCtrl = new JsonRpcController(wsBackEndUrl, 1000, 64000);
-
+    let networkProxy = createConnections(connectOptions);
     let model = new Model();
-    let mopidyRepository: MopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
-    let player = new PlayController(model, mopidyRepository);
-    let cacheHandler = new CacheHandler(model, mopidy, mopidyRepository, player);
-    let controller = new Controller(model, mopidy, eboWsFrontCtrl, eboWsBackCtrl, mopidyRepository, player, cacheHandler);
+    let player = new PlayController(model, networkProxy);
+    let cacheHandler = new CacheHandler(model, networkProxy, player);
+    let controller = new Controller(model, networkProxy, player, cacheHandler);
 
-    let state = new State(mopidy, model, controller, player, cacheHandler);
+    let state = new State(model, controller, player, cacheHandler);
 
     let views: View [] = [
         new BrowseView(state, document.getElementById("Browse") as EboBrowseComp),
@@ -195,22 +169,16 @@ function setupStuff() {
     ];
     views.forEach(v => v.bindRecursive());
     controller.initialize(views);
-    connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+    networkProxy.connectWebsockets();
 
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
-            connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+            networkProxy.connectWebsockets();
         }
     });
     document.addEventListener("focus", () => {
-        connectWebsockets(mopidy, eboWsFrontCtrl, eboWsBackCtrl);
+        networkProxy.connectWebsockets();
     });
-}
-
-function connectWebsockets(mopidy: Mopidy, eboWsFrontCtrl: JsonRpcController, eboWsBackCtrl: JsonRpcController) {
-    mopidy.connect();
-    eboWsFrontCtrl.connect();
-    eboWsBackCtrl.connect();
 }
 
 //intellij live preview hack because they don't allow to set a root folder for the built-in server:

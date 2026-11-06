@@ -120,7 +120,7 @@ export class WebProxy {
         return await res.json() as ExpandedRef<TrackUri>[];
     }
 
-    async updateAlbumData(albumUri: AlbumUri) {
+    async uploadAlbumData(albumUri: AlbumUri) {
         let url = this.ebobackUrl(`update_album_data`);
         url.searchParams.set("album_uri", albumUri);
         await fetch(url);

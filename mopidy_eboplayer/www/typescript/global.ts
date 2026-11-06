@@ -110,3 +110,13 @@ export function searchImageOnGoogle(albumName: string) {
 export function zip<T>(array1: T[], array2: T[]) {
     return array1.map((value, index) => [value, array2[index]]).flat();
 }
+
+export function getWebSocketUrl() {
+    let webSocketUrl = document.body.dataset.websocketUrl ?? null;
+    if (webSocketUrl?.startsWith("{{"))
+        webSocketUrl = `ws://${getHostAndPort()}/mopidy/ws`;
+
+    if (webSocketUrl == "")
+        return null;
+    return webSocketUrl;
+}

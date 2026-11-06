@@ -28,13 +28,13 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
         });
 
         this.component.on("playPressed.eboplayer", async () => {
-            await this.state.getController().mopidyRepository.sendPlay();
+            await this.state.getController().sendPlay();
         });
         this.component.on("stopPressed.eboplayer", async () => {
-            await this.state.getController().mopidyRepository.sendStop();
+            await this.state.getController().sendStop();
         });
         this.component.on("pausePressed.eboplayer", async () => {
-            await this.state.getController().mopidyRepository.sendPause();
+            await this.state.getController().sendPause();
         });
         this.component.on("buttonBarAlbumImgClicked.eboplayer", () => {
             this.onButtonBarImgClicked();
@@ -44,7 +44,7 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
         });
         this.component.on("changingVolume.eboplayer", async (ev) => {
             let value = ev.detail.volume;
-            await this.state.getController().mopidyRepository.sendVolume(value);
+            await this.state.getController().sendVolume(value);
         });
         this.component.on("optionSelected.eboplayer", async (ev) => {
             await this.changeRepeat(ev.detail.selected);
