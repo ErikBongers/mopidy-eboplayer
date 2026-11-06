@@ -1,6 +1,14 @@
 import {Commands} from "../commands";
 import models from "../../js/mopidy";
-import {AllUris, HistoryRef, ImageLookup, MopidyHistoryLine, PlaybackFlags, PlaylistUri} from "../modelTypes";
+import {
+    AllUris,
+    HistoryRef,
+    ImageLookup,
+    MopidyHistoryLine,
+    PlaybackFlags,
+    PlaylistUri,
+    PlayState
+} from "../modelTypes";
 import {SearchResult} from "../refs";
 import {MopidyRepository} from "../repositories/mopidyRepository";
 import TlTrack = models.TlTrack;
@@ -83,13 +91,12 @@ export class MopidyProxy implements MopidyRepository {
 
 
         let prev = {ref: {uri: ""}};
-        let dedupLines = filtered.filter((line) => {
+        return filtered.filter((line) => {
             if (line.ref.uri == prev.ref.uri)
                 return false;
             prev = line;
             return true;
         });
-        return dedupLines;
     }
 
     async fetchCurrentTrack() {
@@ -113,11 +120,11 @@ export class MopidyProxy implements MopidyRepository {
     }
 
     async fetchCurrentTlTrack() {
-        return await this.commands.core.playback.getCurrentTlTrack() as TlTrack;
+        return await this.commands.core.playback.getCurrentTlTrack();
     }
 
     async fetchPlayState() {
-        return await this.commands.core.playback.getState() as string;
+        return await this.commands.core.playback.getState() as PlayState;
     }
 
     savePlaylist(playlist: Playlist) {

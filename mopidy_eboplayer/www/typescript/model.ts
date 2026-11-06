@@ -341,7 +341,7 @@ export class Model extends EboModelEventTargetClass implements ReadOnlyModel {
                     this.updateLibraryCache(item.albumInfo.uri, item);
             }
             else
-                this.updateLibraryCache(item.track.uri, item);
+                this.updateLibraryCache(item.ref.uri, item);
         }
     }
 

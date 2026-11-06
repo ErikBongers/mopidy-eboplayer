@@ -107,7 +107,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
         this.state.getController().cache.lookupTrackCached(uri)
             .then(async track => {
                 if(track?.type == "file") {
-                    if(track.track.album) {
+                    if(track.track?.album) {
                         let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
                         this.setAlbumComponentData(albumModel, track.track.uri as TrackUri); //Shoudln't be a Stream.
                     }

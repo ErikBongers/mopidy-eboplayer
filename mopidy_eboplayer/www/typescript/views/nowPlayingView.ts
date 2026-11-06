@@ -89,8 +89,8 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
                 position = "60"; //todo: just a test
                 button = "true";
                 imageUrl = this.track.bigImageUrl;
-                let artists = this.track.track.track.artists?.map(a => a.name).join(", ") ?? "";
-                let composers = this.track.track.track.composers?.map(c => c.name)?.join(", ") ?? "";
+                let artists = this.track.track.track?.artists?.map(a => a.name).join(", ") ?? "";
+                let composers = this.track.track.track?.composers?.map(c => c.name)?.join(", ") ?? "";
                 if (artists)
                     info += "<br>" + artists;
                 if (composers)
@@ -128,7 +128,7 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
         if (!expandedTrackInfo) return;
         if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
             if (expandedTrackInfo.album?.albumInfo)
-                this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri as TrackUri); //Shouldn't be a Stream.
+                this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.ref.uri as TrackUri); //Shouldn't be a Stream.
             else { //orphaned track (no album)
                 this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
             }

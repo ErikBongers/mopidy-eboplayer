@@ -338,9 +338,6 @@ function getHostAndPortDefs() {
 		altHost: altHostName
 	};
 }
-function isStream(track) {
-	return !track.last_modified;
-}
 function unreachable(x) {
 	throw new Error("This error will never be thrown. It is used for type safety.");
 }
@@ -772,19 +769,19 @@ var ExpandedAlbumModel = class {
 	}
 	async getGenreReplacements() {
 		let trackModels = await this.getTrackModels();
-		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.cache.getGenreReplacementsCached()).get(genre)).filter((genre) => genre != void 0);
+		let genreDefPromises = [...new Set(trackModels.filter((track) => track.track?.genre != void 0).map((track) => track.track.genre))].map(async (genre) => (await this.controller.cache.getGenreReplacementsCached()).get(genre)).filter((genre) => genre != void 0);
 		return Promise.all(genreDefPromises);
 	}
 	async getArtists() {
 		let trackModels = await this.getTrackModels();
 		let artistMap = /* @__PURE__ */ new Map();
-		trackModels.map((track) => track.track.artists ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
+		trackModels.map((track) => track.track?.artists ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
 		return [...artistMap.values()];
 	}
 	async getComposers() {
 		let trackModels = await this.getTrackModels();
 		let artistMap = /* @__PURE__ */ new Map();
-		trackModels.map((track) => track.track.composers ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
+		trackModels.map((track) => track.track?.composers ?? []).flat().forEach((artist) => artistMap.set(artist.name, artist));
 		return [...artistMap.values()];
 	}
 	async getAllDetails() {
@@ -1114,7 +1111,7 @@ var Model = class extends EboModelEventTargetClass {
 	addItemsToLibraryCache(items) {
 		for (let item of items) if (item.type == "album") {
 			if (item.albumInfo) this.updateLibraryCache(item.albumInfo.uri, item);
-		} else this.updateLibraryCache(item.track.uri, item);
+		} else this.updateLibraryCache(item.ref.uri, item);
 	}
 	getFromLibraryCache(uri) {
 		return this.libraryCache.get(uri) ?? null;
@@ -1947,7 +1944,7 @@ var BrowseController = class {
 		}
 		if (lastCrumb instanceof BreadCrumbRef) {
 			if (lastCrumb.data.type == "playlist") {
-				let playlistItems = await this.controller.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
+				let playlistItems = await this.controller.mopidyRepository.fetchPlaylistItems(lastCrumb.data.uri);
 				if (!playlistItems) throw new Error("Could not fetch playlist items. Got `null` instead.");
 				playlistItems.forEach((ref) => {
 					if (!ref.name || ref.name == "") {
@@ -1960,7 +1957,7 @@ var BrowseController = class {
 				return;
 			}
 			if (isBreadCrumbForStream(lastCrumb)) return;
-			let refs = await this.controller.mopidyProxy.browse(lastCrumb.data.uri);
+			let refs = await this.controller.mopidyRepository.browse(lastCrumb.data.uri);
 			let results = await Refs.transformRefsToSearchResults(this.controller.cache, refs);
 			this.model.setCurrentRefs(new SomeRefs(results, await this.controller.cache.getAllRefsCached()));
 			return;
@@ -1976,7 +1973,7 @@ var BrowseController = class {
 const LIBRARY_PROTOCOL = "eboback:";
 var Controller = class extends Commands {
 	model;
-	mopidyProxy;
+	mopidyRepository;
 	webProxy;
 	localStorageProxy;
 	eboWsFrontCtrl;
@@ -1990,7 +1987,7 @@ var Controller = class extends Commands {
 		this.cache = cache;
 		this.model = model;
 		this.player = player;
-		this.mopidyProxy = mopdyRepository;
+		this.mopidyRepository = mopdyRepository;
 		this.webProxy = new WebProxy(getHostAndPort());
 		this.localStorageProxy = new LocalStorageProxy(model);
 		this.eboWsFrontCtrl = eboWsFrontCtrl;
@@ -1999,11 +1996,11 @@ var Controller = class extends Commands {
 		this.browseController = new BrowseController(this, model);
 	}
 	async getInitialData(views) {
-		this.model.setVolume(await this.mopidyProxy.fetchVolume());
-		await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTlTrack());
-		this.model.setPlayState(await this.mopidyProxy.fetchPlayState());
-		this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
-		this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
+		this.model.setVolume(await this.mopidyRepository.fetchVolume());
+		await this.setCurrentTrackAndFetchDetails(await this.mopidyRepository.fetchCurrentTlTrack());
+		this.model.setPlayState(await this.mopidyRepository.fetchPlayState());
+		this.model.setPlaybackMode(await this.mopidyRepository.getPlaybackFlags());
+		this.model.setTrackList(await this.mopidyRepository.fetchTracklist());
 		await this.fetchAllAlbums();
 		this.localStorageProxy.loadCurrentBrowseFilter();
 		this.localStorageProxy.loadBrowseFiltersBreadCrumbs("browse");
@@ -2027,7 +2024,7 @@ var Controller = class extends Commands {
 			this.model.setConnectionState(ConnectionState.Offline);
 		});
 		this.mopidy.on("event:optionsChanged", async () => {
-			this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
+			this.model.setPlaybackMode(await this.mopidyRepository.getPlaybackFlags());
 		});
 		this.mopidy.on("event:trackPlaybackStarted", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
@@ -2049,8 +2046,8 @@ var Controller = class extends Commands {
 			await this.onPlaybackStateChanged(data);
 		});
 		this.mopidy.on("event:tracklistChanged", async () => {
-			this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
-			await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTrack());
+			this.model.setTrackList(await this.mopidyRepository.fetchTracklist());
+			await this.setCurrentTrackAndFetchDetails(await this.mopidyRepository.fetchCurrentTrack());
 		});
 		this.mopidy.on("event:seeked", () => {});
 		this.mopidy.supervise((event, data) => {
@@ -2107,7 +2104,7 @@ var Controller = class extends Commands {
 		}
 	}
 	async fetchAllAlbums() {
-		let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL + "directory?type=album");
+		let albumRefs = await this.mopidyRepository.browse(LIBRARY_PROTOCOL + "directory?type=album");
 		return await this.cache.lookupAlbumsCached(albumRefs.map((ref) => ref.uri));
 	}
 	async onPlaybackStateChanged(data) {
@@ -2200,10 +2197,10 @@ var Controller = class extends Commands {
 		await this.webProxy.addExclExtToMopidyConfigFile(ext);
 	}
 	async setRepeat(repeat) {
-		await this.mopidyProxy.setRepeat(repeat);
+		await this.mopidyRepository.setRepeat(repeat);
 	}
 	async setSingle(single) {
-		await this.mopidyProxy.setSingle(single);
+		await this.mopidyRepository.setSingle(single);
 	}
 	async saveAlbumGenre(albumUri, genre) {
 		await this.webProxy.setAlbumGenre(albumUri, genre);
@@ -2288,13 +2285,13 @@ var PlayerBarView = class extends ComponentView {
 			this.onPlaybackModeChanged();
 		});
 		this.component.on("playPressed.eboplayer", async () => {
-			await this.state.getController().mopidyProxy.sendPlay();
+			await this.state.getController().mopidyRepository.sendPlay();
 		});
 		this.component.on("stopPressed.eboplayer", async () => {
-			await this.state.getController().mopidyProxy.sendStop();
+			await this.state.getController().mopidyRepository.sendStop();
 		});
 		this.component.on("pausePressed.eboplayer", async () => {
-			await this.state.getController().mopidyProxy.sendPause();
+			await this.state.getController().mopidyRepository.sendPause();
 		});
 		this.component.on("buttonBarAlbumImgClicked.eboplayer", () => {
 			this.onButtonBarImgClicked();
@@ -2304,7 +2301,7 @@ var PlayerBarView = class extends ComponentView {
 		});
 		this.component.on("changingVolume.eboplayer", async (ev) => {
 			let value = ev.detail.volume;
-			await this.state.getController().mopidyProxy.sendVolume(value);
+			await this.state.getController().mopidyRepository.sendVolume(value);
 		});
 		this.component.on("optionSelected.eboplayer", async (ev) => {
 			await this.changeRepeat(ev.detail.selected);
@@ -2350,7 +2347,7 @@ var PlayerBarView = class extends ComponentView {
 				this.component.setAttribute("image_url", trackModel.bigImageUrl);
 				this.component.setAttribute("stop_or_pause", "stop");
 			} else if (isInstanceOfExpandedTrackModel(trackModel)) {
-				this.component.setAttribute("text", trackModel.track.track.name ?? "--no name--");
+				this.component.setAttribute("text", trackModel.track.ref.name);
 				this.component.setAttribute("allow_play", "true");
 				this.component.setAttribute("allow_prev", "false");
 				this.component.setAttribute("allow_next", "false");
@@ -2744,8 +2741,8 @@ var NowPlayingView = class extends ComponentView {
 			position = "60";
 			button = "true";
 			imageUrl = this.track.bigImageUrl;
-			let artists = this.track.track.track.artists?.map((a) => a.name).join(", ") ?? "";
-			let composers = this.track.track.track.composers?.map((c) => c.name)?.join(", ") ?? "";
+			let artists = this.track.track.track?.artists?.map((a) => a.name).join(", ") ?? "";
+			let composers = this.track.track.track?.composers?.map((c) => c.name)?.join(", ") ?? "";
 			if (artists) info += "<br>" + artists;
 			if (composers) info += "<br>" + composers;
 		}
@@ -2775,7 +2772,7 @@ var NowPlayingView = class extends ComponentView {
 		let expandedTrackInfo = await this.state.getController().getExpandedTrackModel(selectedTrack);
 		if (!expandedTrackInfo) return;
 		if (isInstanceOfExpandedTrackModel(expandedTrackInfo)) {
-			if (expandedTrackInfo.album?.albumInfo) this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.track.uri);
+			if (expandedTrackInfo.album?.albumInfo) this.state.getController().viewController.showAlbum(expandedTrackInfo.album.albumInfo.uri, expandedTrackInfo.track.ref.uri);
 			else this.state.getController().showTempMessage("This track has no album.", MessageType.Error);
 			return;
 		}
@@ -2872,8 +2869,8 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
 		if (this.albumInfo) (await this.albumInfo.getTrackModels()).forEach((track) => {
 			let tr = tbody.appendChild(document.createElement("tr"));
 			let tdData = tr.appendChild(document.createElement("td"));
-			tr.dataset.uri = track.track.uri;
-			tdData.innerText = track.track.name ?? "--no name--";
+			tr.dataset.uri = track.ref.uri;
+			tdData.innerText = track.ref.name;
 			let tdHeart = tr.appendChild(document.createElement("td"));
 			tdHeart.innerHTML = `
                     <ebo-button toggle class="heartButton">
@@ -2902,18 +2899,18 @@ var EboAlbumTracksComp = class EboAlbumTracksComp extends EboComponent {
                     </ebo-menu-button>`;
 			tdButton.querySelector("#addTrack")?.addEventListener("click", (ev) => {
 				ev.target.closest("ebo-menu-button").closeMenu();
-				this.dispatchEboEvent("addTrackClicked.eboplayer", { uri: track.track.uri });
+				this.dispatchEboEvent("addTrackClicked.eboplayer", { uri: track.ref.uri });
 			});
 			tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
 				ev.target.closest("ebo-menu-button").closeMenu();
-				this.dispatchEboEvent("playTrackClicked.eboplayer", { uri: track.track.uri });
+				this.dispatchEboEvent("playTrackClicked.eboplayer", { uri: track.ref.uri });
 			});
 			tr.addEventListener("click", (ev) => {
 				tr.classList.toggle("selected");
 				this.dispatchEboEvent("trackClicked.eboplayer", { uri: tr.dataset.uri });
 			});
 			tdHeart.querySelector("ebo-button.heartButton").on("pressedChange.eboplayer", (ev) => {
-				this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": track.track.uri });
+				this.dispatchEboEvent("favoriteToggle.eboplayer", { "uri": track.ref.uri });
 			});
 		});
 		this.highLightActiveTrack();
@@ -5493,7 +5490,7 @@ var AlbumView = class AlbumView extends ComponentView {
 		let uri = this.state.getModel().getSelectedTrack();
 		this.state.getController().cache.lookupTrackCached(uri).then(async (track) => {
 			if (track?.type == "file") {
-				if (track.track.album) {
+				if (track.track?.album) {
 					let albumModel = await this.state.getController().getExpandedAlbumModel(track.track.album.uri);
 					this.setAlbumComponentData(albumModel, track.track.uri);
 				}
@@ -5718,31 +5715,37 @@ var CacheHandler = class extends Commands {
 		return this.model.getFromLibraryCache(trackUri);
 	}
 	async fetchAndConvertTracks(uri) {
-		let newListPromises = (await this.mopidyRepository.lookup(uri))[uri].map(async (track) => this.transformTrackDataToModel(track));
-		return await Promise.all(newListPromises);
+		let trackList = (await this.mopidyRepository.lookup(uri))[uri];
+		if (trackList) {
+			let newListPromises = trackList.map(async (track) => this.transformTrackDataToModel(track));
+			return await Promise.all(newListPromises);
+		}
+		return [await this.transformTrackDataToModel(uri)];
 	}
-	async transformTrackDataToModel(track) {
-		let allRefsMap = await this.getAllRefsMapCached();
-		if (isStream(track)) return {
+	async transformTrackDataToModel(track_or_uri) {
+		let uri;
+		let track = null;
+		if (typeof track_or_uri == "string") uri = track_or_uri;
+		else {
+			uri = track_or_uri.uri;
+			track = track_or_uri;
+		}
+		let ref = (await this.getAllRefsMapCached()).get(uri);
+		if (ref?.refType == "radio") return {
 			type: "stream",
 			track,
-			name: track.name ?? "--no name--",
-			ref: allRefsMap.get(track.uri)
+			name: ref.name,
+			ref
 		};
-		let model = {
+		return {
 			type: "file",
 			composer: "",
 			track,
-			title: track.name ?? "--no name--",
+			title: ref.name,
 			performer: "",
 			songlenght: 0,
-			ref: allRefsMap.get(track.uri)
+			ref
 		};
-		if (!track.name || track.name === "") {
-			let parts = track.uri.split("/");
-			model.title = decodeURI(parts[parts.length - 1]);
-		}
-		return model;
 	}
 	async lookupAlbumsCached(albumUris) {
 		let albums = [];
@@ -7183,7 +7186,7 @@ function getWebSocketUrl() {
 	if (webSocketUrl == "") return null;
 	return webSocketUrl;
 }
-const BUILD_VERSION = "1793974257510";
+const BUILD_VERSION = "1793998016116";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {

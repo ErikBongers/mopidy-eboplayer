@@ -1,8 +1,18 @@
-import {AllUris, ImageLookup, MopidyHistoryLine, PlaybackFlags, PlaylistUri} from "../modelTypes";
+import {
+    AllUris,
+    ImageLookup,
+    LibraryDict,
+    MopidyHistoryLine,
+    PlaybackFlags,
+    PlaylistUri,
+    PlayState
+} from "../modelTypes";
 import models from "../../js/mopidy";
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
 import Playlist = models.Playlist;
+import Dict = models.Dict;
+import Track = models.Track;
 
 export interface MopidyRepository {
     playTracklistItem(tlid: number): Promise<void>;
@@ -23,7 +33,7 @@ export interface MopidyRepository {
 
     search(uri: string): Promise<SearchResult[]>;
 
-    lookup(uris: AllUris | AllUris[]): Promise<any>;
+    lookup(uris: AllUris | AllUris[]): Promise<LibraryDict>;
 
     fetchTracklist(): Promise<TlTrack[]>;
 
@@ -39,15 +49,15 @@ export interface MopidyRepository {
 
     fetchVolume(): Promise<number>;
 
-    fetchCurrentTlTrack(): Promise<models.TlTrack>;
+    fetchCurrentTlTrack(): Promise<models.TlTrack | null>;
 
-    fetchPlayState(): Promise<string>;
+    fetchPlayState(): Promise<PlayState>;
 
-    savePlaylist(playlist: Playlist): any;
+    savePlaylist(playlist: Playlist): Promise<models.Playlist | null>;
 
-    setRepeat(repeat: boolean): any;
+    setRepeat(repeat: boolean): Promise<void>;
 
-    setSingle(single: boolean): any;
+    setSingle(single: boolean): Promise<void>;
 
     getPlaybackFlags(): Promise<PlaybackFlags>;
 }

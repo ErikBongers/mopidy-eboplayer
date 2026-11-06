@@ -129,7 +129,7 @@ export interface AlbumModel {
 
 export interface FileTrackModel {
     type: "file";
-    track: models.Track;
+    track: models.Track | null;
     title: string;
     composer?: string;
     performer: string;
@@ -139,7 +139,7 @@ export interface FileTrackModel {
 
 export interface StreamTrackModel {
     type: "stream";
-    track: models.Track;
+    track: models.Track | null;
     name: string;
     ref: ExpandedRef<StreamUri>;
 }
@@ -241,8 +241,8 @@ export class ExpandedAlbumModel {
     async getGenreReplacements(): Promise<GenreReplacement[]> {
         let trackModels = await this.getTrackModels();
         let genreDefPromises = [...new Set(trackModels
-            .filter(track => track.track.genre != undefined)
-            .map(track => track.track.genre as string))]
+            .filter(track => track.track?.genre != undefined)
+            .map(track => track.track!.genre as string))] //! see filter
             .map(async genre => (await this.controller.cache.getGenreReplacementsCached()).get(genre))
             .filter(genre => genre != undefined) as Promise<GenreReplacement>[];
         return Promise.all(genreDefPromises);
@@ -252,7 +252,7 @@ export class ExpandedAlbumModel {
         let trackModels = await this.getTrackModels();
         let artistMap: Map<string, Artist> = new Map();
         trackModels
-            .map(track => track.track.artists?? [])
+            .map(track => track.track?.artists?? [])
             .flat()
             .forEach(artist => artistMap.set(artist.name, artist));
         return [...artistMap.values()]
@@ -262,7 +262,7 @@ export class ExpandedAlbumModel {
         let trackModels = await this.getTrackModels();
         let artistMap: Map<string, Artist> = new Map();
         trackModels
-            .map(track => track.track.composers?? [])
+            .map(track => track.track?.composers?? [])
             .flat()
             .forEach(artist => artistMap.set(artist.name, artist));
         return [...artistMap.values()]

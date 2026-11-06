@@ -28,13 +28,13 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
         });
 
         this.component.on("playPressed.eboplayer", async () => {
-            await this.state.getController().mopidyProxy.sendPlay();
+            await this.state.getController().mopidyRepository.sendPlay();
         });
         this.component.on("stopPressed.eboplayer", async () => {
-            await this.state.getController().mopidyProxy.sendStop();
+            await this.state.getController().mopidyRepository.sendStop();
         });
         this.component.on("pausePressed.eboplayer", async () => {
-            await this.state.getController().mopidyProxy.sendPause();
+            await this.state.getController().mopidyRepository.sendPause();
         });
         this.component.on("buttonBarAlbumImgClicked.eboplayer", () => {
             this.onButtonBarImgClicked();
@@ -44,7 +44,7 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
         });
         this.component.on("changingVolume.eboplayer", async (ev) => {
             let value = ev.detail.volume;
-            await this.state.getController().mopidyProxy.sendVolume(value);
+            await this.state.getController().mopidyRepository.sendVolume(value);
         });
         this.component.on("optionSelected.eboplayer", async (ev) => {
             await this.changeRepeat(ev.detail.selected);
@@ -98,7 +98,7 @@ export class PlayerBarView extends ComponentView<EboPlayerBar> {
                 this.component.setAttribute("image_url", trackModel.bigImageUrl);
                 this.component.setAttribute("stop_or_pause", "stop");
             } else if (isInstanceOfExpandedTrackModel(trackModel)) {
-                this.component.setAttribute("text", trackModel.track.track.name?? "--no name--");
+                this.component.setAttribute("text", trackModel.track.ref.name);
                 this.component.setAttribute("allow_play", "true");
                 this.component.setAttribute("allow_prev", "false");
                 this.component.setAttribute("allow_next", "false");

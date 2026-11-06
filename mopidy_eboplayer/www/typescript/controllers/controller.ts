@@ -43,7 +43,7 @@ export const LIBRARY_PROTOCOL = "eboback:";
 //The controller should not listen to model events, to avoid circular updates (dead loops).
 class Controller extends Commands {
     protected model: Model;
-    public mopidyProxy: MopidyRepository;
+    public mopidyRepository: MopidyRepository;
     public webProxy: WebProxy;
     public localStorageProxy: LocalStorageProxy;
     private eboWsFrontCtrl: JsonRpcController;
@@ -58,7 +58,7 @@ class Controller extends Commands {
         this.cache = cache;
         this.model  = model;
         this.player = player;
-        this.mopidyProxy = mopdyRepository;
+        this.mopidyRepository = mopdyRepository;
         this.webProxy = new WebProxy(getHostAndPort());
         this.localStorageProxy = new LocalStorageProxy(model);
         this.eboWsFrontCtrl = eboWsFrontCtrl;
@@ -68,11 +68,11 @@ class Controller extends Commands {
     }
 
     async getInitialData(views: View[])  {
-        this.model.setVolume(await this.mopidyProxy.fetchVolume());
-        await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTlTrack());
-        this.model.setPlayState((await this.mopidyProxy.fetchPlayState()) as PlayState);
-        this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
-        this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
+        this.model.setVolume(await this.mopidyRepository.fetchVolume());
+        await this.setCurrentTrackAndFetchDetails(await this.mopidyRepository.fetchCurrentTlTrack());
+        this.model.setPlayState((await this.mopidyRepository.fetchPlayState()) as PlayState);
+        this.model.setPlaybackMode(await this.mopidyRepository.getPlaybackFlags());
+        this.model.setTrackList(await this.mopidyRepository.fetchTracklist());
         await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
         this.localStorageProxy.loadBrowseFiltersBreadCrumbs("browse");
@@ -99,7 +99,7 @@ class Controller extends Commands {
         });
 
         this.mopidy.on('event:optionsChanged', async () =>{
-            this.model.setPlaybackMode(await this.mopidyProxy.getPlaybackFlags());
+            this.model.setPlaybackMode(await this.mopidyRepository.getPlaybackFlags());
         });
 
         this.mopidy.on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => {
@@ -140,8 +140,8 @@ class Controller extends Commands {
         });
 
         this.mopidy.on('event:tracklistChanged', async () => {
-            this.model.setTrackList(await this.mopidyProxy.fetchTracklist());
-            await this.setCurrentTrackAndFetchDetails(await this.mopidyProxy.fetchCurrentTrack());
+            this.model.setTrackList(await this.mopidyRepository.fetchTracklist());
+            await this.setCurrentTrackAndFetchDetails(await this.mopidyRepository.fetchCurrentTrack());
         });
 
         this.mopidy.on('event:seeked', () => {
@@ -200,7 +200,7 @@ class Controller extends Commands {
     }
 
     async fetchAllAlbums() {
-        let albumRefs = await this.mopidyProxy.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
+        let albumRefs = await this.mopidyRepository.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
         return await this.cache.lookupAlbumsCached(albumRefs.map(ref => ref.uri));
     }
 
@@ -328,11 +328,11 @@ class Controller extends Commands {
     }
 
     async setRepeat(repeat: boolean) {
-        await this.mopidyProxy.setRepeat(repeat);
+        await this.mopidyRepository.setRepeat(repeat);
     }
 
     async setSingle(single: boolean) {
-        await this.mopidyProxy.setSingle(single);
+        await this.mopidyRepository.setSingle(single);
     }
 
     async saveAlbumGenre(albumUri: AlbumUri, genre: string) {

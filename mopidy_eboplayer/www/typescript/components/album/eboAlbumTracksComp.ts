@@ -100,8 +100,8 @@ export class EboAlbumTracksComp extends EboComponent {
             (await this.albumInfo.getTrackModels()).forEach(track => {
                 let tr = tbody.appendChild(document.createElement("tr"));
                 let tdData = tr.appendChild(document.createElement("td"));
-                tr.dataset.uri = track.track.uri;
-                tdData.innerText = track.track.name?? "--no name--";
+                tr.dataset.uri = track.ref.uri;
+                tdData.innerText = track.ref.name;
                 let tdHeart = tr.appendChild(document.createElement("td"));
                 tdHeart.innerHTML = `
                     <ebo-button toggle class="heartButton">
@@ -132,13 +132,13 @@ export class EboAlbumTracksComp extends EboComponent {
                     let menuButton = ev.target as HTMLElement;
                     let button = menuButton.closest("ebo-menu-button") as EboMenuButton;
                     button.closeMenu();
-                    this.dispatchEboEvent("addTrackClicked.eboplayer", {uri: track.track.uri as TrackUri});
+                    this.dispatchEboEvent("addTrackClicked.eboplayer", {uri: track.ref.uri as TrackUri});
                 });
                 tdButton.querySelector("#playTrack")?.addEventListener("click", (ev) => {
                     let menuButton = ev.target as HTMLElement;
                     let button = menuButton.closest("ebo-menu-button") as EboMenuButton;
                     button.closeMenu();
-                    this.dispatchEboEvent("playTrackClicked.eboplayer", {uri: track.track.uri as TrackUri});
+                    this.dispatchEboEvent("playTrackClicked.eboplayer", {uri: track.ref.uri as TrackUri});
                 });
                 tr.addEventListener("click", (ev) => {
                     tr.classList.toggle("selected");
@@ -146,7 +146,7 @@ export class EboAlbumTracksComp extends EboComponent {
                 });
                 let heartButton = tdHeart.querySelector("ebo-button.heartButton") as EboButton;
                 heartButton.on("pressedChange.eboplayer", (ev) => {
-                    this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": track.track.uri});
+                    this.dispatchEboEvent("favoriteToggle.eboplayer", {"uri": track.ref.uri});
                 });
             });
         }

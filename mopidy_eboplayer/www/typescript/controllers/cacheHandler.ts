@@ -1,11 +1,22 @@
 import {Model} from "../model";
 import {Commands} from "../commands";
 import models, {Mopidy} from "../../js/mopidy";
-import {MopidyProxy} from "../proxies/mopidyProxy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort, getHostAndPortDefs, isStream} from "../global";
-import {AllRefs, createAllRefs, ExpandedRef} from "../refs";
-import {AlbumModel, AlbumUri, AllUris, ExpandedFileTrackModel, ExpandedHistoryLineGroup, ExpandedStreamModel, FileTrackModel, GenreDef, GenreReplacement, RememberDef, StreamTrackModel, StreamUri, TrackUri} from "../modelTypes";
+import {getHostAndPort, getHostAndPortDefs} from "../global";
+import {createAllRefs, ExpandedRef} from "../refs";
+import {
+    AlbumModel,
+    AlbumUri,
+    AllUris,
+    ExpandedHistoryLineGroup,
+    FileTrackModel,
+    GenreDef,
+    GenreReplacement,
+    RememberDef,
+    StreamTrackModel,
+    StreamUri,
+    TrackUri
+} from "../modelTypes";
 import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
 import {MopidyRepository} from "../repositories/mopidyRepository";
@@ -45,37 +56,44 @@ export class CacheHandler extends Commands{
 
     private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
         let dict = await this.mopidyRepository.lookup(uri);
-        let trackList = dict[uri] as models.Track[];
-        let newListPromises = trackList.map(async track => this.transformTrackDataToModel(track));
-        return await Promise.all(newListPromises);
+        let trackList = dict[uri] as models.Track[] | undefined;
+        if(trackList) {
+            let newListPromises = trackList.map(async track => this.transformTrackDataToModel(track));
+            return await Promise.all(newListPromises);
+        }
+        return [await this.transformTrackDataToModel(uri)];
     }
 
-    private async transformTrackDataToModel(track: models.Track): Promise<FileTrackModel | StreamTrackModel> {
+    private async transformTrackDataToModel(track_or_uri: models.Track | TrackUri | StreamUri): Promise<FileTrackModel | StreamTrackModel> {
+        let uri;
+        let track = null;
+        if(typeof track_or_uri == "string")
+            uri = track_or_uri as TrackUri | StreamUri;
+        else {
+            uri = track_or_uri.uri;
+            track = track_or_uri as models.Track;
+        }
         let allRefsMap = await this.getAllRefsMapCached();
-        if (isStream(track)) {
+        let ref = allRefsMap.get(uri)!; //! must be filled, right?
+
+        if (ref?.refType == "radio") {
             return {
                 type: "stream",
                 track,
-                name: track.name?? "--no name--",
-                ref: allRefsMap.get(track.uri) as ExpandedRef<StreamUri>
+                name: ref.name,
+                ref: ref as ExpandedRef<StreamUri>
             } satisfies StreamTrackModel;
         }
-        //for now, assume it's a file track
-        let model: FileTrackModel = {
+
+        return {
             type: "file",
             composer: "",
             track,
-            title: track.name?? "--no name--",
+            title: ref.name,
             performer: "",
             songlenght: 0,
-            ref: allRefsMap.get(track.uri) as ExpandedRef<TrackUri>
+            ref: ref as ExpandedRef<TrackUri>
         };
-        //just in case...
-        if (!track.name || track.name === '') {
-            let parts = track.uri.split('/');
-            model.title = decodeURI(parts[parts.length - 1])
-        }
-        return model;
     }
 
     async lookupAlbumsCached(albumUris: AlbumUri[]) {

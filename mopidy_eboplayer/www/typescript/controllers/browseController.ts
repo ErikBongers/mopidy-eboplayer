@@ -172,7 +172,7 @@ export class BrowseController {
 
         if(lastCrumb instanceof BreadCrumbRef) {
             if(lastCrumb.data.type == "playlist") {
-                let playlistItems = await this.controller.mopidyProxy.fetchPlaylistItems(lastCrumb.data.uri);
+                let playlistItems = await this.controller.mopidyRepository.fetchPlaylistItems(lastCrumb.data.uri);
                 if(!playlistItems) {
                     throw new Error("Could not fetch playlist items. Got `null` instead.");
                 }
@@ -194,7 +194,7 @@ export class BrowseController {
             if (isBreadCrumbForStream(lastCrumb))
                 return;
 
-            let refs = await this.controller.mopidyProxy.browse(lastCrumb.data.uri);
+            let refs = await this.controller.mopidyRepository.browse(lastCrumb.data.uri);
             let results = await Refs.transformRefsToSearchResults(this.controller.cache, refs);
             this.model.setCurrentRefs(new SomeRefs(results, await this.controller.cache.getAllRefsCached()));
             return;

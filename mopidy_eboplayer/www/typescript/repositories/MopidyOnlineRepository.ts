@@ -1,8 +1,18 @@
 import models from "../../js/mopidy";
-import { AllUris, MopidyHistoryLine, PlaylistUri, ImageLookup, PlaybackFlags } from "../modelTypes";
+import {
+    AllUris,
+    MopidyHistoryLine,
+    PlaylistUri,
+    ImageLookup,
+    PlaybackFlags,
+    PlayState,
+    LibraryDict
+} from "../modelTypes";
 import { SearchResult } from "../refs";
 import {MopidyRepository} from "./mopidyRepository";
 import {MopidyProxy} from "../proxies/mopidyProxy";
+import Dict = models.Dict;
+import Track = models.Track;
 
 export class MopidyOnlineRepository implements MopidyRepository {
     constructor(private mopidyProxy: MopidyProxy) {
@@ -17,7 +27,7 @@ export class MopidyOnlineRepository implements MopidyRepository {
         return this.mopidyProxy.clearTrackList();
     }
     browse<T extends AllUris>(uri: string | null): Promise<models.Ref<T>[]> {
-        return this.mopidyProxy.browse<T>(uri);
+        return this.mopidyProxy.browse<T>(uri); // used by browseController, therfor by browseWindow
     }
     sendVolume(value: number): Promise<void> {
         return this.mopidyProxy.sendVolume(value);
@@ -34,7 +44,7 @@ export class MopidyOnlineRepository implements MopidyRepository {
     search(uri: string): Promise<SearchResult[]> {
         return this.mopidyProxy.search(uri);
     }
-    lookup(uris: AllUris | AllUris[]): Promise<any> {
+    lookup(uris: AllUris | AllUris[]): Promise<LibraryDict> {
         return this.mopidyProxy.lookup(uris);
     }
     fetchTracklist(): Promise<models.TlTrack[]> {
@@ -58,13 +68,13 @@ export class MopidyOnlineRepository implements MopidyRepository {
     fetchVolume(): Promise<number> {
         return this.mopidyProxy.fetchVolume();
     }
-    fetchCurrentTlTrack(): Promise<models.TlTrack> {
+    fetchCurrentTlTrack(): Promise<models.TlTrack | null> {
         return this.mopidyProxy.fetchCurrentTlTrack();
     }
-    fetchPlayState(): Promise<string> {
+    fetchPlayState(): Promise<PlayState> {
         return this.mopidyProxy.fetchPlayState();
     }
-    savePlaylist(playlist: models.Playlist) {
+    savePlaylist(playlist: models.Playlist): Promise<models.Playlist | null> {
         return this.mopidyProxy.savePlaylist(playlist);
     }
     setRepeat(repeat: boolean) {
