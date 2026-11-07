@@ -1,20 +1,21 @@
-import models from "../../js/mopidy";
+import models, { core } from "../../js/mopidy";
 import {
     AllUris,
-    MopidyHistoryLine,
-    PlaylistUri,
     ImageLookup,
+    LibraryDict,
+    MopidyHistoryLine,
     PlaybackFlags,
-    PlayState,
-    LibraryDict
+    PlaylistUri,
+    PlayState
 } from "../modelTypes";
-import { SearchResult } from "../refs";
+import {SearchResult} from "../refs";
 import {MopidyRepository} from "./mopidyRepository";
-import Track = models.Track;
-import Dict = models.Dict;
 
 export class MopidyOfflineRepository implements MopidyRepository {
     constructor() {
+    }
+
+    on(name: core.MopidyEventName, data: any): void {
     }
     playTracklistItem(tlid: number): Promise<void> {
         return Promise.resolve();

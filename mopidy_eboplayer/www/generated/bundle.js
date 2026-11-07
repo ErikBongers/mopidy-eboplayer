@@ -7000,6 +7000,19 @@ var MopidyOnlineRepository = class {
 	constructor(mopidyProxy) {
 		this.mopidyProxy = mopidyProxy;
 	}
+	async on(name, data) {
+		switch (name) {
+			case "event:volumeChanged":
+				await saveAndReturn(FETCH_VOLUME, Promise.resolve(data));
+				return;
+			case "event:playbackStateChanged":
+				await saveAndReturn(FETCH_PLAY_STATE, Promise.resolve(data.new_state));
+				return;
+			case "event:optionsChanged":
+				await saveAndReturn(GET_PLAYBACK_FLAGS, this.getPlaybackFlags());
+				return;
+		}
+	}
 	playTracklistItem(tlid) {
 		return this.mopidyProxy.playTracklistItem(tlid);
 	}
@@ -7012,9 +7025,8 @@ var MopidyOnlineRepository = class {
 	browse(uri) {
 		return this.mopidyProxy.browse(uri);
 	}
-	async sendVolume(value) {
-		await this.mopidyProxy.sendVolume(value);
-		await saveAndReturn(FETCH_VOLUME, Promise.resolve(value));
+	sendVolume(value) {
+		return this.mopidyProxy.sendVolume(value);
 	}
 	sendStop() {
 		return this.mopidyProxy.sendStop();
@@ -7502,7 +7514,10 @@ function createConnections() {
 		frontWebSocket,
 		backWebSocket,
 		on: (name, callback) => {
-			mopidy.on(name, callback);
+			mopidy.on(name, (data) => {
+				callback && callback(data);
+				mopidyRepository.on(name, data);
+			});
 		},
 		supervise: (func) => {
 			mopidy.supervise(func);
@@ -7524,7 +7539,7 @@ var NetworkStateMachine = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794054170644";
+const BUILD_VERSION = "1794057259345";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {

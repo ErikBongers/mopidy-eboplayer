@@ -7,7 +7,7 @@ import {
     PlaylistUri,
     PlayState
 } from "../modelTypes";
-import models from "../../js/mopidy";
+import models, {core} from "../../js/mopidy";
 import {SearchResult} from "../refs";
 import TlTrack = models.TlTrack;
 import Playlist = models.Playlist;
@@ -60,4 +60,6 @@ export interface MopidyRepository {
     setSingle(single: boolean): Promise<void>;
 
     getPlaybackFlags(): Promise<PlaybackFlags>;
+
+    on(name: core.MopidyEventName, data: any): void;
 }

@@ -194,7 +194,7 @@ class Controller {
         return await this.cache.lookupAlbumsCached(albumRefs.map(ref => ref.uri));
     }
 
-    private async onPlaybackStateChanged(data: { new_state: PlaybackState; }) {
+    private async onPlaybackStateChanged(data: { new_state: PlaybackState; }) { //todo: make data a type
         this.model.setPlayState(data.new_state);
         await this.updateStreamLines();
     }

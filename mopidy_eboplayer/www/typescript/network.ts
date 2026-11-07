@@ -52,7 +52,10 @@ export function createConnections(): NetworkProxy {
         frontWebSocket,
         backWebSocket,
         on: (name: MopidyEventName, callback?: any) => {
-            mopidy.on(name, callback)
+            mopidy.on(name, (data: any) => {
+                callback && callback(data);
+                mopidyRepository.on(name, data);
+            });
         },
         supervise: (func: (event: string, data: any) => void) => {
             mopidy.supervise(func);

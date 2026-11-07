@@ -1,4 +1,4 @@
-import models from "../../js/mopidy";
+import models, {core} from "../../js/mopidy";
 import {
     AllUris,
     MopidyHistoryLine,
@@ -15,9 +15,24 @@ import Dict = models.Dict;
 import Track = models.Track;
 import {getOfflineDb, SocketReply} from "../db/offlineDb";
 import {FETCH_CURRENT_TLTRACK, FETCH_PLAY_STATE, FETCH_TRACKLIST, FETCH_VOLUME, GET_PLAYBACK_FLAGS} from "../def";
+import PlaybackState = core.PlaybackState;
 
 export class MopidyOnlineRepository implements MopidyRepository {
     constructor(private mopidyProxy: MopidyProxy) {
+    }
+
+    async on(name: core.MopidyEventName, data: any): Promise<void> {
+        switch (name) {
+            case "event:volumeChanged":
+                await saveAndReturn(FETCH_VOLUME, Promise.resolve(data as number));
+                return;
+            case "event:playbackStateChanged":
+                await saveAndReturn(FETCH_PLAY_STATE, Promise.resolve(data.new_state as PlaybackState)); //todo: make data a type.
+                return;
+            case "event:optionsChanged":
+                await saveAndReturn(GET_PLAYBACK_FLAGS, this.getPlaybackFlags());
+                return;
+        }
     }
     playTracklistItem(tlid: number): Promise<void> {
         return this.mopidyProxy.playTracklistItem(tlid);

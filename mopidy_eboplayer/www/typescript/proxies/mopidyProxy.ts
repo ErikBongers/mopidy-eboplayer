@@ -1,5 +1,5 @@
 import {Commands} from "../commands";
-import models from "../../js/mopidy";
+import models, { core } from "../../js/mopidy";
 import {
     AllUris,
     HistoryRef,
@@ -15,7 +15,7 @@ import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 
-export class MopidyProxy implements MopidyRepository {
+export class MopidyProxy {
     private commands: Commands;
 
     constructor(commands: Commands) {
