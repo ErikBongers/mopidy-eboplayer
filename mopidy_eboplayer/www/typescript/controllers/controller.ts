@@ -92,7 +92,7 @@ class Controller {
             this.model.setPlaybackMode(await this.network.getProxy().mopidyRepository.getPlaybackFlags());
         });
 
-        this.network.getProxy().on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => {
+        this.network.getProxy().on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: make data a type
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
@@ -131,7 +131,7 @@ class Controller {
 
         this.network.getProxy().on('event:tracklistChanged', async () => {
             this.model.setTrackList(await this.network.getProxy().mopidyRepository.fetchTracklist());
-            await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTrack());
+            await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTlTrack());
         });
 
         this.network.getProxy().on('event:seeked', () => {

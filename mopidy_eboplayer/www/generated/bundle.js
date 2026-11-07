@@ -1279,7 +1279,7 @@ var Controller = class {
 		});
 		this.network.getProxy().on("event:tracklistChanged", async () => {
 			this.model.setTrackList(await this.network.getProxy().mopidyRepository.fetchTracklist());
-			await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTrack());
+			await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTlTrack());
 		});
 		this.network.getProxy().on("event:seeked", () => {});
 		this.network.getProxy().supervise((event, data) => {
@@ -7011,6 +7011,10 @@ var MopidyOnlineRepository = class {
 			case "event:optionsChanged":
 				await saveAndReturn(GET_PLAYBACK_FLAGS, this.getPlaybackFlags());
 				return;
+			case "event:trackPlaybackStarted":
+			case "event:trackPlaybackResumed":
+				await saveAndReturn(FETCH_CURRENT_TLTRACK, Promise.resolve(data.tl_track));
+				return;
 		}
 	}
 	playTracklistItem(tlid) {
@@ -7048,9 +7052,6 @@ var MopidyOnlineRepository = class {
 	}
 	fetchHistory() {
 		return this.mopidyProxy.fetchHistory();
-	}
-	fetchCurrentTrack() {
-		return this.mopidyProxy.fetchCurrentTrack();
 	}
 	fetchPlayLists() {
 		return this.mopidyProxy.fetchPlayLists();
@@ -7154,9 +7155,6 @@ var MopidyProxy = class {
 			prev = line;
 			return true;
 		});
-	}
-	async fetchCurrentTrack() {
-		return await this.commands.core.playback.getCurrentTlTrack();
 	}
 	async fetchPlayLists() {
 		return await this.commands.core.playlists.asList();
@@ -7539,7 +7537,7 @@ var NetworkStateMachine = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794057259345";
+const BUILD_VERSION = "1794078390227";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {

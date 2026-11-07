@@ -16,6 +16,7 @@ import Track = models.Track;
 import {getOfflineDb, SocketReply} from "../db/offlineDb";
 import {FETCH_CURRENT_TLTRACK, FETCH_PLAY_STATE, FETCH_TRACKLIST, FETCH_VOLUME, GET_PLAYBACK_FLAGS} from "../def";
 import PlaybackState = core.PlaybackState;
+import TlTrack = models.TlTrack;
 
 export class MopidyOnlineRepository implements MopidyRepository {
     constructor(private mopidyProxy: MopidyProxy) {
@@ -31,6 +32,10 @@ export class MopidyOnlineRepository implements MopidyRepository {
                 return;
             case "event:optionsChanged":
                 await saveAndReturn(GET_PLAYBACK_FLAGS, this.getPlaybackFlags());
+                return;
+            case "event:trackPlaybackStarted":
+            case "event:trackPlaybackResumed":
+                await saveAndReturn(FETCH_CURRENT_TLTRACK, Promise.resolve(data.tl_track as TlTrack));
                 return;
         }
     }
@@ -71,9 +76,6 @@ export class MopidyOnlineRepository implements MopidyRepository {
 
     fetchHistory(): Promise<MopidyHistoryLine[]> {
         return this.mopidyProxy.fetchHistory();
-    }
-    fetchCurrentTrack(): Promise<models.TlTrack | null> {
-        return this.mopidyProxy.fetchCurrentTrack();
     }
     fetchPlayLists(): Promise<models.Ref<PlaylistUri>[]> {
         return this.mopidyProxy.fetchPlayLists();

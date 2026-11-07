@@ -1,5 +1,14 @@
 * Save the received states from mopidy socket
-  > use the same keys as when saving these states.
+  > still need to save currentTrack.
+    > see multiple events event:trackPlaybackxxxx
+
+* Capture and save the eboplayer and eboback events.
+  > only programTitle and streamHistory.
+
+...and then we're ready for offline transition...
+
+* Perhaps replace Service Worker's Cache Storage wit Storage Buckets: separate prio.
+  > chromium only.
 
 * NetworkStateMachine
   > handle the transitions.
@@ -12,6 +21,7 @@
 
 * gui.ts: when new BUILD...reload to use the new bundle?
 
+* text search: every field (artist,...)
 
 * Startup sequence:
   - 'state:online'
@@ -20,7 +30,12 @@
         this.model.setHistory(await this.webProxy.fetchHistory());
         this.viewController.setInitialView();
 
+* UI: when on a page with a START button...there's also the playbar start button.
+  > I'm often tempted to push THAT button instead of the smaller start button.
+    > when no track is playing, minize the playbar when on a page with a start button?
 
+* UI: tracklist of an album -> you first have to DESELECT all tracks on order to start the whole album.
+  > When tracks get selected, show a blue play button, next to the...green/yellow/brown(?) one
 
 * start making app offline.
   > see updateOnlineStatus() in gui.ts

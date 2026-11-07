@@ -62,9 +62,6 @@ export class MopidyOfflineRepository implements MopidyRepository {
     fetchHistory(): Promise<MopidyHistoryLine[]> {
         return Promise.resolve([]);
     }
-    fetchCurrentTrack(): Promise<models.TlTrack | null> {
-        return Promise.resolve(null);
-    }
     fetchPlayLists(): Promise<models.Ref<PlaylistUri>[]> {
         return Promise.resolve([]);
     }

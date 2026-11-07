@@ -39,8 +39,6 @@ export interface MopidyRepository {
 
     fetchHistory(): Promise<MopidyHistoryLine[]>;
 
-    fetchCurrentTrack(): Promise<models.TlTrack | null>;
-
     fetchPlayLists(): Promise<models.Ref<PlaylistUri>[]>;
 
     fetchPlaylistItems(uri: string): Promise<models.Ref<AllUris>[] | null>;

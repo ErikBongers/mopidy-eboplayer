@@ -99,10 +99,6 @@ export class MopidyProxy {
         });
     }
 
-    async fetchCurrentTrack() {
-        return await this.commands.core.playback.getCurrentTlTrack() as TlTrack | null;
-    }
-
     async fetchPlayLists() {
         return await this.commands.core.playlists.asList() as Ref<PlaylistUri>[];
     }
