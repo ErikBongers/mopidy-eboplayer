@@ -1,3 +1,8 @@
 export const EBOBACK_PATH = "/eboback/data/";
 export const EBOBACK_IMAGES_PATH = "/eboback/image/";
 export const EBOPLAYER_PATH = "/eboplayer/action/";
+export const FETCH_TRACKLIST = "fetchTracklist";
+export const FETCH_CURRENT_TLTRACK = "fetchCurrentTlTrack";
+export const FETCH_PLAY_STATE = "fetchPlayState";
+export const GET_PLAYBACK_FLAGS = "getPlaybackFlags";
+export const FETCH_VOLUME = "fetchVolume";

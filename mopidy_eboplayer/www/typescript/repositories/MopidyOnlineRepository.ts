@@ -13,6 +13,8 @@ import {MopidyRepository} from "./mopidyRepository";
 import {MopidyProxy} from "../proxies/mopidyProxy";
 import Dict = models.Dict;
 import Track = models.Track;
+import {getOfflineDb, SocketReply} from "../db/offlineDb";
+import {FETCH_CURRENT_TLTRACK, FETCH_PLAY_STATE, FETCH_TRACKLIST, FETCH_VOLUME, GET_PLAYBACK_FLAGS} from "../def";
 
 export class MopidyOnlineRepository implements MopidyRepository {
     constructor(private mopidyProxy: MopidyProxy) {
@@ -47,9 +49,11 @@ export class MopidyOnlineRepository implements MopidyRepository {
     lookup(uris: AllUris | AllUris[]): Promise<LibraryDict> {
         return this.mopidyProxy.lookup(uris);
     }
-    fetchTracklist(): Promise<models.TlTrack[]> {
-        return this.mopidyProxy.fetchTracklist();
+
+    async fetchTracklist(): Promise<models.TlTrack[]> {
+        return saveAndReturn(FETCH_TRACKLIST, this.mopidyProxy.fetchTracklist());
     }
+
     fetchHistory(): Promise<MopidyHistoryLine[]> {
         return this.mopidyProxy.fetchHistory();
     }
@@ -62,17 +66,17 @@ export class MopidyOnlineRepository implements MopidyRepository {
     fetchPlaylistItems(uri: string): Promise<models.Ref<AllUris>[] | null> {
         return this.mopidyProxy.fetchPlaylistItems(uri);
     }
-    fetchImages(uris: AllUris[]): Promise<ImageLookup> {
+    fetchImages(uris: AllUris[]): Promise<ImageLookup> { //todo: unused?
         return this.mopidyProxy.fetchImages(uris);
     }
-    fetchVolume(): Promise<number> {
-        return this.mopidyProxy.fetchVolume();
+    async fetchVolume(): Promise<number> {
+        return saveAndReturn(FETCH_VOLUME, this.mopidyProxy.fetchVolume());
     }
-    fetchCurrentTlTrack(): Promise<models.TlTrack | null> {
-        return this.mopidyProxy.fetchCurrentTlTrack();
+    async fetchCurrentTlTrack(): Promise<models.TlTrack | null> {
+        return saveAndReturn(FETCH_CURRENT_TLTRACK, this.mopidyProxy.fetchCurrentTlTrack());
     }
-    fetchPlayState(): Promise<PlayState> {
-        return this.mopidyProxy.fetchPlayState();
+    async fetchPlayState(): Promise<PlayState> {
+        return saveAndReturn(FETCH_PLAY_STATE, this.mopidyProxy.fetchPlayState());
     }
     savePlaylist(playlist: models.Playlist): Promise<models.Playlist | null> {
         return this.mopidyProxy.savePlaylist(playlist);
@@ -83,8 +87,14 @@ export class MopidyOnlineRepository implements MopidyRepository {
     setSingle(single: boolean) {
         return this.mopidyProxy.setSingle(single);
     }
-    getPlaybackFlags(): Promise<PlaybackFlags> {
-        return this.mopidyProxy.getPlaybackFlags();
+    async getPlaybackFlags(): Promise<PlaybackFlags> {
+        return saveAndReturn(GET_PLAYBACK_FLAGS, this.mopidyProxy.getPlaybackFlags());
     }
+}
 
+async function saveAndReturn<D, T extends Promise<D>>(id: string, doc: T): Promise<D> {
+    let db = await getOfflineDb();
+    let docX: D = await doc;
+    await db.SocketReplies.put({id, doc: docX});
+    return docX;
 }

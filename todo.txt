@@ -1,6 +1,7 @@
-* gui.setupStuff(); put networkProxy in a ConnectionState(Machine)
+* Save the received states from mopidy socket
+  > use the same keys as when saving these states.
 
-* Make a OnlineOfflineStateMachine
+* NetworkStateMachine
   > handle the transitions.
   > capture all related events
     > online/offline
@@ -9,20 +10,7 @@
     > other?
 
 
-* Make a EboBack repository
-  > or...not needed?
-    > most fetches are already cached!
-
 * gui.ts: when new BUILD...reload to use the new bundle?
-
-* MopidyOnlineRepository:
-  > what to save to IndexedDb?
-    > perhaps current track, so the app has a 'snapshot' of how it last was live?
-    > tracklist
-    > images?
-      > for now, nothing, then the thumbnails, and perhaps (and optionally!) the big files
-        > this way on a phone this can be set to "don't store big images offline"
-    >...save everything, even play state, in case of a temporary offline.
 
 
 * Startup sequence:

@@ -83,16 +83,16 @@ var SearchResultParent = class {
 };
 var RefSearchResult = class extends SearchResultParent {
 	cache;
-	constructor(item, weight, cache, defaultImageUrl) {
+	constructor(item, weight, cache$1, defaultImageUrl) {
 		super("ref", item, weight, getDefaultImageUrl(item.refType, defaultImageUrl));
-		this.cache = cache;
+		this.cache = cache$1;
 	}
 };
 var GenreSearchResult = class extends SearchResultParent {
 	cache;
-	constructor(item, weight, cache, imageUrl) {
+	constructor(item, weight, cache$1, imageUrl) {
 		super("genreReplacement", item, weight, "images/icons/Genre.svg");
-		this.cache = cache;
+		this.cache = cache$1;
 	}
 	getExpandedModel() {
 		return this.cache.getGenreReplacementCached(this.item.name ?? "???");
@@ -175,8 +175,8 @@ var Refs = class {
 		if (ref.uri.startsWith("eboback:directory?genre")) return "genre";
 		return ref.type;
 	}
-	static async transformRefsToSearchResults(cache, refs) {
-		let refMap = await cache.getAllRefsMapCached();
+	static async transformRefsToSearchResults(cache$1, refs) {
+		let refMap = await cache$1.getAllRefsMapCached();
 		let results = refs.map(async (ref) => {
 			let refType = SomeRefs.toRefType(ref);
 			if (refType == "genre") {
@@ -188,7 +188,7 @@ var Refs = class {
 					idMaxImage: null,
 					idMinImage: null
 				};
-				return new GenreSearchResult(expandedRef$1, -1, cache);
+				return new GenreSearchResult(expandedRef$1, -1, cache$1);
 			}
 			let expandedRef = refMap.get(ref.uri);
 			if (!expandedRef) expandedRef = {
@@ -199,7 +199,7 @@ var Refs = class {
 				idMaxImage: null,
 				idMinImage: null
 			};
-			return new RefSearchResult(expandedRef, -1, cache);
+			return new RefSearchResult(expandedRef, -1, cache$1);
 		});
 		return Promise.all(results);
 	}
@@ -226,12 +226,12 @@ var Refs = class {
 		return [...resultsWithoutGenreDefs, ...Array.from(onlyWithoutReplacementResultsMap.values())];
 	}
 };
-async function createAllRefs(cache, allRefs, tracksNoAlbumRefs) {
-	return new AllRefs(cache, allRefs, tracksNoAlbumRefs);
+async function createAllRefs(cache$1, allRefs, tracksNoAlbumRefs) {
+	return new AllRefs(cache$1, allRefs, tracksNoAlbumRefs);
 }
-function filterRefsToResult(refs, refType, cache) {
+function filterRefsToResult(refs, refType, cache$1) {
 	return refs.filter((ref) => ref.refType == refType).map((expandedRef) => {
-		return new RefSearchResult(expandedRef, 0, cache);
+		return new RefSearchResult(expandedRef, 0, cache$1);
 	});
 }
 var AllRefs = class extends Refs {
@@ -245,19 +245,19 @@ var AllRefs = class extends Refs {
 	availableRefTypes;
 	tracksNoAlbumRefs;
 	tracksNoAlbumRefsMap;
-	constructor(cache, allRefs, tracksNoAlbumRefs) {
+	constructor(cache$1, allRefs, tracksNoAlbumRefs) {
 		super();
 		this.allRefs = allRefs;
 		this.tracksNoAlbumRefs = tracksNoAlbumRefs;
 		this.tracksNoAlbumRefsMap = new Map(tracksNoAlbumRefs.map((res) => [res.uri, res]));
-		this.tracks = filterRefsToResult(allRefs, "track", cache);
-		this.albums = filterRefsToResult(allRefs, "album", cache);
-		this.artists = filterRefsToResult(allRefs, "artist", cache);
-		this.radios = filterRefsToResult(allRefs, "radio", cache);
+		this.tracks = filterRefsToResult(allRefs, "track", cache$1);
+		this.albums = filterRefsToResult(allRefs, "album", cache$1);
+		this.artists = filterRefsToResult(allRefs, "artist", cache$1);
+		this.radios = filterRefsToResult(allRefs, "radio", cache$1);
 		this.genres = allRefs.filter((ref) => ref.refType == "genre").map((expandedRef) => {
-			return new GenreSearchResult(expandedRef, 0, cache);
+			return new GenreSearchResult(expandedRef, 0, cache$1);
 		});
-		this.playlists = filterRefsToResult(allRefs, "playlist", cache);
+		this.playlists = filterRefsToResult(allRefs, "playlist", cache$1);
 		this.availableRefTypes = /* @__PURE__ */ new Set();
 		this.getAvailableRefTypes(this.tracks, this.tracksNoAlbumRefsMap).forEach((type) => this.availableRefTypes.add(type));
 		this.getAvailableRefTypes(this.albums).forEach((type) => this.availableRefTypes.add(type));
@@ -1218,8 +1218,8 @@ var Controller = class {
 	cache;
 	viewController;
 	browseController;
-	constructor(model, network, player, cache) {
-		this.cache = cache;
+	constructor(model, network, player, cache$1) {
+		this.cache = cache$1;
 		this.model = model;
 		this.player = player;
 		this.network = network;
@@ -4719,11 +4719,11 @@ var State = class {
 	controller;
 	player;
 	cache;
-	constructor(model, controller, player, cache) {
+	constructor(model, controller, player, cache$1) {
 		this.model = model;
 		this.controller = controller;
 		this.player = player;
-		this.cache = cache;
+		this.cache = cache$1;
 	}
 	getModel = () => this.model;
 	getController = () => this.controller;
@@ -6246,6 +6246,11 @@ var EboTracklistComp = class EboTracklistComp extends EboComponent {
 //#region mopidy_eboplayer/www/typescript/def.ts
 const EBOBACK_PATH = "/eboback/data/";
 const EBOPLAYER_PATH = "/eboplayer/action/";
+const FETCH_TRACKLIST = "fetchTracklist";
+const FETCH_CURRENT_TLTRACK = "fetchCurrentTlTrack";
+const FETCH_PLAY_STATE = "fetchPlayState";
+const GET_PLAYBACK_FLAGS = "getPlaybackFlags";
+const FETCH_VOLUME = "fetchVolume";
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/proxies/webProxy.ts
@@ -6722,6 +6727,274 @@ var Mopidy = class {
 };
 
 //#endregion
+//#region node_modules/idb/build/index.js
+const instanceOfAny = (object, constructors) => constructors.some((c) => object instanceof c);
+let idbProxyableTypes;
+let cursorAdvanceMethods;
+function getIdbProxyableTypes() {
+	return idbProxyableTypes || (idbProxyableTypes = [
+		IDBIndex,
+		IDBObjectStore,
+		IDBCursor,
+		IDBDatabase,
+		IDBTransaction
+	]);
+}
+function getCursorAdvanceMethods() {
+	return cursorAdvanceMethods || (cursorAdvanceMethods = [
+		"advance",
+		"continue",
+		"continuePrimaryKey"
+	].map((method) => IDBCursor.prototype[method]));
+}
+const transactionDoneMap = /* @__PURE__ */ new WeakMap();
+const transformCache = /* @__PURE__ */ new WeakMap();
+const reverseTransformCache = /* @__PURE__ */ new WeakMap();
+function promisifyRequest(request) {
+	const promise = new Promise((resolve, reject) => {
+		const unlisten = () => {
+			request.removeEventListener("success", success);
+			request.removeEventListener("error", error);
+		};
+		const success = () => {
+			resolve(wrap(request.result));
+			unlisten();
+		};
+		const error = () => {
+			reject(request.error);
+			unlisten();
+		};
+		request.addEventListener("success", success);
+		request.addEventListener("error", error);
+	});
+	reverseTransformCache.set(promise, request);
+	return promise;
+}
+function cacheDonePromiseForTransaction(tx) {
+	if (transactionDoneMap.has(tx)) return;
+	const done = new Promise((resolve, reject) => {
+		const unlisten = () => {
+			tx.removeEventListener("complete", complete);
+			tx.removeEventListener("error", error);
+			tx.removeEventListener("abort", error);
+		};
+		const complete = () => {
+			resolve();
+			unlisten();
+		};
+		const error = () => {
+			reject(tx.error || new DOMException("AbortError", "AbortError"));
+			unlisten();
+		};
+		tx.addEventListener("complete", complete);
+		tx.addEventListener("error", error);
+		tx.addEventListener("abort", error);
+	});
+	transactionDoneMap.set(tx, done);
+}
+let idbProxyTraps = {
+	get(target, prop, receiver) {
+		if (target instanceof IDBTransaction) {
+			if (prop === "done") return transactionDoneMap.get(target);
+			if (prop === "store") return receiver.objectStoreNames[1] ? void 0 : receiver.objectStore(receiver.objectStoreNames[0]);
+		}
+		return wrap(target[prop]);
+	},
+	set(target, prop, value) {
+		target[prop] = value;
+		return true;
+	},
+	has(target, prop) {
+		if (target instanceof IDBTransaction && (prop === "done" || prop === "store")) return true;
+		return prop in target;
+	}
+};
+function replaceTraps(callback) {
+	idbProxyTraps = callback(idbProxyTraps);
+}
+function wrapFunction(func) {
+	if (getCursorAdvanceMethods().includes(func)) return function(...args) {
+		func.apply(unwrap(this), args);
+		return wrap(this.request);
+	};
+	return function(...args) {
+		return wrap(func.apply(unwrap(this), args));
+	};
+}
+function transformCachableValue(value) {
+	if (typeof value === "function") return wrapFunction(value);
+	if (value instanceof IDBTransaction) cacheDonePromiseForTransaction(value);
+	if (instanceOfAny(value, getIdbProxyableTypes())) return new Proxy(value, idbProxyTraps);
+	return value;
+}
+function wrap(value) {
+	if (value instanceof IDBRequest) return promisifyRequest(value);
+	if (transformCache.has(value)) return transformCache.get(value);
+	const newValue = transformCachableValue(value);
+	if (!Object.is(newValue, value)) {
+		transformCache.set(value, newValue);
+		reverseTransformCache.set(newValue, value);
+	}
+	return newValue;
+}
+const unwrap = (value) => reverseTransformCache.get(value);
+/**
+* Open a database.
+*
+* @param name Name of the database.
+* @param version Schema version.
+* @param callbacks Additional callbacks.
+*/
+function openDB(name, version, { blocked, upgrade, blocking, terminated } = {}) {
+	const request = indexedDB.open(name, version);
+	const openPromise = wrap(request);
+	if (upgrade) request.addEventListener("upgradeneeded", (event) => {
+		upgrade(wrap(request.result), event.oldVersion, event.newVersion, wrap(request.transaction), event);
+	});
+	if (blocked) request.addEventListener("blocked", (event) => blocked(event.oldVersion, event.newVersion, event));
+	openPromise.then((db) => {
+		if (terminated) db.addEventListener("close", () => terminated());
+		if (blocking) db.addEventListener("versionchange", (event) => blocking(event.oldVersion, event.newVersion, event));
+	}).catch(() => {});
+	return openPromise;
+}
+const readMethods = [
+	"get",
+	"getKey",
+	"getAll",
+	"getAllKeys",
+	"count"
+];
+const writeMethods = [
+	"put",
+	"add",
+	"delete",
+	"clear"
+];
+const cachedMethods = {};
+function getMethod(target, prop) {
+	if (!(target instanceof IDBDatabase && !(prop in target) && typeof prop === "string")) return;
+	if (cachedMethods[prop]) return cachedMethods[prop];
+	const targetFuncName = prop.replace(/FromIndex$/, "");
+	const useIndex = prop !== targetFuncName;
+	const isWrite = writeMethods.includes(targetFuncName);
+	if (!(targetFuncName in (useIndex ? IDBIndex : IDBObjectStore).prototype) || !(isWrite || readMethods.includes(targetFuncName))) return;
+	const method = async function(storeName, ...args) {
+		const tx = this.transaction(storeName, isWrite ? "readwrite" : "readonly");
+		let target$1 = tx.store;
+		if (useIndex) target$1 = target$1.index(args.shift());
+		return (await Promise.all([target$1[targetFuncName](...args), isWrite && tx.done]))[0];
+	};
+	return cachedMethods[prop] = method;
+}
+replaceTraps((oldTraps) => ({
+	...oldTraps,
+	get: (target, prop, receiver) => getMethod(target, prop) || oldTraps.get(target, prop, receiver),
+	has: (target, prop) => !!getMethod(target, prop) || oldTraps.has(target, prop)
+}));
+const advanceMethodProps = [
+	"advance",
+	"continue",
+	"continuePrimaryKey"
+];
+const methodMap = {};
+const advanceResults = /* @__PURE__ */ new WeakMap();
+const ittrProxiedCursorToOriginalProxy = /* @__PURE__ */ new WeakMap();
+const cursorIteratorTraps = { get(target, prop) {
+	if (!advanceMethodProps.includes(prop)) return target[prop];
+	let cachedFunc = methodMap[prop];
+	if (!cachedFunc) cachedFunc = methodMap[prop] = function(...args) {
+		advanceResults.set(this, ittrProxiedCursorToOriginalProxy.get(this)[prop](...args));
+	};
+	return cachedFunc;
+} };
+async function* iterate(...args) {
+	let cursor = this;
+	if (!(cursor instanceof IDBCursor)) cursor = await cursor.openCursor(...args);
+	if (!cursor) return;
+	cursor = cursor;
+	const proxiedCursor = new Proxy(cursor, cursorIteratorTraps);
+	ittrProxiedCursorToOriginalProxy.set(proxiedCursor, cursor);
+	reverseTransformCache.set(proxiedCursor, unwrap(cursor));
+	while (cursor) {
+		yield proxiedCursor;
+		cursor = await (advanceResults.get(proxiedCursor) || cursor.continue());
+		advanceResults.delete(proxiedCursor);
+	}
+}
+function isIteratorProp(target, prop) {
+	return prop === Symbol.asyncIterator && instanceOfAny(target, [
+		IDBIndex,
+		IDBObjectStore,
+		IDBCursor
+	]) || prop === "iterate" && instanceOfAny(target, [IDBIndex, IDBObjectStore]);
+}
+replaceTraps((oldTraps) => ({
+	...oldTraps,
+	get(target, prop, receiver) {
+		if (isIteratorProp(target, prop)) return iterate;
+		return oldTraps.get(target, prop, receiver);
+	},
+	has(target, prop) {
+		return isIteratorProp(target, prop) || oldTraps.has(target, prop);
+	}
+}));
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/db/repository.ts
+var Repository = class {
+	constructor(db, storeName) {
+		this.db = db;
+		this.storeName = storeName;
+	}
+	async get(id) {
+		return this.db.get(this.storeName, id);
+	}
+	async getAll() {
+		return this.db.getAll(this.storeName);
+	}
+	async put(data, key) {
+		return this.db.put(this.storeName, data, key);
+	}
+	async clear() {
+		return this.db.clear(this.storeName);
+	}
+	async bulkPut(items) {
+		let tx = this.db.transaction(this.storeName, "readwrite");
+		let putPromises = items.map((item) => tx.store.put(item));
+		await Promise.all([...putPromises, tx.done]);
+	}
+	async findMatches(match) {
+		return (await this.db.getAll(this.storeName)).filter(match);
+	}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/db/offlineDb.ts
+const DB_VERSION = 1;
+const DB_NAME = "offlineCache";
+let cache = null;
+async function getOfflineDb() {
+	if (!cache) cache = await LocalCache.get();
+	return cache;
+}
+var LocalCache = class LocalCache {
+	get SocketReplies() {
+		return this._SocketReplies;
+	}
+	_SocketReplies;
+	constructor(db) {
+		this.db = db;
+		this._SocketReplies = new Repository(this.db, "SocketReplies");
+	}
+	static async get() {
+		return new LocalCache(await openDB(DB_NAME, DB_VERSION, { async upgrade(db) {
+			db.createObjectStore("SocketReplies", { keyPath: "id" });
+		} }));
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/repositories/MopidyOnlineRepository.ts
 var MopidyOnlineRepository = class {
 	constructor(mopidyProxy) {
@@ -6739,8 +7012,9 @@ var MopidyOnlineRepository = class {
 	browse(uri) {
 		return this.mopidyProxy.browse(uri);
 	}
-	sendVolume(value) {
-		return this.mopidyProxy.sendVolume(value);
+	async sendVolume(value) {
+		await this.mopidyProxy.sendVolume(value);
+		await saveAndReturn(FETCH_VOLUME, Promise.resolve(value));
 	}
 	sendStop() {
 		return this.mopidyProxy.sendStop();
@@ -6757,8 +7031,8 @@ var MopidyOnlineRepository = class {
 	lookup(uris) {
 		return this.mopidyProxy.lookup(uris);
 	}
-	fetchTracklist() {
-		return this.mopidyProxy.fetchTracklist();
+	async fetchTracklist() {
+		return saveAndReturn(FETCH_TRACKLIST, this.mopidyProxy.fetchTracklist());
 	}
 	fetchHistory() {
 		return this.mopidyProxy.fetchHistory();
@@ -6775,14 +7049,14 @@ var MopidyOnlineRepository = class {
 	fetchImages(uris) {
 		return this.mopidyProxy.fetchImages(uris);
 	}
-	fetchVolume() {
-		return this.mopidyProxy.fetchVolume();
+	async fetchVolume() {
+		return saveAndReturn(FETCH_VOLUME, this.mopidyProxy.fetchVolume());
 	}
-	fetchCurrentTlTrack() {
-		return this.mopidyProxy.fetchCurrentTlTrack();
+	async fetchCurrentTlTrack() {
+		return saveAndReturn(FETCH_CURRENT_TLTRACK, this.mopidyProxy.fetchCurrentTlTrack());
 	}
-	fetchPlayState() {
-		return this.mopidyProxy.fetchPlayState();
+	async fetchPlayState() {
+		return saveAndReturn(FETCH_PLAY_STATE, this.mopidyProxy.fetchPlayState());
 	}
 	savePlaylist(playlist) {
 		return this.mopidyProxy.savePlaylist(playlist);
@@ -6793,10 +7067,19 @@ var MopidyOnlineRepository = class {
 	setSingle(single) {
 		return this.mopidyProxy.setSingle(single);
 	}
-	getPlaybackFlags() {
-		return this.mopidyProxy.getPlaybackFlags();
+	async getPlaybackFlags() {
+		return saveAndReturn(GET_PLAYBACK_FLAGS, this.mopidyProxy.getPlaybackFlags());
 	}
 };
+async function saveAndReturn(id, doc) {
+	let db = await getOfflineDb();
+	let docX = await doc;
+	await db.SocketReplies.put({
+		id,
+		doc: docX
+	});
+	return docX;
+}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/proxies/mopidyProxy.ts
@@ -7241,7 +7524,7 @@ var NetworkStateMachine = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794006572447";
+const BUILD_VERSION = "1794054170644";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
