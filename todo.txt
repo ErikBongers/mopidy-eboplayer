@@ -1,15 +1,3 @@
-* Save the received states from mopidy socket
-  > still need to save currentTrack.
-    > see multiple events event:trackPlaybackxxxx
-
-* Capture and save the eboplayer and eboback events.
-  > only programTitle and streamHistory.
-
-...and then we're ready for offline transition...
-
-* Perhaps replace Service Worker's Cache Storage wit Storage Buckets: separate prio.
-  > chromium only.
-
 * NetworkStateMachine
   > handle the transitions.
   > capture all related events
@@ -17,6 +5,9 @@
     > server not available.
       > recognized when websockets go offline
     > other?
+
+* Perhaps replace Service Worker's Cache Storage wit Storage Buckets: separate prio.
+  > chromium only.
 
 
 * gui.ts: when new BUILD...reload to use the new bundle?

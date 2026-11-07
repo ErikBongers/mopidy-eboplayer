@@ -94,7 +94,6 @@ sw.addEventListener('fetch', (event) => {
 function networkFirst(event: FetchEvent, cacheName: string) {
     return async () => {
         try {
-            console.log('networkFirst: fetching...');
             const networkResponse = await fetch(event.request);
 
             if (networkResponse.status === 200) {
@@ -109,7 +108,6 @@ function networkFirst(event: FetchEvent, cacheName: string) {
     };
 
     async function getCached(error: unknown) {
-        console.log('networkFirst: got error, returning cached response');
         let cache = await caches.open(cacheName);
         const cachedResponse = await cache.match(event.request);
         if (cachedResponse) return cachedResponse;
@@ -156,11 +154,9 @@ async function saveToCache(cacheName: string, event: FetchEvent, networkResponse
 
 sw.addEventListener('message', async (event: ServiceWorkerMessageEvent) => {
     if (event.data?.type === "updateCache") {
-        console.log(`Updating cache from ${event.data.oldVersion} to ${event.data.newVersion}`);
         const newCache = await caches.open(ASSETS_CACHE_NAME);
         try {
             await newCache.addAll(ASSETS_TO_CACHE);
-            console.log('Core offline assets successfully migrated to new cache.');
         } catch (err) {
             console.error('Failed to pre-cache essential files on version change:', err);
         }
