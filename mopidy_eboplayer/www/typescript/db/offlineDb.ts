@@ -45,3 +45,10 @@ export class LocalCache {
         }));
     }
 }
+
+export async function saveAndReturn<D, T extends Promise<D>>(id: string, doc: T): Promise<D> {
+    let db = await getOfflineDb();
+    let docX: D = await doc;
+    await db.SocketReplies.put({id, doc: docX});
+    return docX;
+}

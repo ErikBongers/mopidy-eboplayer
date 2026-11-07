@@ -6,4 +6,4 @@ export const FETCH_CURRENT_TLTRACK = "fetchCurrentTlTrack";
 export const FETCH_PLAY_STATE = "fetchPlayState";
 export const GET_PLAYBACK_FLAGS = "getPlaybackFlags";
 export const FETCH_VOLUME = "fetchVolume";
-export const FETCH_CURRENT_TRACK = "fetchCurrentTrack";
+export const FETCH_REMEMBERS = "fetchRemembers";

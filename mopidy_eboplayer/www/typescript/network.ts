@@ -7,10 +7,12 @@ import {MopidyOnlineRepository} from "./repositories/MopidyOnlineRepository";
 import {MopidyProxy} from "./proxies/mopidyProxy";
 import {Commands} from "./commands";
 import MopidyEventName = core.MopidyEventName;
+import {WebRepository} from "./repositories/webRepository";
+import {WebOnlineRepository} from "./repositories/WebOnlineRepository";
 
 export interface NetworkProxy {
     mopidyRepository: MopidyRepository;
-    webProxy: WebProxy;
+    webRepository: WebRepository;
     frontWebSocket: JsonRpcController;
     backWebSocket: JsonRpcController;
     on: (name: MopidyEventName, callback?: any) => void;
@@ -37,7 +39,7 @@ export function createConnections(): NetworkProxy {
     let backWebSocket = new JsonRpcController(wsBackEndUrl, 1000, 64000);
 
     let mopidyRepository: MopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
-    let webProxy = new WebProxy(hostAndPort);
+    let webRepository = new WebOnlineRepository(new WebProxy(hostAndPort));
 
     function connectWebsockets() {
         console.log("Trying to connect sockets...");
@@ -48,7 +50,7 @@ export function createConnections(): NetworkProxy {
 
     return {
         mopidyRepository,
-        webProxy,
+        webRepository,
         frontWebSocket,
         backWebSocket,
         on: (name: MopidyEventName, callback?: any) => {

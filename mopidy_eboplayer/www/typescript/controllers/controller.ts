@@ -80,7 +80,7 @@ class Controller {
         this.network.getProxy().on('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await this.getInitialData(views);
-            this.model.setHistory(await this.network.getProxy().webProxy.fetchHistory());
+            this.model.setHistory(await this.network.getProxy().webRepository.fetchHistory());
             this.viewController.setInitialView();
         });
 
@@ -229,7 +229,7 @@ class Controller {
 
         let trackModel = await this.cache.lookupTrackCached(this.model.currentTrack);
         if (trackModel?.type == "stream") {
-            let lines = await this.network.getProxy().webProxy.fetchActiveStreamLines(this.model.currentTrack as StreamUri);
+            let lines = await this.network.getProxy().webRepository.fetchActiveStreamLines(this.model.currentTrack as StreamUri);
             this.model.setActiveStreamLines(lines);
         } else {
             this.model.setActiveStreamLines(NoStreamTitles);
@@ -268,7 +268,7 @@ class Controller {
     }
 
     async fetchAllRefs() {
-        let allRefs = await this.network.getProxy().webProxy.fetchAllRefs();
+        let allRefs = await this.network.getProxy().webRepository.fetchAllRefs();
 
         return createAllRefs(this.cache, allRefs.allRefs, allRefs.tracksNoAlbumRefs);
     }
@@ -283,21 +283,21 @@ class Controller {
     }
 
     async createPlaylist(name: string) {
-        return this.network.getProxy().webProxy.createPlaylist(name)
+        return this.network.getProxy().webRepository.createPlaylist(name)
     }
 
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: RefType, sequence: number) {
-        return this.network.getProxy().webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
+        return this.network.getProxy().webRepository.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
     }
 
     async remember(streamUri: StreamUri, lines: string) {
-        let _status = await this.network.getProxy().webProxy.remember(lines);
+        let _status = await this.network.getProxy().webRepository.remember(lines);
         this.model.setRemembers(null);
         this.model.setStreamLinesHistory(streamUri, null);
     }
 
     async deleteRemember(id: RememberId) {
-        await this.network.getProxy().webProxy.deleteRemember(id);
+        await this.network.getProxy().webRepository.deleteRemember(id);
         this.model.setRemembers(null);
         let streamUri = this.model.getRadioToView();
         if(streamUri)
@@ -310,11 +310,11 @@ class Controller {
     }
 
     async readMopidyConfig() {
-        let config = await this.network.getProxy().webProxy.getMopidyConfigFile();
+        let config = await this.network.getProxy().webRepository.getMopidyConfigFile();
     }
 
     async addExclExtToMopidyConfig(ext: string) {
-        await this.network.getProxy().webProxy.addExclExtToMopidyConfigFile(ext)
+        await this.network.getProxy().webRepository.addExclExtToMopidyConfigFile(ext)
     }
 
     async setRepeat(repeat: boolean) {
@@ -326,21 +326,21 @@ class Controller {
     }
 
     async saveAlbumGenre(albumUri: AlbumUri, genre: string) {
-        await this.network.getProxy().webProxy.setAlbumGenre(albumUri, genre);
+        await this.network.getProxy().webRepository.setAlbumGenre(albumUri, genre);
     }
 
     async toggleFavorite(uri: AllUris) {
-        await this.network.getProxy().webProxy.toggleFavorite(uri);
+        await this.network.getProxy().webRepository.toggleFavorite(uri);
         this.model.setFavorites(null);
         await this.cache.getFavorites();
     }
 
     async setAlbumVolumeDown(uri: AllUris) {
-        await this.network.getProxy().webProxy.albumVolumeDown(uri);
+        await this.network.getProxy().webRepository.albumVolumeDown(uri);
     }
 
     async setAlbumVolumeUp(uri: AllUris) {
-        await this.network.getProxy().webProxy.albumVolumeUp(uri);
+        await this.network.getProxy().webRepository.albumVolumeUp(uri);
     }
 
     async isFavorite(uri: AllUris | undefined | null) {
@@ -367,11 +367,11 @@ class Controller {
     }
 
     async uploadAlbumData(uri: AlbumUri) {
-        return this.network.getProxy().webProxy.uploadAlbumData(uri);
+        return this.network.getProxy().webRepository.uploadAlbumData(uri);
     }
 
     async uploadAlbumImages(albumUri: AlbumUri, imageUrl: string) {
-        return this.network.getProxy().webProxy.uploadAlbumImages(albumUri, imageUrl);
+        return this.network.getProxy().webRepository.uploadAlbumImages(albumUri, imageUrl);
     }
 
     async sendPlay() {

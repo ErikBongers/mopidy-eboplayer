@@ -1,12 +1,25 @@
-import {AlbumMetaData, AlbumUri, AllUris, GenreDef, GenreReplacement, HistoryLineDef, RememberDef, RememberId, StreamTitles, StreamUri, TrackUri} from "../modelTypes";
+import {
+    AlbumMetaData,
+    AlbumUri,
+    AllUris,
+    GenreDef,
+    GenreReplacement,
+    HistoryLineDef,
+    RememberDef,
+    RememberId,
+    StreamTitles,
+    StreamUri,
+    TrackUri
+} from "../modelTypes";
 import {ExpandedRef, RefType} from "../refs";
 import {EBOBACK_PATH, EBOPLAYER_PATH} from "../def";
+import {WebRepository} from "../repositories/webRepository";
 
 export type AlbumMetaDict = {[uri: AlbumUri]: AlbumMetaData};
 
 export class WebProxy {
-    private ebobackBase: string;
-    private eboplayerBase: string;
+    ebobackBase: string;
+    eboplayerBase: string;
 
     constructor(hostAndPort: string) {
         let protocol = document.location.protocol;
@@ -15,10 +28,11 @@ export class WebProxy {
     }
 
     playerUrl(relPath: string) {
-        return new URL(this.eboplayerBase+relPath);
+        return new URL(this.eboplayerBase + relPath);
     }
+
     ebobackUrl(relPath: string) {
-        return new URL(this.ebobackBase+relPath);
+        return new URL(this.ebobackBase + relPath);
     }
 
     async fetchActiveStreamLines(uri: StreamUri) {
@@ -43,17 +57,17 @@ export class WebProxy {
         data.append("uris", albumUris.join(","));
         let res = await fetch(url, {method: 'POST', body: data});
         let text = await res.text();
-        if(text)
+        if (text)
             return JSON.parse(text) as AlbumMetaDict;
         return {};
     }
 
-    async fetchMetaData(albumUri: string) {
+    async fetchMetaData(albumUri: string): Promise<AlbumMetaData | null> {
         let url = this.ebobackUrl(`get_album_meta`);
         url.searchParams.set("uri", albumUri);
         let res = await fetch(url);
         let text = await res.text();
-        if(text)
+        if (text)
             return JSON.parse(text) as AlbumMetaData;
         return null;
     }
@@ -126,6 +140,7 @@ export class WebProxy {
         await fetch(url);
         return null;
     }
+
     async uploadAlbumImages(albumUri: AlbumUri, imageUrl: string) {
         let url = this.ebobackUrl(`upload_album_image`);
         url.searchParams.set("album_uri", albumUri);
@@ -143,7 +158,7 @@ export class WebProxy {
 
     }
 
-    async createPlaylist(name: string) {
+    async createPlaylist(name: string): Promise<AllUris> {
         let url = this.ebobackUrl(`create_playlist`);
         url.searchParams.set("playlist_name", name);
         let res = await fetch(url);

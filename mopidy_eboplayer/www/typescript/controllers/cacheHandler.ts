@@ -133,7 +133,7 @@ export class CacheHandler {
         let remembers = this.model.getRemembers();
         if (remembers)
             return remembers;
-        remembers = await this.network.getProxy().webProxy.fetchRemembers();
+        remembers = await this.network.getProxy().webRepository.fetchRemembers();
         this.model.setRemembers(remembers);
         return remembers;
     }
@@ -142,7 +142,7 @@ export class CacheHandler {
         let cachedMeta = this.model.getFromMetaCache(albumUri);
         if(cachedMeta)
             return cachedMeta.meta;
-        let meta = await this.network.getProxy().webProxy.fetchMetaData(albumUri);
+        let meta = await this.network.getProxy().webRepository.fetchMetaData(albumUri);
         this.model.addToMetaCache(albumUri, meta);
         return meta;
     }
@@ -150,7 +150,7 @@ export class CacheHandler {
     async getAllRefsCached() {
         let allRefs = this.model.getAllRefs();
         if(!allRefs) {
-            let refs = await this.network.getProxy().webProxy.fetchAllRefs();
+            let refs = await this.network.getProxy().webRepository.fetchAllRefs();
             allRefs = await createAllRefs(this, refs.allRefs, refs.tracksNoAlbumRefs);
             this.model.setAllRefs(allRefs);
         }
@@ -165,7 +165,7 @@ export class CacheHandler {
     async getGenreReplacementsCached() {
         if(this.model.getGenreReplacements().size > 0)
             return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
-        let genreDefs = await this.network.getProxy().webProxy.fetchGenreReplacements();
+        let genreDefs = await this.network.getProxy().webRepository.fetchGenreReplacements();
         this.model.setGenreReplacements(genreDefs);
         return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
     }
@@ -178,7 +178,7 @@ export class CacheHandler {
     async getRemembersCached() {
         if(this.model.getRemembers())
             return this.model.getRemembers() as RememberDef[];
-        let remembers = await this.network.getProxy().webProxy.fetchRemembers();
+        let remembers = await this.network.getProxy().webRepository.fetchRemembers();
         this.model.setRemembers(remembers);
         return this.model.getRemembers() as RememberDef[];
     }
@@ -186,7 +186,7 @@ export class CacheHandler {
     async getGenreDefs() {
         if(this.model.getGenreDefs().length > 0)
             return this.model.getGenreDefs() as GenreDef[];
-        let genreDefs = await this.network.getProxy().webProxy.fetchGenreDefs();
+        let genreDefs = await this.network.getProxy().webRepository.fetchGenreDefs();
         this.model.setGenreDefs(genreDefs);
         return this.model.getGenreDefs() as GenreDef[];
     }
@@ -194,7 +194,7 @@ export class CacheHandler {
     async getFavorites() {
         if(this.model.getFavorites())
             return this.model.getFavorites() as Set<AllUris>;
-        let favorites = await this.network.getProxy().webProxy.getFavorites();
+        let favorites = await this.network.getProxy().webRepository.getFavorites();
         this.model.setFavorites(favorites);
         return this.model.getFavorites() as Set<AllUris>;
     }
@@ -219,7 +219,7 @@ export class CacheHandler {
     }
 
     private async fetchStreamLines(streamUri: string) {
-        let stream_lines = await this.network.getProxy().webProxy.fetchAllStreamLines(streamUri);
+        let stream_lines = await this.network.getProxy().webRepository.fetchAllStreamLines(streamUri);
         function groupLines (grouped: string[][], line: string) {
             if(line == "---") {
                 grouped.push([]);
@@ -236,7 +236,7 @@ export class CacheHandler {
     async getFavoritePlaylistName() {
         if(this.model.getFavoritesPlaylistName())
             return this.model.getFavoritesPlaylistName() as string;
-        let name = await this.network.getProxy().webProxy.getFavoritesPlaylistName();
+        let name = await this.network.getProxy().webRepository.getFavoritesPlaylistName();
         this.model.setFavoritesPlaylistName(name);
         return name;
     }

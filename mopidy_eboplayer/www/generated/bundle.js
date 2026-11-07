@@ -1249,7 +1249,7 @@ var Controller = class {
 		this.network.getProxy().on("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
 			await this.getInitialData(views);
-			this.model.setHistory(await this.network.getProxy().webProxy.fetchHistory());
+			this.model.setHistory(await this.network.getProxy().webRepository.fetchHistory());
 			this.viewController.setInitialView();
 		});
 		this.network.getProxy().on("state:offline", () => {
@@ -1366,7 +1366,7 @@ var Controller = class {
 			return;
 		}
 		if ((await this.cache.lookupTrackCached(this.model.currentTrack))?.type == "stream") {
-			let lines = await this.network.getProxy().webProxy.fetchActiveStreamLines(this.model.currentTrack);
+			let lines = await this.network.getProxy().webRepository.fetchActiveStreamLines(this.model.currentTrack);
 			this.model.setActiveStreamLines(lines);
 		} else this.model.setActiveStreamLines(NoStreamTitles);
 	}
@@ -1391,7 +1391,7 @@ var Controller = class {
 		this.model.setSelectedTrack(uri);
 	}
 	async fetchAllRefs() {
-		let allRefs = await this.network.getProxy().webProxy.fetchAllRefs();
+		let allRefs = await this.network.getProxy().webRepository.fetchAllRefs();
 		return createAllRefs(this.cache, allRefs.allRefs, allRefs.tracksNoAlbumRefs);
 	}
 	async setAllRefsAsCurrent() {
@@ -1402,18 +1402,18 @@ var Controller = class {
 		await this.player.add(results.refs.map((r) => r.item.uri));
 	}
 	async createPlaylist(name) {
-		return this.network.getProxy().webProxy.createPlaylist(name);
+		return this.network.getProxy().webRepository.createPlaylist(name);
 	}
 	async addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
-		return this.network.getProxy().webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
+		return this.network.getProxy().webRepository.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
 	}
 	async remember(streamUri, lines) {
-		await this.network.getProxy().webProxy.remember(lines);
+		await this.network.getProxy().webRepository.remember(lines);
 		this.model.setRemembers(null);
 		this.model.setStreamLinesHistory(streamUri, null);
 	}
 	async deleteRemember(id) {
-		await this.network.getProxy().webProxy.deleteRemember(id);
+		await this.network.getProxy().webRepository.deleteRemember(id);
 		this.model.setRemembers(null);
 		let streamUri = this.model.getRadioToView();
 		if (streamUri) this.model.setStreamLinesHistory(streamUri, null);
@@ -1423,10 +1423,10 @@ var Controller = class {
 		await this.network.getProxy().backWebSocket.send({ method: "start_scan" }, "fireAndForget");
 	}
 	async readMopidyConfig() {
-		await this.network.getProxy().webProxy.getMopidyConfigFile();
+		await this.network.getProxy().webRepository.getMopidyConfigFile();
 	}
 	async addExclExtToMopidyConfig(ext) {
-		await this.network.getProxy().webProxy.addExclExtToMopidyConfigFile(ext);
+		await this.network.getProxy().webRepository.addExclExtToMopidyConfigFile(ext);
 	}
 	async setRepeat(repeat) {
 		await this.network.getProxy().mopidyRepository.setRepeat(repeat);
@@ -1435,18 +1435,18 @@ var Controller = class {
 		await this.network.getProxy().mopidyRepository.setSingle(single);
 	}
 	async saveAlbumGenre(albumUri, genre) {
-		await this.network.getProxy().webProxy.setAlbumGenre(albumUri, genre);
+		await this.network.getProxy().webRepository.setAlbumGenre(albumUri, genre);
 	}
 	async toggleFavorite(uri) {
-		await this.network.getProxy().webProxy.toggleFavorite(uri);
+		await this.network.getProxy().webRepository.toggleFavorite(uri);
 		this.model.setFavorites(null);
 		await this.cache.getFavorites();
 	}
 	async setAlbumVolumeDown(uri) {
-		await this.network.getProxy().webProxy.albumVolumeDown(uri);
+		await this.network.getProxy().webRepository.albumVolumeDown(uri);
 	}
 	async setAlbumVolumeUp(uri) {
-		await this.network.getProxy().webProxy.albumVolumeUp(uri);
+		await this.network.getProxy().webRepository.albumVolumeUp(uri);
 	}
 	async isFavorite(uri) {
 		if (!uri) return false;
@@ -1468,10 +1468,10 @@ var Controller = class {
 		return this.network.getProxy().mopidyRepository.browse(uri);
 	}
 	async uploadAlbumData(uri) {
-		return this.network.getProxy().webProxy.uploadAlbumData(uri);
+		return this.network.getProxy().webRepository.uploadAlbumData(uri);
 	}
 	async uploadAlbumImages(albumUri, imageUrl) {
-		return this.network.getProxy().webProxy.uploadAlbumImages(albumUri, imageUrl);
+		return this.network.getProxy().webRepository.uploadAlbumImages(albumUri, imageUrl);
 	}
 	async sendPlay() {
 		return this.network.getProxy().mopidyRepository.sendPlay();
@@ -4922,21 +4922,21 @@ var CacheHandler = class {
 	async lookupRemembersCached() {
 		let remembers = this.model.getRemembers();
 		if (remembers) return remembers;
-		remembers = await this.network.getProxy().webProxy.fetchRemembers();
+		remembers = await this.network.getProxy().webRepository.fetchRemembers();
 		this.model.setRemembers(remembers);
 		return remembers;
 	}
 	async getMetaDataCached(albumUri) {
 		let cachedMeta = this.model.getFromMetaCache(albumUri);
 		if (cachedMeta) return cachedMeta.meta;
-		let meta = await this.network.getProxy().webProxy.fetchMetaData(albumUri);
+		let meta = await this.network.getProxy().webRepository.fetchMetaData(albumUri);
 		this.model.addToMetaCache(albumUri, meta);
 		return meta;
 	}
 	async getAllRefsCached() {
 		let allRefs = this.model.getAllRefs();
 		if (!allRefs) {
-			let refs = await this.network.getProxy().webProxy.fetchAllRefs();
+			let refs = await this.network.getProxy().webRepository.fetchAllRefs();
 			allRefs = await createAllRefs(this, refs.allRefs, refs.tracksNoAlbumRefs);
 			this.model.setAllRefs(allRefs);
 		}
@@ -4948,7 +4948,7 @@ var CacheHandler = class {
 	}
 	async getGenreReplacementsCached() {
 		if (this.model.getGenreReplacements().size > 0) return this.model.getGenreReplacements();
-		let genreDefs = await this.network.getProxy().webProxy.fetchGenreReplacements();
+		let genreDefs = await this.network.getProxy().webRepository.fetchGenreReplacements();
 		this.model.setGenreReplacements(genreDefs);
 		return this.model.getGenreReplacements();
 	}
@@ -4957,19 +4957,19 @@ var CacheHandler = class {
 	}
 	async getRemembersCached() {
 		if (this.model.getRemembers()) return this.model.getRemembers();
-		let remembers = await this.network.getProxy().webProxy.fetchRemembers();
+		let remembers = await this.network.getProxy().webRepository.fetchRemembers();
 		this.model.setRemembers(remembers);
 		return this.model.getRemembers();
 	}
 	async getGenreDefs() {
 		if (this.model.getGenreDefs().length > 0) return this.model.getGenreDefs();
-		let genreDefs = await this.network.getProxy().webProxy.fetchGenreDefs();
+		let genreDefs = await this.network.getProxy().webRepository.fetchGenreDefs();
 		this.model.setGenreDefs(genreDefs);
 		return this.model.getGenreDefs();
 	}
 	async getFavorites() {
 		if (this.model.getFavorites()) return this.model.getFavorites();
-		let favorites = await this.network.getProxy().webProxy.getFavorites();
+		let favorites = await this.network.getProxy().webRepository.getFavorites();
 		this.model.setFavorites(favorites);
 		return this.model.getFavorites();
 	}
@@ -4988,7 +4988,7 @@ var CacheHandler = class {
 		return history;
 	}
 	async fetchStreamLines(streamUri) {
-		let stream_lines = await this.network.getProxy().webProxy.fetchAllStreamLines(streamUri);
+		let stream_lines = await this.network.getProxy().webRepository.fetchAllStreamLines(streamUri);
 		function groupLines(grouped, line) {
 			if (line == "---") {
 				grouped.push([]);
@@ -5001,7 +5001,7 @@ var CacheHandler = class {
 	}
 	async getFavoritePlaylistName() {
 		if (this.model.getFavoritesPlaylistName()) return this.model.getFavoritesPlaylistName();
-		let name = await this.network.getProxy().webProxy.getFavoritesPlaylistName();
+		let name = await this.network.getProxy().webRepository.getFavoritesPlaylistName();
 		this.model.setFavoritesPlaylistName(name);
 		return name;
 	}
@@ -6251,6 +6251,7 @@ const FETCH_CURRENT_TLTRACK = "fetchCurrentTlTrack";
 const FETCH_PLAY_STATE = "fetchPlayState";
 const GET_PLAYBACK_FLAGS = "getPlaybackFlags";
 const FETCH_VOLUME = "fetchVolume";
+const FETCH_REMEMBERS = "fetchRemembers";
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/proxies/webProxy.ts
@@ -6993,6 +6994,15 @@ var LocalCache = class LocalCache {
 		} }));
 	}
 };
+async function saveAndReturn(id, doc) {
+	let db = await getOfflineDb();
+	let docX = await doc;
+	await db.SocketReplies.put({
+		id,
+		doc: docX
+	});
+	return docX;
+}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/repositories/MopidyOnlineRepository.ts
@@ -7084,15 +7094,6 @@ var MopidyOnlineRepository = class {
 		return saveAndReturn(GET_PLAYBACK_FLAGS, this.mopidyProxy.getPlaybackFlags());
 	}
 };
-async function saveAndReturn(id, doc) {
-	let db = await getOfflineDb();
-	let docX = await doc;
-	await db.SocketReplies.put({
-		id,
-		doc: docX
-	});
-	return docX;
-}
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/proxies/mopidyProxy.ts
@@ -7485,6 +7486,89 @@ var Core_Tracklist = class {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/repositories/WebOnlineRepository.ts
+var WebOnlineRepository = class {
+	constructor(webProxy) {
+		this.webProxy = webProxy;
+	}
+	addExclExtToMopidyConfigFile(ext) {
+		return this.webProxy.addExclExtToMopidyConfigFile(ext);
+	}
+	addRefToPlaylist(playlistUri, itemUri, refType, sequence) {
+		return this.webProxy.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
+	}
+	albumVolumeDown(uri) {
+		return this.webProxy.albumVolumeDown(uri);
+	}
+	albumVolumeUp(uri) {
+		return this.webProxy.albumVolumeUp(uri);
+	}
+	createPlaylist(name) {
+		return this.webProxy.createPlaylist(name);
+	}
+	deleteRemember(id) {
+		return this.webProxy.deleteRemember(id);
+	}
+	fetchActiveStreamLines(uri) {
+		return this.webProxy.fetchActiveStreamLines(uri);
+	}
+	fetchAllRefs() {
+		return this.webProxy.fetchAllRefs();
+	}
+	fetchAllStreamLines(uri) {
+		return this.webProxy.fetchAllStreamLines(uri);
+	}
+	fetchAllTracksWithoutAlbum() {
+		return this.webProxy.fetchAllTracksWithoutAlbum();
+	}
+	fetchGenreDefs() {
+		return this.webProxy.fetchGenreDefs();
+	}
+	fetchGenreReplacements() {
+		return this.webProxy.fetchGenreReplacements();
+	}
+	fetchHistory() {
+		return this.webProxy.fetchHistory();
+	}
+	fetchMetaData(albumUri) {
+		return this.webProxy.fetchMetaData(albumUri);
+	}
+	fetchMetaDatas(albumUris) {
+		return this.webProxy.fetchMetaDatas(albumUris);
+	}
+	fetchRemembers() {
+		return saveAndReturn(FETCH_REMEMBERS, this.webProxy.fetchRemembers());
+	}
+	getFavorites() {
+		return this.webProxy.getFavorites();
+	}
+	getFavoritesPlaylistName() {
+		return this.webProxy.getFavoritesPlaylistName();
+	}
+	getMixers() {
+		return this.webProxy.getMixers();
+	}
+	getMopidyConfigFile() {
+		return this.webProxy.getMopidyConfigFile();
+	}
+	remember(text) {
+		return this.webProxy.remember(text);
+	}
+	setAlbumGenre(albumUri, genre) {
+		return this.webProxy.setAlbumGenre(albumUri, genre);
+	}
+	toggleFavorite(uri) {
+		return this.webProxy.toggleFavorite(uri);
+	}
+	uploadAlbumData(albumUri) {
+		return this.webProxy.uploadAlbumData(albumUri);
+	}
+	uploadAlbumImages(albumUri, imageUrl) {
+		return this.webProxy.uploadAlbumImages(albumUri, imageUrl);
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/network.ts
 function createConnections() {
 	let connectOptions = {
@@ -7499,7 +7583,7 @@ function createConnections() {
 	let wsBackEndUrl = `${protocol}${hostAndPort}/eboback/ws2/`;
 	let backWebSocket = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
 	let mopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
-	let webProxy = new WebProxy(hostAndPort);
+	let webRepository = new WebOnlineRepository(new WebProxy(hostAndPort));
 	function connectWebsockets() {
 		console.log("Trying to connect sockets...");
 		mopidy.connect();
@@ -7508,7 +7592,7 @@ function createConnections() {
 	}
 	return {
 		mopidyRepository,
-		webProxy,
+		webRepository,
 		frontWebSocket,
 		backWebSocket,
 		on: (name, callback) => {
@@ -7537,7 +7621,7 @@ var NetworkStateMachine = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794078390227";
+const BUILD_VERSION = "1794080387145";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {

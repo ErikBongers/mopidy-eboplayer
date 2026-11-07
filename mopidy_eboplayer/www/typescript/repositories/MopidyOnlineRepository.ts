@@ -1,19 +1,17 @@
 import models, {core} from "../../js/mopidy";
 import {
     AllUris,
-    MopidyHistoryLine,
-    PlaylistUri,
     ImageLookup,
+    LibraryDict,
+    MopidyHistoryLine,
     PlaybackFlags,
-    PlayState,
-    LibraryDict
+    PlaylistUri,
+    PlayState
 } from "../modelTypes";
-import { SearchResult } from "../refs";
+import {SearchResult} from "../refs";
 import {MopidyRepository} from "./mopidyRepository";
 import {MopidyProxy} from "../proxies/mopidyProxy";
-import Dict = models.Dict;
-import Track = models.Track;
-import {getOfflineDb, SocketReply} from "../db/offlineDb";
+import {saveAndReturn} from "../db/offlineDb";
 import {FETCH_CURRENT_TLTRACK, FETCH_PLAY_STATE, FETCH_TRACKLIST, FETCH_VOLUME, GET_PLAYBACK_FLAGS} from "../def";
 import PlaybackState = core.PlaybackState;
 import TlTrack = models.TlTrack;
@@ -107,11 +105,4 @@ export class MopidyOnlineRepository implements MopidyRepository {
     async getPlaybackFlags(): Promise<PlaybackFlags> {
         return saveAndReturn(GET_PLAYBACK_FLAGS, this.mopidyProxy.getPlaybackFlags());
     }
-}
-
-async function saveAndReturn<D, T extends Promise<D>>(id: string, doc: T): Promise<D> {
-    let db = await getOfflineDb();
-    let docX: D = await doc;
-    await db.SocketReplies.put({id, doc: docX});
-    return docX;
 }
