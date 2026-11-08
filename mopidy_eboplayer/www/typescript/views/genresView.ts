@@ -10,8 +10,8 @@ export class GenresView extends ComponentView<EboGenresComp>{
 
     bind(): void {
         this.state.getModel().on("genreDefsChanged.eboplayer", async () => {
-            let genreDefs = await this.state.getCache().getGenreDefs();
-            let genreReplacements = await this.state.getCache().getGenreReplacementsCached();
+            let genreDefs = await this.state.getController().getGenreDefs();
+            let genreReplacements = await this.state.getController().getGenreReplacementsCached();
             this.component.genreDefs = genreDefs.map(genreDef => {
                 return {genreDef, active: genreReplacements.has(genreDef.child ?? genreDef.name)};
             });

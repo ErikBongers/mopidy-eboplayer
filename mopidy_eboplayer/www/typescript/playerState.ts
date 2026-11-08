@@ -13,16 +13,13 @@ export class State {
     private readonly model: ReadOnlyModel;
     private readonly controller: Controller;
     private readonly player: PlayController;
-    private readonly cache: CacheHandler;
 
-    constructor(model: ReadOnlyModel, controller: Controller, player: PlayController, cache: CacheHandler) {
+    constructor(model: ReadOnlyModel, controller: Controller, player: PlayController) {
         this.model = model;
         this.controller = controller;
         this.player = player;
-        this.cache = cache;
     }
     getModel = (): DeepReadonly<ReadOnlyModel> => this.model;
     getController = () => this.controller;
     getPlayer = () => this.player;
-    getCache = () => this.cache;
 }

@@ -1485,6 +1485,12 @@ var Controller = class {
 	async sendVolume(value) {
 		return this.network.getProxy().mopidyRepository.sendVolume(value);
 	}
+	async getGenreDefs() {
+		return this.cache.getGenreDefs();
+	}
+	async getGenreReplacementsCached() {
+		return this.cache.getGenreReplacementsCached();
+	}
 };
 var controller_default = Controller;
 
@@ -4718,17 +4724,14 @@ var State = class {
 	model;
 	controller;
 	player;
-	cache;
-	constructor(model, controller, player, cache$1) {
+	constructor(model, controller, player) {
 		this.model = model;
 		this.controller = controller;
 		this.player = player;
-		this.cache = cache$1;
 	}
 	getModel = () => this.model;
 	getController = () => this.controller;
 	getPlayer = () => this.player;
-	getCache = () => this.cache;
 };
 
 //#endregion
@@ -5364,8 +5367,8 @@ var GenresView = class extends ComponentView {
 	}
 	bind() {
 		this.state.getModel().on("genreDefsChanged.eboplayer", async () => {
-			let genreDefs = await this.state.getCache().getGenreDefs();
-			let genreReplacements = await this.state.getCache().getGenreReplacementsCached();
+			let genreDefs = await this.state.getController().getGenreDefs();
+			let genreReplacements = await this.state.getController().getGenreReplacementsCached();
 			this.component.genreDefs = genreDefs.map((genreDef) => {
 				return {
 					genreDef,
@@ -7613,15 +7616,22 @@ function createConnections() {
 var NetworkStateMachine = class {
 	constructor(networkProxy) {
 		this.networkProxy = networkProxy;
+		window.addEventListener("online", this.updateOnlineStatus);
+		window.addEventListener("offline", this.updateOnlineStatus);
+		this.updateOnlineStatus();
 	}
 	getProxy() {
 		return this.networkProxy;
+	}
+	updateOnlineStatus() {
+		if (navigator.onLine) console.log("App is online. Attempting WebSocket connection to Mopidy...");
+		else console.log("App is offline. Switching UI to read-only mode...");
 	}
 };
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794080387145";
+const BUILD_VERSION = "1794096716488";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
@@ -7646,51 +7656,32 @@ function setupServiceWorker() {
 		}
 	}
 }
-setupServiceWorker();
-function updateOnlineStatus() {
-	if (navigator.onLine) console.log("App is online. Attempting WebSocket connection to Mopidy...");
-	else console.log("App is offline. Switching UI to read-only mode...");
+function registerWebComponents() {
+	EboComponent.define(EboProgressBar);
+	EboComponent.define(EboNowPlayingComp);
+	EboComponent.define(EboAlbumTracksComp);
+	EboComponent.define(EboBrowseComp);
+	EboComponent.define(EboButton);
+	EboComponent.define(EboBigAlbumComp);
+	EboComponent.define(EboPlayerBar);
+	EboComponent.define(EboMenuButton);
+	EboComponent.define(EboListButtonBar);
+	EboComponent.define(EboDialog);
+	EboComponent.define(EboAlbumDetails);
+	EboComponent.define(EboBrowseFilterComp);
+	EboComponent.define(EboSettingsComp);
+	EboComponent.define(EboListItemComp);
+	EboComponent.define(EboRememberedComp);
+	EboComponent.define(EboOption);
+	EboComponent.define(EboIconDropdown);
+	EboComponent.define(EboGenresComp);
+	EboComponent.define(EboRadioDetails);
+	EboComponent.define(EboRadioHistoryComp);
+	EboComponent.define(EboBigRadioComp);
+	EboComponent.define(EboTopBar);
+	EboComponent.define(EboTracklistComp);
 }
-window.addEventListener("online", updateOnlineStatus);
-window.addEventListener("offline", updateOnlineStatus);
-updateOnlineStatus();
-document.addEventListener("DOMContentLoaded", function() {
-	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((cssTexts) => {
-		EboComponent.setGlobalCss(cssTexts);
-		EboComponent.define(EboProgressBar);
-		EboComponent.define(EboNowPlayingComp);
-		EboComponent.define(EboAlbumTracksComp);
-		EboComponent.define(EboBrowseComp);
-		EboComponent.define(EboButton);
-		EboComponent.define(EboBigAlbumComp);
-		EboComponent.define(EboPlayerBar);
-		EboComponent.define(EboMenuButton);
-		EboComponent.define(EboListButtonBar);
-		EboComponent.define(EboDialog);
-		EboComponent.define(EboAlbumDetails);
-		EboComponent.define(EboBrowseFilterComp);
-		EboComponent.define(EboSettingsComp);
-		EboComponent.define(EboListItemComp);
-		EboComponent.define(EboRememberedComp);
-		EboComponent.define(EboOption);
-		EboComponent.define(EboIconDropdown);
-		EboComponent.define(EboGenresComp);
-		EboComponent.define(EboRadioDetails);
-		EboComponent.define(EboRadioHistoryComp);
-		EboComponent.define(EboBigRadioComp);
-		EboComponent.define(EboTopBar);
-		EboComponent.define(EboTracklistComp);
-		setupStuff();
-	});
-});
-function setupStuff() {
-	let networkProxy = createConnections();
-	let networkState = new NetworkStateMachine(networkProxy);
-	let model = new Model();
-	let player = new PlayController(model, networkState);
-	let cacheHandler = new CacheHandler(model, networkState, player);
-	let controller = new controller_default(model, networkState, player, cacheHandler);
-	let state = new State(model, controller, player, cacheHandler);
+function createViews(state) {
 	let views = [
 		new BrowseView(state, document.getElementById("Browse")),
 		new AlbumView(state, document.getElementById("dialog"), document.getElementById("Album")),
@@ -7704,6 +7695,22 @@ function setupStuff() {
 		new GenresView(state, document.getElementById("Genres"))
 	];
 	views.forEach((v) => v.bindRecursive());
+	return views;
+}
+setupServiceWorker();
+document.addEventListener("DOMContentLoaded", function() {
+	Promise.all([fetch(`${rootDir}css/global.css`).then((res) => res.text()), fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then((res) => res.text())]).then((cssTexts) => {
+		EboComponent.setGlobalCss(cssTexts);
+		registerWebComponents();
+		setupStuff();
+	});
+});
+function setupStuff() {
+	let networkState = new NetworkStateMachine(createConnections());
+	let model = new Model();
+	let player = new PlayController(model, networkState);
+	let controller = new controller_default(model, networkState, player, new CacheHandler(model, networkState, player));
+	let views = createViews(new State(model, controller, player));
 	networkState.getProxy().connectWebsockets();
 	controller.initialize(views);
 	document.addEventListener("visibilitychange", () => {

@@ -389,6 +389,14 @@ class Controller {
     async sendVolume(value: number) {
         return this.network.getProxy().mopidyRepository.sendVolume(value);
     }
+
+    async getGenreDefs() {
+        return this.cache.getGenreDefs();
+    }
+
+    async getGenreReplacementsCached() {
+        return this.cache.getGenreReplacementsCached();
+    }
 }
 
 export default Controller

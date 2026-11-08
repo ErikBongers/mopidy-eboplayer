@@ -76,75 +76,33 @@ function setupServiceWorker() {
     }
 }
 
-setupServiceWorker();
-
-function updateOnlineStatus() {
-    if (navigator.onLine) {
-        console.log("App is online. Attempting WebSocket connection to Mopidy...");
-        // Initialize your Mopidy WebSocket connection here
-        // Enable play controls, queue actions, etc.
-    } else {
-        console.log("App is offline. Switching UI to read-only mode...");
-        // 1. Show an "Offline Mode" banner in the UI
-        // 2. Hide or disable "Play", "Next", "Pause" buttons
-        // 3. Populate your UI views by reading straight from IndexedDB instead of Mopidy
-    }
+function registerWebComponents() {
+    EboComponent.define(EboProgressBar);
+    EboComponent.define(EboNowPlayingComp);
+    EboComponent.define(EboAlbumTracksComp);
+    EboComponent.define(EboBrowseComp);
+    EboComponent.define(EboButton);
+    EboComponent.define(EboBigAlbumComp);
+    EboComponent.define(EboPlayerBar);
+    EboComponent.define(EboMenuButton);
+    EboComponent.define(EboListButtonBar);
+    EboComponent.define(EboDialog);
+    EboComponent.define(EboAlbumDetails);
+    EboComponent.define(EboBrowseFilterComp);
+    EboComponent.define(EboSettingsComp);
+    EboComponent.define(EboListItemComp);
+    EboComponent.define(EboRememberedComp);
+    EboComponent.define(EboOption);
+    EboComponent.define(EboIconDropdown);
+    EboComponent.define(EboGenresComp);
+    EboComponent.define(EboRadioDetails);
+    EboComponent.define(EboRadioHistoryComp);
+    EboComponent.define(EboBigRadioComp);
+    EboComponent.define(EboTopBar);
+    EboComponent.define(EboTracklistComp);
 }
 
-// Listen for network state changes dynamically
-window.addEventListener('online', updateOnlineStatus);
-window.addEventListener('offline', updateOnlineStatus);
-
-// Initial check when the application first loads
-updateOnlineStatus();
-
-
-document.addEventListener("DOMContentLoaded",function () {
-    Promise.all([
-        fetch(`${rootDir}css/global.css`).then(res => res.text()),
-        fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
-    ])
-        .then(cssTexts => {
-            EboComponent.setGlobalCss(cssTexts);
-
-            EboComponent.define(EboProgressBar);
-            EboComponent.define(EboNowPlayingComp);
-            EboComponent.define(EboAlbumTracksComp);
-            EboComponent.define(EboBrowseComp);
-            EboComponent.define(EboButton);
-            EboComponent.define(EboBigAlbumComp);
-            EboComponent.define(EboPlayerBar);
-            EboComponent.define(EboMenuButton);
-            EboComponent.define(EboListButtonBar);
-            EboComponent.define(EboDialog);
-            EboComponent.define(EboAlbumDetails);
-            EboComponent.define(EboBrowseFilterComp);
-            EboComponent.define(EboSettingsComp);
-            EboComponent.define(EboListItemComp);
-            EboComponent.define(EboRememberedComp);
-            EboComponent.define(EboOption);
-            EboComponent.define(EboIconDropdown);
-            EboComponent.define(EboGenresComp);
-            EboComponent.define(EboRadioDetails);
-            EboComponent.define(EboRadioHistoryComp);
-            EboComponent.define(EboBigRadioComp);
-            EboComponent.define(EboTopBar);
-            EboComponent.define(EboTracklistComp);
-
-            setupStuff();
-        });
-});
-
-function setupStuff() {
-    let networkProxy = createConnections();
-    let networkState = new NetworkStateMachine(networkProxy);
-    let model = new Model();
-    let player = new PlayController(model, networkState);
-    let cacheHandler = new CacheHandler(model, networkState, player);
-    let controller = new Controller(model, networkState, player, cacheHandler);
-
-    let state = new State(model, controller, player, cacheHandler);
-
+function createViews(state: State) {
     let views: View [] = [
         new BrowseView(state, document.getElementById("Browse") as EboBrowseComp),
         new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("Album") as EboBigAlbumComp),
@@ -158,6 +116,29 @@ function setupStuff() {
         new GenresView(state, document.getElementById("Genres") as EboGenresComp),
     ];
     views.forEach(v => v.bindRecursive());
+    return views;
+}
+
+setupServiceWorker();
+
+document.addEventListener("DOMContentLoaded",function () {
+    Promise.all([
+        fetch(`${rootDir}css/global.css`).then(res => res.text()),
+        fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
+    ])
+        .then(cssTexts => {
+            EboComponent.setGlobalCss(cssTexts);
+            registerWebComponents();
+            setupStuff();
+        });
+});
+
+function setupStuff() {
+    let networkState = new NetworkStateMachine(createConnections());
+    let model = new Model();
+    let player = new PlayController(model, networkState);
+    let controller = new Controller(model, networkState, player, new CacheHandler(model, networkState, player));
+    let views = createViews(new State(model, controller, player));
     networkState.getProxy().connectWebsockets();
     controller.initialize(views);
 
