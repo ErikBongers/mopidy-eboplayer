@@ -18,6 +18,10 @@ import {FETCH_REMEMBERS} from "../def";
 export class WebOnlineRepository implements WebRepository  {
     constructor(private webProxy: WebProxy) {}
 
+    on(event: string, data: any): void {
+        throw new Error("Method not implemented.");
+    }
+
     addExclExtToMopidyConfigFile(ext: string): Promise<string> {
         return this.webProxy.addExclExtToMopidyConfigFile(ext);
     }

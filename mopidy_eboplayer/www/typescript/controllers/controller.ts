@@ -25,12 +25,11 @@ import {View} from "../views/view";
 import {CacheHandler} from "./cacheHandler";
 import {ViewController} from "./viewController";
 import {BrowseController} from "./browseController";
-import {NetworkProxy} from "../network";
+import {NetworkStateMachine} from "../networkStateMachine";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
-import {NetworkStateMachine} from "../networkStateMachine";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -77,64 +76,64 @@ class Controller {
     }
 
     initialize (views: View[]) {
-        this.network.getProxy().on('state:online', async () => {
+        this.network.getProxy().onMopidy('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await this.getInitialData(views);
             this.model.setHistory(await this.network.getProxy().webRepository.fetchHistory());
             this.viewController.setInitialView();
         });
 
-        this.network.getProxy().on('state:offline', () => {
+        this.network.getProxy().onMopidy('state:offline', () => {
             this.model.setConnectionState(ConnectionState.Offline);
         });
 
-        this.network.getProxy().on('event:optionsChanged', async () =>{
+        this.network.getProxy().onMopidy('event:optionsChanged', async () =>{
             this.model.setPlaybackMode(await this.network.getProxy().mopidyRepository.getPlaybackFlags());
         });
 
-        this.network.getProxy().on('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: make data a type
+        this.network.getProxy().onMopidy('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: make data a type
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.network.getProxy().on('event:trackPlaybackEnded', async (data: {tl_track: TlTrack}) => {
+        this.network.getProxy().onMopidy('event:trackPlaybackEnded', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.network.getProxy().on('event:trackPlaybackResumed', async (data: {tl_track: TlTrack}) => {
+        this.network.getProxy().onMopidy('event:trackPlaybackResumed', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.network.getProxy().on('event:playlistsLoaded', ()  => {
+        this.network.getProxy().onMopidy('event:playlistsLoaded', ()  => {
             // library.getPlaylists();
         });
 
-        this.network.getProxy().on('event:playlistChanged', (data: {playlist: Playlist}) => {
+        this.network.getProxy().onMopidy('event:playlistChanged', (data: {playlist: Playlist}) => {
             // delete this.stateplaylists[data.playlist.uri];
             // library.getPlaylists();
         });
 
-        this.network.getProxy().on('event:playlistDeleted', (data: {uir: PlaylistUri}) => {
+        this.network.getProxy().onMopidy('event:playlistDeleted', (data: {uir: PlaylistUri}) => {
             // delete this.stateplaylists[data.uri];
             // library.getPlaylists();
         });
 
-        this.network.getProxy().on('event:volumeChanged', (data: {volume: number}) => {
+        this.network.getProxy().onMopidy('event:volumeChanged', (data: {volume: number}) => {
             this.model.setVolume(data.volume);
         });
 
-        this.network.getProxy().on('event:muteChanged', (_data: any) => {
+        this.network.getProxy().onMopidy('event:muteChanged', (_data: any) => {
         });
 
-        this.network.getProxy().on('event:playbackStateChanged', async (data: {new_state: PlaybackState}) => {
+        this.network.getProxy().onMopidy('event:playbackStateChanged', async (data: {new_state: PlaybackState}) => {
             await this.onPlaybackStateChanged(data);
         });
 
-        this.network.getProxy().on('event:tracklistChanged', async () => {
+        this.network.getProxy().onMopidy('event:tracklistChanged', async () => {
             this.model.setTrackList(await this.network.getProxy().mopidyRepository.fetchTracklist());
             await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTlTrack());
         });
 
-        this.network.getProxy().on('event:seeked', () => {
+        this.network.getProxy().onMopidy('event:seeked', () => {
         });
 
         //log all events:

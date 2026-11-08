@@ -13,6 +13,7 @@ import {
 } from "../modelTypes";
 import {ExpandedRef, RefType} from "../refs";
 import {AlbumMetaDict} from "../proxies/webProxy";
+import {core} from "../../js/mopidy";
 
 export interface WebRepository {
     fetchActiveStreamLines(uri: StreamUri): Promise<StreamTitles>;
@@ -64,4 +65,6 @@ export interface WebRepository {
     addExclExtToMopidyConfigFile(ext: string): Promise<string>;
 
     getMixers(): Promise<string[]>;
+
+    on(event: string, data: any): void; //todo: make event a type
 }

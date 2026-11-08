@@ -15,7 +15,8 @@ export interface NetworkProxy {
     webRepository: WebRepository;
     frontWebSocket: JsonRpcController;
     backWebSocket: JsonRpcController;
-    on: (name: MopidyEventName, callback?: any) => void;
+    onMopidy: (name: MopidyEventName, callback?: any) => void;
+    onPlayer: (event: string, callback?: any) => void;
     supervise: (func: (event: string, data: any) => void) => void;
     connectWebsockets: () => void;
 }
@@ -53,10 +54,17 @@ export function createConnections(): NetworkProxy {
         webRepository,
         frontWebSocket,
         backWebSocket,
-        on: (name: MopidyEventName, callback?: any) => {
-            mopidy.on(name, (data: any) => {
-                callback && callback(data);
+        onMopidy: (name: MopidyEventName, callback: any) => {
+            mopidy.on(name, (data: any) => { //todo: type callback
+                callback(data);
                 mopidyRepository.on(name, data);
+            });
+        },
+        onPlayer: (event: string, callback: any) => {
+            frontWebSocket.on(event, (data: any) => {
+                callback(data); //todo: type callback
+                //for now, no forward!
+                // webRepository.on(event, data);
             });
         },
         supervise: (func: (event: string, data: any) => void) => {

@@ -59,5 +59,5 @@ export interface MopidyRepository {
 
     getPlaybackFlags(): Promise<PlaybackFlags>;
 
-    on(name: core.MopidyEventName, data: any): void;
+    on(event: core.MopidyEventName, data: any): void;
 }

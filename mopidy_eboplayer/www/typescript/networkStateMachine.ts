@@ -1,24 +1,35 @@
 import {NetworkProxy} from "./network";
 
 export class NetworkStateMachine {
+    private networkProxy: NetworkProxy;
 
-    constructor(private networkProxy: NetworkProxy) {
-        window.addEventListener('online', this.updateOnlineStatus);
-        window.addEventListener('offline', this.updateOnlineStatus);
-        this.updateOnlineStatus();
+    constructor(networkProxy: NetworkProxy) {
+        this.networkProxy = networkProxy;
+        window.addEventListener('online', this.updateAppOnlineStatus);
+        window.addEventListener('offline', this.updateAppOnlineStatus);
+        this.networkProxy.onMopidy('state:online', this.onMopidyOnline);
+        this.networkProxy.onMopidy('state:offline', this.onMopidyOffline);
+        this.updateAppOnlineStatus();
     }
 
     getProxy() {
         return this.networkProxy;
     }
 
-    updateOnlineStatus() {
+    onMopidyOnline: (state: any) => void = () => {
+        console.log('mopidy: ONLINE');
+    };
+    onMopidyOffline: (state: any) => void = () => {
+        console.log('mopidy: OFFLINE');
+    };
+
+    updateAppOnlineStatus() {
         if (navigator.onLine) {
-            console.log("App is online. Attempting WebSocket connection to Mopidy...");
+            console.log("App: ONLINE");
             // Initialize your Mopidy WebSocket connection here
             // Enable play controls, queue actions, etc.
         } else {
-            console.log("App is offline. Switching UI to read-only mode...");
+            console.log("App: OFFLINE");
             // 1. Show an "Offline Mode" banner in the UI
             // 2. Hide or disable "Play", "Next", "Pause" buttons
             // 3. Populate your UI views by reading straight from IndexedDB instead of Mopidy

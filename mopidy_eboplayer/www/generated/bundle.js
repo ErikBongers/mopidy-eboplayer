@@ -1246,42 +1246,42 @@ var Controller = class {
 		await this.updateStreamLines();
 	}
 	initialize(views) {
-		this.network.getProxy().on("state:online", async () => {
+		this.network.getProxy().onMopidy("state:online", async () => {
 			this.model.setConnectionState(ConnectionState.Online);
 			await this.getInitialData(views);
 			this.model.setHistory(await this.network.getProxy().webRepository.fetchHistory());
 			this.viewController.setInitialView();
 		});
-		this.network.getProxy().on("state:offline", () => {
+		this.network.getProxy().onMopidy("state:offline", () => {
 			this.model.setConnectionState(ConnectionState.Offline);
 		});
-		this.network.getProxy().on("event:optionsChanged", async () => {
+		this.network.getProxy().onMopidy("event:optionsChanged", async () => {
 			this.model.setPlaybackMode(await this.network.getProxy().mopidyRepository.getPlaybackFlags());
 		});
-		this.network.getProxy().on("event:trackPlaybackStarted", async (data) => {
+		this.network.getProxy().onMopidy("event:trackPlaybackStarted", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
-		this.network.getProxy().on("event:trackPlaybackEnded", async (data) => {
+		this.network.getProxy().onMopidy("event:trackPlaybackEnded", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
-		this.network.getProxy().on("event:trackPlaybackResumed", async (data) => {
+		this.network.getProxy().onMopidy("event:trackPlaybackResumed", async (data) => {
 			await this.setCurrentTrackAndFetchDetails(data.tl_track);
 		});
-		this.network.getProxy().on("event:playlistsLoaded", () => {});
-		this.network.getProxy().on("event:playlistChanged", (data) => {});
-		this.network.getProxy().on("event:playlistDeleted", (data) => {});
-		this.network.getProxy().on("event:volumeChanged", (data) => {
+		this.network.getProxy().onMopidy("event:playlistsLoaded", () => {});
+		this.network.getProxy().onMopidy("event:playlistChanged", (data) => {});
+		this.network.getProxy().onMopidy("event:playlistDeleted", (data) => {});
+		this.network.getProxy().onMopidy("event:volumeChanged", (data) => {
 			this.model.setVolume(data.volume);
 		});
-		this.network.getProxy().on("event:muteChanged", (_data) => {});
-		this.network.getProxy().on("event:playbackStateChanged", async (data) => {
+		this.network.getProxy().onMopidy("event:muteChanged", (_data) => {});
+		this.network.getProxy().onMopidy("event:playbackStateChanged", async (data) => {
 			await this.onPlaybackStateChanged(data);
 		});
-		this.network.getProxy().on("event:tracklistChanged", async () => {
+		this.network.getProxy().onMopidy("event:tracklistChanged", async () => {
 			this.model.setTrackList(await this.network.getProxy().mopidyRepository.fetchTracklist());
 			await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTlTrack());
 		});
-		this.network.getProxy().on("event:seeked", () => {});
+		this.network.getProxy().onMopidy("event:seeked", () => {});
 		this.network.getProxy().supervise((event, data) => {
 			if (data instanceof MessageEvent) try {
 				if ((JSON.parse(data.data).event ?? "") == "stream_title_changed") return;
@@ -7494,6 +7494,9 @@ var WebOnlineRepository = class {
 	constructor(webProxy) {
 		this.webProxy = webProxy;
 	}
+	on(event, data) {
+		throw new Error("Method not implemented.");
+	}
 	addExclExtToMopidyConfigFile(ext) {
 		return this.webProxy.addExclExtToMopidyConfigFile(ext);
 	}
@@ -7598,10 +7601,15 @@ function createConnections() {
 		webRepository,
 		frontWebSocket,
 		backWebSocket,
-		on: (name, callback) => {
+		onMopidy: (name, callback) => {
 			mopidy.on(name, (data) => {
-				callback && callback(data);
+				callback(data);
 				mopidyRepository.on(name, data);
+			});
+		},
+		onPlayer: (event, callback) => {
+			frontWebSocket.on(event, (data) => {
+				callback(data);
 			});
 		},
 		supervise: (func) => {
@@ -7614,24 +7622,33 @@ function createConnections() {
 //#endregion
 //#region mopidy_eboplayer/www/typescript/networkStateMachine.ts
 var NetworkStateMachine = class {
+	networkProxy;
 	constructor(networkProxy) {
 		this.networkProxy = networkProxy;
-		window.addEventListener("online", this.updateOnlineStatus);
-		window.addEventListener("offline", this.updateOnlineStatus);
-		this.updateOnlineStatus();
+		window.addEventListener("online", this.updateAppOnlineStatus);
+		window.addEventListener("offline", this.updateAppOnlineStatus);
+		this.networkProxy.onMopidy("state:online", this.onMopidyOnline);
+		this.networkProxy.onMopidy("state:offline", this.onMopidyOffline);
+		this.updateAppOnlineStatus();
 	}
 	getProxy() {
 		return this.networkProxy;
 	}
-	updateOnlineStatus() {
-		if (navigator.onLine) console.log("App is online. Attempting WebSocket connection to Mopidy...");
-		else console.log("App is offline. Switching UI to read-only mode...");
+	onMopidyOnline = () => {
+		console.log("mopidy: ONLINE");
+	};
+	onMopidyOffline = () => {
+		console.log("mopidy: OFFLINE");
+	};
+	updateAppOnlineStatus() {
+		if (navigator.onLine) console.log("App: ONLINE");
+		else console.log("App: OFFLINE");
 	}
 };
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794096716488";
+const BUILD_VERSION = "1794139762641";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
