@@ -139,17 +139,8 @@ function setupStuff() {
     let player = new PlayController(model, networkState);
     let controller = new Controller(model, networkState, player, new CacheHandler(model, networkState, player));
     let views = createViews(new State(model, controller, player));
-    networkState.getProxy().connectWebsockets();
+    networkState.getProxy().connectWebsockets(false);
     controller.initialize(views);
-
-    document.addEventListener("visibilitychange", () => {
-        if (document.visibilityState === "visible") {
-            networkState.getProxy().connectWebsockets();
-        }
-    });
-    document.addEventListener("focus", () => {
-        networkState.getProxy().connectWebsockets();
-    });
 }
 
 //intellij live preview hack because they don't allow to set a root folder for the built-in server:

@@ -18,7 +18,7 @@ export interface NetworkProxy {
     onMopidy: (name: MopidyEventName, callback?: any) => void;
     onPlayer: (event: string, callback?: any) => void;
     supervise: (func: (event: string, data: any) => void) => void;
-    connectWebsockets: () => void;
+    connectWebsockets: (resetDelay: boolean) => void;
 }
 
 export function createConnections(): NetworkProxy {
@@ -42,8 +42,13 @@ export function createConnections(): NetworkProxy {
     let mopidyRepository: MopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
     let webRepository = new WebOnlineRepository(new WebProxy(hostAndPort));
 
-    function connectWebsockets() {
+    function connectWebsockets(resetDelay: boolean = false) {
         console.log("Trying to connect sockets...");
+        if(resetDelay) {
+            mopidy.resetConnectDelay();
+            frontWebSocket.resetConnectDelay();
+            backWebSocket.resetConnectDelay();
+        }
         mopidy.connect();
         frontWebSocket.connect();
         backWebSocket.connect();

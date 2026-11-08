@@ -1,7 +1,7 @@
 import {NetworkProxy} from "./network";
 
 export class NetworkStateMachine {
-    private networkProxy: NetworkProxy;
+    private readonly networkProxy: NetworkProxy;
 
     constructor(networkProxy: NetworkProxy) {
         this.networkProxy = networkProxy;
@@ -9,6 +9,19 @@ export class NetworkStateMachine {
         window.addEventListener('offline', this.updateAppOnlineStatus);
         this.networkProxy.onMopidy('state:online', this.onMopidyOnline);
         this.networkProxy.onMopidy('state:offline', this.onMopidyOffline);
+
+        document.addEventListener("visibilitychange", () => {
+            console.log(`page: ${document.visibilityState.toUpperCase()}`);
+            if (document.visibilityState === "visible") {
+                this.networkProxy.connectWebsockets(true);
+            }
+        });
+        document.addEventListener("focus", () => {
+            console.log("page: FOCUS");
+            this.networkProxy.connectWebsockets(true);
+        });
+
+
         this.updateAppOnlineStatus();
     }
 

@@ -2,6 +2,7 @@ import {EventEmitter} from "./eventEmitter";
 import {JsonRpc} from "./jsonrpc";
 import isSuccess = JsonRpc.isSuccess;
 import isFailure = JsonRpc.isFailure;
+import {Retry} from "./util/retry";
 
 function snakeToCamel(name: string) {
     return name.replace(/(_[a-z])/g, (match) =>
@@ -16,22 +17,18 @@ type SendType = "rpc" | "fireAndForget";
 type PendingRequests = { [k: string]: PendingRequest};
 
 export class JsonRpcController extends EventEmitter {
-    private readonly _pendingRequests: PendingRequests;
-    private _webSocket: WebSocket | null;
-    private currentDelay: number;
+    private readonly pendingRequests: PendingRequests;
+    private webSocket: WebSocket | null;
     private readonly webSocketUrl: string;
-    private readonly backoffDelayMin: number;
-    private readonly backoffDelayMax: number;
+    private retryConnect: Retry;
 
-    constructor(webSocketUrl: string, backoffDelayMin: number, backoffDelayMax: number) {
+    constructor(webSocketUrl: string, minDelay: number, maxDelay: number) {
         super();
         this.webSocketUrl = webSocketUrl;
-        this._pendingRequests = {};
-        this._webSocket = null;
-        this.currentDelay = backoffDelayMin;
-        this.backoffDelayMin = backoffDelayMin;
-        this.backoffDelayMax = backoffDelayMax;
+        this.pendingRequests = {};
+        this.webSocket = null;
         this.hookUpEvents();
+        this.retryConnect = new Retry(minDelay, maxDelay, () => {this.connect();});
     }
 
     private hookUpEvents() {
@@ -40,60 +37,47 @@ export class JsonRpcController extends EventEmitter {
         this.on("websocket:incomingMessage", this.handleMessage);
     }
 
+    resetConnectDelay(){
+        this.retryConnect.reset();
+    }
+
     connect() {
-        if (this._webSocket) {
-            if (this._webSocket.readyState === WebSocket.OPEN) {
+        if (this.webSocket) {
+            if (this.webSocket.readyState === WebSocket.OPEN)
                 return;
-            }
-            this._webSocket.close();
+            this.webSocket.close();
         }
+        this.createWebSocket();
+    }
 
-        this._webSocket = new WebSocket(this.webSocketUrl);
+    private createWebSocket() {
+        this.webSocket = new WebSocket(this.webSocketUrl); //throws exception, but LATER, so, can't be captured!
 
-        this._webSocket.onclose = (close) => {
+        this.webSocket.onclose = (close) => {
             this.emit("websocket:close", close);
         };
-        this._webSocket.onerror = (error) => {
+        this.webSocket.onerror = (error) => {
+            console.log("WebSocket ERROR: ", error);
             this.emit("websocket:error", error);
         };
-        this._webSocket.onopen = () => {
+        this.webSocket.onopen = () => {
+            this.retryConnect.reset();
             this.emit("websocket:open");
-            this.currentDelay = this.backoffDelayMin;
-
         };
-        this._webSocket.onmessage = (message) => {
+        this.webSocket.onmessage = (message) => {
             this.emit("websocket:incomingMessage", message);
         };
     }
 
     private onWebSocketClose(closeEvent: any) {
-        Object.keys(this._pendingRequests).forEach((requestId) => {
-            const {reject} = this._pendingRequests[requestId];
-            delete this._pendingRequests[requestId];
+        Object.keys(this.pendingRequests).forEach((requestId) => {
+            const {reject} = this.pendingRequests[requestId];
+            delete this.pendingRequests[requestId];
             const error = new ConnectionError("WebSocket closed");
             error.closeEvent = closeEvent;
             reject(error);
         });
-        this._reconnect();
-    }
-
-    close() {
-        this.eventOff("state:offline", this._reconnect);
-        if (this._webSocket) {
-            this._webSocket.close();
-        }
-    }
-
-    eventOff(eventName?: string, callback?: any) {
-        if (!eventName) {
-            this.removeAllListeners();
-            return;
-        }
-        if (!callback) {
-            this.removeAllListeners(eventName);
-            return;
-        }
-        this.removeListener(eventName, callback);
+        this.retryConnect.retry();
     }
 
     private handleWebSocketError(error: any) {
@@ -101,22 +85,16 @@ export class JsonRpcController extends EventEmitter {
     }
 
     send(message: Object, type: SendType = "rpc" ){
-        switch (this._webSocket?.readyState) {
+        switch (this.webSocket?.readyState) {
             case WebSocket.CONNECTING:
-                return Promise.reject(
-                    new ConnectionError("WebSocket is still connecting")
-                );
             case WebSocket.CLOSING:
-                return Promise.reject(
-                    new ConnectionError("WebSocket is closing")
-                );
             case WebSocket.CLOSED:
                 return Promise.reject(
-                    new ConnectionError("WebSocket is closed")
+                    new ConnectionError("WebSocket not connected.")
                 );
             default:
                 if (type === "fireAndForget") {
-                    this._webSocket?.send(JSON.stringify(message));
+                    this.webSocket?.send(JSON.stringify(message));
                     return Promise.resolve();
                 }
                 return new Promise((resolve, reject) => {
@@ -125,8 +103,8 @@ export class JsonRpcController extends EventEmitter {
                         jsonrpc: "2.0",
                         id: this._nextRequestId(),
                     };
-                    this._pendingRequests[jsonRpcMessage.id] = {resolve, reject};
-                    this._webSocket?.send(JSON.stringify(jsonRpcMessage));
+                    this.pendingRequests[jsonRpcMessage.id] = {resolve, reject};
+                    this.webSocket?.send(JSON.stringify(jsonRpcMessage));
                     this.emit("websocket:outgoingMessage", jsonRpcMessage);
                 });
         }
@@ -156,15 +134,15 @@ export class JsonRpcController extends EventEmitter {
     }
 
     private handleRpcResponse(responseMessage: JsonRpc.ResponseWithId<any>) {
-        if (!Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)) {
+        if (!Object.hasOwnProperty.call(this.pendingRequests, responseMessage.id)) {
             console.warn(
                 "Unexpected response received. Message was:",
                 responseMessage
             );
             return;
         }
-        const {resolve, reject} = this._pendingRequests[responseMessage.id];
-        delete this._pendingRequests[responseMessage.id];
+        const {resolve, reject} = this.pendingRequests[responseMessage.id];
+        delete this.pendingRequests[responseMessage.id];
         if (isSuccess(responseMessage)) {
             resolve(responseMessage.result);
         } else if (isFailure(responseMessage)) {
@@ -199,30 +177,6 @@ export class JsonRpcController extends EventEmitter {
         return ++JsonRpcController.idCounter;
     }
 
-    _reconnect() {
-        // We asynchronously process the reconnect because we don't want to start
-        // emitting "reconnectionPending" events before we've finished handling the
-        // "state:offline" event, which would lead to emitting the events to
-        // listeners in the wrong order.
-        setTimeout(() => {
-            this.emit("state", [
-                "reconnectionPending",
-                { timeToAttempt: this.currentDelay}
-            ]);
-            this.emit("reconnectionPending", {
-                timeToAttempt: this.currentDelay,
-            });
-            setTimeout(() => {
-                this.emit("state", "reconnecting");
-                this.emit("reconnecting");
-                this.connect();
-            }, this.currentDelay);
-            this.currentDelay *= 2;
-            if (this.currentDelay > this.backoffDelayMax) {
-                this.currentDelay = this.backoffDelayMax;
-            }
-        }, 0);
-    }
 }
 
 class ConnectionError extends Error {

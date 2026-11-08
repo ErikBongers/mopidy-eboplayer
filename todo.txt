@@ -1,4 +1,18 @@
-* log all the online offline events.
+* Create a timeout handler
+  > extract this from rpcController
+  > Reusable.
+
+Online/Offline
+==============
+App offline
+------------
+Show offline version of data.
+Don't even try to reconnect sockets, it's pointless.
+
+Mopidy offline (app online)
+----------------------------
+Show offline version.
+Try to reconnect
 
 * NetworkStateMachine
   > handle the transitions.

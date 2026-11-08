@@ -231,12 +231,6 @@ export class Mopidy {
         this.rpcController.emit("state:offline");
     }
 
-    close() {
-        if (this.rpcController) {
-            this.rpcController.close();
-        }
-    }
-
     send(method: string, params?: Object) {
         if(params)
             return this.rpcController?.send({method, params});
@@ -247,5 +241,9 @@ export class Mopidy {
     private onWebsocketOpen() {
         this.rpcController.emit("state", "state:online");
         this.rpcController.emit("state:online");
+    }
+
+    resetConnectDelay() {
+        this.rpcController?.resetConnectDelay();
     }
 }

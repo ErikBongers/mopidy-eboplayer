@@ -6485,6 +6485,35 @@ let JsonRpc;
 })(JsonRpc || (JsonRpc = {}));
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/util/retry.ts
+var Retry = class {
+	minDelay;
+	maxDelay;
+	currentDelay;
+	action;
+	constructor(minDelay, maxDelay, action) {
+		this.minDelay = minDelay;
+		this.maxDelay = maxDelay;
+		this.currentDelay = minDelay;
+		this.action = action;
+	}
+	reset() {
+		this.currentDelay = this.minDelay;
+	}
+	retry() {
+		console.log("Start retry...");
+		setTimeout(() => {
+			setTimeout(() => {
+				console.log("Retrying...");
+				this.action();
+			}, this.currentDelay);
+			this.currentDelay *= 2;
+			if (this.currentDelay > this.maxDelay) this.currentDelay = this.maxDelay;
+		}, 0);
+	}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/jsonRpcController.ts
 var isSuccess = JsonRpc.isSuccess;
 var isFailure = JsonRpc.isFailure;
@@ -6492,83 +6521,73 @@ function snakeToCamel(name) {
 	return name.replace(/(_[a-z])/g, (match) => match.toUpperCase().replace("_", ""));
 }
 var JsonRpcController = class JsonRpcController extends EventEmitter {
-	_pendingRequests;
-	_webSocket;
-	currentDelay;
+	pendingRequests;
+	webSocket;
 	webSocketUrl;
-	backoffDelayMin;
-	backoffDelayMax;
-	constructor(webSocketUrl, backoffDelayMin, backoffDelayMax) {
+	retryConnect;
+	constructor(webSocketUrl, minDelay, maxDelay) {
 		super();
 		this.webSocketUrl = webSocketUrl;
-		this._pendingRequests = {};
-		this._webSocket = null;
-		this.currentDelay = backoffDelayMin;
-		this.backoffDelayMin = backoffDelayMin;
-		this.backoffDelayMax = backoffDelayMax;
+		this.pendingRequests = {};
+		this.webSocket = null;
 		this.hookUpEvents();
+		this.retryConnect = new Retry(minDelay, maxDelay, () => {
+			this.connect();
+		});
 	}
 	hookUpEvents() {
 		this.on("websocket:close", this.onWebSocketClose);
 		this.on("websocket:error", this.handleWebSocketError);
 		this.on("websocket:incomingMessage", this.handleMessage);
 	}
+	resetConnectDelay() {
+		this.retryConnect.reset();
+	}
 	connect() {
-		if (this._webSocket) {
-			if (this._webSocket.readyState === WebSocket.OPEN) return;
-			this._webSocket.close();
+		if (this.webSocket) {
+			if (this.webSocket.readyState === WebSocket.OPEN) return;
+			this.webSocket.close();
 		}
-		this._webSocket = new WebSocket(this.webSocketUrl);
-		this._webSocket.onclose = (close) => {
+		this.createWebSocket();
+	}
+	createWebSocket() {
+		this.webSocket = new WebSocket(this.webSocketUrl);
+		this.webSocket.onclose = (close) => {
 			this.emit("websocket:close", close);
 		};
-		this._webSocket.onerror = (error) => {
+		this.webSocket.onerror = (error) => {
+			console.log("WebSocket ERROR: ", error);
 			this.emit("websocket:error", error);
 		};
-		this._webSocket.onopen = () => {
+		this.webSocket.onopen = () => {
+			this.retryConnect.reset();
 			this.emit("websocket:open");
-			this.currentDelay = this.backoffDelayMin;
 		};
-		this._webSocket.onmessage = (message) => {
+		this.webSocket.onmessage = (message) => {
 			this.emit("websocket:incomingMessage", message);
 		};
 	}
 	onWebSocketClose(closeEvent) {
-		Object.keys(this._pendingRequests).forEach((requestId) => {
-			const { reject } = this._pendingRequests[requestId];
-			delete this._pendingRequests[requestId];
+		Object.keys(this.pendingRequests).forEach((requestId) => {
+			const { reject } = this.pendingRequests[requestId];
+			delete this.pendingRequests[requestId];
 			const error = new ConnectionError("WebSocket closed");
 			error.closeEvent = closeEvent;
 			reject(error);
 		});
-		this._reconnect();
-	}
-	close() {
-		this.eventOff("state:offline", this._reconnect);
-		if (this._webSocket) this._webSocket.close();
-	}
-	eventOff(eventName, callback) {
-		if (!eventName) {
-			this.removeAllListeners();
-			return;
-		}
-		if (!callback) {
-			this.removeAllListeners(eventName);
-			return;
-		}
-		this.removeListener(eventName, callback);
+		this.retryConnect.retry();
 	}
 	handleWebSocketError(error) {
 		console.warn("WebSocket error:", error.stack || error);
 	}
 	send(message, type = "rpc") {
-		switch (this._webSocket?.readyState) {
-			case WebSocket.CONNECTING: return Promise.reject(new ConnectionError("WebSocket is still connecting"));
-			case WebSocket.CLOSING: return Promise.reject(new ConnectionError("WebSocket is closing"));
-			case WebSocket.CLOSED: return Promise.reject(new ConnectionError("WebSocket is closed"));
+		switch (this.webSocket?.readyState) {
+			case WebSocket.CONNECTING:
+			case WebSocket.CLOSING:
+			case WebSocket.CLOSED: return Promise.reject(new ConnectionError("WebSocket not connected."));
 			default:
 				if (type === "fireAndForget") {
-					this._webSocket?.send(JSON.stringify(message));
+					this.webSocket?.send(JSON.stringify(message));
 					return Promise.resolve();
 				}
 				return new Promise((resolve, reject) => {
@@ -6577,11 +6596,11 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 						jsonrpc: "2.0",
 						id: this._nextRequestId()
 					};
-					this._pendingRequests[jsonRpcMessage.id] = {
+					this.pendingRequests[jsonRpcMessage.id] = {
 						resolve,
 						reject
 					};
-					this._webSocket?.send(JSON.stringify(jsonRpcMessage));
+					this.webSocket?.send(JSON.stringify(jsonRpcMessage));
 					this.emit("websocket:outgoingMessage", jsonRpcMessage);
 				});
 		}
@@ -6598,12 +6617,12 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 		}
 	}
 	handleRpcResponse(responseMessage) {
-		if (!Object.hasOwnProperty.call(this._pendingRequests, responseMessage.id)) {
+		if (!Object.hasOwnProperty.call(this.pendingRequests, responseMessage.id)) {
 			console.warn("Unexpected response received. Message was:", responseMessage);
 			return;
 		}
-		const { resolve, reject } = this._pendingRequests[responseMessage.id];
-		delete this._pendingRequests[responseMessage.id];
+		const { resolve, reject } = this.pendingRequests[responseMessage.id];
+		delete this.pendingRequests[responseMessage.id];
 		if (isSuccess(responseMessage)) resolve(responseMessage.result);
 		else if (isFailure(responseMessage)) {
 			const error = new ServerError(responseMessage.error.message);
@@ -6628,19 +6647,6 @@ var JsonRpcController = class JsonRpcController extends EventEmitter {
 	static idCounter = -1;
 	_nextRequestId() {
 		return ++JsonRpcController.idCounter;
-	}
-	_reconnect() {
-		setTimeout(() => {
-			this.emit("state", ["reconnectionPending", { timeToAttempt: this.currentDelay }]);
-			this.emit("reconnectionPending", { timeToAttempt: this.currentDelay });
-			setTimeout(() => {
-				this.emit("state", "reconnecting");
-				this.emit("reconnecting");
-				this.connect();
-			}, this.currentDelay);
-			this.currentDelay *= 2;
-			if (this.currentDelay > this.backoffDelayMax) this.currentDelay = this.backoffDelayMax;
-		}, 0);
 	}
 };
 var ConnectionError = class extends Error {
@@ -6714,9 +6720,6 @@ var Mopidy = class {
 		this.rpcController.emit("state", "state:offline");
 		this.rpcController.emit("state:offline");
 	}
-	close() {
-		if (this.rpcController) this.rpcController.close();
-	}
 	send(method, params) {
 		if (params) return this.rpcController?.send({
 			method,
@@ -6727,6 +6730,9 @@ var Mopidy = class {
 	onWebsocketOpen() {
 		this.rpcController.emit("state", "state:online");
 		this.rpcController.emit("state:online");
+	}
+	resetConnectDelay() {
+		this.rpcController?.resetConnectDelay();
 	}
 };
 
@@ -7590,8 +7596,13 @@ function createConnections() {
 	let backWebSocket = new JsonRpcController(wsBackEndUrl, 1e3, 64e3);
 	let mopidyRepository = new MopidyOnlineRepository(new MopidyProxy(new Commands(mopidy)));
 	let webRepository = new WebOnlineRepository(new WebProxy(hostAndPort));
-	function connectWebsockets() {
+	function connectWebsockets(resetDelay = false) {
 		console.log("Trying to connect sockets...");
+		if (resetDelay) {
+			mopidy.resetConnectDelay();
+			frontWebSocket.resetConnectDelay();
+			backWebSocket.resetConnectDelay();
+		}
 		mopidy.connect();
 		frontWebSocket.connect();
 		backWebSocket.connect();
@@ -7629,6 +7640,14 @@ var NetworkStateMachine = class {
 		window.addEventListener("offline", this.updateAppOnlineStatus);
 		this.networkProxy.onMopidy("state:online", this.onMopidyOnline);
 		this.networkProxy.onMopidy("state:offline", this.onMopidyOffline);
+		document.addEventListener("visibilitychange", () => {
+			console.log(`page: ${document.visibilityState.toUpperCase()}`);
+			if (document.visibilityState === "visible") this.networkProxy.connectWebsockets(true);
+		});
+		document.addEventListener("focus", () => {
+			console.log("page: FOCUS");
+			this.networkProxy.connectWebsockets(true);
+		});
 		this.updateAppOnlineStatus();
 	}
 	getProxy() {
@@ -7648,7 +7667,7 @@ var NetworkStateMachine = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794139762641";
+const BUILD_VERSION = "1794146082359";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
@@ -7728,14 +7747,8 @@ function setupStuff() {
 	let player = new PlayController(model, networkState);
 	let controller = new controller_default(model, networkState, player, new CacheHandler(model, networkState, player));
 	let views = createViews(new State(model, controller, player));
-	networkState.getProxy().connectWebsockets();
+	networkState.getProxy().connectWebsockets(false);
 	controller.initialize(views);
-	document.addEventListener("visibilitychange", () => {
-		if (document.visibilityState === "visible") networkState.getProxy().connectWebsockets();
-	});
-	document.addEventListener("focus", () => {
-		networkState.getProxy().connectWebsockets();
-	});
 }
 let rootDir = document.location.pathname.replace("index.html", "");
 
