@@ -1,5 +1,11 @@
+* Turn states into objects instead of strings.
+  > the State interface handles ALL the possible connection events
+
 * How to drive the DemoStateMachine?
   > main.ts starts everything.
+  > I don't like checkServerHealth()
+    > probably driven by a timer?
+    > events need to be more specific and are setup by constructor.
 
 * Combine the 2 statemachines.
   >

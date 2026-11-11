@@ -1,18 +1,6 @@
-type PwaState =
-    | 'NOT_INITIALIZED'  // app still needs to setupStuff()
-    | 'ONLINE' // all normal
-    | 'NO_SERVER' // switch to offline repos and keep polling...
-    | 'NO_NETWORK'; //switch to offline repos and DON'T poll.
+import {StateEvents, StateMachine, TransitionHandler} from "./GenericStateMachine";
 
-type PwaEvent =
-    | { type: 'networkRestored' }
-    | { type: 'networkLost' }
-    | { type: 'serverResponded' }
-    | { type: 'serverTimedOut' }
-    | { type: 'appInitialized'; payload: { hasNetwork: boolean; isServerAlive: boolean } };
-
-// 2. Define the strict transition matrix
-const stateTransitions: Record<PwaState, Partial<Record<PwaEvent['type'], (event: any) => PwaState>>> = {
+/*const stateTransitions: Record<PwaStateId, Partial<Record<PwaEvent['type'], TransitionHandler>>> = {
     NOT_INITIALIZED: {
         appInitialized: (e: Extract<PwaEvent, { type: 'appInitialized' }>) => {
             if (!e.payload.hasNetwork) return 'NO_NETWORK';
@@ -31,12 +19,54 @@ const stateTransitions: Record<PwaState, Partial<Record<PwaEvent['type'], (event
         networkRestored: () => 'NO_SERVER'
     }
 };
+*/
 
-export class DemoNetworkStateMachine {
-    private currentState: PwaState = 'NOT_INITIALIZED';
-    private listeners: ((state: PwaState) => void)[] = [];
+type PwaStateId =
+    | 'NOT_INITIALIZED'  // app still needs to setupStuff()
+    | 'ONLINE' // all normal
+    | 'NO_SERVER' // switch to offline repos and keep polling...
+    | 'NO_NETWORK'; //switch to offline repos and DON'T poll.
+
+export type PwaEventId =
+    | "onAppInitialized"
+    | "onNetworkLost"
+    | "onNetworkResponded"
+    | "onNetworkRestored"
+    | "onServerTimedOut"
+    ;
+
+export type PwaStateEvents = StateEvents<PwaStateId, PwaEventId>;
+export type PwaTransitionHandler = TransitionHandler<PwaStateId,PwaEventId>;
+
+export abstract class PwaStateClass implements PwaStateEvents {
+    onAppInitialized: PwaTransitionHandler = () => {
+        return undefined;
+    };
+
+    onNetworkLost: PwaTransitionHandler = () => {
+        return undefined;
+    };
+
+    onNetworkResponded: PwaTransitionHandler = () => {
+        return undefined;
+    };
+
+    onNetworkRestored: PwaTransitionHandler = () => {
+        return undefined;
+    };
+
+    onServerTimedOut: PwaTransitionHandler = () => {
+        return undefined;
+    };
+
+}
+
+export class DemoNetworkStateMachine extends StateMachine<PwaStateId, PwaEventId> {
+    private currentState: PwaStateId = 'NOT_INITIALIZED';
+    private listeners: ((state: PwaStateId) => void)[] = [];
 
     constructor() {
+        super("NOT_INITIALIZED");
         window.addEventListener('online', () => this.transition({ type: 'networkRestored' }));
         window.addEventListener('offline', () => this.transition({ type: 'networkLost' }));
 
@@ -50,33 +80,8 @@ export class DemoNetworkStateMachine {
         });
     }
 
-    public get state(): PwaState {
+    public get state(): PwaStateId {
         return this.currentState;
-    }
-
-    public subscribe(listener: (state: PwaState) => void) {
-        this.listeners.push(listener);
-        listener(this.currentState);
-        return () => {
-            this.listeners = this.listeners.filter(l => l !== listener);
-        };
-    }
-
-    public transition(event: PwaEvent) {
-        const transitionsForState = stateTransitions[this.currentState];
-        const nextStateResolver = transitionsForState?.[event.type];
-
-        if (nextStateResolver) {
-            const nextState = nextStateResolver(event);
-            if (nextState !== this.currentState) {
-                this.currentState = nextState;
-                this.notifyListeners();
-            }
-        }
-    }
-
-    private notifyListeners() {
-        this.listeners.forEach(listener => listener(this.currentState));
     }
 
     public async checkServerHealth(): Promise<boolean> {
