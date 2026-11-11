@@ -7641,11 +7641,11 @@ var NetworkStateMachine = class {
 		this.networkProxy.onMopidy("state:online", this.onMopidyOnline);
 		this.networkProxy.onMopidy("state:offline", this.onMopidyOffline);
 		document.addEventListener("visibilitychange", () => {
-			console.log(`page: ${document.visibilityState.toUpperCase()}`);
+			console.log(`page: ${document.visibilityState.toUpperCase()} -> check connections`);
 			if (document.visibilityState === "visible") this.networkProxy.connectWebsockets(true);
 		});
 		document.addEventListener("focus", () => {
-			console.log("page: FOCUS");
+			console.log("page event: -> check connections");
 			this.networkProxy.connectWebsockets(true);
 		});
 		this.updateAppOnlineStatus();
@@ -7654,20 +7654,20 @@ var NetworkStateMachine = class {
 		return this.networkProxy;
 	}
 	onMopidyOnline = () => {
-		console.log("mopidy: ONLINE");
+		console.log("mopidy event: ONLINE -> transition");
 	};
 	onMopidyOffline = () => {
-		console.log("mopidy: OFFLINE");
+		console.log("mopidy event: OFFLINE -> transition");
 	};
 	updateAppOnlineStatus() {
-		if (navigator.onLine) console.log("App: ONLINE");
-		else console.log("App: OFFLINE");
+		if (navigator.onLine) console.log("App event: ONLINE -> transition");
+		else console.log("App event: OFFLINE -> transition");
 	}
 };
 
 //#endregion
-//#region mopidy_eboplayer/www/typescript/gui.ts
-const BUILD_VERSION = "1794146082359";
+//#region mopidy_eboplayer/www/typescript/main.ts
+const BUILD_VERSION = "1794406890320";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {

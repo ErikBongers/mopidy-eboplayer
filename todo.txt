@@ -1,9 +1,40 @@
-* Create a timeout handler
-  > extract this from rpcController
-  > Reusable.
+* How to drive the DemoStateMachine?
+  > main.ts starts everything.
+
+* Combine the 2 statemachines.
+  >
+
+* Update volume: first attempt of cached command!
+  > a cached command must have these functions:
+      > possible done by a CacheCommandController.
+    - handle repeats
+      > strategy:
+        - first/last
+        - custom (eg. calculate min(volume) for safety)
+    - time-out
 
 Online/Offline
 ==============
+States
+------
+  - INITIAL
+  - ONLINE
+  - NO_NETWORK
+  - NO_SERVER (implies there is network)
+Transitions
+-----------
+  - INITIAL (-> ONLINE : perhaps always pass via NO_NETWORK?)
+            -> NO_NETWORK
+            -> NO_SERVER
+  - NO_NETWORK (-> ONLINE : perhaps always pass via NO_SERVER?)
+               -> NO_SERVER
+  - NO_SERVER -> ONLINE
+              -> NO_NETWORK
+Events/Inputs
+-------------
+app online/offline
+
+
 App offline
 ------------
 Show offline version of data.
@@ -26,7 +57,7 @@ Try to reconnect
   > chromium only.
 
 
-* gui.ts: when new BUILD...reload to use the new bundle?
+* main.ts: when new BUILD...reload to use the new bundle?
 
 * text search: every field (artist,...)
 
@@ -45,7 +76,7 @@ Try to reconnect
   > When tracks get selected, show a blue play button, next to the...green/yellow/brown(?) one
 
 * start making app offline.
-  > see updateOnlineStatus() in gui.ts
+  > see updateOnlineStatus() in main.ts
 
 * plugin: template should give warning if attName has uppercase.
 

@@ -1,6 +1,6 @@
 {
     "files": [
-        "mopidy_eboplayer/www/typescript/gui.ts"
+        "mopidy_eboplayer/www/typescript/main.ts"
     ],
     "exclude": [],
     "compilerOptions": {

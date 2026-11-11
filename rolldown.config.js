@@ -4,7 +4,7 @@ import placeholdersPlugin from "./rolldown_plugins/placeholders/main.cjs";
 
 let version = JSON.stringify(`${Date.now()}`)
 export default defineConfig({
-    input: 'mopidy_eboplayer/www/typescript/gui.ts',
+    input: 'mopidy_eboplayer/www/typescript/main.ts',
     output: {
         file: 'mopidy_eboplayer/www/generated/bundle.js',
         sourcemap: true,
