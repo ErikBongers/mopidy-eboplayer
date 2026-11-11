@@ -11,13 +11,13 @@ export class NetworkStateMachine {
         this.networkProxy.onMopidy('state:offline', this.onMopidyOffline);
 
         document.addEventListener("visibilitychange", () => {
-            console.log(`page: ${document.visibilityState.toUpperCase()}`);
+            console.log(`page: ${document.visibilityState.toUpperCase()} -> check connections`);
             if (document.visibilityState === "visible") {
                 this.networkProxy.connectWebsockets(true);
             }
         });
         document.addEventListener("focus", () => {
-            console.log("page: FOCUS");
+            console.log("page event: -> check connections");
             this.networkProxy.connectWebsockets(true);
         });
 
@@ -30,19 +30,19 @@ export class NetworkStateMachine {
     }
 
     onMopidyOnline: (state: any) => void = () => {
-        console.log('mopidy: ONLINE');
+        console.log('mopidy event: ONLINE -> transition');
     };
     onMopidyOffline: (state: any) => void = () => {
-        console.log('mopidy: OFFLINE');
+        console.log('mopidy event: OFFLINE -> transition');
     };
 
     updateAppOnlineStatus() {
         if (navigator.onLine) {
-            console.log("App: ONLINE");
+            console.log("App event: ONLINE -> transition");
             // Initialize your Mopidy WebSocket connection here
             // Enable play controls, queue actions, etc.
         } else {
-            console.log("App: OFFLINE");
+            console.log("App event: OFFLINE -> transition");
             // 1. Show an "Offline Mode" banner in the UI
             // 2. Hide or disable "Play", "Next", "Pause" buttons
             // 3. Populate your UI views by reading straight from IndexedDB instead of Mopidy
