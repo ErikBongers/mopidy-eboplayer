@@ -45,6 +45,7 @@ import {StateMap} from "./stateMachine/StateMachine";
 import {InitialState} from "./stateMachine/InitialState";
 import {NoServerState} from "./stateMachine/NoServerState";
 import {OnlineState} from "./stateMachine/OnlineState";
+import {NoNetworkState} from "./stateMachine/NoNetworkState";
 
 // @ts-ignore
 const BUILD_VERSION = __BUILD_VERSION__; // Replaced during build step
@@ -140,9 +141,9 @@ function onDocAndCssLoaded(cssTexts: [string, string]) {
 function getStateMap(app: App) {
     let dummyState = new InitialState(app);
     let states: StateMap<PwaStateId, PwaEventId> = {
-        "NOT_INITIALIZED": new InitialState(app),
+        NOT_INITIALIZED: new InitialState(app),
         ONLINE: new OnlineState(app),
-        NO_NETWORK: dummyState,
+        NO_NETWORK: new NoNetworkState(app),
         NO_SERVER: new NoServerState(app),
     };
     return states;

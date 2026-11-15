@@ -1,13 +1,4 @@
-import {
-    HandlerResponse,
-    PartialStateEvents,
-    StateClass,
-    StateEvents,
-    StateMachine,
-    StateMap,
-    TransitionHandler
-} from "./StateMachine";
-import {createOnlineNetworkProxy, NetworkProxy, NetworkProxyPointer} from "../network";
+import {HandlerResponse, StateClass, StateEvents, StateMachine, StateMap, TransitionHandler} from "./StateMachine";
 import {App} from "../app";
 
 export type PwaStateId =
@@ -27,8 +18,6 @@ export type PwaEventId =
     ;
 
 export type PwaStateEvents = StateEvents<PwaStateId, PwaEventId>;
-export type PwaPartialStateEvents = PartialStateEvents<PwaStateId, PwaEventId>;
-export type PwaTransitionHandler = TransitionHandler<PwaStateId,PwaEventId>;
 export type PwaHandlerResponse = HandlerResponse<PwaStateId>;
 
 export abstract class PwaStateClass extends StateClass<PwaStateId, PwaEventId> implements PwaStateEvents {

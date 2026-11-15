@@ -7664,7 +7664,7 @@ var StateMachine = class {
 		if (this.showLog) console.log(`StateMachine: on ${event} in state ${this.currentStateId}`);
 		let currentState = this.states[this.currentStateId];
 		if (!currentState) throw new Error(`State ${this.currentStateId} not found.`);
-		const nextState = currentState[event]();
+		const nextState = currentState[event](event);
 		if (nextState && nextState !== this.currentStateId) {
 			if (this.showLog) console.log(`StateMachine: transition to ${nextState}`);
 			this.currentStateId = nextState;
@@ -7742,8 +7742,17 @@ var OnlineState = class extends PwaStateClass {
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/stateMachine/NoNetworkState.ts
+var NoNetworkState = class extends PwaStateClass {
+	constructor(app) {
+		super("NO_NETWORK", app);
+	}
+	onPageVisibleOrFocus() {}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/main.ts
-const BUILD_VERSION = "1794781394006";
+const BUILD_VERSION = "1794785258165";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
@@ -7823,11 +7832,11 @@ function onDocAndCssLoaded(cssTexts) {
 	networkState.on("onAppInitialized");
 }
 function getStateMap(app) {
-	let dummyState = new InitialState(app);
+	new InitialState(app);
 	return {
-		"NOT_INITIALIZED": new InitialState(app),
+		NOT_INITIALIZED: new InitialState(app),
 		ONLINE: new OnlineState(app),
-		NO_NETWORK: dummyState,
+		NO_NETWORK: new NoNetworkState(app),
 		NO_SERVER: new NoServerState(app)
 	};
 }
