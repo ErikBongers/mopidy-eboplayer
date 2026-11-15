@@ -1,35 +1,34 @@
 import {Model} from "../model";
 import {TlId} from "../../js/mopidy";
 import {AllUris} from "../modelTypes";
-import {NetworkProxy} from "../network";
-import {NetworkStateMachine} from "../networkStateMachine";
+import {PwaStateMachine} from "../stateMachine/PwaStateMachine";
 
 export class PlayController {
     protected model: Model;
-    protected network: NetworkStateMachine;
+    protected network: PwaStateMachine;
 
-    constructor(model: Model, network: NetworkStateMachine) {
+    constructor(model: Model, network: PwaStateMachine) {
         this.model = model;
         this.network = network;
     }
 
     async clear() {
-        await this.network.getProxy().mopidyRepository.clearTrackList();
+        await this.network.getNetworkProxy().mopidyRepository.clearTrackList();
         this.model.setTrackList([]);
     }
     async clearAndPlay(uris: AllUris[]) {
-        await this.network.getProxy().mopidyRepository.clearTrackList();
+        await this.network.getNetworkProxy().mopidyRepository.clearTrackList();
         let trackList = await this.add(uris);
         await this.play(trackList[0].tlid);
     }
 
     async play(tlid: TlId | undefined = undefined) {
         tlid = tlid ?? this.model.getTrackList()[0].tlid;
-        await this.network.getProxy().mopidyRepository.playTracklistItem(tlid);
+        await this.network.getNetworkProxy().mopidyRepository.playTracklistItem(tlid);
     }
 
     async add(uris: AllUris[]) {
-        let tracks = await this.network.getProxy().mopidyRepository.addTracksToTracklist(uris);
+        let tracks = await this.network.getNetworkProxy().mopidyRepository.addTracksToTracklist(uris);
         this.model.addToTrackList(tracks);
         return tracks;
     }

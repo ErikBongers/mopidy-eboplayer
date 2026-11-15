@@ -3,7 +3,6 @@ import {LocalStorageProxy} from "../proxies/localStorageProxy";
 import {AlbumUri, Goto, Pages, StreamUri, TrackUri} from "../modelTypes";
 import {RefArgs} from "../events";
 import Controller from "./controller";
-import {NetworkStateMachine} from "../networkStateMachine";
 
 export class ViewController {
     protected model: Model;

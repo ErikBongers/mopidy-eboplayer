@@ -6,11 +6,13 @@ export type StateEvents<STATE_ID extends string, EVENT_ID extends string> = {
 [K in EVENT_ID]: TransitionHandler<STATE_ID, EVENT_ID>;
 };
 
+export type PartialStateEvents<STATE_ID extends string, EVENT_ID extends string> = Partial<StateEvents<STATE_ID, EVENT_ID>>;
+
 export abstract class StateClass<STATE_ID extends string, EVENT_ID extends string> {
     stateId: STATE_ID;
-    stateEvents: StateEvents<STATE_ID, EVENT_ID>;
+    stateEvents: PartialStateEvents<STATE_ID, EVENT_ID>;
 
-    protected constructor(stateId: STATE_ID, stateEvents: StateEvents<STATE_ID, EVENT_ID>) {
+    protected constructor(stateId: STATE_ID, stateEvents: PartialStateEvents<STATE_ID, EVENT_ID>) {
         this.stateId = stateId;
         this.stateEvents = stateEvents;
     }
@@ -35,6 +37,8 @@ export class StateMachine<STATE_ID extends string, EVENT_ID extends string> {
             throw new Error(`State ${this.currentStateId} not found.`);
 
         const transitionHandler = currentState.getHandler(event);
+        if(!transitionHandler)
+            return;
 
         const nextState = transitionHandler(event);
         if (nextState && nextState !== this.currentStateId) {

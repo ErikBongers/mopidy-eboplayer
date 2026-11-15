@@ -1,3 +1,7 @@
+* Startup: too many reconnects at once.
+  > App online event
+  > page visible event
+
 * Status bar: show when reconnecting.
   > Only show "offline" when iddle.
     > ...for longer than a second to avoid flickering.

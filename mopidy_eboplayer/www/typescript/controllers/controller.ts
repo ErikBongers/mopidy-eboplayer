@@ -25,11 +25,11 @@ import {View} from "../views/view";
 import {CacheHandler} from "./cacheHandler";
 import {ViewController} from "./viewController";
 import {BrowseController} from "./browseController";
-import {NetworkStateMachine} from "../networkStateMachine";
 import TlTrack = models.TlTrack;
 import Ref = models.Ref;
 import Playlist = models.Playlist;
 import PlaybackState = core.PlaybackState;
+import {PwaStateMachine} from "../stateMachine/PwaStateMachine";
 
 export const LIBRARY_PROTOCOL = "eboback:";
 
@@ -40,13 +40,13 @@ export const LIBRARY_PROTOCOL = "eboback:";
 class Controller {
     protected model: Model;
     public localStorageProxy: LocalStorageProxy;
-    private network: NetworkStateMachine;
+    private network: PwaStateMachine;
     protected player: PlayController;
     cache: CacheHandler;
     viewController: ViewController;
     browseController: BrowseController;
 
-    constructor(model: Model, network: NetworkStateMachine, player: PlayController, cache: CacheHandler) {
+    constructor(model: Model, network: PwaStateMachine, player: PlayController, cache: CacheHandler) {
         this.cache = cache;
         this.model  = model;
         this.player = player;
@@ -57,11 +57,11 @@ class Controller {
     }
 
     async getInitialData(views: View[])  {
-        this.model.setVolume(await this.network.getProxy().mopidyRepository.fetchVolume());
-        await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTlTrack());
-        this.model.setPlayState((await this.network.getProxy().mopidyRepository.fetchPlayState()) as PlayState);
-        this.model.setPlaybackMode(await this.network.getProxy().mopidyRepository.getPlaybackFlags());
-        this.model.setTrackList(await this.network.getProxy().mopidyRepository.fetchTracklist());
+        this.model.setVolume(await this.network.getNetworkProxy().mopidyRepository.fetchVolume());
+        await this.setCurrentTrackAndFetchDetails(await this.network.getNetworkProxy().mopidyRepository.fetchCurrentTlTrack());
+        this.model.setPlayState((await this.network.getNetworkProxy().mopidyRepository.fetchPlayState()) as PlayState);
+        this.model.setPlaybackMode(await this.network.getNetworkProxy().mopidyRepository.getPlaybackFlags());
+        this.model.setTrackList(await this.network.getNetworkProxy().mopidyRepository.fetchTracklist());
         await this.fetchAllAlbums();
         this.localStorageProxy.loadCurrentBrowseFilter();
         this.localStorageProxy.loadBrowseFiltersBreadCrumbs("browse");
@@ -76,68 +76,68 @@ class Controller {
     }
 
     initialize (views: View[]) {
-        this.network.getProxy().onMopidy('state:online', async () => {
+        this.network.getNetworkProxy().onMopidy('state:online', async () => {
             this.model.setConnectionState(ConnectionState.Online);
             await this.getInitialData(views);
-            this.model.setHistory(await this.network.getProxy().webRepository.fetchHistory());
+            this.model.setHistory(await this.network.getNetworkProxy().webRepository.fetchHistory());
             this.viewController.setInitialView();
         });
 
-        this.network.getProxy().onMopidy('state:offline', () => {
+        this.network.getNetworkProxy().onMopidy('state:offline', () => {
             this.model.setConnectionState(ConnectionState.Offline);
         });
 
-        this.network.getProxy().onMopidy('event:optionsChanged', async () =>{
-            this.model.setPlaybackMode(await this.network.getProxy().mopidyRepository.getPlaybackFlags());
+        this.network.getNetworkProxy().onMopidy('event:optionsChanged', async () =>{
+            this.model.setPlaybackMode(await this.network.getNetworkProxy().mopidyRepository.getPlaybackFlags());
         });
 
-        this.network.getProxy().onMopidy('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: make data a type
+        this.network.getNetworkProxy().onMopidy('event:trackPlaybackStarted', async (data: {tl_track: TlTrack}) => { //todo: make data a type
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.network.getProxy().onMopidy('event:trackPlaybackEnded', async (data: {tl_track: TlTrack}) => {
+        this.network.getNetworkProxy().onMopidy('event:trackPlaybackEnded', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.network.getProxy().onMopidy('event:trackPlaybackResumed', async (data: {tl_track: TlTrack}) => {
+        this.network.getNetworkProxy().onMopidy('event:trackPlaybackResumed', async (data: {tl_track: TlTrack}) => {
             await this.setCurrentTrackAndFetchDetails(data.tl_track);
         });
 
-        this.network.getProxy().onMopidy('event:playlistsLoaded', ()  => {
+        this.network.getNetworkProxy().onMopidy('event:playlistsLoaded', ()  => {
             // library.getPlaylists();
         });
 
-        this.network.getProxy().onMopidy('event:playlistChanged', (data: {playlist: Playlist}) => {
+        this.network.getNetworkProxy().onMopidy('event:playlistChanged', (data: {playlist: Playlist}) => {
             // delete this.stateplaylists[data.playlist.uri];
             // library.getPlaylists();
         });
 
-        this.network.getProxy().onMopidy('event:playlistDeleted', (data: {uir: PlaylistUri}) => {
+        this.network.getNetworkProxy().onMopidy('event:playlistDeleted', (data: {uir: PlaylistUri}) => {
             // delete this.stateplaylists[data.uri];
             // library.getPlaylists();
         });
 
-        this.network.getProxy().onMopidy('event:volumeChanged', (data: {volume: number}) => {
+        this.network.getNetworkProxy().onMopidy('event:volumeChanged', (data: {volume: number}) => {
             this.model.setVolume(data.volume);
         });
 
-        this.network.getProxy().onMopidy('event:muteChanged', (_data: any) => {
+        this.network.getNetworkProxy().onMopidy('event:muteChanged', (_data: any) => {
         });
 
-        this.network.getProxy().onMopidy('event:playbackStateChanged', async (data: {new_state: PlaybackState}) => {
+        this.network.getNetworkProxy().onMopidy('event:playbackStateChanged', async (data: {new_state: PlaybackState}) => {
             await this.onPlaybackStateChanged(data);
         });
 
-        this.network.getProxy().onMopidy('event:tracklistChanged', async () => {
-            this.model.setTrackList(await this.network.getProxy().mopidyRepository.fetchTracklist());
-            await this.setCurrentTrackAndFetchDetails(await this.network.getProxy().mopidyRepository.fetchCurrentTlTrack());
+        this.network.getNetworkProxy().onMopidy('event:tracklistChanged', async () => {
+            this.model.setTrackList(await this.network.getNetworkProxy().mopidyRepository.fetchTracklist());
+            await this.setCurrentTrackAndFetchDetails(await this.network.getNetworkProxy().mopidyRepository.fetchCurrentTlTrack());
         });
 
-        this.network.getProxy().onMopidy('event:seeked', () => {
+        this.network.getNetworkProxy().onMopidy('event:seeked', () => {
         });
 
         //log all events:
-        this.network.getProxy().supervise((event: string, data: any) => {
+        this.network.getNetworkProxy().supervise((event: string, data: any) => {
             // console.log(`mopidy event ${event}:`, data);
             if(data instanceof MessageEvent) {
                 try {
@@ -155,27 +155,27 @@ class Controller {
                     return;
             }
         });
-        this.network.getProxy().frontWebSocket.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
+        this.network.getNetworkProxy().frontWebSocket.on("event:streamHistoryChanged", (data: {stream_titles: StreamTitles}) => {
             let streamTitles: StreamTitles = data.stream_titles;
             this.model.setActiveStreamLines(streamTitles);
             this.model.setStreamLinesHistory(streamTitles.uri as StreamUri, null);
         });
-        this.network.getProxy().frontWebSocket.on("event:programTitleChanged", (data: {program_title: string}) => {
+        this.network.getNetworkProxy().frontWebSocket.on("event:programTitleChanged", (data: {program_title: string}) => {
             this.model.setCurrentProgramTitle(data.program_title);
         });
-        this.network.getProxy().backWebSocket.supervise((data: any) => {
+        this.network.getNetworkProxy().backWebSocket.supervise((data: any) => {
         });
-        this.network.getProxy().backWebSocket.on("event:scanStarted", (data: any) => {
+        this.network.getNetworkProxy().backWebSocket.on("event:scanStarted", (data: any) => {
             this.model.setScanStatus({type: data.type, message: data.message});
         });
-        this.network.getProxy().backWebSocket.on("event:scanStatus", (data: any) => {
+        this.network.getNetworkProxy().backWebSocket.on("event:scanStatus", (data: any) => {
             this.model.setScanStatus({type: data.type, message: data.message});
         });
-        this.network.getProxy().backWebSocket.on("event:scanFinished", (data: any) => {
+        this.network.getNetworkProxy().backWebSocket.on("event:scanFinished", (data: any) => {
             this.model.setScanStatus({type: data.type, message: data.message});
             this.model.dispatchEboEvent("scanFinished.eboplayer", {});
         });
-        this.network.getProxy().frontWebSocket.on("event:volumeAdjustChanged", async (data: {uri: AllUris, volumeAdjust: number}) => {
+        this.network.getNetworkProxy().frontWebSocket.on("event:volumeAdjustChanged", async (data: {uri: AllUris, volumeAdjust: number}) => {
             await this.onVolumeAdjustChanged(data.uri, data.volumeAdjust);
         });
     }
@@ -189,7 +189,7 @@ class Controller {
     }
 
     async fetchAllAlbums() {
-        let albumRefs = await this.network.getProxy().mopidyRepository.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
+        let albumRefs = await this.network.getNetworkProxy().mopidyRepository.browse(LIBRARY_PROTOCOL+"directory?type=album") as Ref<AlbumUri>[];
         return await this.cache.lookupAlbumsCached(albumRefs.map(ref => ref.uri));
     }
 
@@ -228,7 +228,7 @@ class Controller {
 
         let trackModel = await this.cache.lookupTrackCached(this.model.currentTrack);
         if (trackModel?.type == "stream") {
-            let lines = await this.network.getProxy().webRepository.fetchActiveStreamLines(this.model.currentTrack as StreamUri);
+            let lines = await this.network.getNetworkProxy().webRepository.fetchActiveStreamLines(this.model.currentTrack as StreamUri);
             this.model.setActiveStreamLines(lines);
         } else {
             this.model.setActiveStreamLines(NoStreamTitles);
@@ -267,7 +267,7 @@ class Controller {
     }
 
     async fetchAllRefs() {
-        let allRefs = await this.network.getProxy().webRepository.fetchAllRefs();
+        let allRefs = await this.network.getNetworkProxy().webRepository.fetchAllRefs();
 
         return createAllRefs(this.cache, allRefs.allRefs, allRefs.tracksNoAlbumRefs);
     }
@@ -282,21 +282,21 @@ class Controller {
     }
 
     async createPlaylist(name: string) {
-        return this.network.getProxy().webRepository.createPlaylist(name)
+        return this.network.getNetworkProxy().webRepository.createPlaylist(name)
     }
 
     async addRefToPlaylist(playlistUri: AllUris, itemUri: AllUris, refType: RefType, sequence: number) {
-        return this.network.getProxy().webRepository.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
+        return this.network.getNetworkProxy().webRepository.addRefToPlaylist(playlistUri, itemUri, refType, sequence);
     }
 
     async remember(streamUri: StreamUri, lines: string) {
-        let _status = await this.network.getProxy().webRepository.remember(lines);
+        let _status = await this.network.getNetworkProxy().webRepository.remember(lines);
         this.model.setRemembers(null);
         this.model.setStreamLinesHistory(streamUri, null);
     }
 
     async deleteRemember(id: RememberId) {
-        await this.network.getProxy().webRepository.deleteRemember(id);
+        await this.network.getNetworkProxy().webRepository.deleteRemember(id);
         this.model.setRemembers(null);
         let streamUri = this.model.getRadioToView();
         if(streamUri)
@@ -305,41 +305,41 @@ class Controller {
 
     async startScan() {
         this.model.clearScanStatus();
-        await this.network.getProxy().backWebSocket.send({method: "start_scan"}, "fireAndForget");
+        await this.network.getNetworkProxy().backWebSocket.send({method: "start_scan"}, "fireAndForget");
     }
 
     async readMopidyConfig() {
-        let config = await this.network.getProxy().webRepository.getMopidyConfigFile();
+        let config = await this.network.getNetworkProxy().webRepository.getMopidyConfigFile();
     }
 
     async addExclExtToMopidyConfig(ext: string) {
-        await this.network.getProxy().webRepository.addExclExtToMopidyConfigFile(ext)
+        await this.network.getNetworkProxy().webRepository.addExclExtToMopidyConfigFile(ext)
     }
 
     async setRepeat(repeat: boolean) {
-        await this.network.getProxy().mopidyRepository.setRepeat(repeat);
+        await this.network.getNetworkProxy().mopidyRepository.setRepeat(repeat);
     }
 
     async setSingle(single: boolean) {
-        await this.network.getProxy().mopidyRepository.setSingle(single);
+        await this.network.getNetworkProxy().mopidyRepository.setSingle(single);
     }
 
     async saveAlbumGenre(albumUri: AlbumUri, genre: string) {
-        await this.network.getProxy().webRepository.setAlbumGenre(albumUri, genre);
+        await this.network.getNetworkProxy().webRepository.setAlbumGenre(albumUri, genre);
     }
 
     async toggleFavorite(uri: AllUris) {
-        await this.network.getProxy().webRepository.toggleFavorite(uri);
+        await this.network.getNetworkProxy().webRepository.toggleFavorite(uri);
         this.model.setFavorites(null);
         await this.cache.getFavorites();
     }
 
     async setAlbumVolumeDown(uri: AllUris) {
-        await this.network.getProxy().webRepository.albumVolumeDown(uri);
+        await this.network.getNetworkProxy().webRepository.albumVolumeDown(uri);
     }
 
     async setAlbumVolumeUp(uri: AllUris) {
-        await this.network.getProxy().webRepository.albumVolumeUp(uri);
+        await this.network.getNetworkProxy().webRepository.albumVolumeUp(uri);
     }
 
     async isFavorite(uri: AllUris | undefined | null) {
@@ -358,35 +358,35 @@ class Controller {
     }
 
     async fetchPlaylistItems(uri: AllUris) {
-        return this.network.getProxy().mopidyRepository.fetchPlaylistItems(uri)
+        return this.network.getNetworkProxy().mopidyRepository.fetchPlaylistItems(uri)
     }
 
     async browse(uri: AllUris) {
-        return this.network.getProxy().mopidyRepository.browse(uri);
+        return this.network.getNetworkProxy().mopidyRepository.browse(uri);
     }
 
     async uploadAlbumData(uri: AlbumUri) {
-        return this.network.getProxy().webRepository.uploadAlbumData(uri);
+        return this.network.getNetworkProxy().webRepository.uploadAlbumData(uri);
     }
 
     async uploadAlbumImages(albumUri: AlbumUri, imageUrl: string) {
-        return this.network.getProxy().webRepository.uploadAlbumImages(albumUri, imageUrl);
+        return this.network.getNetworkProxy().webRepository.uploadAlbumImages(albumUri, imageUrl);
     }
 
     async sendPlay() {
-        return this.network.getProxy().mopidyRepository.sendPlay();
+        return this.network.getNetworkProxy().mopidyRepository.sendPlay();
     }
 
     async sendStop() {
-        return this.network.getProxy().mopidyRepository.sendStop();
+        return this.network.getNetworkProxy().mopidyRepository.sendStop();
     }
 
     async sendPause() {
-        return this.network.getProxy().mopidyRepository.sendPause();
+        return this.network.getNetworkProxy().mopidyRepository.sendPause();
     }
 
     async sendVolume(value: number) {
-        return this.network.getProxy().mopidyRepository.sendVolume(value);
+        return this.network.getNetworkProxy().mopidyRepository.sendVolume(value);
     }
 
     async getGenreDefs() {

@@ -1,4 +1,3 @@
-import {Options} from "../js/mopidy";
 import {Model} from "./model";
 import Controller from "./controllers/controller";
 import {PlayerBarView} from "./views/playerBarView";
@@ -9,7 +8,6 @@ import {EboComponent} from "./components/EboComponent";
 import {MainView} from "./views/mainView";
 import {EboBrowseComp} from "./components/browse/eboBrowseComp";
 import {EboButton} from "./components/general/eboButton";
-import {getWebSocketUrl} from "./global";
 import {EboBigAlbumComp} from "./components/album/eboBigAlbumComp";
 import {EboPlayerBar} from "./components/eboPlayerBar";
 import {EboMenuButton} from "./components/general/eboMenuButton";
@@ -41,8 +39,8 @@ import {SettingsView} from "./views/settingsView";
 import {View} from "./views/view";
 import {EboTracklistComp} from "./components/eboTracklistComp";
 import {UpdateCache} from "./messages";
-import {createConnections} from "./network";
-import {NetworkStateMachine} from "./networkStateMachine";
+import {createOnlineNetworkProxy} from "./network";
+import {PwaStateMachine} from "./stateMachine/PwaStateMachine";
 
 // @ts-ignore
 const BUILD_VERSION = __BUILD_VERSION__; // Replaced during build step
@@ -119,30 +117,32 @@ function createViews(state: OldState) {
     return views;
 }
 
-setupServiceWorker();
-
-document.addEventListener("DOMContentLoaded",function () {
-    Promise.all([
-        fetch(`${rootDir}css/global.css`).then(res => res.text()),
-        fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
-    ])
-        .then(cssTexts => {
-            EboComponent.setGlobalCss(cssTexts);
-            registerWebComponents();
-            setupStuff();
-        });
-});
-
-function setupStuff() {
-    let networkState = new NetworkStateMachine(createConnections());
+function onDocAndCssLoaded(cssTexts: [string, string]) {
+    EboComponent.setGlobalCss(cssTexts);
+    registerWebComponents();
+    let networkState = new PwaStateMachine(createOnlineNetworkProxy());
     let model = new Model();
     let player = new PlayController(model, networkState);
     let controller = new Controller(model, networkState, player, new CacheHandler(model, networkState, player));
     let views = createViews(new OldState(model, controller, player));
-    networkState.getProxy().connectWebsockets(false);
+    networkState.getNetworkProxy().connectWebsockets(false);
     controller.initialize(views);
 }
 
+function main (){
+    setupServiceWorker();
+    document.addEventListener("DOMContentLoaded", function () {
+        Promise.all([
+            fetch(`${rootDir}css/global.css`).then(res => res.text()),
+            fetch(`${rootDir}vendors/font_awesome/css/font-awesome.css`).then(res => res.text()),
+        ])
+            .then(cssTexts => {
+                onDocAndCssLoaded(cssTexts);
+            });
+    });
 //intellij live preview hack because they don't allow to set a root folder for the built-in server:
-let rootDir = document.location.pathname.replace("index.html", "");
+    let rootDir = document.location.pathname.replace("index.html", "");
 
+}
+
+main();
