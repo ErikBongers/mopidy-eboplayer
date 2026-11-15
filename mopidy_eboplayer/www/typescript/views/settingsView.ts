@@ -1,10 +1,10 @@
 import {ComponentView} from "./view";
 import {EboSettingsComp} from "../components/eboSettingsComp";
-import {OldState} from "../playerState";
+import {App} from "../app";
 
 export class SettingsView extends ComponentView<EboSettingsComp> {
 
-    constructor(state: OldState, component: EboSettingsComp) {
+    constructor(state: App, component: EboSettingsComp) {
         super(state, component);
     }
 

@@ -1,5 +1,5 @@
 import {ExpandedFileTrackModel, ExpandedStreamModel, isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, MessageType, StreamUri, TrackUri} from "../modelTypes";
-import {OldState} from "../playerState";
+import {App} from "../app";
 import {ComponentView} from "./view";
 import {EboNowPlayingComp} from "../components/eboNowPlayingComp";
 
@@ -9,7 +9,7 @@ export class NowPlayingView extends ComponentView<EboNowPlayingComp> {
     private uri: string | null = null;
     private track: ExpandedStreamModel | ExpandedFileTrackModel | null = null;
 
-    constructor(state: OldState, component: EboNowPlayingComp) {
+    constructor(state: App, component: EboNowPlayingComp) {
         super(state, component);
     }
 

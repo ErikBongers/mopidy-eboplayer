@@ -1,12 +1,12 @@
 import {View} from "./view";
 import {TlId} from "../../js/mopidy";
 import {HistoryLineDef, TrackUri} from "../modelTypes";
-import {OldState} from "../playerState";
+import {App} from "../app";
 
 export class TimelineView extends View {
     private clickedRow: HTMLTableRowElement | null = null;
 
-    constructor(state: OldState) {
+    constructor(state: App) {
         super(state);
     }
 

@@ -1,6 +1,6 @@
 import {EboComponent} from "../components/EboComponent";
 import {EboEventTarget, EboEventHandlersEventMap, EboplayerEvent} from "../events";
-import { OldState } from "../playerState";
+import { App } from "../app";
 
 export interface Parent<Child> {
     addChildren(...children: Child[]): void;
@@ -9,10 +9,10 @@ export interface Parent<Child> {
 }
 
 export abstract class View  implements Parent<View> {
-    protected state: OldState;
+    protected state: App;
     private _children: View[] = [];
 
-    constructor(state: OldState) {
+    constructor(state: App) {
         this.state = state;
     }
 
@@ -35,7 +35,7 @@ export abstract class View  implements Parent<View> {
 export abstract class ComponentView<T extends EboComponent> extends View {
     protected component: T;
 
-    protected constructor(state: OldState, component: T) {
+    protected constructor(state: App, component: T) {
         super(state);
         this.component = component;
     }

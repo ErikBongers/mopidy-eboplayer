@@ -21,7 +21,7 @@ import {EboSettingsComp} from "./components/eboSettingsComp";
 import {EboListItemComp} from "./components/eboListItemComp";
 import {BrowseView} from "./views/browseView";
 import {AlbumView} from "./views/albumView";
-import {OldState} from "./playerState";
+import {App} from "./app";
 import {EboRememberedComp} from "./components/eboRememberedComp";
 import {RememberedView} from "./views/rememberedView";
 import {CacheHandler} from "./controllers/cacheHandler";
@@ -100,7 +100,7 @@ function registerWebComponents() {
     EboComponent.define(EboTracklistComp);
 }
 
-function createViews(state: OldState) {
+function createViews(state: App) {
     let views: View [] = [
         new BrowseView(state, document.getElementById("Browse") as EboBrowseComp),
         new AlbumView(state, document.getElementById("dialog") as EboDialog, document.getElementById("Album") as EboBigAlbumComp),
@@ -124,7 +124,8 @@ function onDocAndCssLoaded(cssTexts: [string, string]) {
     let model = new Model();
     let player = new PlayController(model, networkState);
     let controller = new Controller(model, networkState, player, new CacheHandler(model, networkState, player));
-    let views = createViews(new OldState(model, controller, player));
+    let app = new App(model, controller, player);
+    let views = createViews(app);
     networkState.getNetworkProxy().connectWebsockets(false);
     controller.initialize(views);
 }

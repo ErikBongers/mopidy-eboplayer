@@ -32,6 +32,7 @@ export abstract class PwaStateClass extends StateClass<PwaStateId, PwaEventId> i
     onNetworkLost: PwaTransitionHandler = () => {
         return undefined;
     };
+    // noinspection JSUnusedGlobalSymbols
     onNetworkResponded: PwaTransitionHandler = () => {
         return undefined;
     };

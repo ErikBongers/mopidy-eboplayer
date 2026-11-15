@@ -6,7 +6,7 @@ import {arrayToggle} from "../global";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
 import {AlbumToView} from "../model";
-import {OldState} from "../playerState";
+import {App} from "../app";
 import {EboNowPlayingComp} from "../components/eboNowPlayingComp";
 import {MainView} from "./mainView";
 import {getDefaultListButtonsState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
@@ -16,7 +16,7 @@ export class AlbumView extends ComponentView<EboBigAlbumComp> {
     private dialog: EboDialog;
     private albumBeingEdited: AlbumUri | null = null;
 
-    constructor(state: OldState, dialog: EboDialog, component: EboBigAlbumComp) {
+    constructor(state: App, dialog: EboDialog, component: EboBigAlbumComp) {
         super(state, component);
         this.dialog = dialog;
         this.dialog.on("dialogOkClicked.eboplayer", (ev) => {

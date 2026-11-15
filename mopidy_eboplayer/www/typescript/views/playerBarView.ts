@@ -1,12 +1,12 @@
 import {ComponentView} from "./view";
 import {isInstanceOfExpandedStreamModel, isInstanceOfExpandedTrackModel, PlaybackUserOptions, Pages} from "../modelTypes";
 import {EboPlayerBar} from "../components/eboPlayerBar";
-import {OldState} from "../playerState";
+import {App} from "../app";
 import {unreachable} from "../global";
 
 export class PlayerBarView extends ComponentView<EboPlayerBar> {
 
-    constructor(state: OldState, component: EboPlayerBar) {
+    constructor(state: App, component: EboPlayerBar) {
         super(state, component);
     }
 

@@ -1,10 +1,10 @@
 import {ComponentView} from "./view";
-import {OldState} from "../playerState";
+import {App} from "../app";
 import {EboGenresComp} from "../components/eboGenresComp";
 import {AlbumUri} from "../modelTypes";
 
 export class GenresView extends ComponentView<EboGenresComp>{
-    constructor(state: OldState, component: EboGenresComp) {
+    constructor(state: App, component: EboGenresComp) {
         super(state, component);
     }
 
