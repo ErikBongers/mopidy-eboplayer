@@ -1,9 +1,9 @@
 import {ComponentView} from "./view";
 import {EboTopBar} from "../components/eboTopBar";
-import {State} from "../playerState";
+import {OldState} from "../playerState";
 
 export class TopBarView extends ComponentView<EboTopBar> {
-    constructor(state: State, component: EboTopBar) {
+    constructor(state: OldState, component: EboTopBar) {
         super(state, component);
     }
 

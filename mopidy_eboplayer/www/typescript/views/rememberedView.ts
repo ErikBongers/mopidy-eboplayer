@@ -1,9 +1,9 @@
 import {ComponentView} from "./view";
 import {EboRememberedComp} from "../components/eboRememberedComp";
-import {State} from "../playerState";
+import {OldState} from "../playerState";
 
 export class RememberedView extends ComponentView<EboRememberedComp>{
-    constructor(state: State, component: EboRememberedComp) {
+    constructor(state: OldState, component: EboRememberedComp) {
         super(state, component);
     }
 

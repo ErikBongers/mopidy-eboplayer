@@ -4,10 +4,10 @@ import {EboBrowseComp} from "../components/browse/eboBrowseComp";
 import {GuiSourceArgs} from "../events";
 import {ListButtonState, ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
 import {DisplayMode} from "../components/eboListItemComp";
-import {State} from "../playerState";
+import {OldState} from "../playerState";
 
 export class BrowseView extends ComponentView<EboBrowseComp> {
-    constructor(state: State, component: EboBrowseComp) {
+    constructor(state: OldState, component: EboBrowseComp) {
         super(state, component);
     }
 

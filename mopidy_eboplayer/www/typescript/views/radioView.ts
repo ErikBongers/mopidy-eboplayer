@@ -2,7 +2,7 @@ import {ComponentView} from "./view";
 import {ExpandedStreamModel, PlaylistUri, StreamUri} from "../modelTypes";
 import {addEboEventListener, GuiSourceArgs, SaveUriArgs, UriArgs} from "../events";
 import {EboDialog} from "../components/eboDialog";
-import {State} from "../playerState";
+import {OldState} from "../playerState";
 import {EboBigRadioComp} from "../components/radio/eboBigRadioComp";
 import {MainView} from "./mainView";
 import {ListButtonState_AllHidden, ListButtonStates} from "../components/eboListButtonBar";
@@ -13,7 +13,7 @@ export class RadioView extends ComponentView<EboBigRadioComp> {
     private dialog: EboDialog;
     private radioBeingEdited: StreamUri | null = null;
 
-    constructor(state: State, dialog: EboDialog, component: EboBigRadioComp) {
+    constructor(state: OldState, dialog: EboDialog, component: EboBigRadioComp) {
         super(state, component);
         this.dialog = dialog;
         this.dialog.on("dialogOkClicked.eboplayer", (ev) => {

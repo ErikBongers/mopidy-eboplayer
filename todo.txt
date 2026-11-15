@@ -1,5 +1,7 @@
-* Turn states into objects instead of strings.
-  > the State interface handles ALL the possible connection events
+* Status bar: show when reconnecting.
+  > Only show "offline" when iddle.
+    > ...for longer than a second to avoid flickering.
+
 
 * How to drive the DemoStateMachine?
   > main.ts starts everything.

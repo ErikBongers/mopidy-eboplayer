@@ -1,11 +1,11 @@
 import {View} from "./view";
 import {AllUris, Goto} from "../modelTypes";
-import {State} from "../playerState";
+import {OldState} from "../playerState";
 import {addEboEventListener} from "../events";
 
 export class MainView extends View {
 
-    constructor(state: State) {
+    constructor(state: OldState) {
         super(state);
     }
 

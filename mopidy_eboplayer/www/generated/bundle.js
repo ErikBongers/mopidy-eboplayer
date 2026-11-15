@@ -4717,7 +4717,7 @@ var AlbumView = class AlbumView extends ComponentView {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/playerState.ts
-var State = class {
+var OldState = class {
 	play = false;
 	random = false;
 	repeat = false;
@@ -7667,7 +7667,7 @@ var NetworkStateMachine = class {
 
 //#endregion
 //#region mopidy_eboplayer/www/typescript/main.ts
-const BUILD_VERSION = "1794406890320";
+const BUILD_VERSION = "1794763372733";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
@@ -7746,7 +7746,7 @@ function setupStuff() {
 	let model = new Model();
 	let player = new PlayController(model, networkState);
 	let controller = new controller_default(model, networkState, player, new CacheHandler(model, networkState, player));
-	let views = createViews(new State(model, controller, player));
+	let views = createViews(new OldState(model, controller, player));
 	networkState.getProxy().connectWebsockets(false);
 	controller.initialize(views);
 }

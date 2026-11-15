@@ -1,4 +1,5 @@
-import {StateEvents, StateMachine, TransitionHandler} from "./GenericStateMachine";
+import {StateEvents, StateMachine, TransitionHandler} from "./StateMachine";
+import {NetworkProxy} from "../network";
 
 /*const stateTransitions: Record<PwaStateId, Partial<Record<PwaEvent['type'], TransitionHandler>>> = {
     NOT_INITIALIZED: {
@@ -33,6 +34,7 @@ export type PwaEventId =
     | "onNetworkResponded"
     | "onNetworkRestored"
     | "onServerTimedOut"
+    | "onServerResponded"
     ;
 
 export type PwaStateEvents = StateEvents<PwaStateId, PwaEventId>;
@@ -42,63 +44,53 @@ export abstract class PwaStateClass implements PwaStateEvents {
     onAppInitialized: PwaTransitionHandler = () => {
         return undefined;
     };
-
     onNetworkLost: PwaTransitionHandler = () => {
         return undefined;
     };
-
     onNetworkResponded: PwaTransitionHandler = () => {
         return undefined;
     };
-
     onNetworkRestored: PwaTransitionHandler = () => {
         return undefined;
     };
-
     onServerTimedOut: PwaTransitionHandler = () => {
         return undefined;
     };
-
+    onServerResponded: PwaTransitionHandler = () => {
+        return undefined;
+    };
 }
 
 export class DemoNetworkStateMachine extends StateMachine<PwaStateId, PwaEventId> {
-    private currentState: PwaStateId = 'NOT_INITIALIZED';
-    private listeners: ((state: PwaStateId) => void)[] = [];
+    private readonly networkProxy: NetworkProxy;
 
-    constructor() {
+    constructor(networkProxy: NetworkProxy) {
         super("NOT_INITIALIZED");
-        window.addEventListener('online', () => this.transition({ type: 'networkRestored' }));
-        window.addEventListener('offline', () => this.transition({ type: 'networkLost' }));
+        window.addEventListener('online', () => this.transition('onNetworkRestored'));
+        window.addEventListener('offline', () => this.transition('onNetworkLost'));
+        this.networkProxy = networkProxy;
+        this.networkProxy.onMopidy('state:online', () => this.transition('onServerResponded'));
+        this.networkProxy.onMopidy('state:offline', () => this.transition('onServerTimedOut'));
 
-        // Initial check
-        const hasNetwork = navigator.onLine;
-        this.checkServerHealth().then(isServerAlive => {
-            this.transition({
-                type: 'appInitialized',
-                payload: { hasNetwork, isServerAlive }
-            });
+        document.addEventListener("visibilitychange", () => {
+            console.log(`page: ${document.visibilityState.toUpperCase()} -> check connections`);
+            if (document.visibilityState === "visible") {
+                this.networkProxy.connectWebsockets(true);
+            }
+        });
+        document.addEventListener("focus", () => {
+            console.log("page event: -> check connections");
+            this.networkProxy.connectWebsockets(true);
         });
     }
 
-    public get state(): PwaStateId {
-        return this.currentState;
-    }
-
-    public async checkServerHealth(): Promise<boolean> {
-        if (!navigator.onLine) return false;
-        try {
-            const response = await fetch('/eboplayer/ping', { method: 'HEAD', cache: 'no-store' });
-            const isAlive = response.ok;
-
-            if (isAlive) {
-                this.transition({ type: 'serverResponded' });
-            } else {
-                this.transition({ type: 'serverTimedOut' });
-            }
-            return isAlive;
-        } catch {
-            this.transition({ type: 'serverTimedOut' });
-            return false;
+    public async checkState() {
+        if (navigator.onLine) {
+            this.transition("onNetworkResponded");
+            this.networkProxy.connectWebsockets(true);
+        } else {
+            this.transition("onNetworkLost");
+            return;
         }
     }
 }

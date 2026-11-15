@@ -1,10 +1,3 @@
-type PwaStateId =
-    | 'NOT_INITIALIZED'  // app still needs to setupStuff()
-    | 'ONLINE' // all normal
-    | 'NO_SERVER' // switch to offline repos and keep polling...
-    | 'NO_NETWORK'; //switch to offline repos and DON'T poll.
-
-
 export type HandlerResponse<STATE_ID> = STATE_ID | undefined;
 
 export type TransitionHandler<STATE_ID, EVENT_ID> = (event: EVENT_ID) => (HandlerResponse<STATE_ID> | undefined);

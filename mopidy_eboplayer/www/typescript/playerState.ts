@@ -4,7 +4,7 @@ import {DeepReadonly} from "./modelTypes";
 import {PlayController} from "./controllers/playController";
 import {CacheHandler} from "./controllers/cacheHandler";
 
-export class State {
+export class OldState {
     // values for controls
     play: boolean = false;
     random: boolean = false;
