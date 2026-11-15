@@ -1,4 +1,12 @@
-import {PartialStateEvents, StateClass, StateEvents, StateMachine, StateMap, TransitionHandler} from "./StateMachine";
+import {
+    HandlerResponse,
+    PartialStateEvents,
+    StateClass,
+    StateEvents,
+    StateMachine,
+    StateMap,
+    TransitionHandler
+} from "./StateMachine";
 import {createOnlineNetworkProxy, NetworkProxy, NetworkProxyPointer} from "../network";
 import {App} from "../app";
 
@@ -21,6 +29,7 @@ export type PwaEventId =
 export type PwaStateEvents = StateEvents<PwaStateId, PwaEventId>;
 export type PwaPartialStateEvents = PartialStateEvents<PwaStateId, PwaEventId>;
 export type PwaTransitionHandler = TransitionHandler<PwaStateId,PwaEventId>;
+export type PwaHandlerResponse = HandlerResponse<PwaStateId>;
 
 export abstract class PwaStateClass extends StateClass<PwaStateId, PwaEventId> implements PwaStateEvents {
     public readonly app: App;
@@ -30,26 +39,26 @@ export abstract class PwaStateClass extends StateClass<PwaStateId, PwaEventId> i
         this.app = app;
     }
     // noinspection JSUnusedGlobalSymbols
-    onAppInitialized() {
+    onAppInitialized(): PwaHandlerResponse {
         return undefined;
     };
-    onNetworkLost() {
+    onNetworkLost(): PwaHandlerResponse {
         return undefined;
     };
     // noinspection JSUnusedGlobalSymbols
-    onNetworkResponded () {
+    onNetworkResponded (): PwaHandlerResponse {
         return undefined;
     };
-    onNetworkRestored() {
+    onNetworkRestored(): PwaHandlerResponse {
         return undefined;
     };
-    onServerTimedOut() {
+    onServerTimedOut(): PwaHandlerResponse {
         return undefined;
     };
-    onServerResponded() {
+    onServerResponded(): PwaHandlerResponse {
         return undefined;
     };
-    onPageVisibleOrFocus: PwaTransitionHandler = () => {
+    onPageVisibleOrFocus(): PwaHandlerResponse {
         return undefined;
     }
 }

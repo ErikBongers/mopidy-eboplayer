@@ -4724,18 +4724,26 @@ var App = class {
 	model;
 	controller;
 	player;
-	networkProxy;
-	constructor(model, controller, player, networkProxy) {
+	networkProxyPointer;
+	onlineNetworkProxy;
+	constructor(model, controller, player, networkProxy, onlineNetworkProxy) {
 		this.model = model;
 		this.controller = controller;
 		this.player = player;
-		this.networkProxy = networkProxy;
+		this.networkProxyPointer = networkProxy;
+		this.onlineNetworkProxy = onlineNetworkProxy;
 	}
 	getModel = () => this.model;
 	getController = () => this.controller;
 	getPlayer = () => this.player;
 	getNetwork() {
-		return this.networkProxy.networkProxy;
+		return this.networkProxyPointer.networkProxy;
+	}
+	setOnlineNetworkProxy() {
+		this.networkProxyPointer.networkProxy = this.onlineNetworkProxy;
+	}
+	setOfflineNetworkProxy() {
+		throw new Error("Offline network proxy not yet implemented");
 	}
 };
 
@@ -7647,15 +7655,18 @@ var StateMachine = class {
 	currentStateId;
 	listeners = [];
 	states;
+	showLog = false;
 	constructor(initialStateId, states) {
 		this.currentStateId = initialStateId;
 		this.states = states;
 	}
 	on(event) {
+		if (this.showLog) console.log(`StateMachine: on ${event} in state ${this.currentStateId}`);
 		let currentState = this.states[this.currentStateId];
 		if (!currentState) throw new Error(`State ${this.currentStateId} not found.`);
 		const nextState = currentState[event]();
 		if (nextState && nextState !== this.currentStateId) {
+			if (this.showLog) console.log(`StateMachine: transition to ${nextState}`);
 			this.currentStateId = nextState;
 			this.notifyListeners();
 		}
@@ -7679,7 +7690,7 @@ var PwaStateClass = class extends StateClass {
 	onNetworkRestored() {}
 	onServerTimedOut() {}
 	onServerResponded() {}
-	onPageVisibleOrFocus = () => {};
+	onPageVisibleOrFocus() {}
 };
 var PwaStateMachine = class extends StateMachine {
 	constructor(app, states) {
@@ -7701,19 +7712,42 @@ var InitialState = class extends PwaStateClass {
 	}
 	onAppInitialized() {
 		console.log("IntialState: onAppInitialized");
+		this.app.getNetwork().connectWebsockets(false);
 		this.app.getController().initialize();
+	}
+	onServerResponded() {
+		console.log("IntialState: onServerResponded");
+		this.app.setOnlineNetworkProxy();
+		return "ONLINE";
 	}
 };
 
 //#endregion
+//#region mopidy_eboplayer/www/typescript/stateMachine/NoServerState.ts
+var NoServerState = class extends PwaStateClass {
+	constructor(app) {
+		super("NO_SERVER", app);
+	}
+	onPageVisibleOrFocus() {}
+};
+
+//#endregion
+//#region mopidy_eboplayer/www/typescript/stateMachine/OnlineState.ts
+var OnlineState = class extends PwaStateClass {
+	constructor(app) {
+		super("ONLINE", app);
+	}
+	onNetworkLost() {}
+	onServerTimedOut() {}
+};
+
+//#endregion
 //#region mopidy_eboplayer/www/typescript/main.ts
-const BUILD_VERSION = "1794779061047";
+const BUILD_VERSION = "1794781394006";
 const STORED_VERSION = "storedVersion";
 function setupServiceWorker() {
 	if ("serviceWorker" in navigator) {
-		navigator.serviceWorker.register("serviceWorker.js").then((registration) => {
-			console.log("Service Worker registered with scope:", registration.scope);
-		}).catch((error) => {
+		navigator.serviceWorker.register("serviceWorker.js").catch((error) => {
 			console.error("Service Worker registration failed:", error);
 		});
 		let storedVersion = localStorage.getItem(STORED_VERSION) ?? "";
@@ -7778,22 +7812,23 @@ function onDocAndCssLoaded(cssTexts) {
 	EboComponent.setGlobalCss(cssTexts);
 	registerWebComponents();
 	let model = new Model();
-	let networkProxyPointer = { networkProxy: createOnlineNetworkProxy() };
+	let onlineNetworkProxy = createOnlineNetworkProxy();
+	let networkProxyPointer = { networkProxy: onlineNetworkProxy };
 	let player = new PlayController(model, networkProxyPointer);
 	let controller = new controller_default(model, networkProxyPointer, player, new CacheHandler(model, networkProxyPointer, player));
-	let app = new App(model, controller, player, networkProxyPointer);
-	networkState = new PwaStateMachine(app, getStateMap(app));
+	let app = new App(model, controller, player, networkProxyPointer, onlineNetworkProxy);
 	createViews(app);
-	networkProxyPointer.networkProxy.connectWebsockets(false);
+	networkState = new PwaStateMachine(app, getStateMap(app));
+	networkState.showLog = true;
 	networkState.on("onAppInitialized");
 }
 function getStateMap(app) {
 	let dummyState = new InitialState(app);
 	return {
 		"NOT_INITIALIZED": new InitialState(app),
-		ONLINE: dummyState,
+		ONLINE: new OnlineState(app),
 		NO_NETWORK: dummyState,
-		NO_SERVER: dummyState
+		NO_SERVER: new NoServerState(app)
 	};
 }
 function main() {

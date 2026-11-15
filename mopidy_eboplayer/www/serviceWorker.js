@@ -59,7 +59,6 @@ sw.addEventListener("fetch", (event) => {
 		return;
 	}
 	if (url.pathname.endsWith("bundle.js")) {
-		console.log("getting bundle.js");
 		event.respondWith(networkFirst(event, ASSETS_CACHE_NAME)());
 		return;
 	}
@@ -68,7 +67,6 @@ sw.addEventListener("fetch", (event) => {
 function networkFirst(event, cacheName) {
 	return async () => {
 		try {
-			console.log("networkFirst: fetching...");
 			const networkResponse = await fetch(event.request);
 			if (networkResponse.status === 200) await saveToCache(cacheName, event, networkResponse);
 			else return await getCached(/* @__PURE__ */ new Error(`networkFirst: response status ${networkResponse.status}`));
@@ -78,7 +76,6 @@ function networkFirst(event, cacheName) {
 		}
 	};
 	async function getCached(error) {
-		console.log("networkFirst: got error, returning cached response");
 		const cachedResponse = await (await caches.open(cacheName)).match(event.request);
 		if (cachedResponse) return cachedResponse;
 		throw error;
@@ -110,11 +107,9 @@ async function saveToCache(cacheName, event, networkResponse) {
 }
 sw.addEventListener("message", async (event) => {
 	if (event.data?.type === "updateCache") {
-		console.log(`Updating cache from ${event.data.oldVersion} to ${event.data.newVersion}`);
 		const newCache = await caches.open(ASSETS_CACHE_NAME);
 		try {
 			await newCache.addAll(ASSETS_TO_CACHE);
-			console.log("Core offline assets successfully migrated to new cache.");
 		} catch (err) {
 			console.error("Failed to pre-cache essential files on version change:", err);
 		}

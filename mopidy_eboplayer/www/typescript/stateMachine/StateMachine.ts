@@ -24,6 +24,7 @@ export class StateMachine<STATE_ID extends string, EVENT_ID extends string> {
     private currentStateId: STATE_ID;
     private listeners: ((state: STATE_ID) => void)[] = [];
     private states: StateMap<STATE_ID, EVENT_ID>;
+    public showLog: boolean = false;
 
     constructor(initialStateId: STATE_ID, states: StateMap<STATE_ID, EVENT_ID>) {
         this.currentStateId = initialStateId;
@@ -31,6 +32,8 @@ export class StateMachine<STATE_ID extends string, EVENT_ID extends string> {
     }
 
     public on(event: EVENT_ID) {
+        if (this.showLog)
+            console.log(`StateMachine: on ${event} in state ${this.currentStateId}`);
         let currentState = this.states[this.currentStateId];
         if (!currentState)
             throw new Error(`State ${this.currentStateId} not found.`);
@@ -38,6 +41,8 @@ export class StateMachine<STATE_ID extends string, EVENT_ID extends string> {
         // @ts-ignore
         const nextState = currentState[event]() as HandlerResponse<STATE_ID>;
         if (nextState && nextState !== this.currentStateId) {
+            if (this.showLog)
+                console.log(`StateMachine: transition to ${nextState}`);
             this.currentStateId = nextState;
             this.notifyListeners();
         }

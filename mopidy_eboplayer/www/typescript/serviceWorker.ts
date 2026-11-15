@@ -79,7 +79,6 @@ sw.addEventListener('fetch', (event) => {
     }
 
     if (url.pathname.endsWith('bundle.js')) {
-        console.log('getting bundle.js');
         event.respondWith(
             networkFirst(event, ASSETS_CACHE_NAME)()
         );
