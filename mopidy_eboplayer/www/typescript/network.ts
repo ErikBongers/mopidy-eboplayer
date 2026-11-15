@@ -21,6 +21,10 @@ export interface NetworkProxy {
     connectWebsockets: (resetDelay: boolean) => void;
 }
 
+export interface NetworkProxyPointer {
+    networkProxy: NetworkProxy;
+}
+
 export function createOnlineNetworkProxy(): NetworkProxy {
     let webSocketUrl = getWebSocketUrl(); //todo: this is probably not used. Remove it?
     let connectOptions: Options = {

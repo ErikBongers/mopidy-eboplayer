@@ -1,16 +1,15 @@
-import {PwaEventId, PwaPartialStateEvents, PwaStateClass} from "./PwaStateMachine";
+import {PwaStateClass} from "./PwaStateMachine";
+import {App} from "../app";
 
 export class InitialState extends PwaStateClass {
-    constructor() {
-        super(
-            "NOT_INITIALIZED",
-            {
-                onAppInitialized,
-            }
-        );
+    constructor(app: App) {
+        super("NOT_INITIALIZED",app);
+    }
+
+    override onAppInitialized() {
+        console.log("IntialState: onAppInitialized");
+        this.app.getController().initialize();
+        return undefined;
     }
 }
 
-function onAppInitialized (event: PwaEventId){
-    return undefined;
-}

@@ -1,8 +1,6 @@
 import {Model} from "../model";
-import {Commands} from "../commands";
 import models from "../../js/mopidy";
 import {LocalStorageProxy} from "../proxies/localStorageProxy";
-import {getHostAndPort, getHostAndPortDefs} from "../global";
 import {createAllRefs, ExpandedRef} from "../refs";
 import {
     AlbumModel,
@@ -17,18 +15,16 @@ import {
     StreamUri,
     TrackUri
 } from "../modelTypes";
-import {WebProxy} from "../proxies/webProxy";
 import {PlayController} from "./playController";
-import {NetworkProxy} from "../network";
-import {PwaStateMachine} from "../stateMachine/PwaStateMachine";
+import {NetworkProxyPointer} from "../network";
 
 export class CacheHandler {
     protected model: Model;
-    public network: PwaStateMachine;
+    public network: NetworkProxyPointer;
     public localStorageProxy: LocalStorageProxy;
     protected player: PlayController;
 
-    constructor(model: Model, network: PwaStateMachine, player: PlayController) {
+    constructor(model: Model, network: NetworkProxyPointer, player: PlayController) {
         this.model  = model;
         this.network = network;
         this.player = player;
@@ -48,7 +44,7 @@ export class CacheHandler {
     }
 
     private async fetchAndConvertTracks(uri: TrackUri | StreamUri) {
-        let dict = await this.network.getNetworkProxy().mopidyRepository.lookup(uri);
+        let dict = await this.network.networkProxy.mopidyRepository.lookup(uri);
         let trackList = dict[uri] as models.Track[] | undefined;
         if(trackList) {
             let newListPromises = trackList.map(async track => this.transformTrackDataToModel(track));
@@ -111,7 +107,7 @@ export class CacheHandler {
     }
 
     private async fetchAlbums(albumUris: AlbumUri[]): Promise<AlbumModel[]> {
-        let dict = await this.network.getNetworkProxy().mopidyRepository.lookup(albumUris);
+        let dict = await this.network.networkProxy.mopidyRepository.lookup(albumUris);
         let allRefs = await this.getAllRefsMapCached();
         let albumModelsPending = Object.keys(dict).map(async (albumUri: string) => {
             let trackList = dict[albumUri] as models.Track[];
@@ -133,7 +129,7 @@ export class CacheHandler {
         let remembers = this.model.getRemembers();
         if (remembers)
             return remembers;
-        remembers = await this.network.getNetworkProxy().webRepository.fetchRemembers();
+        remembers = await this.network.networkProxy.webRepository.fetchRemembers();
         this.model.setRemembers(remembers);
         return remembers;
     }
@@ -142,7 +138,7 @@ export class CacheHandler {
         let cachedMeta = this.model.getFromMetaCache(albumUri);
         if(cachedMeta)
             return cachedMeta.meta;
-        let meta = await this.network.getNetworkProxy().webRepository.fetchMetaData(albumUri);
+        let meta = await this.network.networkProxy.webRepository.fetchMetaData(albumUri);
         this.model.addToMetaCache(albumUri, meta);
         return meta;
     }
@@ -150,7 +146,7 @@ export class CacheHandler {
     async getAllRefsCached() {
         let allRefs = this.model.getAllRefs();
         if(!allRefs) {
-            let refs = await this.network.getNetworkProxy().webRepository.fetchAllRefs();
+            let refs = await this.network.networkProxy.webRepository.fetchAllRefs();
             allRefs = await createAllRefs(this, refs.allRefs, refs.tracksNoAlbumRefs);
             this.model.setAllRefs(allRefs);
         }
@@ -165,7 +161,7 @@ export class CacheHandler {
     async getGenreReplacementsCached() {
         if(this.model.getGenreReplacements().size > 0)
             return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
-        let genreDefs = await this.network.getNetworkProxy().webRepository.fetchGenreReplacements();
+        let genreDefs = await this.network.networkProxy.webRepository.fetchGenreReplacements();
         this.model.setGenreReplacements(genreDefs);
         return this.model.getGenreReplacements() as Map<string, GenreReplacement>;
     }
@@ -178,7 +174,7 @@ export class CacheHandler {
     async getRemembersCached() {
         if(this.model.getRemembers())
             return this.model.getRemembers() as RememberDef[];
-        let remembers = await this.network.getNetworkProxy().webRepository.fetchRemembers();
+        let remembers = await this.network.networkProxy.webRepository.fetchRemembers();
         this.model.setRemembers(remembers);
         return this.model.getRemembers() as RememberDef[];
     }
@@ -186,7 +182,7 @@ export class CacheHandler {
     async getGenreDefs() {
         if(this.model.getGenreDefs().length > 0)
             return this.model.getGenreDefs() as GenreDef[];
-        let genreDefs = await this.network.getNetworkProxy().webRepository.fetchGenreDefs();
+        let genreDefs = await this.network.networkProxy.webRepository.fetchGenreDefs();
         this.model.setGenreDefs(genreDefs);
         return this.model.getGenreDefs() as GenreDef[];
     }
@@ -194,7 +190,7 @@ export class CacheHandler {
     async getFavorites() {
         if(this.model.getFavorites())
             return this.model.getFavorites() as Set<AllUris>;
-        let favorites = await this.network.getNetworkProxy().webRepository.getFavorites();
+        let favorites = await this.network.networkProxy.webRepository.getFavorites();
         this.model.setFavorites(favorites);
         return this.model.getFavorites() as Set<AllUris>;
     }
@@ -219,7 +215,7 @@ export class CacheHandler {
     }
 
     private async fetchStreamLines(streamUri: string) {
-        let stream_lines = await this.network.getNetworkProxy().webRepository.fetchAllStreamLines(streamUri);
+        let stream_lines = await this.network.networkProxy.webRepository.fetchAllStreamLines(streamUri);
         function groupLines (grouped: string[][], line: string) {
             if(line == "---") {
                 grouped.push([]);
@@ -236,7 +232,7 @@ export class CacheHandler {
     async getFavoritePlaylistName() {
         if(this.model.getFavoritesPlaylistName())
             return this.model.getFavoritesPlaylistName() as string;
-        let name = await this.network.getNetworkProxy().webRepository.getFavoritesPlaylistName();
+        let name = await this.network.networkProxy.webRepository.getFavoritesPlaylistName();
         this.model.setFavoritesPlaylistName(name);
         return name;
     }

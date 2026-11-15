@@ -1,7 +1,8 @@
-import {PartialStateEvents, StateClass, StateEvents, StateMachine, TransitionHandler} from "./StateMachine";
-import {NetworkProxy} from "../network";
+import {PartialStateEvents, StateClass, StateEvents, StateMachine, StateMap, TransitionHandler} from "./StateMachine";
+import {createOnlineNetworkProxy, NetworkProxy, NetworkProxyPointer} from "../network";
+import {App} from "../app";
 
-type PwaStateId =
+export type PwaStateId =
     | 'NOT_INITIALIZED'  // app still needs to setupStuff()
     | 'ONLINE' // all normal
     | 'NO_SERVER' // switch to offline repos and keep polling...
@@ -22,27 +23,30 @@ export type PwaPartialStateEvents = PartialStateEvents<PwaStateId, PwaEventId>;
 export type PwaTransitionHandler = TransitionHandler<PwaStateId,PwaEventId>;
 
 export abstract class PwaStateClass extends StateClass<PwaStateId, PwaEventId> implements PwaStateEvents {
-    protected constructor(stateId: PwaStateId, events: PartialStateEvents<PwaStateId, PwaEventId>) {
-        super(stateId, events);
+    public readonly app: App;
+
+    protected constructor(stateId: PwaStateId, app: App) {
+        super(stateId);
+        this.app = app;
     }
     // noinspection JSUnusedGlobalSymbols
-    onAppInitialized: PwaTransitionHandler = () => {
+    onAppInitialized() {
         return undefined;
     };
-    onNetworkLost: PwaTransitionHandler = () => {
+    onNetworkLost() {
         return undefined;
     };
     // noinspection JSUnusedGlobalSymbols
-    onNetworkResponded: PwaTransitionHandler = () => {
+    onNetworkResponded () {
         return undefined;
     };
-    onNetworkRestored: PwaTransitionHandler = () => {
+    onNetworkRestored() {
         return undefined;
     };
-    onServerTimedOut: PwaTransitionHandler = () => {
+    onServerTimedOut() {
         return undefined;
     };
-    onServerResponded: PwaTransitionHandler = () => {
+    onServerResponded() {
         return undefined;
     };
     onPageVisibleOrFocus: PwaTransitionHandler = () => {
@@ -51,20 +55,14 @@ export abstract class PwaStateClass extends StateClass<PwaStateId, PwaEventId> i
 }
 
 export class PwaStateMachine extends StateMachine<PwaStateId, PwaEventId> {
-    private readonly networkProxy: NetworkProxy;
 
-    constructor(networkProxy: NetworkProxy) {
-        super("NOT_INITIALIZED");
-        this.networkProxy = networkProxy;
-        window.addEventListener('online', () => this.transition('onNetworkRestored'));
-        window.addEventListener('offline', () => this.transition('onNetworkLost'));
-        this.networkProxy.onMopidy('state:online', () => this.transition('onServerResponded'));
-        this.networkProxy.onMopidy('state:offline', () => this.transition('onServerTimedOut'));
-        document.addEventListener("visibilitychange", () => this.transition('onPageVisibleOrFocus'));
-        document.addEventListener("focus", () => this.transition('onPageVisibleOrFocus'));
-    }
-
-    getNetworkProxy() {
-        return this.networkProxy;
+    constructor(app: App, states: StateMap<PwaStateId, PwaEventId>) {
+        super("NOT_INITIALIZED", states);
+        window.addEventListener('online', () => this.on('onNetworkRestored'));
+        window.addEventListener('offline', () => this.on('onNetworkLost'));
+        app.getNetwork().onMopidy('state:online', () => this.on('onServerResponded'));
+        app.getNetwork().onMopidy('state:offline', () => this.on('onServerTimedOut'));
+        document.addEventListener("visibilitychange", () => this.on('onPageVisibleOrFocus'));
+        document.addEventListener("focus", () => this.on('onPageVisibleOrFocus'));
     }
 }

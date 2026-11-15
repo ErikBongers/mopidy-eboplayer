@@ -39,8 +39,10 @@ import {SettingsView} from "./views/settingsView";
 import {View} from "./views/view";
 import {EboTracklistComp} from "./components/eboTracklistComp";
 import {UpdateCache} from "./messages";
-import {createOnlineNetworkProxy} from "./network";
-import {PwaStateMachine} from "./stateMachine/PwaStateMachine";
+import {createOnlineNetworkProxy, NetworkProxyPointer} from "./network";
+import {PwaEventId, PwaStateId, PwaStateMachine} from "./stateMachine/PwaStateMachine";
+import {StateMap} from "./stateMachine/StateMachine";
+import {InitialState} from "./stateMachine/InitialState";
 
 // @ts-ignore
 const BUILD_VERSION = __BUILD_VERSION__; // Replaced during build step
@@ -117,17 +119,33 @@ function createViews(state: App) {
     return views;
 }
 
+let networkState: PwaStateMachine;
+
 function onDocAndCssLoaded(cssTexts: [string, string]) {
     EboComponent.setGlobalCss(cssTexts);
     registerWebComponents();
-    let networkState = new PwaStateMachine(createOnlineNetworkProxy());
     let model = new Model();
-    let player = new PlayController(model, networkState);
-    let controller = new Controller(model, networkState, player, new CacheHandler(model, networkState, player));
-    let app = new App(model, controller, player);
-    let views = createViews(app);
-    networkState.getNetworkProxy().connectWebsockets(false);
-    controller.initialize(views);
+    let networkProxyPointer: NetworkProxyPointer = {
+        networkProxy: createOnlineNetworkProxy(),
+    };
+    let player = new PlayController(model, networkProxyPointer);
+    let controller = new Controller(model, networkProxyPointer, player, new CacheHandler(model, networkProxyPointer, player));
+    let app = new App(model, controller, player, networkProxyPointer);
+    networkState = new PwaStateMachine(app, getStateMap(app));
+    createViews(app);
+    networkProxyPointer.networkProxy.connectWebsockets(false);
+    networkState.on("onAppInitialized");
+}
+
+function getStateMap(app: App) {
+    let dummyState = new InitialState(app);
+    let states: StateMap<PwaStateId, PwaEventId> = {
+        "NOT_INITIALIZED": new InitialState(app),
+        ONLINE: dummyState,
+        NO_NETWORK: dummyState,
+        NO_SERVER: dummyState
+    };
+    return states;
 }
 
 function main (){
